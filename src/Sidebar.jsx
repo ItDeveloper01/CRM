@@ -1,8 +1,8 @@
-import { Menu, UserPlus, CalendarCheck, LayoutDashboard, LogOut } from 'lucide-react';
+import { Menu, UserPlus, CalendarCheck, LayoutDashboard, LogOut, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
-export default function Sidebar({ setIsLoggedIn }) {
+export default function Sidebar({ auth, setAuth }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -38,8 +38,17 @@ export default function Sidebar({ setIsLoggedIn }) {
           {sidebarOpen && 'Bookings'}
         </Link>
 
+        {auth.role === 'admin' && (
+          <Link
+            to='/users'
+            className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
+            <Users size={20} />
+            {sidebarOpen && 'Users'}
+          </Link>
+        )}
+
         <button
-          onClick={() => setIsLoggedIn(false)}
+          onClick={() => setAuth({ isLoggedIn: false, role: null })}
           className='flex items-center gap-3 p-2 rounded hover:bg-red-100 w-full text-red-600'>
           <LogOut size={20} />
           {sidebarOpen && 'Logout'}

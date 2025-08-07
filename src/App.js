@@ -5,17 +5,25 @@ import Leads from './Leads';
 import Bookings from './Bookings';
 import Login from './Login';
 import Layout from './Layout';
+import Users from './Users';
+import UserCreate from './UserCreate'; // ✅ import
+import AdminRoute from './AdminRoute'; // ✅ import
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
 
   return (
     <Router>
       <Routes>
-        {isLoggedIn ? (
+        {auth.isLoggedIn ? (
           <>
-            {/* All pages wrapped with Layout */}
-            <Route element={<Layout setIsLoggedIn={setIsLoggedIn} />}>
+            <Route
+              element={
+                <Layout
+                  auth={auth}
+                  setAuth={setAuth}
+                />
+              }>
               <Route
                 path='/dashboard'
                 element={<Dashboard />}
@@ -28,7 +36,28 @@ export default function App() {
                 path='/bookings'
                 element={<Bookings />}
               />
+
+              {/* ✅ Users List */}
+              <Route
+                path='/users'
+                element={
+                  <AdminRoute auth={auth}>
+                    <Users />
+                  </AdminRoute>
+                }
+              />
+
+              {/* ✅ User Creation inside same Layout */}
+              <Route
+                path='/users/create'
+                element={
+                  <AdminRoute auth={auth}>
+                    <UserCreate />
+                  </AdminRoute>
+                }
+              />
             </Route>
+
             <Route
               path='*'
               element={<Navigate to='/dashboard' />}
@@ -38,7 +67,7 @@ export default function App() {
           <>
             <Route
               path='/login'
-              element={<Login setIsLoggedIn={setIsLoggedIn} />}
+              element={<Login setAuth={setAuth} />}
             />
             <Route
               path='*'
