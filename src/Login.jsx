@@ -10,12 +10,14 @@ export default function Login({ setAuth }) {
     console.log('user', username);
     console.log('pass:', password);
     e.preventDefault();
+
     if (username === 'admin' && password === 'admin') {
       setAuth({ isLoggedIn: true, role: 'admin' });
       navigate('/dashboard');
     } else if (username === 'user' && password === 'user') {
       setAuth({ isLoggedIn: true, role: 'user' });
       navigate('/dashboard');
+
     } else {
       alert('Invalid credentials');
     }

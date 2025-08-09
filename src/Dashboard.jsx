@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Menu, UserPlus, CalendarCheck, LogOut, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Menu, UserPlus, CalendarCheck, LogOut, X} from 'lucide-react';
+import { redirect } from 'react-router-dom';
 
 export default function Dashboard({ setIsLoggedIn }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -25,7 +27,9 @@ export default function Dashboard({ setIsLoggedIn }) {
 
   // Form Data
   const [newLead, setNewLead] = useState({ name: '', email: '', status: 'New' });
-  const [newBooking, setNewBooking] = useState({
+  const [newBooking, setNewBooking
+
+  ] = useState({
     customer: '',
     tour: '',
     date: '',
@@ -92,18 +96,19 @@ export default function Dashboard({ setIsLoggedIn }) {
           {/* Bookings Section */}
           <section id='bookings'>
             <div className='flex justify-between items-center mb-4'>
-              <h2 className='text-lg font-semibold'>Bookings</h2>
-              <button
-                onClick={() => setShowBookingModal(true)}
+              <h2 className='text-lg font-semibold'>Customers</h2>
+              <Link  to='/NewCustomer'>
+              <button 
                 className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700'>
-                + New Booking
-              </button>
+                + New Customer
+              </button> 
+              </Link>
             </div>
             <div className='bg-white rounded-lg shadow overflow-x-auto'>
               <table className='min-w-full text-sm text-left'>
                 <thead className='bg-gray-100 text-gray-700 uppercase'>
                   <tr>
-                    <th className='px-4 py-2'>Booking ID</th>
+                    <th className='px-4 py-2'>Customer ID</th>
                     <th className='px-4 py-2'>Customer</th>
                     <th className='px-4 py-2'>Tour</th>
                     <th className='px-4 py-2'>Date</th>
@@ -172,12 +177,13 @@ export default function Dashboard({ setIsLoggedIn }) {
 
       {/* Booking Modal */}
       {showBookingModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
+         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
           <div className='bg-white rounded-lg shadow-lg w-96 p-6 relative'>
             <button
               onClick={() => setShowBookingModal(false)}
               className='absolute top-3 right-3 text-gray-500 hover:text-black'>
               <X size={20} />
+              
             </button>
             <h2 className='text-lg font-bold mb-4'>New Booking</h2>
             <input
@@ -188,8 +194,9 @@ export default function Dashboard({ setIsLoggedIn }) {
               className='w-full mb-3 p-2 border rounded'
             />
             <input
-              type='text'
-              placeholder='Tour Name'
+              type='text'  
+              placeholder='Tour Name' 
+              
               value={newBooking.tour}
               onChange={(e) => setNewBooking({ ...newBooking, tour: e.target.value })}
               className='w-full mb-3 p-2 border rounded'
@@ -214,7 +221,7 @@ export default function Dashboard({ setIsLoggedIn }) {
               Save Booking
             </button>
           </div>
-        </div>
+        </div> 
       )}
     </div>
   );

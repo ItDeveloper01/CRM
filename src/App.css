@@ -2,6 +2,19 @@
   text-align: center;
 }
 
+
+/* Add this to your CSS or Tailwind overrides */
+.react-tel-input .form-control {
+  height: 38px; /* match your other input height */
+  padding: 0.5rem 0.75rem; /* same padding as Tailwind p-2 */
+  border-radius: 0 0.375rem 0.375rem 0; /* match rounded-md */
+}
+
+.react-tel-input .flag-dropdown {
+  height: 38px; /* align flag dropdown height */
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -36,4 +49,7 @@
   to {
     transform: rotate(360deg);
   }
+
+
+  
 }
