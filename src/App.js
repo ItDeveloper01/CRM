@@ -5,6 +5,8 @@ import Leads from './Leads';
 import Bookings from './Bookings';
 import Login from './Login';
 import Layout from './Layout';
+import NewCustomerInfo from './NewCustomerInfo';
+
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -23,6 +25,10 @@ export default function App() {
               <Route
                 path='/leads'
                 element={<Leads />}
+              />
+              <Route
+                path='/NewCustomer'
+                element={<NewCustomerInfo />}
               />
               <Route
                 path='/bookings'

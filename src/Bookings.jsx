@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function Bookings() {
+export default function Booking() {
   const [bookings, setBookings] = useState([
     {
       id: 101,
@@ -31,7 +31,7 @@ export default function Bookings() {
   return (
     <div>
       <div className='flex justify-between items-center mb-4'>
-        <h2 className='text-xl font-semibold'>Bookings</h2>
+        <h2 className='text-xl font-semibold'>Customer</h2>
         <button
           onClick={() => setIsModalOpen(true)}
           className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'>
@@ -40,12 +40,12 @@ export default function Bookings() {
       </div>
 
       {/* Bookings Table */}
-      <div className='bg-white rounded-lg shadow overflow-x-auto'>
-        <table className='min-w-full text-sm text-left'>
+      <div className='bg-white rounded-lg shadow overflow-x-auto' >
+        <table className='min-w-full text-sm text-left' >
           <thead className='bg-gray-100 text-gray-700 uppercase'>
             <tr>
               <th className='px-4 py-2'>Booking ID</th>
-              <th className='px-4 py-2'>Customer</th>
+              <th className='px-4 py-2'>Booking</th>
               <th className='px-4 py-2'>Tour</th>
               <th className='px-4 py-2'>Date</th>
               <th className='px-4 py-2'>Status</th>

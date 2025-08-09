@@ -13,7 +13,9 @@ export default function Login({ setIsLoggedIn }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+console.log("formdata:::::::::::::",formData)
+console.log("email:::::::::::::",formData.email)
+console.log("formdata:::::::::::::",formData.password)
     // ✅ Hardcoded login check
     if (formData.email === 'admin' && formData.password === 'admin') {
       setIsLoggedIn(true);
