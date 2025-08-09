@@ -1,74 +1,54 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login({ setIsLoggedIn }) {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+export default function Login({ setAuth }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // v6+
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = (e) => {
+    console.log('user', username);
+    console.log('pass:', password);
     e.preventDefault();
-console.log("formdata:::::::::::::",formData)
-console.log("email:::::::::::::",formData.email)
-console.log("formdata:::::::::::::",formData.password)
-    // ✅ Hardcoded login check
-    if (formData.email === 'admin' && formData.password === 'admin') {
-      setIsLoggedIn(true);
 
-      navigate('/dashboard'); // v6+
+    if (username === 'admin' && password === 'admin') {
+      setAuth({ isLoggedIn: true, role: 'admin' });
+      navigate('/dashboard');
+    } else if (username === 'user' && password === 'user') {
+      setAuth({ isLoggedIn: true, role: 'user' });
+      navigate('/dashboard');
+
     } else {
-      setError('Invalid username or password');
+      alert('Invalid credentials');
     }
   };
 
   return (
-    <div className='flex items-center justify-center min-h-screen bg-gray-100'>
-      <div className='w-full max-w-md bg-white rounded-2xl shadow-lg p-8'>
-        <h2 className='text-2xl font-bold text-center mb-6'>Login</h2>
-
-        {error && <div className='mb-4 text-red-500 text-center font-medium'>{error}</div>}
-
-        <form
-          onSubmit={handleSubmit}
-          className='space-y-4'>
-          <div>
-            <label className='block text-sm font-medium mb-1'>Username</label>
-            <input
-              type='text'
-              name='email'
-              value={formData.email}
-              onChange={handleChange}
-              placeholder='Enter username'
-              required
-              className='w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300'
-            />
-          </div>
-
-          <div>
-            <label className='block text-sm font-medium mb-1'>Password</label>
-            <input
-              type='password'
-              name='password'
-              value={formData.password}
-              onChange={handleChange}
-              placeholder='Enter password'
-              required
-              className='w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300'
-            />
-          </div>
-
-          <button
-            type='submit'
-            className='w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition'>
-            Login
-          </button>
-        </form>
-      </div>
+    <div className='flex h-screen items-center justify-center bg-gray-100'>
+      <form
+        onSubmit={handleLogin}
+        className='bg-white p-6 rounded-lg shadow-md w-80'>
+        <h2 className='text-2xl font-bold mb-4 text-center'>Login</h2>
+        <input
+          type='text'
+          placeholder='Username'
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className='w-full border px-3 py-2 mb-3 rounded'
+        />
+        <input
+          type='password'
+          placeholder='Password'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className='w-full border px-3 py-2 mb-3 rounded'
+        />
+        <button
+          type='submit'
+          className='w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700'>
+          Login
+        </button>
+      </form>
     </div>
   );
 }
