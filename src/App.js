@@ -5,9 +5,11 @@ import Leads from './Leads';
 import Bookings from './Bookings';
 import Login from './Login';
 import Layout from './Layout';
+import NewCustomerInfo from './NewCustomerInfo';
 import Users from './Users';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
+
 
 export default function App() {
   const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -31,6 +33,10 @@ export default function App() {
               <Route
                 path='/leads'
                 element={<Leads />}
+              />
+              <Route
+                path='/NewCustomer'
+                element={<NewCustomerInfo />}
               />
               <Route
                 path='/bookings'
