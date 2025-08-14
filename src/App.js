@@ -9,6 +9,7 @@ import NewCustomerInfo from './NewCustomerInfo';
 import Users from './Users';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
+import UserDashboard from './UserDashboard';
 
 
 export default function App() {
@@ -28,7 +29,7 @@ export default function App() {
               }>
               <Route
                 path='/dashboard'
-                element={<Dashboard />}
+                element={<UserDashboard />}
               />
               <Route
                 path='/leads'
