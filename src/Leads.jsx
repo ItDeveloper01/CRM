@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function Leads() {
   const [leads, setLeads] = useState([
@@ -20,11 +21,11 @@ export default function Leads() {
     <div>
       <div className='flex justify-between items-center mb-4'>
         <h2 className='text-xl font-semibold'>Leads</h2>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'>
-          + Add Lead
-        </button>
+        <Link to='/LeadsGeneration'>
+          <button className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700'>
+            + Add Lead
+          </button>
+        </Link>
       </div>
 
       {/* Leads Table */}
@@ -52,56 +53,6 @@ export default function Leads() {
           </tbody>
         </table>
       </div>
-
-      {/* Add Lead Modal */}
-      {isModalOpen && (
-        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50'>
-          <div className='bg-white p-6 rounded-lg shadow w-96'>
-            <h2 className='text-lg font-semibold mb-4'>Add Lead</h2>
-            <form
-              onSubmit={addLead}
-              className='space-y-4'>
-              <input
-                type='text'
-                placeholder='Name'
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className='w-full border px-3 py-2 rounded'
-                required
-              />
-              <input
-                type='email'
-                placeholder='Email'
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className='w-full border px-3 py-2 rounded'
-                required
-              />
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                className='w-full border px-3 py-2 rounded'>
-                <option>New</option>
-                <option>Contacted</option>
-                <option>Qualified</option>
-              </select>
-              <div className='flex justify-end gap-2'>
-                <button
-                  type='button'
-                  onClick={() => setIsModalOpen(false)}
-                  className='px-4 py-2 border rounded'>
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  className='px-4 py-2 bg-blue-600 text-white rounded'>
-                  Save
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

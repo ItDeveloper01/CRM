@@ -7,9 +7,9 @@ import Login from './Login';
 import Layout from './Layout';
 import NewCustomerInfo from './NewCustomerInfo';
 import Users from './Users';
+import LeadsGeneration from './LeadsGeneration';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
-
 
 export default function App() {
   const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -39,8 +39,8 @@ export default function App() {
                 element={<NewCustomerInfo />}
               />
               <Route
-                path='/bookings'
-                element={<Bookings />}
+                path='/LeadsGeneration'
+                element={<LeadsGeneration />}
               />
 
               {/* ✅ Users List */}
@@ -52,7 +52,6 @@ export default function App() {
                   </AdminRoute>
                 }
               />
-
               {/* ✅ User Creation inside same Layout */}
               <Route
                 path='/users/create'
