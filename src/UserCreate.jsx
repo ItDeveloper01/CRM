@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ArrowLeft from './arrow-left.png';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import config from './config';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -73,7 +74,7 @@ export default function UserCreate() {
       return;
     }
     try {
-      await axios.post('http://192.168.1.19:5000/api/users', updatedData);
+      await axios.post(config.apiUrl + '/users', updatedData);
       alert('✅ User created successfully!');
       navigate('/users');
     } catch (error) {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import config from './config';
 import axios from 'axios';
 
 export default function Login({ setAuth }) {
@@ -21,7 +22,9 @@ export default function Login({ setAuth }) {
       password: password,
     };
     try {
-      const APIURL = 'http://192.168.1.19:5000/api/users/login';
+      console.log('config APIURL ', config.API_URL);
+      const APIURL = config.apiUrl + '/users/login';
+      console.log(APIURL);
       const res = await axios.post(APIURL, formdata);
       console.log('res', res);
       // Save userId to localStorage for later API calls
