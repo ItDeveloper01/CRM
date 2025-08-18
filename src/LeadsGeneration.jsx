@@ -1,3 +1,4 @@
+import AirTicketingScreen from './AirTicketing';
 import PhoneField from './PhoneInput';
 import { useState } from 'react';
 
@@ -243,37 +244,7 @@ export default function LeadForm() {
       case 'Air Ticketing':
         return (
           <>
-            <label className='font-medium text-gray-700 mb-1 block'>From</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='from'
-              placeholder='From'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>To</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='to'
-              placeholder='To'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Departure Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='departureDate'
-              type='date'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Return Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='returnDate'
-              type='date'
-              onChange={handleChange}
-            />
+            <AirTicketingScreen></AirTicketingScreen>
           </>
         );
       case 'Car Rentals':

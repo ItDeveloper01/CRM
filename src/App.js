@@ -71,12 +71,8 @@ export default function App() {
         ) : (
           <>
             <Route
-              path='/login'
+              path='/'
               element={<Login setAuth={setAuth} />}
-            />
-            <Route
-              path='*'
-              element={<Navigate to='/login' />}
             />
           </>
         )}

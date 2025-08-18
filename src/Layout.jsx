@@ -10,7 +10,10 @@ export default function Layout({ auth, setAuth }) {
         setAuth={setAuth}
       />
       <div className='flex-1 flex flex-col'>
-        <Navbar />
+        <Navbar
+          auth={auth}
+          setAuth={setAuth}
+        />
         <main className='p-6 overflow-y-auto'>
           <Outlet />
         </main>

@@ -32,6 +32,12 @@ export default function Sidebar({ auth, setAuth }) {
           {sidebarOpen && 'Leads'}
         </Link>
 
+        <Link
+          to='/NewCustomer'
+          className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
+          {sidebarOpen && 'New Customer'}
+        </Link>
+
         {/* <Link
           to='/Customers'
           className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
@@ -47,13 +53,6 @@ export default function Sidebar({ auth, setAuth }) {
             {sidebarOpen && 'Users'}
           </Link>
         )}
-
-        <button
-          onClick={() => setAuth({ isLoggedIn: false, role: null })}
-          className='flex items-center gap-3 p-2 rounded hover:bg-red-100 w-full text-red-600'>
-          <LogOut size={20} />
-          {sidebarOpen && 'Logout'}
-        </button>
       </nav>
     </div>
   );
