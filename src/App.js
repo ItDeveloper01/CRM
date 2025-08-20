@@ -10,6 +10,9 @@ import Users from './Users';
 import LeadsGeneration from './LeadsGeneration';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
+import UserDashboard from './UserDashboard';
+import UserDashboardTemp from './UserDashboardTemp';
+import LeadsUpdateForms from "./LeadsUpdateForms"
 
 export default function App() {
   const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -28,7 +31,7 @@ export default function App() {
               }>
               <Route
                 path='/dashboard'
-                element={<Dashboard />}
+                element={<UserDashboardTemp />}
               />
               <Route
                 path='/leads'
@@ -73,6 +76,12 @@ export default function App() {
             <Route
               path='/'
               element={<Login setAuth={setAuth} />}
+            />
+
+            <Route path="/updateLeads/:id" element={<LeadsUpdateForms />} />
+            <Route
+              path='*'
+              element={<Navigate to='/login' />}
             />
           </>
         )}
