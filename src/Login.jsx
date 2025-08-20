@@ -21,7 +21,7 @@ export default function Login({ setAuth }) {
       password: password,
     };
     try {
-      const APIURL = 'http://192.168.1.19:5000/api/users/login';
+      const APIURL = 'http://192.168.1.2:5000/api/users/login';
       const res = await axios.post(APIURL, formdata);
       console.log('res', res);
       // Save userId to localStorage for later API calls

@@ -73,7 +73,7 @@ export default function UserCreate() {
       return;
     }
     try {
-      await axios.post('http://192.168.1.19:5000/api/users', updatedData);
+      await axios.post('http://192.168.1.2:5000/api/users', updatedData);
       alert('✅ User created successfully!');
       navigate('/users');
     } catch (error) {

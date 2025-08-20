@@ -1,5 +1,9 @@
 import PhoneField from './PhoneInput';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import LeadVisa from './LeadVisa';
+
+
+
 
 export default function LeadForm() {
   const [category, setCategory] = useState('');
@@ -10,6 +14,8 @@ export default function LeadForm() {
   const [formData, setFormData] = useState({});
 
   const [countries, setCountries] = useState([]);
+  const [countrycode, setCountryCode] = useState([]);
+
 
   const [errors, setErrors] = useState({});
 
@@ -39,9 +45,45 @@ export default function LeadForm() {
     'Social Media',
   ];
   const enquiryModes = ['WalkIn', 'Telephonic', 'Email', 'Social Media'];
+  //FEtch Country Code
+  useEffect(() => {
+
+    console.log("Country COde Loaded...");
+    fetch("https://restcountries.com/v3.1/all")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Country Code : ", data);
+        setCountryCode(data.data || []);
+      })
+      .catch((err) => console.error("Error fetching country code:", err));
+  }, []);
+  // Fetch countries
+  useEffect(() => {
+    fetch("https://countriesnow.space/api/v0.1/countries/positions")
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Countries Data : ", data);
+        setCountries(data.data || []);
+      })
+      .catch((err) => console.error("Error fetching countries:", err));
+  }, []);
+
+  // City → Area mapping
+  const cityAreas = {
+    Pune: ["Kothrud", "Karvenagar", "Nigdi", "Bhosari", "Deccan"],
+    Mumbai: ["Andheri", "Borivali", "Dadar", "Bandra", "Kurla"],
+    Aurangabad: ["Cidco", "Nirala Bazar", "Garkheda", "Waluj"],
+    Kolhapur: ["Shahupuri", "Laxmipuri", "Rajaram Puri"],
+    Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
+  };
+
+
+
+
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
   };
 
   const renderCategoryFields = () => {
@@ -106,7 +148,7 @@ export default function LeadForm() {
               <div className='flex flex-col flex-1'>
                 <label className='font-medium text-gray-700 mb-1'>Travel Date</label>
                 <input
-                  className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                 className={`country-select`}
                   name='travelDate'
                   type='date'
                   placeholder='Travel Date'
@@ -118,7 +160,7 @@ export default function LeadForm() {
               <div className='flex flex-col flex-1'>
                 <label className='font-medium text-gray-700 mb-1'>Destination</label>
                 <input
-                  className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                 className={`country-select`}
                   name='destinations'
                   placeholder='Destinations'
                   onChange={handleChange}
@@ -132,7 +174,7 @@ export default function LeadForm() {
                 <label className='font-medium text-gray-700 mb-1'>No of Adults</label>
                 <input
                   type='number'
-                  className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                 className={`country-select`}
                   name='noOfAdults'
                   placeholder='Adults'
                   onChange={handleChange}
@@ -144,7 +186,7 @@ export default function LeadForm() {
                 <label className='font-medium text-gray-700 mb-1'>No of Children</label>
                 <input
                   type='number'
-                  className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                 className={`country-select`}
                   name='noOfChildren'
                   placeholder='Children'
                   onChange={handleChange}
@@ -156,7 +198,7 @@ export default function LeadForm() {
                 <label className='font-medium text-gray-700 mb-1'>No of Infants</label>
                 <input
                   type='number'
-                  className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+                 className={`country-select`}
                   name='noOfInfants'
                   placeholder='Infants'
                   onChange={handleChange}
@@ -177,31 +219,13 @@ export default function LeadForm() {
         );
       case 'Visa':
         return (
-          <>
-            <label className='font-medium text-gray-700 mb-1 block'>Country</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='country'
-              placeholder='Country'
-              onChange={handleChange}
-            />
 
-            <label className='font-medium text-gray-700 mb-1 block'>Visa Type</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='visaType'
-              placeholder='Visa Type'
-              onChange={handleChange}
-            />
+          <LeadVisa formData={formData}
+            countries={countries}
+            handleChange={handleChange}
+          />
 
-            {/* <label className='font-medium text-gray-700 mb-1 block'>Travel Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='travelDate'
-              type='date'
-              onChange={handleChange}
-            /> */}
-          </>
+
         );
       case 'MICE':
         return (
@@ -323,7 +347,7 @@ export default function LeadForm() {
 
   return (
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
-      <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>Travel Lead Form</h2>
+      <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>Lead Generation Form</h2>
       {/* Customer Details Section */}
       <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
         <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Customer Details</h3>
@@ -333,7 +357,7 @@ export default function LeadForm() {
           <div className='flex flex-col flex-1'>
             <label className='font-medium text-gray-700 mb-1'>Mobile Number</label>
             <input
-              className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+             className={`country-select`}
               name='phone'
               placeholder='Mobile Number'
               onChange={handleChange}
@@ -344,7 +368,7 @@ export default function LeadForm() {
           <div className='flex flex-col flex-1'>
             <label className='font-medium text-gray-700 mb-1'>Email</label>
             <input
-              className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+             className={`country-select`}
               name='email'
               type='email'
               placeholder='Email Address'
@@ -359,7 +383,7 @@ export default function LeadForm() {
           <div className='flex flex-col w-28'>
             <label className='font-medium text-gray-700 mb-1'>Title</label>
             <select
-              className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+             className={`country-select`}
               name='title'
               onChange={handleChange}>
               <option value=''>Title</option>
@@ -375,20 +399,10 @@ export default function LeadForm() {
           <div className='flex flex-col flex-1'>
             <label className='font-medium text-gray-700 mb-1'>First Name</label>
             <input
-              className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+              className={`country-select`}
+              // className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
               name='firstName'
               placeholder='First Name'
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Last Name */}
-          <div className='flex flex-col flex-1'>
-            <label className='font-medium text-gray-700 mb-1'>Last Name</label>
-            <input
-              className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='lastName'
-              placeholder='Last Name'
               onChange={handleChange}
             />
           </div>
@@ -397,43 +411,129 @@ export default function LeadForm() {
           <div className='flex flex-col flex-1'>
             <label className='font-medium text-gray-700 mb-1'>Middle Name</label>
             <input
-              className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+              className={`country-select`}
               name='middleName'
               placeholder='Middle Name'
               onChange={handleChange}
             />
           </div>
+
+          {/* Last Name */}
+          <div className='flex flex-col flex-1'>
+            <label className='font-medium text-gray-700 mb-1'>Last Name</label>
+            <input
+              className={`country-select`}
+              name='lastName'
+              placeholder='Last Name'
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+        {/* Birthdate + Gender + City + Area */}
+        <div className='flex gap-4 mb-4'>
+          {/* Birthdate */}
+          <div className='flex flex-col flex-1'>
+            <label className='font-medium text-gray-700 mb-1'>Birthdate</label>
+            <input
+              type='date'
+             className={`country-select`}
+              name='birthdate'
+              onChange={handleChange}
+            />
+          </div>
+
+          {/* Gender */}
+          <div className='flex flex-col flex-1'>
+            <label className='font-medium text-gray-700 mb-1'>Gender</label>
+            <select
+             className={`country-select`}
+              name='gender'
+              onChange={handleChange}>
+              <option value=''>Select Gender</option>
+              <option value='Male'>Male</option>
+              <option value='Female'>Female</option>
+
+            </select>
+          </div>
+
+         
+            {/* City */}
+            <div className="flex flex-col flex-1">
+              <label className="font-medium text-gray-700 mb-1">City</label>
+              <select
+                className={`country-select`}
+                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+              >
+                <option value="">Select City</option>
+                {Object.keys(cityAreas).map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Area */}
+            <div className="flex flex-col flex-1">
+              <label className="font-medium text-gray-700 mb-1">Area</label>
+              <select
+                className={`country-select`}
+                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                name="area"
+                value={formData.area}
+                onChange={handleChange}
+                disabled={!formData.city} // disable until city selected
+              >
+                <option value="">Select Area</option>
+                {formData.city &&
+                  cityAreas[formData.city].map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+              </select>
+            </div>
+        
+          {/* City */}
+          {/* <div className='flex flex-col flex-1'>
+            <label className='font-medium text-gray-700 mb-1'>City</label>
+            <select
+             className={`country-select`}
+              name='city'
+              onChange={handleChange}>
+              <option value=''>Select City</option>
+              <option value='Pune'>Pune</option>
+              <option value='Mumbai'>Mumbai</option>
+              <option value='Aurangabad'>Aurangabad</option>
+              <option value='Kolhapur'>Kolhapur</option>
+              <option value='Ahmdabad'>Ahemdabad</option>
+            </select>
+          </div> */}
+
+          {/* Area */}
+          {/* <div className='flex flex-col flex-1'>
+            <label className='font-medium text-gray-700 mb-1'>Area</label>
+            <select
+             className={`country-select`}
+              name='area'
+              onChange={handleChange}>
+              <option value=''>Select Area</option>
+             
+            </select>
+          </div> */}
         </div>
       </div>
 
       <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-      <div className='flex gap-4'>
-        {/* Category */}
-        <div className='flex flex-col flex-1'>
-          <label className='font-medium text-gray-700 mb-1'>Category</label>
-          <select
-            className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setHolidayType('');
-            }}>
-            <option value=''>Select Category</option>
-            {categories.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Email */}
+      <div className="flex gap-4">
+        {/* Enquiry Mode */}
         <div className='flex flex-col flex-1'>
           <label className='font-medium text-gray-700 mb-1'>Enquiry mode</label>
           <select
-            className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+           className={`country-select`}
             value={enquiryMode}
             onChange={(e) => {
               setEnquiryMode(e.target.value);
@@ -450,11 +550,11 @@ export default function LeadForm() {
           </select>
         </div>
 
-        {/* Phone */}
+        {/* Enquiry Source */}
         <div className='flex flex-col flex-1'>
           <label className='font-medium text-gray-700 mb-1'>Enquiry Source</label>
           <select
-            className='w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
+           className={`country-select`}
             value={enquirySource}
             onChange={(e) => {
               setEnquirySource(e.target.value);
@@ -470,6 +570,89 @@ export default function LeadForm() {
             ))}
           </select>
         </div>
+
+        {/* Customer Type */}
+        <div className="flex-1">
+          <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
+          <select
+            className={`country-select`}
+            // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            name="purpose"
+            onChange={handleChange}
+          >
+            <option value="">Select</option>
+            <option value="VVIP">VVIP</option>
+            <option value="VIP">VIP</option>
+            <option value="Miser">Miser</option>
+            <option value="Friends">Friends</option>
+            <option value="Family">Family</option>
+          </select>
+        </div>
+      </div>
+
+      <div className='flex gap-4'>
+        {/* Category */}
+        <div className='flex flex-col flex-1'>
+          <label className='font-medium text-gray-700 mb-1'>Category</label>
+          <select
+           className={`country-select`}
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setHolidayType('');
+            }}>
+            <option value=''>Select Category</option>
+            {categories.map((cat) => (
+              <option
+                key={cat}
+                value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Enquiry Mode */}
+        {/* <div className='flex flex-col flex-1'>
+          <label className='font-medium text-gray-700 mb-1'>Enquiry mode</label>
+          <select
+           className={`country-select`}
+            value={enquiryMode}
+            onChange={(e) => {
+              setEnquiryMode(e.target.value);
+              setHolidayType('');
+            }}>
+            <option value=''>Select Mode</option>
+            {enquiryModes.map((cat) => (
+              <option
+                key={cat}
+                value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div> */}
+
+        {/* Enquiry Source */}
+        {/* <div className='flex flex-col flex-1'>
+          <label className='font-medium text-gray-700 mb-1'>Enquiry Source</label>
+          <select
+           className={`country-select`}
+            value={enquirySource}
+            onChange={(e) => {
+              setEnquirySource(e.target.value);
+              setHolidayType('');
+            }}>
+            <option value=''>Select Source</option>
+            {enquirySources.map((cat) => (
+              <option
+                key={cat}
+                value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div> */}
       </div>
 
       {/* Conditional fields */}
@@ -526,11 +709,58 @@ export default function LeadForm() {
 
       {renderCategoryFields()}
 
-      <button
+
+      <div className="flex justify-between items-center mt-6 gap-4">
+        {/* Generate Lead Button */}
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+        >
+          Generate Lead
+        </button>
+
+        {/* Follow Up Date Inline */}
+        <div className="flex items-center gap-2">
+          <label htmlFor="followupDate" className="font-medium text-gray-600 whitespace-nowrap">
+            Follow Up Date :
+          </label>
+          <input
+            type="date"
+            id="followupDate"
+            name="followupDate"
+            onChange={handleChange}
+            className={`country-select`}
+            // className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      </div>
+
+      {/* <div className="flex flex-col gap-4"> */}
+      {/* Follow Up Date */}
+      {/* <div className="flex flex-col w-60"> 
+          <label
+            htmlFor="followupDate"
+            className="font-medium text-gray-600 mb-1"
+          >
+            Follow Up Date :
+          </label>
+          <input
+            type="date"
+            id="followupDate"
+            name="followupDate"
+            onChange={handleChange}
+            className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+      </div> */}
+
+
+      {/* Generate Lead Button  */}
+      {/* <button
         onClick={handleSubmit}
         className='justify-between items-center mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition'>
-        Submit Lead
-      </button>
+        Generate Lead
+      </button> */}
     </div>
   );
 }
