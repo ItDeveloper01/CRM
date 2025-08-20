@@ -1,0 +1,11 @@
+/* Default dropdown style */
+.country-select {
+    
+     @apply w-full rounded-lg p-2 focus:outline-none focus:ring-2 bg-white border border-gray-300;
+  /* @apply w-full rounded-lg p-2 focus:outline-none focus:ring-2 bg-white border border-gray-300;      Note:Its perfect style for country */  
+}
+
+/* When a country is selected */
+.country-select.selected {
+  @apply bg-blue-100 border-blue-500;
+}
