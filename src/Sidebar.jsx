@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function Sidebar({ auth, setAuth }) {
+  console.log('auth', auth);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -31,14 +32,14 @@ export default function Sidebar({ auth, setAuth }) {
           {sidebarOpen && 'Leads'}
         </Link>
 
-        <Link
-          to='/bookings'
+        {/* <Link
+          to='/Customers'
           className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
           <CalendarCheck size={20} />
-          {sidebarOpen && 'Bookings'}
+          {sidebarOpen && 'Customers'}
         </Link>
-
-        {auth.role === 'admin' && (
+ */}
+        {(auth.role === 'admin' || auth.role === 'Super Admin') && (
           <Link
             to='/users'
             className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>

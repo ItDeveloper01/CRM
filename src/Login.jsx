@@ -1,25 +1,41 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Login({ setAuth }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [userId, setUserId] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     console.log('user', username);
     console.log('pass:', password);
     e.preventDefault();
 
-    if (username === 'admin' && password === 'admin') {
-      setAuth({ isLoggedIn: true, role: 'admin' });
+    debugger;
+    setError('');
+    const formdata = {
+      userId: username,
+      password: password,
+    };
+    try {
+      const APIURL = 'http://192.168.1.2:5000/api/users/login';
+      const res = await axios.post(APIURL, formdata);
+      console.log('res', res);
+      // Save userId to localStorage for later API calls
+      localStorage.setItem('loggedInUser', res.data.userId);
+      setAuth({ isLoggedIn: true, role: res.data.role });
+      // alert('Login successful!');
+      // Redirect to dashboard (if using React Router)
       navigate('/dashboard');
-    } else if (username === 'user' && password === 'user') {
-      setAuth({ isLoggedIn: true, role: 'user' });
-      navigate('/dashboard');
-
-    } else {
-      alert('Invalid credentials');
+    } catch (err) {
+      if (err.response && err.response.data) {
+        setError(err.response.data);
+      } else {
+        setError('Invalid credentials');
+      }
     }
   };
 

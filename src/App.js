@@ -7,10 +7,12 @@ import Login from './Login';
 import Layout from './Layout';
 import NewCustomerInfo from './NewCustomerInfo';
 import Users from './Users';
+import LeadsGeneration from './LeadsGeneration';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
 import UserDashboard from './UserDashboard';
-
+import UserDashboardTemp from './UserDashboardTemp';
+import LeadsUpdateForms from "./LeadsUpdateForms"
 
 export default function App() {
   const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -29,7 +31,7 @@ export default function App() {
               }>
               <Route
                 path='/dashboard'
-                element={<UserDashboard />}
+                element={<UserDashboardTemp />}
               />
               <Route
                 path='/leads'
@@ -40,8 +42,8 @@ export default function App() {
                 element={<NewCustomerInfo />}
               />
               <Route
-                path='/bookings'
-                element={<Bookings />}
+                path='/LeadsGeneration'
+                element={<LeadsGeneration />}
               />
 
               {/* ✅ Users List */}
@@ -53,7 +55,6 @@ export default function App() {
                   </AdminRoute>
                 }
               />
-
               {/* ✅ User Creation inside same Layout */}
               <Route
                 path='/users/create'
@@ -76,6 +77,8 @@ export default function App() {
               path='/login'
               element={<Login setAuth={setAuth} />}
             />
+
+            <Route path="/updateLeads/:id" element={<LeadsUpdateForms />} />
             <Route
               path='*'
               element={<Navigate to='/login' />}

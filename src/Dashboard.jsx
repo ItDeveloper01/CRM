@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, UserPlus, CalendarCheck, LogOut, X} from 'lucide-react';
+import { Menu, UserPlus, CalendarCheck, LogOut, X } from 'lucide-react';
 import { redirect } from 'react-router-dom';
 
 export default function Dashboard({ setIsLoggedIn }) {
@@ -27,9 +27,7 @@ export default function Dashboard({ setIsLoggedIn }) {
 
   // Form Data
   const [newLead, setNewLead] = useState({ name: '', email: '', status: 'New' });
-  const [newBooking, setNewBooking
-
-  ] = useState({
+  const [newBooking, setNewBooking] = useState({
     customer: '',
     tour: '',
     date: '',
@@ -61,11 +59,11 @@ export default function Dashboard({ setIsLoggedIn }) {
             className='mb-8'>
             <div className='flex justify-between items-center mb-4'>
               <h2 className='text-lg font-semibold'>Lead Generation</h2>
-              <button
-                onClick={() => setShowLeadModal(true)}
-                className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'>
-                + Add New Lead
-              </button>
+              <Link to='/LeadsGeneration'>
+                <button className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'>
+                  + Add New Lead
+                </button>
+              </Link>
             </div>
             <div className='bg-white rounded-lg shadow overflow-x-auto'>
               <table className='min-w-full text-sm text-left'>
@@ -92,137 +90,8 @@ export default function Dashboard({ setIsLoggedIn }) {
               </table>
             </div>
           </section>
-
-          {/* Bookings Section */}
-          <section id='bookings'>
-            <div className='flex justify-between items-center mb-4'>
-              <h2 className='text-lg font-semibold'>Customers</h2>
-              <Link  to='/NewCustomer'>
-              <button 
-                className='px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700'>
-                + New Customer
-              </button> 
-              </Link>
-            </div>
-            <div className='bg-white rounded-lg shadow overflow-x-auto'>
-              <table className='min-w-full text-sm text-left'>
-                <thead className='bg-gray-100 text-gray-700 uppercase'>
-                  <tr>
-                    <th className='px-4 py-2'>Customer ID</th>
-                    <th className='px-4 py-2'>Customer</th>
-                    <th className='px-4 py-2'>Tour</th>
-                    <th className='px-4 py-2'>Date</th>
-                    <th className='px-4 py-2'>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bookings.map((booking) => (
-                    <tr
-                      key={booking.id}
-                      className='border-b hover:bg-gray-50'>
-                      <td className='px-4 py-2'>{booking.id}</td>
-                      <td className='px-4 py-2'>{booking.customer}</td>
-                      <td className='px-4 py-2'>{booking.tour}</td>
-                      <td className='px-4 py-2'>{booking.date}</td>
-                      <td className='px-4 py-2'>{booking.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
         </main>
       </div>
-
-      {/* Lead Modal */}
-      {showLeadModal && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-          <div className='bg-white rounded-lg shadow-lg w-96 p-6 relative'>
-            <button
-              onClick={() => setShowLeadModal(false)}
-              className='absolute top-3 right-3 text-gray-500 hover:text-black'>
-              <X size={20} />
-            </button>
-            <h2 className='text-lg font-bold mb-4'>Add New Lead</h2>
-            <input
-              type='text'
-              placeholder='Name'
-              value={newLead.name}
-              onChange={(e) => setNewLead({ ...newLead, name: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'
-            />
-            <input
-              type='email'
-              placeholder='Email'
-              value={newLead.email}
-              onChange={(e) => setNewLead({ ...newLead, email: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'
-            />
-            <select
-              value={newLead.status}
-              onChange={(e) => setNewLead({ ...newLead, status: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'>
-              <option>New</option>
-              <option>Contacted</option>
-              <option>Converted</option>
-            </select>
-            <button
-              onClick={addLead}
-              className='w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700'>
-              Save Lead
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Booking Modal */}
-      {showBookingModal && (
-         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center'>
-          <div className='bg-white rounded-lg shadow-lg w-96 p-6 relative'>
-            <button
-              onClick={() => setShowBookingModal(false)}
-              className='absolute top-3 right-3 text-gray-500 hover:text-black'>
-              <X size={20} />
-              
-            </button>
-            <h2 className='text-lg font-bold mb-4'>New Booking</h2>
-            <input
-              type='text'
-              placeholder='Customer Name'
-              value={newBooking.customer}
-              onChange={(e) => setNewBooking({ ...newBooking, customer: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'
-            />
-            <input
-              type='text'  
-              placeholder='Tour Name' 
-              
-              value={newBooking.tour}
-              onChange={(e) => setNewBooking({ ...newBooking, tour: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'
-            />
-            <input
-              type='date'
-              value={newBooking.date}
-              onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'
-            />
-            <select
-              value={newBooking.status}
-              onChange={(e) => setNewBooking({ ...newBooking, status: e.target.value })}
-              className='w-full mb-3 p-2 border rounded'>
-              <option>Pending</option>
-              <option>Confirmed</option>
-              <option>Cancelled</option>
-            </select>
-            <button
-              onClick={addBooking}
-              className='w-full bg-green-600 text-white py-2 rounded hover:bg-green-700'>
-              Save Booking
-            </button>
-          </div>
-        </div> 
-      )}
     </div>
   );
 }
