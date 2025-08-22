@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import axios from "axios";
 import LeadsTable from "./LeadsTable";
 import LeadTiles from "./DashboardTiles";
+import config from "./config";
 
 /* ---------- Helpers ---------- */
 
@@ -67,33 +68,31 @@ export default function UserDashboardTemp() {
   const [followPage, setFollowPage] = useState(1);
   const rowsPerPage = 5;
 
+  const LEADAPIURL = config.apiUrl + '/Leads/';
+  const GetLeadsDashboardCounts = LEADAPIURL + 'GetLeadsDashboardCounts';
+  const GetActiveLeads = LEADAPIURL + 'GetActiveLeads';
+  const GetFollowUpLeads = LEADAPIURL + 'GetFollowUpLead';
+  const GetTodaysLeads = LEADAPIURL + 'GetTodaysLead';
+
 
 /* ---------- Fetch Data from API ---------- */
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await axios.get(
-          "http://192.168.1.14:5000/api/Leads/GetLeadsDashboardCounts"
-        );
-
+        const res = await axios.get(GetLeadsDashboardCounts);
 
         debugger;
-        // Set lead lists
-       // setActiveLeads(res.data.activeList || []);
-        //setFollowLeads(res.data.followUpList || []);
-
+       
         // Set tile counts directly from API
-         setTileCounts({
-           TotalCount: res.data.totalLeads || 0,
-           //ActiveCount: res.data.activeLeads || 0, // Open Leads
-           LostCount: res.data.lostLeads || 0,
-           ConfirmedCount: res.data.confirmedLeads || 0,
-           OpenCount:res.data.openleads||0,
-           PostponedCount:res.data.postponedLeads||0
-         });
+         setTileCounts({ TotalCount: res.data.totalLeads || 0,  LostCount: res.data.lostLeads || 0, ConfirmedCount: res.data.confirmedLeads || 0, OpenCount:res.data.openleads||0,
+          PostponedCount:res.data.postponedLeads||0    });
 
         // Set categories if provided
-        if (res.data.categories) setCategories(res.data.categories);
+        if (res.data.categories) 
+             setCategories(res.data.categories);
+      
+         console.log("Tile Counts...:", res.data);
+       
       } catch (err) {
         console.error("Error fetching leadscounts:", err);
       }
@@ -105,17 +104,25 @@ export default function UserDashboardTemp() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const activeRes = await axios.get("http://192.168.1.14:5000/api/Leads/GetTodaysLead");
+
+        const activeRes = await axios.get(GetTodaysLeads);
         setActiveLeads(activeRes.data || []);
-        const followRes = await axios.get("http://192.168.1.14:5000/api/Leads/GetFollowUpLead");
+        const followRes = await axios.get(GetFollowUpLeads);
         setFollowLeads(followRes.data || []);
+      
+      console.log("Active Leads...:", activeRes.data);
+      
+      console.log("Follow Up Leads...:", followRes.data);
+      
       } catch (err) {
 
         debugger;
-        console.error("Error fetching Active and Follow Up leads:", err);
+        console.error("Error fetching Active and Follow Up leads...:", err);
       }
     }
+
     fetchData();
+
   }, []);
 
   const activeByInterval = useMemo(
@@ -192,30 +199,6 @@ export default function UserDashboardTemp() {
       {/* Tiles Section */}
         <LeadTiles tileCounts={tileCounts} />
 
-      {/* Filters Section */}
-      {/* <div className="flex items-center space-x-4">
-        <select value={progressInterval} onChange={(e) => handleIntervalChange(e.target.value)} className="border p-2 rounded">
-          <option value="">All</option>
-          <option value="today">Today</option>
-          <option value="lastWeek">Last Week</option>
-          <option value="lastMonth">Last Month</option>
-        </select>
-
-        <select value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="border p-2 rounded">
-          <option value="All">All</option>
-          <option value="Confirmed">Confirmed</option>
-          <option value="Postponed">Postponed</option>
-          <option value="Lost">Lost</option>
-        </select>
-
-        <select value={activeCategory} onChange={(e) => setActiveCategory(e.target.value)} className="border p-2 rounded">
-          <option value="">All Categories</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-      </div> */}
-
       {/* Active Leads Table */}
       <LeadsTable
         activeLeads={activeLeads}
@@ -223,6 +206,7 @@ export default function UserDashboardTemp() {
         showFollowUp={showFollowUp}
         toggleSort={toggleSort}
       />
+      
     </div>
   );
 }

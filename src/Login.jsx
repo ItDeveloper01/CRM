@@ -24,7 +24,13 @@ export default function Login({ setAuth }) {
     try {
       console.log('config APIURL ', config.API_URL);
       const APIURL = config.apiUrl + '/users/login';
-      console.log(APIURL);
+      console.log("Connection String to User ...."+APIURL);
+
+      console.log('formdata....:', formdata);
+
+      debugger; 
+
+
       const res = await axios.post(APIURL, formdata);
       console.log('res', res);
       // Save userId to localStorage for later API calls
@@ -32,6 +38,7 @@ export default function Login({ setAuth }) {
       setAuth({ isLoggedIn: true, role: res.data.role });
       // alert('Login successful!');
       // Redirect to dashboard (if using React Router)
+      debugger;
       navigate('/dashboard');
     } catch (err) {
       if (err.response && err.response.data) {
