@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import LeadDetailsModal from "./UpdateLeadsModal"; // Tailwind modal
+import Leadgeneration from "./LeadsGeneration"; // Import the lead generation component
+import UpdateLeadsModal from "./UpdateLeadsModal";
+import { LeadObj } from "./Model/LeadModel";  
+import { getEmptyLeadObj } from "./Model/LeadModel";
+
+
+
 
 /* ---------- CSV Export Function ---------- */
 const exportToCSV = (data, filename) => {
@@ -126,9 +133,11 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
   const rowsPerPage = 5;
   const [activePage, setActivePage] = useState(1);
   const [followPage, setFollowPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState(null);
+  const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+  
 
   const activeVisible = activeLeads.slice(
     (activePage - 1) * rowsPerPage,
@@ -140,6 +149,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
   );
 
   const handleViewClick = (lead) => {
+    console.log("Viewing lead.....:", lead);
     setSelectedLead(lead);
     setModalOpen(true);
   };
@@ -249,7 +259,11 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-500 underline"
-                      onClick={() => handleViewClick(lead)}
+                     onClick={() => {
+                   
+                   
+                  }}
+                      
                     >
                       View Details
                     </button>
@@ -263,13 +277,11 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
       )}
 
       {/* Modal */}
-      {selectedLead && (
-        <LeadDetailsModal
-          isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
-          lead={selectedLead}
-        />
-      )}
+      <UpdateLeadsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        lead={selectedLead}
+      />
     </>
   );
 };

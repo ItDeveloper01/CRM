@@ -4,21 +4,28 @@ import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
 import config from './config';
 import axios from "axios";
+import React from 'react';
+import  { LeadObj } from "../src/Model/LeadModel"; 
+import { getEmptyLeadObj } from "../src/Model/LeadModel"; // adjust path if folder is deeper
+import config from './config';
+import axios from "axios";
 import LeadAirTicketing from './LeadAirTicketing';
 import { LeadObj } from './Model/LeadModel';
 
 
-
-export default function LeadForms( {lead }) {
+export default function LeadsGeneration( {lead }) {
   // initialize form state with empty LeadObj
- 
-  const [leadObj, setLeadObj] = useState(LeadObj);
+  
+  const [leadObj, setLeadObj] = useState({lead});
+
   const [category, setCategory] = useState('');
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState('');
   const [enquiryMode, setEnquiryMode] = useState('');
   const [holidayType, setHolidayType] = useState('');
   const [holidayCategory, setHolidayCategory] = useState('');
+  const [formData, setFormData] = useState({ selectedCategory: "" });
+
   const [formData, setFormData] = useState({ selectedCategory: "" });
 
 
@@ -33,27 +40,18 @@ export default function LeadForms( {lead }) {
 
   const [errors, setErrors] = useState({});
   const [leadcategory, setleadcategory] = useState({});
+
+
   useEffect(() => {
-    if (lead !== null && lead !== undefined) {
-      // ✅ Lead object exists
-      setLeadObj((lead));
-    } else {
- 
-      setLeadObj(null);
-      // ✅ Lead not passed (null/undefined) → use empty object
-      //setFormData(getEmptyLeadObj());
-    }
-  }, [lead]);
-  // const categories = [
-  //   'Holiday',
-  //   'Visa',
-  //   'MICE',
-  //   'Air Ticketing',
-  //   'Car Rentals',
-  //   'Rail Pass',
-  //   'Hotel Booking',
-  //   'Only Sightseeing',
-  // ];
+  if (lead && Object.keys(lead).length > 0) {
+    console.log("Editing lead......:", lead);
+    setLeadObj(lead);
+  } else {
+    console.log("Creating new lead......:");
+    setLeadObj(getEmptyLeadObj());
+  }
+}, [lead]);
+
   const enquirySources = [
     'Referred by client',
     'Repeat Guest',
@@ -97,7 +95,6 @@ export default function LeadForms( {lead }) {
     fetchData();
   }, []);
 
-
   //FEtch Country Code
   useEffect(() => {
 
@@ -131,6 +128,25 @@ export default function LeadForms( {lead }) {
   };
 
 
+  const handleChangeForCategory = (e) => {
+
+    console.log("Category Changed...", formData);
+
+    debugger;
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+
+    }));
+
+
+    if (name === "category") {
+      const var1 = leadcategory[value];
+      setSelectedLeadName(var1);
+      setCategory(value); // ✅ store the key here
+    }
+  };
   const handleChangeForCategory = (e) => {
 
     console.log("Category Changed...", formData);
@@ -252,6 +268,7 @@ export default function LeadForms( {lead }) {
                   name='noOfAdults'
                   placeholder='Adults'
                   onChange={handleChange}
+                  
                 />
               </div>
 
@@ -407,6 +424,7 @@ export default function LeadForms( {lead }) {
               name='phone'
               placeholder='Mobile Number'
               onChange={handleChange}
+              value={leadObj.mobileNo||''}
             />
           </div>
 
@@ -419,6 +437,7 @@ export default function LeadForms( {lead }) {
               type='email'
               placeholder='Email Address'
               onChange={handleChange}
+              value={leadObj.email}
             />
           </div>
         </div>
@@ -451,6 +470,7 @@ export default function LeadForms( {lead }) {
               name='firstName'
               placeholder='First Name'
               onChange={handleChange}
+              value={leadObj.fName}
             />
           </div>
 
@@ -462,6 +482,7 @@ export default function LeadForms( {lead }) {
               name='middleName'
               placeholder='Middle Name'
               onChange={handleChange}
+              value={leadObj.middleName}
             />
           </div>
 
@@ -473,6 +494,7 @@ export default function LeadForms( {lead }) {
               name='lastName'
               placeholder='Last Name'
               onChange={handleChange}
+              value={leadObj.lName} 
             />
           </div>
         </div>
@@ -486,6 +508,7 @@ export default function LeadForms( {lead }) {
               className={`border-highlight`}
               name='birthdate'
               onChange={handleChange}
+              value={leadObj.birthdate}
             />
           </div>
 
@@ -494,8 +517,9 @@ export default function LeadForms( {lead }) {
             <label className='label-style'>Gender</label>
             <select
               className={`border-highlight`}
-              name='gender'
-              onChange={handleChange}>
+              name='gender' 
+              onChange={handleChange}
+              >
               <option value=''>Select Gender</option>
               <option value='Male'>Male</option>
               <option value='Female'>Female</option>
