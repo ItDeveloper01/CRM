@@ -2,15 +2,15 @@
 import PhoneField from './PhoneInput';
 import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
-import config from './config';
+
 import axios from "axios";
 import React from 'react';
 import  { LeadObj } from "../src/Model/LeadModel"; 
 import { getEmptyLeadObj } from "../src/Model/LeadModel"; // adjust path if folder is deeper
 import config from './config';
-import axios from "axios";
+
 import LeadAirTicketing from './LeadAirTicketing';
-import { LeadObj } from './Model/LeadModel';
+
 
 
 export default function LeadsGeneration( {lead }) {
@@ -26,7 +26,7 @@ export default function LeadsGeneration( {lead }) {
   const [holidayCategory, setHolidayCategory] = useState('');
   const [formData, setFormData] = useState({ selectedCategory: "" });
 
-  const [formData, setFormData] = useState({ selectedCategory: "" });
+  
 
 
   const [countries, setCountries] = useState([]);
@@ -147,25 +147,7 @@ export default function LeadsGeneration( {lead }) {
       setCategory(value); // ✅ store the key here
     }
   };
-  const handleChangeForCategory = (e) => {
 
-    console.log("Category Changed...", formData);
-
-    debugger;
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
-
-    }));
-
-
-    if (name === "category") {
-      const var1 = leadcategory[value];
-      setSelectedLeadName(var1);
-      setCategory(value); // ✅ store the key here
-    }
-  };
 
 
   const handleChange = (e) => {
