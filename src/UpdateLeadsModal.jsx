@@ -1,46 +1,54 @@
-import React from "react";
+import { useState } from "react";
+import DemoLeadForm from "./demoLeadGeneration";
 
-const LeadDetailsModal = ({ isOpen, onClose, lead }) => {
-  if (!isOpen || !lead) return null;
+export default function LeadModal() {
+  const [open, setOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+
+  // Save handler
+  const handleSave = (leadData) => {
+    console.log("Saved Lead:", leadData);
+    // call API here if needed
+    setOpen(false); // close modal after save
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-        {/* Modal Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Lead Details</h2>
-          <button
-            className="text-gray-500 hover:text-gray-800"
-            onClick={onClose}
-          >
-            ✕
-          </button>
-        </div>
+    <div className="p-6">
+      {/* Trigger Button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+      >
+        {selectedLead ? "Edit Lead" : "New Lead"}
+      </button>
 
-        {/* Modal Body */}
-        <div className="grid gap-2">
-          <p><strong>ID:</strong> {lead.leadID}</p>
-          <p><strong>First Name:</strong> {lead.fName}</p>
-          <p><strong>Last Name:</strong> {lead.lName}</p>
-          <p><strong>Mobile:</strong> {lead.mobileNo}</p>
-          <p><strong>Destination:</strong> {lead.destination}</p>
-          <p><strong>Status:</strong> {lead.leadStatus}</p>
-          <p><strong>Enquiry Date:</strong> {lead.enquiryDate}</p>
-          {/* Add more fields as needed */}
-        </div>
+      {/* Modal (Dialog) */}
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          {/* Modal Box */}
+          <div className="bg-white rounded-xl shadow-lg max-w-5xl w-full p-6 relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
 
-        {/* Modal Footer */}
-        <div className="mt-4 flex justify-end">
-          <button
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={onClose}
-          >
-            Close
-          </button>
+            {/* Title */}
+            <h2 className="text-2xl font-bold mb-4 text-blue-600">
+              {selectedLead ? "Edit Lead" : "New Lead"}
+            </h2>
+
+            {/* Lead Form inside Modal */}
+            <DemoLeadForm
+              lead={selectedLead || {}}
+              onSubmit={handleSave}
+              onClose={() => setOpen(false)}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
-};
-
-export default LeadDetailsModal;
+}

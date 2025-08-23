@@ -1,11 +1,18 @@
-/* Default dropdown style */
-.country-select {
+/* Box border highlight */
+.border-highlight {
     
      @apply w-full rounded-lg p-2 focus:outline-none focus:ring-2 bg-white border border-gray-300;
-  /* @apply w-full rounded-lg p-2 focus:outline-none focus:ring-2 bg-white border border-gray-300;      Note:Its perfect style for country */  
 }
 
-/* When a country is selected */
-.country-select.selected {
-  @apply bg-blue-100 border-blue-500;
+/* It highlight box after selecting value*/
+.border-highlight.selected {
+  @apply bg-blue-100 border-blue-500;  /*for more details check country selection dropdown or travel date from visa*/
 }
+
+/*Lable size and font this is not for h1-h2-h3 or any header*/
+.label-style{
+  @apply font-medium text-gray-600 mb-0.5 block;          
+  /*@apply font-medium text-gray-700 mb-1               This font style for label inside Customer Details */
+}
+
+
