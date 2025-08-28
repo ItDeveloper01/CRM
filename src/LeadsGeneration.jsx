@@ -1,124 +1,37 @@
-// import AirTicketingScreen from './AirTicketing';
 import PhoneField from './PhoneInput';
 import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
-
+import LeadAirTicketing from './LeadAirTicketing';
 import axios from "axios";
 import React from 'react';
-import  { LeadObj } from "../src/Model/LeadModel"; 
-import { getEmptyLeadObj } from "../src/Model/LeadModel"; // adjust path if folder is deeper
+import { getEmptyLeadObj } from "../src/Model/LeadModel"; 
 import config from './config';
 
-import LeadAirTicketing from './LeadAirTicketing';
-
-
-
-export default function LeadsGeneration( {lead }) {
-  // initialize form state with empty LeadObj
-  
-  const [leadObj, setLeadObj] = useState({lead});
-
-  const [category, setCategory] = useState('');
+export default function LeadsGeneration({ lead }) {
+  const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
+  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [leadCategoryList, setLeadCategoryList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState('');
   const [enquiryMode, setEnquiryMode] = useState('');
-  const [holidayType, setHolidayType] = useState('');
-  const [holidayCategory, setHolidayCategory] = useState('');
-  const [formData, setFormData] = useState({ selectedCategory: "" });
-
-  
-
-
+  const [formData, setFormData] = useState({});
+  const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
+  const [formHeader, setFormHeader] = useState('Lead Generation Form');
   const [countries, setCountries] = useState([]);
-  const [countrycode, setCountryCode] = useState([]);
-
-
-  // const [tripType, setTripType] = useState("domestic");
-  const APIURL = config.apiUrl + '/Leads/';
-  const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
-
-
-  const [errors, setErrors] = useState({});
-  const [leadcategory, setleadcategory] = useState({});
-
-
-  useEffect(() => {
-  if (lead && Object.keys(lead).length > 0) {
-    console.log("Editing lead......:", lead);
-    setLeadObj(lead);
-  } else {
-    console.log("Creating new lead......:");
-    setLeadObj(getEmptyLeadObj());
-  }
-}, [lead]);
+  const [countryCode, setCountryCode] = useState([]);
 
   const enquirySources = [
-    'Referred by client',
-    'Repeat Guest',
-    'Paper Advt',
-    'Paper Advt-Sakal',
-    'Paper Advt-Maharashtra Times',
-    'Paper Advt-Loksatta',
-    'Paper Advt-Lokmat',
-    'Paper Advt-TOI',
-    'Paper Advt-Others',
-    'Corporate',
-    'Other',
-    'Website',
-    'Social Media',
+    'Referred by client','Repeat Guest','Paper Advt','Paper Advt-Sakal','Paper Advt-Maharashtra Times',
+    'Paper Advt-Loksatta','Paper Advt-Lokmat','Paper Advt-TOI','Paper Advt-Others','Corporate',
+    'Other','Website','Social Media'
   ];
   const enquiryModes = ['WalkIn', 'Telephonic', 'Email', 'Social Media'];
-  /* ---------- Fetch Data from API ---------- */
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await axios.get(LeadCategoryAPI);
 
-        debugger;
+  const APIURL = config.apiUrl + '/Leads/';
+  const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
+  const generateLEadAPI = APIURL + "GenerateLead";
+  const updateLeadApi = APIURL + "UpdateLead";
 
-        // Set tile counts directly from API
-        //  setTileCounts({ TotalCount: res.data.totalLeads || 0,  LostCount: res.data.lostLeads || 0, ConfirmedCount: res.data.confirmedLeads || 0, OpenCount:res.data.openleads||0,
-        //   PostponedCount:res.data.postponedLeads||0    });
-
-        // Set categories if provided
-        if (res.data)
-          setleadcategory(res.data);
-
-        debugger;
-        console.log("Lead Category...:", res.data);
-
-      } catch (err) {
-        console.error("Error fetching Leads Category:", err);
-      }
-    }
-
-    fetchData();
-  }, []);
-
-  //FEtch Country Code
-  useEffect(() => {
-
-    console.log("Country COde Loaded...");
-    fetch("https://restcountries.com/v3.1/all")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Country Code : ", data);
-        setCountryCode(data.data || []);
-      })
-      .catch((err) => console.error("Error fetching country code:", err));
-  }, []);
-  // Fetch countries
-  useEffect(() => {
-    fetch("https://countriesnow.space/api/v0.1/countries/positions")
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Countries Data : ", data);
-        setCountries(data.data || []);
-      })
-      .catch((err) => console.error("Error fetching countries:", err));
-  }, []);
-
-  // City → Area mapping
   const cityAreas = {
     Pune: ["Kothrud", "Karvenagar", "Nigdi", "Bhosari", "Deccan"],
     Mumbai: ["Andheri", "Borivali", "Dadar", "Bandra", "Kurla"],
@@ -127,312 +40,125 @@ export default function LeadsGeneration( {lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
-
-  const handleChangeForCategory = (e) => {
-
-    console.log("Category Changed...", formData);
+  // Initialize leadObj on prop change
+  useEffect(() => {
 
     debugger;
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value
 
-    }));
-
-
-    if (name === "category") {
-      const var1 = leadcategory[value];
-      setSelectedLeadName(var1);
-      setCategory(value); // ✅ store the key here
+    if (lead && Object.keys(lead).length > 0) {
+      setLeadObj(lead);
+      setIsUpdateMode(true);
+      setSubmitBtnTxt("Update Lead");
+      setFormHeader("Update Lead Form");
+    } else {
+      setLeadObj(getEmptyLeadObj());
+      setIsUpdateMode(false);
+      setSubmitBtnTxt("Generate Lead");
+      setFormHeader("Lead Generation Form");
     }
+  }, [lead]);
+
+  // Fetch Lead Categories
+  useEffect(() => {
+    const fetchLeadCategories = async () => {
+      try {
+        const res = await axios.get(LeadCategoryAPI);
+        if (res.data) setLeadCategoryList(res.data);
+      } catch (err) {
+        console.error("Error fetching Lead Categories:", err);
+      }
+    };
+    fetchLeadCategories();
+  }, []);
+
+  // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
+  useEffect(() => {
+    if (leadObj.fK_LeadCategoryID && leadCategoryList) {
+      const name = leadCategoryList[leadObj.fK_LeadCategoryID];
+      setSelectedLeadName(name || "");
+    }
+  }, [leadObj.fK_LeadCategoryID, leadCategoryList]);
+
+  // Fetch countries and country codes
+  useEffect(() => {
+    fetch("https://restcountries.com/v3.1/all")
+      .then(res => res.json())
+      .then(data => setCountryCode(data || []))
+      .catch(err => console.error(err));
+
+    fetch("https://countriesnow.space/api/v0.1/countries/positions")
+      .then(res => res.json())
+      .then(data => setCountries(data.data || []))
+      .catch(err => console.error(err));
+  }, []);
+
+  const handleChangeForCategory = (e) => {
+    const val = Number(e.target.value);
+    setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
+    setSelectedLeadName(leadCategoryList[val] || "");
   };
-
-
 
   const handleChange = (e) => {
 
-    debugger;
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    // console.log("formdata.....",formData);
+debugger;
 
+    const { name, value } = e.target;
+    setLeadObj(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const renderCategoryFields = () => {
-    if (selectedLeadName === 'Holiday') {
-      if (holidayType === 'GIT') {
-        return (
-          <>
-            <label className='font-medium text-gray-700 mb-1 block'>Destination</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='destination'
-              placeholder='Destination'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Travel Dates</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='travelDates'
-              type='date'
-              onChange={handleChange}
-            />
-          </>
-        );
-      } else if (holidayType === 'FIT') {
-        return (
-          <>
-            <label className='font-medium text-gray-700 mb-1 block'>Destinations</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='destinations'
-              placeholder='Destinations'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Budget</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='budget'
-              placeholder='Budget'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Preferences</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='preferences'
-              placeholder='Preferences'
-              onChange={handleChange}
-            />
-          </>
-        );
-      }
-    }
-
     switch (selectedLeadName) {
-      case 'Holiday':
-        return (
-          <>
-            <div className='flex gap-4'>
-              {/* Travel Date */}
-              <div className='flex flex-col flex-1'>
-                <label className='font-medium text-gray-700 mb-1'>Travel Date</label>
-                <input
-                  className={`border-highlight`}
-                  name='travelDate'
-                  type='date'
-                  placeholder='Travel Date'
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Destination */}
-              <div className='flex flex-col flex-1'>
-                <label className='font-medium text-gray-700 mb-1'>Destination</label>
-                <input
-                  className={`border-highlight`}
-                  name='destinations'
-                  placeholder='Destinations'
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className='flex gap-4 mt-4'>
-              {/* No of Adults */}
-              <div className='flex flex-col flex-1'>
-                <label className='font-medium text-gray-700 mb-1'>No of Adults</label>
-                <input
-                  type='number'
-                  className={`border-highlight`}
-                  name='noOfAdults'
-                  placeholder='Adults'
-                  onChange={handleChange}
-                  
-                />
-              </div>
-
-              {/* No of Children */}
-              <div className='flex flex-col flex-1'>
-                <label className='font-medium text-gray-700 mb-1'>No of Children</label>
-                <input
-                  type='number'
-                  className={`border-highlight`}
-                  name='noOfChildren'
-                  placeholder='Children'
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* No of Infants */}
-              <div className='flex flex-col flex-1'>
-                <label className='font-medium text-gray-700 mb-1'>No of Infants</label>
-                <input
-                  type='number'
-                  className={`border-highlight`}
-                  name='noOfInfants'
-                  placeholder='Infants'
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div className='flex gap-4 mt-4'>
-              <label className='font-medium text-gray-700 mb-1 block'>Notes</label>
-              <input
-                className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-                name='notes'
-                placeholder='Notes'
-                onChange={handleChange}
-              />
-            </div>
-          </>
-        );
       case 'Visa':
-        return (
-
-          <LeadVisa formData={formData}
-            countries={countries}
-            handleChange={handleChange}
-          />
-
-
-        );
-      case 'MICE':
-        return (
-          <>
-            {/* <label className='font-medium text-gray-700 mb-1 block'>Destination</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='destination'
-              placeholder='Destination'
-              onChange={handleChange}
-            /> */}
-
-            <label className='font-medium text-gray-700 mb-1 block'>No. of Participants</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='participants'
-              type='number'
-              placeholder='No. of Participants'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Event Type</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='eventType'
-              placeholder='Event Type'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Event Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='eventDate'
-              type='date'
-              onChange={handleChange}
-            />
-          </>
-        );
+        return <LeadVisa formData={formData} countries={countries} handleChange={handleChange} />;
       case 'Air Ticketing':
-        return (
-          <>
-            <LeadAirTicketing formData={formData}
-            handleChange={handleChange}
-          />
-          </>
-        );
-      case 'Car Rentals':
-        return (
-          <>
-            <label className='font-medium text-gray-700 mb-1 block'>Pickup Location</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='pickupLocation'
-              placeholder='Pickup Location'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Drop Location</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='dropLocation'
-              placeholder='Drop Location'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>Start Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='startDate'
-              type='date'
-              onChange={handleChange}
-            />
-
-            <label className='font-medium text-gray-700 mb-1 block'>End Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='endDate'
-              type='date'
-              onChange={handleChange}
-            />
-          </>
-        );
+        return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
       default:
         return null;
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Lead Data:', { category, holidayType, ...formData });
+  const handleSubmit = async (e) => {
+
+debugger;
+
+    e.preventDefault();
+    try {
+      if (isUpdateMode) {
+        await axios.put(`${updateLeadApi}/${leadObj.leadID}`, leadObj, { headers: { "Content-Type": "application/json" } });
+        alert("Lead updated successfully!");
+      } else {
+
+        debugger;
+        await axios.post(generateLEadAPI, leadObj, { headers: { "Content-Type": "application/json" } });
+        alert("Lead saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving lead:", error);
+      alert("Error while saving lead.");
+    }
   };
 
   return (
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
-      <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>Lead Generation Form</h2>
-      {/* Customer Details Section */}
+      <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
+      {/* Customer Details */}
       <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
         <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Customer Details</h3>
-
         <div className='flex gap-4 mb-4'>
-          {/* Mobile Number */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Mobile Number</label>
-            <input
-              className={`border-highlight`}
-              name='phone'
-              placeholder='Mobile Number'
-              onChange={handleChange}
-              value={leadObj.mobileNo||''}
-            />
+            <input name='mobileNo' onChange={handleChange} value={leadObj.mobileNo || ''} className='border-highlight' />
           </div>
-
-          {/* Email */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Email</label>
-            <input
-              className={`border-highlight`}
-              name='email'
-              type='email'
-              placeholder='Email Address'
-              onChange={handleChange}
-              value={leadObj.email}
-            />
+            <input name='emailId' type='email' onChange={handleChange} value={leadObj.emailId || ''} className='border-highlight' />
           </div>
         </div>
-
-        {/* Title + Name Fields in One Row */}
         <div className='flex gap-4 mb-4'>
-          {/* Title */}
           <div className='flex flex-col w-28'>
             <label className='label-style'>Title</label>
-            <select
-              className={`border-highlight`}
-              name='title'
-              onChange={handleChange}>
+            <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className='border-highlight'>
               <option value=''>Title</option>
               <option value='Mr.'>Mr.</option>
               <option value='Mrs.'>Mrs.</option>
@@ -441,46 +167,21 @@ export default function LeadsGeneration( {lead }) {
               <option value='Prof.'>Prof.</option>
             </select>
           </div>
-
-          {/* First Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>First Name</label>
-            {/*for here label style = font-abmedium text-gray-700 mb-1 */}
-            <input
-              className={`border-highlight`}
-              // className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='firstName'
-              placeholder='First Name'
-              onChange={handleChange}
-              value={leadObj.fName}
-            />
+            <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} className='border-highlight' />
           </div>
-
-          {/* Middle Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Middle Name</label>
-            <input
-              className={`border-highlight`}
-              name='middleName'
-              placeholder='Middle Name'
-              onChange={handleChange}
-              value={leadObj.middleName}
-            />
+            <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} className='border-highlight' />
           </div>
-
-          {/* Last Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Last Name</label>
-            <input
-              className={`border-highlight`}
-              name='lastName'
-              placeholder='Last Name'
-              onChange={handleChange}
-              value={leadObj.lName} 
-            />
+            <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} className='border-highlight' />
           </div>
         </div>
-        {/* Birthdate + Gender + City + Area */}
+
+         {/* Birthdate + Gender + City + Area */}
         <div className='flex gap-4 mb-4'>
           {/* Birthdate */}
           <div className='flex flex-col flex-1'>
@@ -488,9 +189,9 @@ export default function LeadsGeneration( {lead }) {
             <input
               type='date'
               className={`border-highlight`}
-              name='birthdate'
+              name='birthDate'
               onChange={handleChange}
-              value={leadObj.birthdate}
+              value={leadObj.birthDate}
             />
           </div>
 
@@ -498,10 +199,11 @@ export default function LeadsGeneration( {lead }) {
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Gender</label>
             <select
+              value={leadObj.gender?.trim() || ""}
               className={`border-highlight`}
-              name='gender' 
+              name='gender'
               onChange={handleChange}
-              >
+            >
               <option value=''>Select Gender</option>
               <option value='Male'>Male</option>
               <option value='Female'>Female</option>
@@ -517,7 +219,7 @@ export default function LeadsGeneration( {lead }) {
               className={`border-highlight`}
               // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               name="city"
-              value={formData.city}
+              value={leadObj.city?.trim() || ""}
               onChange={handleChange}
             >
               <option value="">Select City</option>
@@ -536,101 +238,57 @@ export default function LeadsGeneration( {lead }) {
               className={`border-highlight`}
               // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               name="area"
-              value={formData.area}
+              value={leadObj.area?.trim() || ""}
               onChange={handleChange}
-              disabled={!formData.city} // disable until city selected
+              disabled={!leadObj.city} // disable until city selected
             >
               <option value="">Select Area</option>
-              {formData.city &&
-                cityAreas[formData.city].map((area) => (
+              {leadObj.city &&
+                cityAreas[leadObj.city || []].map((area) => (
                   <option key={area} value={area}>
                     {area}
                   </option>
                 ))}
             </select>
           </div>
-
-          {/* City */}
-          {/* <div className='flex flex-col flex-1'>
-            <label className='label-style'>City</label>
-            <select
-             className={`border-highlight`}
-              name='city'
-              onChange={handleChange}>
-              <option value=''>Select City</option>
-              <option value='Pune'>Pune</option>
-              <option value='Mumbai'>Mumbai</option>
-              <option value='Aurangabad'>Aurangabad</option>
-              <option value='Kolhapur'>Kolhapur</option>
-              <option value='Ahmdabad'>Ahemdabad</option>
-            </select>
-          </div> */}
-
-          {/* Area */}
-          {/* <div className='flex flex-col flex-1'>
-            <label className='font-medium text-gray-700 mb-1'>Area</label>
-            <select
-             className={`border-highlight`}
-              name='area'
-              onChange={handleChange}>
-              <option value=''>Select Area</option>
-             
-            </select>
-          </div> */}
         </div>
       </div>
 
+      {/* Lead Details */}
       <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-      <div className="flex gap-4">
-        {/* Enquiry Mode */}
+      <div className='flex gap-4'>
         <div className='flex flex-col flex-1'>
-          <label className='label-style'>Enquiry mode</label>
-          <select
-            className={`border-highlight`}
-            value={enquiryMode}
-            onChange={(e) => {
-              setEnquiryMode(e.target.value);
-              setHolidayType('');
-            }}>
-            <option value=''>Select Mode</option>
-            {enquiryModes.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
-                {cat}
-              </option>
-            ))}
+          <label className='label-style'>Enquiry Mode</label>
+          <select  name="enquiryMode" value={leadObj.enquiryMode?.trim()||""} onChange={handleChange} className='border-highlight'>
+            <option value="">Select Mode</option>
+            {enquiryModes.map(boy => <option key={boy} value={boy}>
+                
+                {boy}
+
+
+            </option>)}
           </select>
         </div>
-
-        {/* Enquiry Source */}
         <div className='flex flex-col flex-1'>
           <label className='label-style'>Enquiry Source</label>
-          <select
-            className={`border-highlight`}
-            value={enquirySource}
-            onChange={(e) => {
-              setEnquirySource(e.target.value);
-              setHolidayType('');
-            }}>
-            <option value=''>Select Source</option>
-            {enquirySources.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
+          <select name="enquirySource" value={leadObj.enquirySource?.trim()||""} onChange={handleChange} className='border-highlight'>
+            <option value= "">Select Source</option>
+            {enquirySources.map(cat => <option key={cat} value={cat}> 
+               
+               
                 {cat}
-              </option>
-            ))}
+                
+                </option>)}
           </select>
         </div>
-
-        {/* Customer Type */}
-        <div className="flex-1">
+         {/* Customer Type */}
+        <div className='flex flex-col flex-1'>
           <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
           <select
             className={`border-highlight`}
             // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            name="purpose"
+            name="customerType"
+            value={leadObj.customerType?.trim() || ""}
             onChange={handleChange}
           >
             <option value="">Select</option>
@@ -643,203 +301,31 @@ export default function LeadsGeneration( {lead }) {
         </div>
       </div>
 
-      <div className='flex gap-4'>
-        {/* Category */}
+      <div className='flex gap-4 mt-4'>
         <div className='flex flex-col flex-1'>
-          {/* <select
-            className={`border-highlight`}
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setHolidayType('');
-            }}>
-           
+          <label className='label-style'>Category</label>
+          <select name="category" value={leadObj.fK_LeadCategoryID || ''} onChange={handleChangeForCategory} className='border-highlight'>
             <option value=''>Select Category</option>
-            {categories.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
-                {cat}
-              </option>
+            {Object.entries(leadCategoryList).map(([key, val]) => (
+              <option key={key} value={Number(key)}>{val}</option>
             ))}
-          </select> */}
-
-          <div>
-            <label className="label-style">Category</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChangeForCategory}
-              className={`border-highlight`}
-            >
-              <option value="">Select Category</option>
-              {/* Loop over dictionary entries */}
-              {Object.entries(leadcategory).map(([key, val]) => (
-                <option key={key} value={key}>
-                  {val}
-                </option>
-              ))}
-            </select>
-
-            {/* <p className="mt-2 text-sm text-gray-600">
-              Selected Key: {formData.category || "None"}
-              <br />
-              Selected Value:{" "}
-              {formData.category ? leadcategory[formData.category] : "None"}
-            </p> */}
-          </div>
-
+          </select>
         </div>
-
-        {/* Enquiry Mode */}
-        {/* <div className='flex flex-col flex-1'>
-          <label className='font-medium text-gray-700 mb-1'>Enquiry mode</label>
-          <select
-           className={`border-highlight`}
-            value={enquiryMode}
-            onChange={(e) => {
-              setEnquiryMode(e.target.value);
-              setHolidayType('');
-            }}>
-            <option value=''>Select Mode</option>
-            {enquiryModes.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div> */}
-
-        {/* Enquiry Source */}
-        {/* <div className='flex flex-col flex-1'>
-          <label className='font-medium text-gray-700 mb-1'>Enquiry Source</label>
-          <select
-           className={`border-highlight`}
-            value={enquirySource}
-            onChange={(e) => {
-              setEnquirySource(e.target.value);
-              setHolidayType('');
-            }}>
-            <option value=''>Select Source</option>
-            {enquirySources.map((cat) => (
-              <option
-                key={cat}
-                value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div> */}
       </div>
 
-      {/* Conditional fields */}
-      {selectedLeadName === 'Holiday' && (
-        <>
-          <label className='font-medium text-gray-700 mb-1'>Holiday Type</label>
-          <select
-            className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            value={holidayType}
-            onChange={(e) => setHolidayType(e.target.value)}>
-            <option value=''>Select Holiday Type</option>
+      {/* Render dynamic fields */}
+      <div className='mt-4'>{renderCategoryFields()}</div>
 
-            <option value='INT-FIT'>International FIT</option>
-            <option value='DOM-FIT'>Domestic FIT</option>
-            <option value='INT-GIT'>International GIT</option>
-            <option value='DOM-GIT'>Domestic GIT</option>
-          </select>
-
-          <label className='font-medium text-gray-700 mb-1'>Holiday Category</label>
-          <select
-            className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            value={holidayCategory}
-            onChange={(e) => setHolidayCategory(e.target.value)}>
-            <option value=''>Select Holiday Category</option>
-            <option value='INT'>International</option>
-            <option value='DOM'>Domestic</option>
-          </select>
-        </>
-      )}
-
-      {selectedLeadName === 'Car Rentals' && (
-        <>
-          <label className='font-medium text-gray-700 mb-1'>Vehicle Category</label>
-          <select
-            className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            value={holidayType}
-            onChange={(e) => setHolidayType(e.target.value)}>
-            <option value=''>Select Vehicle Category</option>
-            <option value='Car'>Car</option>
-            <option value='Coaches'>Coaches</option>
-          </select>
-
-          <label className='font-medium text-gray-700 mb-1'>Vehicle Model</label>
-          <select
-            className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-            value={holidayCategory}
-            onChange={(e) => setHolidayCategory(e.target.value)}>
-            <option value=''>Select Vehicle Model</option>
-            <option value='INT'>Volvo 45 Seater</option>
-            <option value='DOM'>Domestic</option>
-          </select>
-        </>
-      )}
-
-      {renderCategoryFields()}
-
-
+      {/* Footer */}
       <div className="flex justify-between items-center mt-6 gap-4">
-        {/* Generate Lead Button */}
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-        >
-          Generate Lead
+        <button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+          {submitBtnTxt}
         </button>
-
-        {/* Follow Up Date Inline */}
         <div className="flex items-center gap-2">
-          <label htmlFor="followupDate" className="font-medium text-gray-600 whitespace-nowrap">
-            Follow Up Date :
-          </label>
-          <input
-            type="date"
-            id="followupDate"
-            name="followupDate"
-            onChange={handleChange}
-            className={`border-highlight`}
-          // className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          <label htmlFor="followupDate" className="font-medium text-gray-600 whitespace-nowrap">Follow Up Date :</label>
+          <input type="date" id="followupDate" name="followUpDate" value={leadObj.followUpDate || ''} onChange={handleChange} className={`border-highlight`} />
         </div>
       </div>
-
-      {/* <div className="flex flex-col gap-4"> */}
-      {/* Follow Up Date */}
-      {/* <div className="flex flex-col w-60"> 
-          <label
-            htmlFor="followupDate"
-            className="font-medium text-gray-600 mb-1"
-          >
-            Follow Up Date :
-          </label>
-          <input
-            type="date"
-            id="followupDate"
-            name="followupDate"
-            onChange={handleChange}
-            className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-      </div> */}
-
-
-      {/* Generate Lead Button  */}
-      {/* <button
-        onClick={handleSubmit}
-        className='justify-between items-center mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition'>
-        Generate Lead
-      </button> */}
     </div>
   );
 }

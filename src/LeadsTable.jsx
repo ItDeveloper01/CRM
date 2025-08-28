@@ -7,8 +7,6 @@ import { LeadObj } from "./Model/LeadModel";
 import { getEmptyLeadObj } from "./Model/LeadModel";
 
 
-
-
 /* ---------- CSV Export Function ---------- */
 const exportToCSV = (data, filename) => {
   if (!data || !data.length) return;
@@ -136,8 +134,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
-  
+ const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
 
   const activeVisible = activeLeads.slice(
     (activePage - 1) * rowsPerPage,
@@ -149,8 +146,8 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
   );
 
   const handleViewClick = (lead) => {
-    console.log("Viewing lead.....:", lead);
-    setSelectedLead(lead);
+  console.log("Viewing lead.....:", lead);    
+   setSelectedLead(lead);
     setModalOpen(true);
   };
 
@@ -179,6 +176,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               >
                 ID
               </th>
+              <th className="text-left px-3 py-2">Title</th>
               <th
                 className="cursor-pointer text-left px-3 py-2"
                 onClick={() => toggleSort("active", "name")}
@@ -197,6 +195,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
             {activeVisible.map((lead) => (
               <tr key={lead.leadID} className="hover:bg-gray-100 transition">
                 <td className="px-3 py-2">{lead.leadID}</td>
+                 <td className="px-3 py-2">{lead.title}</td>
                 <td className="px-3 py-2">{lead.fName}</td>
                 <td className="px-3 py-2">{lead.lName}</td>
                 <td className="px-3 py-2">{lead.mobileNo}</td>
@@ -237,6 +236,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
             <thead className="bg-blue-100 border-b-4">
               <tr>
                 <th className="text-left px-3 py-2">ID</th>
+                <th className="text-left px-3 py-2">Title</th>
                 <th className="text-left px-3 py-2">First Name</th>
                 <th className="text-left px-3 py-2">Last Name</th>
                 <th className="text-left px-3 py-2">Mobile No</th>
@@ -250,6 +250,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               {followVisible.map((lead) => (
                 <tr key={lead.leadID} className="hover:bg-gray-100 transition">
                   <td className="px-3 py-2">{lead.leadID}</td>
+                   <td className="px-3 py-2">{lead.title}</td>
                   <td className="px-3 py-2">{lead.fName}</td>
                   <td className="px-3 py-2">{lead.lName}</td>
                   <td className="px-3 py-2">{lead.mobileNo}</td>
@@ -259,12 +260,8 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-500 underline"
-                     onClick={() => {
-                   
-                   
-                  }}
-                      
-                    >
+                     onClick={() => handleViewClick(lead)}
+                                        >
                       View Details
                     </button>
                   </td>
@@ -276,7 +273,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
         </div>
       )}
 
-      {/* Modal */}
+   {/* Modal */}
       <UpdateLeadsModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
