@@ -1,7 +1,7 @@
 /* Box border highlight */
 .border-highlight {
     
-     @apply w-full rounded-lg p-2 focus:outline-none focus:ring-2 bg-white border border-gray-300;
+     @apply w-full rounded-lg p-2 h-10 focus:outline-none focus:ring-2 bg-white border border-gray-300;
 }
 
 /* It highlight box after selecting value*/

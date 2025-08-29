@@ -1,14 +1,19 @@
 export const LeadObj = {
   fName: "",
+  mName:"",
   lName: "",
   mobileNo: "",
   destination: "",
   leadStatus: "",
   enquiryDate: "",
   email: "",
+  title : "",
   middleName: "", 
   birthdate: "",
-  address: "",      
+  gender:"",
+  address: "", 
+  followupDate: "",
+
 };
 
 // Function to return a fresh empty lead object

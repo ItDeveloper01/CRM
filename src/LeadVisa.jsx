@@ -229,7 +229,12 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
                         {["Booked", "Not Booked"].map((status) => (
                             <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input type="radio" name="hotel" value={status} onChange={handleChange} />
+                                <input 
+                                    type="radio" 
+                                    name="hotel" 
+                                    value={status} o
+                                    nChange={handleChange}
+                                 />
                                 {status}
                             </label>
                         ))}

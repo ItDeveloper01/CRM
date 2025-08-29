@@ -5,18 +5,21 @@ import LeadVisa from './LeadVisa';
 
 import axios from "axios";
 import React from 'react';
-import  { LeadObj } from "../src/Model/LeadModel"; 
+import { LeadObj } from "../src/Model/LeadModel";
 import { getEmptyLeadObj } from "../src/Model/LeadModel"; // adjust path if folder is deeper
 import config from './config';
 
 import LeadAirTicketing from './LeadAirTicketing';
+import { Form } from 'react-router-dom';
+import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 
 
 
-export default function LeadsGeneration( {lead }) {
+export default function LeadsGeneration({ lead }) {
   // initialize form state with empty LeadObj
-  
-  const [leadObj, setLeadObj] = useState({lead});
+
+  const [leadObj, setLeadObj] = useState({ lead });
+
 
   const [category, setCategory] = useState('');
   const [selectedLeadName, setSelectedLeadName] = useState("");
@@ -25,12 +28,18 @@ export default function LeadsGeneration( {lead }) {
   const [holidayType, setHolidayType] = useState('');
   const [holidayCategory, setHolidayCategory] = useState('');
   const [formData, setFormData] = useState({ selectedCategory: "" });
+  //Requirment for car rental
+  const [requirementType, setRequirementType] = useState("");
 
-  
+
 
 
   const [countries, setCountries] = useState([]);
   const [countrycode, setCountryCode] = useState([]);
+
+  //for Indian City Dropdown through API
+  const [cities, setCities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 
   // const [tripType, setTripType] = useState("domestic");
@@ -43,14 +52,14 @@ export default function LeadsGeneration( {lead }) {
 
 
   useEffect(() => {
-  if (lead && Object.keys(lead).length > 0) {
-    console.log("Editing lead......:", lead);
-    setLeadObj(lead);
-  } else {
-    console.log("Creating new lead......:");
-    setLeadObj(getEmptyLeadObj());
-  }
-}, [lead]);
+    if (lead && Object.keys(lead).length > 0) {
+      console.log("Editing lead......:", lead);
+      setLeadObj(lead);
+    } else {
+      console.log("Creating new lead......:");
+      setLeadObj(getEmptyLeadObj());
+    }
+  }, [lead]);
 
   const enquirySources = [
     'Referred by client',
@@ -118,6 +127,27 @@ export default function LeadsGeneration( {lead }) {
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
+  //Indian city api 
+  useEffect(() => {
+    // Example API that provides Indian cities
+    fetch("https://countriesnow.space/api/v0.1/countries/cities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ country: "India" }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.data) {
+          setCities(data.data);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching cities:", err);
+        setLoading(false);
+      });
+  }, []);
+
   // City → Area mapping
   const cityAreas = {
     Pune: ["Kothrud", "Karvenagar", "Nigdi", "Bhosari", "Deccan"],
@@ -130,6 +160,7 @@ export default function LeadsGeneration( {lead }) {
 
   const handleChangeForCategory = (e) => {
 
+
     console.log("Category Changed...", formData);
 
     debugger;
@@ -137,14 +168,13 @@ export default function LeadsGeneration( {lead }) {
     setFormData((prev) => ({
       ...prev,
       [name]: value
-
     }));
 
 
     if (name === "category") {
       const var1 = leadcategory[value];
       setSelectedLeadName(var1);
-      setCategory(value); // ✅ store the key here
+      setCategory(value); //  store the key here
     }
   };
 
@@ -152,11 +182,69 @@ export default function LeadsGeneration( {lead }) {
 
   const handleChange = (e) => {
 
+    // This handlechange for LeadObj
+    const { name, value } = e.target;
+    setLeadObj((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+    // This handlechange for formData
     debugger;
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // console.log("formdata.....",formData);
+    console.log("Category Changed...", formData);
+
+    // Live validation only first,middle,last name , mobileno andd email 
+    let errMsg = "";   //common for all 
+    if (name === "fName") errMsg = validNameLive(value, "First Name");
+    if (name === "mName") errMsg = validNameLive(value, "Middle Name");
+    if (name === "lName") errMsg = validNameLive(value, "Last Name");
+    if (name === "mobileNo") errMsg = validMobileNoLive(value, "Mobile No");
+    if (name === "email") errMsg = validEmailLive(value, "Email No");
+
+
+    setErrors((prev) => ({ ...prev, [name]: errMsg })); // common for all 
+
+    // Live validation for Follow Up Date
+    // if (name === "followupDate") {
+    //   let errMsg = "";
+    //   if (!value) {
+    //     errMsg = "Follow Up Date is required";
+        // } else {
+        //   const today = new Date();
+        //   const selectedDate = new Date(value);
+        //   today.setHours(0, 0, 0, 0);
+        //   selectedDate.setHours(0, 0, 0, 0);
+
+        // if (selectedDate <= today) {
+        //   errMsg = "Follow Up Date cannot be in the past";
+        // }
+    //   }
+    // //   setErrors((prev) => ({ ...prev, followupDate: errMsg }));
+    // }
 
   };
+
+
+  const validate = () => {
+
+    let errs = {};
+
+    // Follow Up Date
+    // if (!leadObj.followupDate) {
+    //   errs.followupDate = "Follow Up Date is required";
+      // } else {
+      //   const today = new Date();
+      //   const selectedDate = new Date(leadObj.followupDate);
+      //   today.setHours(0, 0, 0, 0);
+      //   selectedDate.setHours(0, 0, 0, 0);
+
+      //   if (selectedDate <= today) {
+      //     errs.followupDate = "Follow Up Date cannot be in the past";
+      //   }
+    // }
+
+    return errs;
+  }
 
   const renderCategoryFields = () => {
     if (selectedLeadName === 'Holiday') {
@@ -250,7 +338,6 @@ export default function LeadsGeneration( {lead }) {
                   name='noOfAdults'
                   placeholder='Adults'
                   onChange={handleChange}
-                  
                 />
               </div>
 
@@ -341,44 +428,194 @@ export default function LeadsGeneration( {lead }) {
         return (
           <>
             <LeadAirTicketing formData={formData}
-            handleChange={handleChange}
-          />
+              handleChange={handleChange}
+            />
           </>
         );
       case 'Car Rentals':
         return (
           <>
-            <label className='font-medium text-gray-700 mb-1 block'>Pickup Location</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='pickupLocation'
-              placeholder='Pickup Location'
-              onChange={handleChange}
-            />
+            <div className="flex gap-3 flex-wrap">
+              <div className="flex-1">
+                <label className="label-style">No of Travelers</label>
+                <input
+                  name="numTravelers"
+                  type="number"
+                  min="1"
+                  onChange={handleChange}
+                  className={`border-highlight`}
+                />
+              </div>
+              <div className="flex-1 flex-col">
+                <label className="label-style">Type of Vehicle</label>
+                <select
+                  name="vehicle"
+                  value={formData.vehicleType}
+                  className={`border-highlight`}
+                >
+                  <option value="">Select Vehicle</option>
+                  <option value="maruti">Maruti</option>
+                </select>
+              </div>
+              <div className="flex-1 flex-col">
+                <label className="label-style">Type of Duty</label>
+                <div>
+                  <select
+                    name="duty"
+                    className={`border-highlight`}
+                  >
+                    <option value="">Select Duty Type</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Local">Local</option>
+                    <option value="Outstation">Outstation</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-3 flex-wrap">
+              {/* Trip Description */}
+              <div className="flex-1 min-w-[250px]">
+                <label className="label-style">Trip Description</label>
+                <input
+                  name="tripDescription"
+                  placeholder="Trip Description"
+                  onChange={handleChange}
+                  className="border-highlight"
+                />
+              </div>
 
-            <label className='font-medium text-gray-700 mb-1 block'>Drop Location</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='dropLocation'
-              placeholder='Drop Location'
-              onChange={handleChange}
-            />
+              {/* Serving City */}
+              <div className="flex-1 min-w-[250px]">
+                <label className="label-style">Serving City</label>
+                <select
+                  name="servingCity"
+                  onChange={handleChange}
+                  className="border-highlight"
+                >
+                  {loading ? (
+                    <option>Loading...</option>
+                  ) : (
+                    <>
+                      <option value="">Select City</option>
+                      {cities.map((city, index) => (
+                        <option key={index} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </>
+                  )}
+                </select>
+              </div>
+            </div>
 
-            <label className='font-medium text-gray-700 mb-1 block'>Start Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='startDate'
-              type='date'
-              onChange={handleChange}
-            />
+            <div className="flex gap-3 flex-wrap">
+              {/* Travel Date */}
+              <div className="flex-1 min-w-[250px]">
+                <label className="label-style">Travel Date</label>
+                <input
+                  type="date"
+                  name="travelDate"
+                  onChange={handleChange}
+                  className="border-highlight"
+                />
+              </div>
 
-            <label className='font-medium text-gray-700 mb-1 block'>End Date</label>
-            <input
-              className='w-full border border-gray-300 rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='endDate'
-              type='date'
-              onChange={handleChange}
-            />
+              {/* No of Days */}
+              <div className="flex-1 min-w-[250px]">
+                <label className="label-style">No of Days</label>
+                <input
+                  type="number"
+                  name="noOfDays"
+                  min="1"
+                  onChange={handleChange}
+                  className="border-highlight"
+                />
+              </div>
+            </div>
+
+            <div>
+              {/* Requirement Type Dropdown */}
+              <div className="flex-1 min-w-[250px]">
+                <label className="label-style">Requirement Type</label>
+                <select
+                  name="requirementType"
+                  value={requirementType}
+                  onChange={(e) => setRequirementType(e.target.value)}
+                  className="border-highlight"
+                >
+                  <option value="">Select Requirement</option>
+                  <option value="personal">Personal Requirement</option>
+                  <option value="corporate">Corporate Requirement</option>
+                </select>
+              </div>
+
+              {/* Show only if corporate selected */}
+              {requirementType === "corporate" && (
+                <div className="flex gap-3 flex-wrap">
+                  {/* Company Name */}
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="label-style">Company Name</label>
+                    <input
+                      type="text"
+                      name="companyName"
+                      onChange={handleChange}
+                      placeholder="Enter Company Name"
+                      className="border-highlight"
+                    />
+                  </div>
+
+                  {/* Telephone No */}
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="label-style">Telephone No</label>
+                    <input
+                      type="tel"
+                      name="telephone"
+                      onChange={handleChange}
+                      placeholder="Enter Telephone No"
+                      className="border-highlight"
+                    />
+                  </div>
+                </div>
+
+              )}
+            </div>
+
+            {/* Rental Type */}
+            <div className="flex-1 min-w-[250px]">
+              <label className="label-style">Rental Type</label>
+              <div className="flex-1 min-w-[250px]">
+                <select
+                  name="rentalType"
+                  className="border-highlight"
+                >
+                  <option value="">Select Rental Type</option>
+                  <option value="events">Events</option>
+                  <option value="individual">Individual</option>
+                  <option value="inbond">InBound</option>
+                  <option value="group">Group</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              {/* Quote Given */}
+              <label className="label-style">Quote Given</label>
+              <input
+                type="text"
+                placeholder="Enter quote"
+                className={`border-highlight`}
+              />
+            </div>
+
+            {/* Special Requirement */}
+            <div>
+              <label className="label-style">Special Requirement</label>
+              <input
+                type="text"
+                placeholder="Special requirement "
+                className={`border-highlight`}
+              />
+            </div>
           </>
         );
       default:
@@ -386,8 +623,40 @@ export default function LeadsGeneration( {lead }) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
     console.log('Lead Data:', { category, holidayType, ...formData });
+
+    e.preventDefault();
+
+    const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
+    const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
+    const mobileNoError = validateBeforeSubmit(leadObj.mobileNo, "Mobile Number");
+    const emailError = validateBeforeSubmit(leadObj.email, "Email Address");
+    const titleError = validateBeforeSubmit(leadObj.title, "Title");
+    const genderError = validateBeforeSubmit(leadObj.gender, "Gender");
+    const followupDateError = validateBeforeSubmit(leadObj.followupDate, "Follow up Date");
+
+
+    const errs = validate();
+    if (fNameError) errs.fName = fNameError;
+    if (lNameError) errs.lName = lNameError;
+    if (mobileNoError) errs.mobileNo = mobileNoError;
+    if (emailError) errs.email = emailError;
+    if (titleError) errs.title = titleError;
+    if (genderError) errs.gender = genderError;
+    if (followupDateError) errs.followupDate = followupDateError;
+
+    // Remove empty errors (fields without error)
+    Object.keys(errs).forEach((key) => {
+      if (!errs[key]) delete errs[key];
+    });
+    setErrors(errs);
+
+    // Final check: Only submit if no errors
+    if (Object.keys(errs).length === 0) {
+      console.log("Form Submitted:", leadObj);
+    }
+
   };
 
   return (
@@ -399,28 +668,33 @@ export default function LeadsGeneration( {lead }) {
 
         <div className='flex gap-4 mb-4'>
           {/* Mobile Number */}
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Mobile Number</label>
+          <div className="flex flex-col flex-1">
+            <label className="label-style">Mobile Number</label>
             <input
-              className={`border-highlight`}
-              name='phone'
-              placeholder='Mobile Number'
+              className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
+              name="mobileNo"
+              placeholder="Mobile Number"
+              value={leadObj.mobileNo || ""}
               onChange={handleChange}
-              value={leadObj.mobileNo||''}
+              maxLength={10}
             />
+            {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
           </div>
+
 
           {/* Email */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Email</label>
             <input
-              className={`border-highlight`}
+              className={`border-highlight ${errors.email ? "border-red-500" : ""}`}
               name='email'
               type='email'
               placeholder='Email Address'
               onChange={handleChange}
-              value={leadObj.email}
+              value={leadObj.email || ""}
+              maxLength={50}
             />
+            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
           </div>
         </div>
 
@@ -430,8 +704,9 @@ export default function LeadsGeneration( {lead }) {
           <div className='flex flex-col w-28'>
             <label className='label-style'>Title</label>
             <select
-              className={`border-highlight`}
+              className={`border-highlight ${errors.title ? "border-red-500" : ""}`}
               name='title'
+              value={leadObj.title || ""}
               onChange={handleChange}>
               <option value=''>Title</option>
               <option value='Mr.'>Mr.</option>
@@ -440,46 +715,55 @@ export default function LeadsGeneration( {lead }) {
               <option value='Dr.'>Dr.</option>
               <option value='Prof.'>Prof.</option>
             </select>
+            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
           </div>
+
 
           {/* First Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>First Name</label>
             {/*for here label style = font-abmedium text-gray-700 mb-1 */}
             <input
-              className={`border-highlight`}
-              // className='border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400'
-              name='firstName'
+              name='fName'
               placeholder='First Name'
               onChange={handleChange}
-              value={leadObj.fName}
+              value={leadObj.fName || ""}
+              maxLength={30}
+              className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`}
             />
+            {errors.fName && <p className="text-red-500 text-sm">{errors.fName}</p>}
           </div>
 
           {/* Middle Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Middle Name</label>
             <input
-              className={`border-highlight`}
-              name='middleName'
+              // className={`border-highlight`}
+              name='mName'
               placeholder='Middle Name'
               onChange={handleChange}
-              value={leadObj.middleName}
+              value={leadObj.mName}
+              maxLength={30}
+              className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`}
             />
+            {errors.mName && <p className="text-red-500 text-sm">{errors.mName}</p>}
           </div>
 
           {/* Last Name */}
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Last Name</label>
             <input
-              className={`border-highlight`}
-              name='lastName'
+              name='lName'
               placeholder='Last Name'
               onChange={handleChange}
-              value={leadObj.lName} 
+              value={leadObj.lName || ""}
+              maxLength={30}
+              className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`}
             />
+            {errors.lName && <p className="text-red-500 text-sm">{errors.lName}</p>}
           </div>
         </div>
+
         {/* Birthdate + Gender + City + Area */}
         <div className='flex gap-4 mb-4'>
           {/* Birthdate */}
@@ -498,15 +782,16 @@ export default function LeadsGeneration( {lead }) {
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Gender</label>
             <select
-              className={`border-highlight`}
-              name='gender' 
+              // className={`border-highlight`}
+              className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
+              name='gender'
               onChange={handleChange}
-              >
+            >
               <option value=''>Select Gender</option>
               <option value='Male'>Male</option>
               <option value='Female'>Female</option>
-
             </select>
+            {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
           </div>
 
 
@@ -583,7 +868,7 @@ export default function LeadsGeneration( {lead }) {
       <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
       <div className="flex gap-4">
         {/* Enquiry Mode */}
-        <div className='flex flex-col flex-1'>
+        <div className="flex-1">
           <label className='label-style'>Enquiry mode</label>
           <select
             className={`border-highlight`}
@@ -604,7 +889,7 @@ export default function LeadsGeneration( {lead }) {
         </div>
 
         {/* Enquiry Source */}
-        <div className='flex flex-col flex-1'>
+        <div className="flex-1">
           <label className='label-style'>Enquiry Source</label>
           <select
             className={`border-highlight`}
@@ -762,7 +1047,7 @@ export default function LeadsGeneration( {lead }) {
         </>
       )}
 
-      {selectedLeadName === 'Car Rentals' && (
+      {/* {selectedLeadName === 'Car Rentals' && (
         <>
           <label className='font-medium text-gray-700 mb-1'>Vehicle Category</label>
           <select
@@ -784,7 +1069,7 @@ export default function LeadsGeneration( {lead }) {
             <option value='DOM'>Domestic</option>
           </select>
         </>
-      )}
+      )} */}
 
       {renderCategoryFields()}
 
@@ -803,21 +1088,27 @@ export default function LeadsGeneration( {lead }) {
           <label htmlFor="followupDate" className="font-medium text-gray-600 whitespace-nowrap">
             Follow Up Date :
           </label>
-          <input
-            type="date"
-            id="followupDate"
-            name="followupDate"
-            onChange={handleChange}
-            className={`border-highlight`}
-          // className="border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          <div className="flex flex-col  justify-start leading-none">
+            <input
+              type="date"
+              id="followupDate"
+              name="followupDate"
+              value={leadObj.followupDate || ""}
+              onChange={handleChange}
+              min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
+              // min={new Date().toISOString().split("T")[0]} //  disables past dates
+              className={`border-highlight ${errors.followupDate ? "border-red-500" : " "}`}
+              required
+            />
+          </div>
         </div>
       </div>
+      <div className='text-right'>
+        {errors.followupDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followupDate}</p>)}
+      </div>
 
-      {/* <div className="flex flex-col gap-4"> */}
-      {/* Follow Up Date */}
-      {/* <div className="flex flex-col w-60"> 
-          <label
+
+      {/* <label
             htmlFor="followupDate"
             className="font-medium text-gray-600 mb-1"
           >
@@ -832,7 +1123,6 @@ export default function LeadsGeneration( {lead }) {
           />
         </div>
       </div> */}
-
 
       {/* Generate Lead Button  */}
       {/* <button
