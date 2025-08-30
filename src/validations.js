@@ -45,8 +45,8 @@ export const validEmailLive = (value , fieldName="Name") => {
 
 //  ********************All Submit Time Validations*********************
 // Submit Time Validation  
-export const validateBeforeSubmit = (value, fieldLabel = "Name") => {
-  if (!value.trim()) {
+export const validateBeforeSubmit = (value="", fieldLabel = "Name") => {
+  if (!value ||!value.trim()) {
     if (fieldLabel === "Title") {
       return "Please select a title";
     }if(fieldLabel === "Gender"){
