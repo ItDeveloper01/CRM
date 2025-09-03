@@ -1,9 +1,24 @@
 import React from "react";
 import "./LeadStyle.css";
+import config from './config';
+import { VISALeadObject } from "./Model/VisaLeadModel";
 
 
 
-const LeadVisa = ({ formData, countries, handleChange }) => {
+const LeadVisa = ({ visadObj, countries ,setVisaLeadObj }) => {
+
+const handleChange = (e) => {
+
+    debugger;
+    const { name, value } = e.target;
+    setVisaLeadObj(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    console.log("Visa Obj.....:", visadObj);
+  };
+
     return (
         <div>
             <div className="flex gap-3 flex-wrap">
@@ -11,9 +26,9 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 1</label>
                     <select
-                        className={`border-highlight ${formData.country1 ? "selected" : ""}`}
+                        className={`border-highlight ${visadObj.country1 ? "selected" : ""}`}
                         name="country1"
-                        value={formData.country1}
+                        value={visadObj?.country1||""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -30,9 +45,9 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 2</label>
                     <select
-                        className={`border-highlight ${formData.country2 ? "selected" : ""}`}
+                        className={`border-highlight ${visadObj.country2 ? "selected" : ""}`}
                         name="country2"
-                        value={formData.country2}
+                        value={visadObj?.country2||""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -48,9 +63,9 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 3</label>
                     <select
-                        className={`border-highlight ${formData.country3 ? "selected" : ""}`}
+                        className={`border-highlight ${visadObj.country3 ? "selected" : ""}`}
                         name="country3"
-                        value={formData.country3}
+                        value={visadObj?.country3||""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -68,7 +83,7 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
             <select
             className={`border-highlight`}
             name="country"
-            value={formData.country}
+            value={visadObj.country}
             onChange={(e) => {
                 handleChange(e);
                 e.target.size = 1;
@@ -93,13 +108,13 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <label className="label-style">Travel Date</label>
                     <input
                         type="date"
-                        name="travelDates"
-                        value={formData.travelDates}
+                        name="travelDate"
+                        value={visadObj.travelDate || ""}
                         onChange={handleChange}
-                        className={`border-highlight ${formData.travelDates ? "selected" : ""}`}
+                        className={`border-highlight ${visadObj.travelDate ? "selected" : ""}`}
                         //  This code is for more information of highlight concept
                         //  className={`w-full rounded-lg p-2 focus:outline-none focus:ring-2 
-                        //         ${formData.travelDates
+                        //         ${visadObj.travelDates
                         //         ? "bg-blue-100 border border-blue-500"   // highlight when date is selected
                         //         : "bg-white border border-gray-300"      // default gray border
                         //     }`}
@@ -110,7 +125,7 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <input
                         // className={`border-highlight`}
                         className={`w-full border rounded-lg p-2 focus:outline-none focus:ring-2 
-                                ${formData.country1
+                                ${visadObj.country1
                                 ? "bg-blue-100 border border-blue-500"   // highlight for Travel Date
                                 : "bg-white border border-transparent"
                             }`}
@@ -125,10 +140,18 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <label className="label-style">No. of Applicants</label>
                     <input
                         className={`border-highlight`}
-                        name="numApplicants"
+                        name="noOfApplicants"
+                        value={Number (visadObj.noOfApplicants) || ""}
                         type="number"
                         min="1"
-                        onChange={handleChange}
+                        onChange={(e) => {
+    const value = e.target.value;
+    // Update as number if not empty, else empty string
+    setVisaLeadObj(prev => ({
+      ...prev,
+      noOfApplicants: value === "" ? "" : Number(value)
+    }));
+  }}
                     />
                 </div>
 
@@ -136,7 +159,9 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <label className="label-style">Purpose of Travel</label>
                     <select
                         className={`border-highlight`}
-                        name="purpose"
+                        name="purposeOfTravel"
+                        value={visadObj.purposeOfTravel
+}
                         onChange={handleChange}
                     >
                         <option value="">Select</option>
@@ -156,7 +181,8 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <label className="label-style">Visa Type</label>
                     <select
                         className={`border-highlight`}
-                        name="visatype"
+                        name="visaType"
+                        value={visadObj.visaType}
                         onChange={handleChange}
                     >
                         <option value="">Select</option>
@@ -172,7 +198,8 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                     <label className="label-style">No Of Entries</label>
                     <select
                         className={`border-highlight`}
-                        name="entrequired"
+                        name="noOfEntries"
+                        value={visadObj.noOfEntries}
                         onChange={handleChange}
                     >
                         <option value="">Select</option>
@@ -189,23 +216,23 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Travel Plan Status</label>
                     <div className="border border-gray-300 rounded-lg px-1 py-2 flex justify-between">
-                        {["Confirmed", "Tentative"].map((status) => (
+                        {["Confirmed", "Tentative"].map((status1) => (
                             <label
-                                key={status}
+                                key={status1}
                                 className={`flex items-center gap-2 flex-1 cursor-pointer rounded-md px-1
-                                ${formData.travelplanstatus === status
+                                ${visadObj.travelPlanStatus === status1
                                         ? "bg-blue-100 border border-blue-500"
                                         : "bg-white border border-transparent"
                                     }`}
                             >
                                 <input
                                     type="radio"
-                                    name="travelplanstatus"
-                                    value={status}
-                                    checked={formData.travelplanstatus === status}
+                                    name="travelPlanStatus"
+                                    value={status1}
+                                    checked={visadObj.travelPlanStatus === status1}
                                     onChange={handleChange}
                                 />
-                                {status}
+                                {status1}
                             </label>
                         ))}
                     </div>
@@ -231,9 +258,10 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                             <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
                                 <input 
                                     type="radio" 
-                                    name="hotel" 
-                                    value={status} o
-                                    nChange={handleChange}
+                                    name="hotelBooking" 
+                                    value={status}
+                                    checked={visadObj.hotelBooking===status}
+                                    onChange={handleChange}
                                  />
                                 {status}
                             </label>
@@ -247,10 +275,14 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[200px]">
                     <label className="label-style">Overseas Insurance</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Issued", "Not Issued"].map((status) => (
-                            <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input type="radio" name="overseasinsurance" value={status} onChange={handleChange} />
-                                {status}
+                        {["Issued", "Not Issued"].map((insuranceStatus) => (
+                            <label key={insuranceStatus} className="flex items-center gap-2 flex-1 cursor-pointer">
+                                <input type="radio"  
+                                name="overseasInsurance"
+                                value={insuranceStatus}
+                                 checked={visadObj.overseasInsurance===insuranceStatus} 
+                                onChange={handleChange} />
+                                {insuranceStatus}
                             </label>
                         ))}
                     </div>
@@ -259,10 +291,14 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <div className="flex-1 min-w-[200px]">
                     <label className="label-style">Passport Validity</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Checked", "Not Checked", "Not Sure"].map((status) => (
-                            <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input type="radio" name="passportvalidity" value={status} onChange={handleChange} />
-                                {status}
+                        {["Checked", "Not Checked", "Not Sure"].map((pValidity) => (
+                            <label key={pValidity} className="flex items-center gap-2 flex-1 cursor-pointer">
+                                <input type="radio" 
+                                name="passportValidity" 
+                                value={pValidity} 
+                                checked={visadObj.passportValidity===pValidity}
+                                onChange={handleChange} />
+                                {pValidity}
                             </label>
                         ))}
                     </div>
@@ -273,10 +309,14 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
             <div className="flex-1">
                 <label className="label-style">Airticket</label>
                 <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-4">
-                    {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued"].map((status) => (
-                        <label key={status} className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="airticket" value={status} onChange={handleChange} />
-                            {status}
+                    {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued"].map((airTckIssuedBy) => (
+                        <label key={airTckIssuedBy} className="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" 
+                            name="airTicketIssuedBy" 
+                            value={airTckIssuedBy} 
+                            checked={visadObj.airTicketIssuedBy===airTckIssuedBy}
+                            onChange={handleChange} />
+                            {airTckIssuedBy}
                         </label>
                     ))}
                 </div>
@@ -288,7 +328,8 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <input
                     type="text"
                     className={`border-highlight`}
-                    name="quotegiven"
+                    name="quoteGiven"
+                    value={visadObj.quoteGiven || ""}
                     placeholder="Enter quote"
                     onChange={handleChange}
                 />
@@ -299,7 +340,8 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                 <label className="label-style">Remark</label>
                 <textarea
                     className={`border-highlight`}
-                    name="remark"
+                    name="notes"
+                    value={visadObj.notes || ""}
                     placeholder="Remark"
                     onChange={handleChange}
                 />
