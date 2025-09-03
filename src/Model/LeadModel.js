@@ -17,6 +17,7 @@ export const LeadObj = {
   enquiryMode: "",
   enquirySource: "",
   customerType: "",    // New/Existing
+  enquiryDate: "",
   destination: "",
   notes: "",
   birthDate: "",         // yyyy-MM-dd (string for HTML input type="date")
@@ -35,16 +36,19 @@ export const LeadObj = {
 export function validateLead(lead) {
 
   const requiredFields = [
+    "title",
     "fName",
     "lName",
     "mobileNo",
     "emailId",
     "pax",
+    "gender",
     "enquiryDate",
     "leadStatus",
     "enquiryMode",
     "enquirySource",
-    "destination"
+    "destination",
+    "followUpDate"    // yyyy-MM-dd or empty
   ];
 
   for (let field of requiredFields) {
