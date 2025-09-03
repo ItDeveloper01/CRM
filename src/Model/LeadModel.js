@@ -17,6 +17,7 @@ export const LeadObj = {
   enquiryMode: "",
   enquirySource: "",
   customerType: "",    // New/Existing
+  enquiryDate: "",
   destination: "",
   notes: "",
   birthDate: "",         // yyyy-MM-dd (string for HTML input type="date")
@@ -24,49 +25,30 @@ export const LeadObj = {
   followUpDate: null,    // yyyy-MM-dd or empty
   createdAt: null,
   updatedAt: null,
-  fK_LeadCategoryID :null
+  fK_LeadCategoryID :null,
+   // 🔹 Flexible slot for category-specific data
+  categoryData: {} 
 };
 
-// VISA Lead Object
-export const VISALeadObj = {
-  Id: null,               // lowercase to keep consistent with LeadObj
-  country1: "",
-  country2: "",
-  country3: "",
-  visaType: "",
-  travelDate: "",         // format: "YYYY-MM-DD"
-  noOfApplicants: 0,
-  purposeOfTravel: "",
-  noOfEntries: "",
-  travelPlanStatus: "",
-  hotelBooking: "",
-  overseasInsurance: "",
-  passportValidity: "",
-  airTicketIssuedBy: "",
-  quoteGiven: "",
-  notes: "",
-  AssigneeTo_UserID: "",      // e.g. user ID or name
-  CreatedBy_UserID: "",      // e.g. user ID or name who created the lead
-  createdAt: "",      // e.g. timestamp "2025-08-25T14:48:00.000Z"
-  updatedAt: ""       // e.g. timestamp "2025-08-26T10:15:00.000Z"
-
-};
 
 
 // Function to validate a lead object
 export function validateLead(lead) {
 
   const requiredFields = [
+    "title",
     "fName",
     "lName",
     "mobileNo",
     "emailId",
     "pax",
+    "gender",
     "enquiryDate",
     "leadStatus",
     "enquiryMode",
     "enquirySource",
-    "destination"
+    "destination",
+    "followUpDate"    // yyyy-MM-dd or empty
   ];
 
   for (let field of requiredFields) {
