@@ -233,7 +233,7 @@ const LeadVisa = ({ formData, countries, handleChange }) => {
                                     type="radio" 
                                     name="hotel" 
                                     value={status} o
-                                    nChange={handleChange}
+                                    onChange={handleChange}
                                  />
                                 {status}
                             </label>
