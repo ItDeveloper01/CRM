@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import LeadDetailsModal from "./UpdateLeadsModal"; // Tailwind modal
-import Leadgeneration from "./LeadsGeneration"; // Import the lead generation component
+import LeadsGeneration from "./LeadsGeneration"; // Import the lead generation component
 import UpdateLeadsModal from "./UpdateLeadsModal";
 import { LeadObj } from "./Model/LeadModel";  
 import { getEmptyLeadObj } from "./Model/LeadModel";
