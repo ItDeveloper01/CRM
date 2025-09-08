@@ -80,85 +80,85 @@ export default function LeadsGeneration({ lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
- const mapIncomingVisaToModel = (incomingVisa) => {
-  const newVisa = { ...getEmptyVisaObj() }; // start with default model
+  const mapIncomingVisaToModel = (incomingVisa) => {
+    const newVisa = { ...getEmptyVisaObj() }; // start with default model
 
-  debugger;
-  if (!incomingVisa) return newVisa;
-
-
-  debugger
-  // Map main properties
-  newVisa.id = incomingVisa.id || null;
-  newVisa.country1 = incomingVisa.country1?.trim() || '';
-  newVisa.country2 = incomingVisa.country2?.trim() || '';
-  newVisa.country3 = incomingVisa.country3 ?.trim()|| '';
-  newVisa.visaType = incomingVisa.visaType?.trim() || '';
-  newVisa.travelDate = incomingVisa.travelDate || null;
-  newVisa.noOfApplicants = incomingVisa.noOfApplicants|| null;
-  newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
-  newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
-  newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
-  newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
-  newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
-  newVisa.passportValidity = incomingVisa.passportValidity ?.trim()|| '';
-  newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
-  newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
-  newVisa.notes = incomingVisa.notes || '';
-  newVisa.visaCode = incomingVisa.visaCode || null;
-  newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
-  newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
-  newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
-  newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
+    debugger;
+    if (!incomingVisa) return newVisa;
 
 
-  debugger;  console.log("Mapped Visa Obj....:", newVisa);
-  return newVisa;
-};
+    debugger
+    // Map main properties
+    newVisa.id = incomingVisa.id || null;
+    newVisa.country1 = incomingVisa.country1?.trim() || '';
+    newVisa.country2 = incomingVisa.country2?.trim() || '';
+    newVisa.country3 = incomingVisa.country3?.trim() || '';
+    newVisa.visaType = incomingVisa.visaType?.trim() || '';
+    newVisa.travelDate = incomingVisa.travelDate || null;
+    newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
+    newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
+    newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
+    newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
+    newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
+    newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
+    newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
+    newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
+    newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
+    newVisa.notes = incomingVisa.notes || '';
+    newVisa.visaCode = incomingVisa.visaCode || null;
+    newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
+    newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
+    newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
+    newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
 
-const mapIncomingLeadToModel = (incomingLead) => {
-  const newLead = { ...getEmptyLeadObj() }; // start with default model
 
-  debugger;
-  // Map main properties
-  newLead.leadID = incomingLead.leadID || null;
-  newLead.title = incomingLead.title?.trim() || '';
-  newLead.fName = incomingLead.fName || '';
-  newLead.mName = incomingLead.mName || '';
-  newLead.lName = incomingLead.lName || '';
-  newLead.mobileNo = incomingLead.mobileNo || '';
-  newLead.emailId = incomingLead.emailId || '';
-  newLead.gender = incomingLead.gender?.trim() || '';
-  newLead.birthDate = incomingLead.birthDate || '';
-  newLead.city = incomingLead.city || '';
-  newLead.area = incomingLead.area || '';
-  newLead.enquiryMode = incomingLead.enquiryMode || '';
-  newLead.enquirySource = incomingLead.enquirySource || '';
-  newLead.customerType = incomingLead.customerType || '';
-  newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
-  newLead.followUpDate = incomingLead.followUpDate || '';
-  newLead.histories = incomingLead.histories || [];
-  newLead.leadStatus = incomingLead.leadStatus || 'Open';
-  newLead.createdAt = incomingLead.createdAt || null;
-  newLead.updatedAt = incomingLead.updatedAt || null;
-  newLead.enquiryDate = incomingLead.enquiryDate || null;
+    debugger; console.log("Mapped Visa Obj....:", newVisa);
+    return newVisa;
+  };
 
-  
-   // setVisaObj(newLead.category);
+  const mapIncomingLeadToModel = (incomingLead) => {
+    const newLead = { ...getEmptyLeadObj() }; // start with default model
 
- // Map Visa category if exists
-  if (incomingLead.category && incomingLead.category.$type === "VISA") {
-    const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
-    newLead.category = mappedVisa;   // assign directly
-    setVisaObj(mappedVisa);          // update state
-    setSelectedLeadName(incomingLead.category.categoryName || "Visa");
-  } else {
-    newLead.category = null;
-    setVisaObj(getEmptyVisaObj());
-  }
+    debugger;
+    // Map main properties
+    newLead.leadID = incomingLead.leadID || null;
+    newLead.title = incomingLead.title?.trim() || '';
+    newLead.fName = incomingLead.fName || '';
+    newLead.mName = incomingLead.mName || '';
+    newLead.lName = incomingLead.lName || '';
+    newLead.mobileNo = incomingLead.mobileNo || '';
+    newLead.emailId = incomingLead.emailId || '';
+    newLead.gender = incomingLead.gender?.trim() || '';
+    newLead.birthDate = incomingLead.birthDate || '';
+    newLead.city = incomingLead.city || '';
+    newLead.area = incomingLead.area || '';
+    newLead.enquiryMode = incomingLead.enquiryMode || '';
+    newLead.enquirySource = incomingLead.enquirySource || '';
+    newLead.customerType = incomingLead.customerType || '';
+    newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
+    newLead.followUpDate = incomingLead.followUpDate || '';
+    newLead.histories = incomingLead.histories || [];
+    newLead.leadStatus = incomingLead.leadStatus || 'Open';
+    newLead.createdAt = incomingLead.createdAt || null;
+    newLead.updatedAt = incomingLead.updatedAt || null;
+    newLead.enquiryDate = incomingLead.enquiryDate || null;
 
-  return newLead;
-};
+
+    // setVisaObj(newLead.category);
+
+    // Map Visa category if exists
+    if (incomingLead.category && incomingLead.category.$type === "VISA") {
+      const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
+      newLead.category = mappedVisa;   // assign directly
+      setVisaObj(mappedVisa);          // update state
+      setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+    } else {
+      newLead.category = null;
+      setVisaObj(getEmptyVisaObj());
+    }
+
+    return newLead;
+  };
 
   // Initialize leadObj on prop change
   useEffect(() => {
@@ -168,15 +168,15 @@ const mapIncomingLeadToModel = (incomingLead) => {
     if (lead && Object.keys(lead).length > 0) {
 
       debugger;
-     
-     
-  const mappedLead = mapIncomingLeadToModel(lead);
+
+
+      const mappedLead = mapIncomingLeadToModel(lead);
 
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
       setSubmitBtnTxt("Update Lead");
       setFormHeader("Update Lead Form");
-    } else {    
+    } else {
       //***************************************    New Lead Generation    **********************************************///
       setLeadObj(getEmptyLeadObj());
       setLeadObj(prev => ({ ...prev, category: null })); // reset category data
@@ -228,7 +228,7 @@ const mapIncomingLeadToModel = (incomingLead) => {
   };
 
   const handleChangeForCategory = (e) => {
-debugger;
+    debugger;
     console.log("In handle change for category changed...", e.target.value);
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
@@ -266,36 +266,6 @@ debugger;
     // }
   }, [selectedLeadName, visadObj]);
 
-
-  const validate = () => {
-
-    let errs = {};
-
-    // Follow Up Date
-    // if (!leadObj.followUpDate) {
-    //   errs.followUpDate = "Follow Up Date is required";
-    // } else {
-    //   const today = new Date();
-    //   const selectedDate = new Date(leadObj.followUpDate);
-    //   today.setHours(0, 0, 0, 0);
-    //   selectedDate.setHours(0, 0, 0, 0);
-
-    //   if (selectedDate <= today) {
-    //     errs.followUpDate = "Follow Up Date cannot be in the past";
-    //   }
-    // }
-
-
-     switch (leadCategoryList[val]) {
-       case 'Visa':
-         setLeadObj(prev => ({ ...prev, category:  getEmptyVisaObj() }));
-         break;
-    //   case 'Air Ticketing':
-       default:
-         return null;
-     }
-    
-  };
 
   const validate = () => {
 
@@ -368,102 +338,8 @@ debugger;
   };
 
   const renderCategoryFields = () => {
-
     debugger;
-    switch (selectedLeadName) {
-      case 'Visa':
-        return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj} />;
-      case 'Air Ticketing':
-        return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
-      case 'Car Rentals':
-        return (
-          <>
-            <div className="flex gap-3 flex-wrap">
-              <div className="flex-1">
-                <label className="label-style">No of Travelers</label>
-                <input
-                  name="numTravelers"
-                  type="number"
-                  min="1"
-                  onChange={handleChange}
-                  className={`border-highlight`}
-                />
-              </div>
-              <div className="flex-1 flex-col">
-                <label className="label-style">Type of Vehicle</label>
-                <select
-                  name="vehicle"
-                  value={formData.vehicleType}
-                  className={`border-highlight`}
-                >
-                  <option value="">Select Vehicle</option>
-                  <option value="maruti">Maruti</option>
-                </select>
-              </div>
-              <div className="flex-1 flex-col">
-                <label className="label-style">Type of Duty</label>
-                <div>
-                  <select
-                    name="duty"
-                    className={`border-highlight`}
-                  >
-                    <option value="">Select Duty Type</option>
-                    <option value="Transfer">Transfer</option>
-                    <option value="Local">Local</option>
-                    <option value="Outstation">Outstation</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 flex-wrap">
-              {/* Trip Description */}
-              <div className="flex-1 min-w-[250px]">
-                <label className="label-style">Trip Description</label>
-                <input
-                  name="tripDescription"
-                  placeholder="Trip Description"
-                  onChange={handleChange}
-                  className="border-highlight"
-                />
-              </div>
 
-              {/* Serving City */}
-              <div className="flex-1 min-w-[250px]">
-                <label className="label-style">Serving City</label>
-                <select
-                  name="servingCity"
-                  onChange={handleChange}
-                  className="border-highlight"
-                >
-                  {loading ? (
-                    <option>Loading...</option>
-                  ) : (
-                    <>
-                      <option value="">Select City</option>
-                      {cities.map((city, index) => (
-                        <option key={index} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </>
-                  )}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex gap-3 flex-wrap">
-              {/* Travel Date */}
-              <div className="flex-1 min-w-[250px]">
-                <label className="label-style">Travel Date</label>
-                <input
-                  type="date"
-                  name="travelDate"
-                  onChange={handleChange}
-                  className="border-highlight"
-
-
-    debugger;
-    
     console.log("In renderCategoryFields Lead Object....:", leadObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
 
@@ -510,142 +386,8 @@ debugger;
                 onChange={handleChange}
                 className={`border-highlight`}
               />
-              
+
             </div>
-            <div>
-                {/* Quote Given */}
-                <label className="label-style">Quote Given</label>
-                <input
-                    type="text"
-                    placeholder="Enter quote"
-                    className={`border-highlight`}
-
-                />
-            </div>
-          </>
-        );
-
-
-              {/* No of Days */}
-              <div className="flex-1 min-w-[250px]">
-                <label className="label-style">No of Days</label>
-                <input
-                  type="number"
-                  name="noOfDays"
-                  min="1"
-                  onChange={handleChange}
-                  className="border-highlight"
-                />
-              </div>
-            </div>
-
-            <div>
-              {/* Requirement Type Dropdown */}
-              <div className="flex-1 min-w-[250px]">
-                <label className="label-style">Requirement Type</label>
-                <select
-                  name="requirementType"
-                  value={requirementType}
-                  onChange={(e) => setRequirementType(e.target.value)}
-                  className="border-highlight"
-                >
-                  <option value="">Select Requirement</option>
-                  <option value="personal">Personal Requirement</option>
-                  <option value="corporate">Corporate Requirement</option>
-                </select>
-              </div>
-
-              {/* Show only if corporate selected */}
-              {requirementType === "corporate" && (
-                <div className="flex gap-3 flex-wrap">
-                  {/* Company Name */}
-                  <div className="flex-1 min-w-[200px]">
-                    <label className="label-style">Company Name</label>
-                    <input
-                      type="text"
-                      name="companyName"
-                      onChange={handleChange}
-                      placeholder="Enter Company Name"
-                      className="border-highlight"
-                    />
-                  </div>
-
-                  {/* Telephone No */}
-                  <div className="flex-1 min-w-[200px]">
-                    <label className="label-style">Telephone No</label>
-                    <input
-                      type="tel"
-                      name="telephone"
-                      onChange={handleChange}
-                      placeholder="Enter Telephone No"
-                      className="border-highlight"
-                    />
-                  </div>
-                </div>
-
-              )}
-            </div>
-
-
-      default:
-        return null;
-    }
-  };
-
-  const handleSubmit = async (e) => {
-
-    debugger;
-
-    e.preventDefault();
-
-    const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
-    const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
-    const mobileNoError = validateBeforeSubmit(leadObj.mobileNo, "Mobile Number");
-    const emailIdError = validateBeforeSubmit(leadObj.emailId, "Email Address");
-    const titleError = validateBeforeSubmit(leadObj.title, "Title");
-    const genderError = validateBeforeSubmit(leadObj.gender, "Gender");
-    const FollowUpDateError = validateBeforeSubmit(leadObj.FollowUpDate, "Follow up Date");
-
-
-    const errs = validate();
-    if (fNameError) errs.fName = fNameError;
-    if (lNameError) errs.lName = lNameError;
-    if (mobileNoError) errs.mobileNo = mobileNoError;
-    if (emailIdError) errs.emailId = emailIdError;
-    if (titleError) errs.title = titleError;
-    if (genderError) errs.gender = genderError;
-    if (FollowUpDateError) errs.FollowUpDate = FollowUpDateError;
-
-    // Remove empty errors (fields without error)
-    Object.keys(errs).forEach((key) => {
-      if (!errs[key]) delete errs[key];
-    });
-    setErrors(errs);
-
-    // Final check: Only submit if no errors
-    if (Object.keys(errs).length === 0) {
-      console.log("Form Submitted:", leadObj);
-    }
-
-
-            {/* Rental Type */}
-            <div className="flex-1 min-w-[250px]">
-              <label className="label-style">Rental Type</label>
-              <div className="flex-1 min-w-[250px]">
-                <select
-                  name="rentalType"
-                  className="border-highlight"
-                >
-                  <option value="">Select Rental Type</option>
-                  <option value="events">Events</option>
-                  <option value="individual">Individual</option>
-                  <option value="inbond">InBound</option>
-                  <option value="group">Group</option>
-                </select>
-              </div>
-            </div>
-
-
             <div>
               {/* Quote Given */}
               <label className="label-style">Quote Given</label>
@@ -653,20 +395,12 @@ debugger;
                 type="text"
                 placeholder="Enter quote"
                 className={`border-highlight`}
-              />
-            </div>
 
-            {/* Special Requirement */}
-            <div>
-              <label className="label-style">Special Requirement</label>
-              <input
-                type="text"
-                placeholder="Special requirement "
-                className={`border-highlight`}
               />
             </div>
           </>
         );
+
       default:
         return null;
     }
@@ -705,18 +439,9 @@ debugger;
         setShowPopup(true);     // also show the popup
         return;
       }
-    }catch(error){
-      console.error("Validation Failed",error);
+    } catch (error) {
+      console.error("Validation Failed", error);
     }
-    //   if (!leadObj.fName || !leadObj.emailId || !leadObj.mobileNo) {
-    //   setShowPopup(true);
-    //   return;
-    // }
-    // Example: check followUpDate + dynamic fields
-    // if (!leadObj.followUpDate || Object.values(leadObj).some(val => val === "")) {
-    //   setShowPopup(true); // show popup modal
-    //   return; // stop submission
-    // }
 
     // Remove empty errors (fields without error)
     Object.keys(errs).forEach((key) => {
@@ -729,61 +454,22 @@ debugger;
       console.log("Form Submitted:", leadObj);
     }
 
-    if (Object.keys(errs).length === 0) {
-      try {
-        if (isUpdateMode) {
-          await axios.put(`${updateLeadApi}/${leadObj.leadID}`, leadObj, { headers: { "Content-Type": "application/json" } });
-          alert("Lead updated successfully!");
-        } else {
-
-          debugger;
-          await axios.post(generateLEadAPI, leadObj, { headers: { "Content-Type": "application/json" } });
-          alert("Lead saved successfully!");
-        }
-      } catch (error) {
-        console.error("Error saving lead:", error);
-        alert("Error while saving lead.");
-      }
-    } else {
-      console.warn("validation errors:", errs);
-    }
-
-    debugger;
-    switch (selectedLeadName) {
-
-      case "Visa":
-        setLeadObj(prev => ({ ...prev, categoryData: visadObj }));
-        break;
-      // case "Hotel":
-      //   setLeadObj(prev => ({ ...prev, categoryData: hotelObj }));
-      //   break;
-      // case "Flight":
-      //   setLeadObj(prev => ({ ...prev, categoryData: flightObj }));
-      //   break;
-      default:
-        setLeadObj(prev => ({ ...prev, categoryData: null }));
-    }
-
     try {
       if (isUpdateMode) {
 
-const deepLeadCopy = cloneDeep(leadObj);
-const deepVisaCopy = cloneDeep(visadObj);
-deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
-debugger;
+        const deepLeadCopy = cloneDeep(leadObj);
+        const deepVisaCopy = cloneDeep(visadObj);
+        deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+        debugger;
 
-console.log("Final Lead Obj to Update:", deepLeadCopy);
-console.log ("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
+        console.log("Final Lead Obj to Update:", deepLeadCopy);
+        console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 
-const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
-
-
-  console.log("Updated lead:", response.data);
+        const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
 
 
+        console.log("Updated lead:", response.data);
 
-
-       
 
         alert("Lead updated successfully!");
       } else {
@@ -791,133 +477,14 @@ const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Cont
         debugger;
 
 
-      const deepCopy = cloneDeep(leadObj);
-      const deepVisaCopy = cloneDeep(visadObj);
-      deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+        const deepCopy = cloneDeep(leadObj);
+        const deepVisaCopy = cloneDeep(visadObj);
+        deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
 
 
-debugger;
-          console.log("Deep Copy Lead Obj...", deepCopy);
-
-
-  };
-
-  return (
-    <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
-      <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
-      {/* Customer Details */}
-      <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
-        <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Customer Details</h3>
-        <div className='flex gap-4 mb-4'>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Mobile Number</label>
-            <input name='mobileNo' maxLength={10} onChange={handleChange} value={leadObj.mobileNo || ''}
-              className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
-            />
-            {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Email</label>
-            <input name='emailId' type='email' maxLength={50} onChange={handleChange} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
-            {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
-          </div>
-        </div>
-        <div className='flex gap-4 mb-4'>
-          <div className='flex flex-col w-28'>
-            <label className='label-style'>Title</label>
-            <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className={`border-highlight ${errors.title ? "border-red-500" : ""}`}>
-              <option value=''>Title</option>
-              <option value='Mr.'>Mr.</option>
-              <option value='Mrs.'>Mrs.</option>
-              <option value='Ms.'>Ms.</option>
-              <option value='Dr.'>Dr.</option>
-              <option value='Prof.'>Prof.</option>
-            </select>
-            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>First Name</label>
-            <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
-            {errors.fName && <p className="text-red-500 text-sm">{errors.fName}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Middle Name</label>
-            <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`} />
-            {errors.mName && <p className="text-red-500 text-sm">{errors.mName}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Last Name</label>
-            <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`} />
-            {errors.lName && <p className="text-red-500 text-sm">{errors.lName}</p>}
-          </div>
-        </div>
-
-        {/* Birthdate + Gender + City + Area */}
-        <div className='flex gap-4 mb-4'>
-          {/* Birthdate */}
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Birthdate</label>
-            <input
-              type='date'
-              className={`border-highlight`}
-              name='birthDate'
-              onChange={handleChange}
-              value={leadObj.birthDate}
-            />
-          </div>
-
-
-         const newVisa={...visadObj};  
-         console.log("New Visa Obj...", newVisa);
-
-          const newLead = { ...leadObj };
-          newLead.category = { ...newVisa };
-          //newLead.category = { ...visadObj }; // ✅ attach visa data
-
-
-
-          {/* Gender */}
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Gender</label>
-            <select
-              value={leadObj.gender?.trim() || ""}
-              className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
-              name='gender'
-              onChange={handleChange}
-            >
-              <option value=''>Select Gender</option>
-              <option value='Male'>Male</option>
-              <option value='Female'>Female</option>
-
-
-            </select>
-            {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
-          </div>
-
-
-          {/* City */}
-          <div className="flex flex-col flex-1">
-            <label className="label-style">City</label>
-            <select
-              className={`border-highlight`}
-              // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              name="city"
-              value={leadObj.city?.trim() || ""}
-              onChange={handleChange}
-            >
-              <option value="">Select City</option>
-              {Object.keys(cityAreas).map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-
-          console.log("New Lead Obj...", deepCopy);
-          await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
-          alert("Lead saved successfully!");
+        console.log("New Lead Obj...", deepCopy);
+        await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
+        alert("Lead saved successfully!");
       }
     } catch (error) {
       debugger;
@@ -925,7 +492,6 @@ debugger;
       alert("Error while saving lead.");
     }
   };
-
   return (
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
@@ -1010,17 +576,6 @@ debugger;
             </select>
             {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
           </div>
-
-          {/* Area */}
-          <div className="flex flex-col flex-1">
-            <label className="label-style">Area</label>
-            <select
-              className={`border-highlight`}
-              // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              name="area"
-              value={leadObj.area?.trim() || ""}
-
-
           {/* City */}
           <div className="flex flex-col flex-1">
             <label className="label-style">City</label>
@@ -1029,82 +584,8 @@ debugger;
               // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               name="city"
               value={leadObj.city?.trim() || ""}
-
               onChange={handleChange}
-              disabled={!leadObj.city} // disable until city selected
             >
-
-              <option value="">Select Area</option>
-              {leadObj.city &&
-                cityAreas[leadObj.city || []].map((area) => (
-                  <option key={area} value={area}>
-                    {area}
-                  </option>
-                ))}
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Lead Details */}
-      <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-      <div className='flex gap-4'>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Enquiry Mode</label>
-          <select name="enquiryMode" value={leadObj.enquiryMode?.trim() || ""} onChange={handleChange} className='border-highlight'>
-            <option value="">Select Mode</option>
-            {enquiryModes.map(boy => <option key={boy} value={boy}>
-
-              {boy}
-
-
-            </option>)}
-          </select>
-        </div>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Enquiry Source</label>
-          <select name="enquirySource" value={leadObj.enquirySource?.trim() || ""} onChange={handleChange} className='border-highlight'>
-            <option value="">Select Source</option>
-            {enquirySources.map(cat => <option key={cat} value={cat}>
-
-
-              {cat}
-
-            </option>)}
-          </select>
-        </div>
-        {/* Customer Type */}
-        <div className='flex flex-col flex-1'>
-          <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
-          <select
-            className={`border-highlight`}
-            // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            name="customerType"
-            value={leadObj.customerType?.trim() || ""}
-            onChange={handleChange}
-          >
-            <option value="">Select</option>
-            <option value="VVIP">VVIP</option>
-            <option value="VIP">VIP</option>
-            <option value="Miser">Miser</option>
-            <option value="Friends">Friends</option>
-            <option value="Family">Family</option>
-          </select>
-        </div>
-      </div>
-
-      <div className='flex gap-4 mt-4'>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Category</label>
-          <select name="category" value={leadObj.fK_LeadCategoryID || ''} onChange={handleChangeForCategory} className='border-highlight'>
-            <option value=''>Select Category</option>
-            {Object.entries(leadCategoryList).map(([key, val]) => (
-              <option key={key} value={Number(key)}>{val}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
               <option value="">Select City</option>
               {Object.keys(cityAreas).map((city) => (
                 <option key={city} value={city}>
@@ -1114,7 +595,7 @@ debugger;
             </select>
           </div>
 
-          {/* Area */}
+               {/* Area */}
           <div className="flex flex-col flex-1">
             <label className="label-style">Area</label>
             <select
@@ -1187,12 +668,11 @@ debugger;
       <div className='flex gap-4 mt-4'>
         <div className='flex flex-col flex-1'>
           <label className='label-style'>Category</label>
-          <select name="category" value={leadObj.fK_LeadCategoryID || ''} 
-          onChange={handleChangeForCategory}
-          
-
-          
-          className='border-highlight'>
+          <select
+           name="category" 
+           value={leadObj.fK_LeadCategoryID || ''} 
+           onChange={handleChangeForCategory} 
+           className='border-highlight'>
             <option value=''>Select Category</option>
             {Object.entries(leadCategoryList).map(([key, val]) => (
               <option key={key} value={Number(key)}>{val}</option>
@@ -1201,50 +681,45 @@ debugger;
         </div>
       </div>
 
+  {/* Render dynamic fields */ }
+        <div className='mt-4'>{renderCategoryFields()}</div>
 
-      {/* Render dynamic fields */}
-      <div className='mt-4'>{renderCategoryFields()}</div>
-
-      <div className="flex justify-between items-center mt-6 gap-4">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-          {submitBtnTxt}
-        </button>
-        <div className="flex items-center gap-2">
-          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
-            Follow Up Date :
-          </label>
-          <div className="flex flex-col  justify-start leading-none">
-            <input
-              type="date"
-              id="followUpDate"
-              name="followUpDate"
-              value={leadObj.followUpDate || ''}
-              onChange={handleChange}
-              min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
-              // min={new Date().toISOString().split("T")[0]} //  disables past dates
-
-              className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
-
-              className={`border-highlight ${errors.FollowUpDate ? "border-red-500" : " "}`}
-
-              required
-            />
+        <div className="flex justify-between items-center mt-6 gap-4">
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+            {submitBtnTxt}
+          </button>
+          <div className="flex items-center gap-2">
+            <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
+              Follow Up Date :
+            </label>
+            <div className="flex flex-col  justify-start leading-none">
+              <input
+                type="date"
+                id="followUpDate"
+                name="followUpDate"
+                value={leadObj.followUpDate || ''}
+                onChange={handleChange}
+                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
+                // min={new Date().toISOString().split("T")[0]} //  disables past dates
+                className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div className='text-right'>
+        <div className='text-right'>
 
-        {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
+          {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
 
-        {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
+          {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
 
-      </div>
+        </div>
 
 
-      {/* Footer */}
-      {/* <div className="flex justify-between items-center mt-6 gap-4">
+  {/* Footer */ }
+  {/* <div className="flex justify-between items-center mt-6 gap-4">
         <button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
           {submitBtnTxt}
         </button>
@@ -1270,27 +745,24 @@ debugger;
         </div>
       </div> */}
 
-      {/* Popup / Modal */}
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
-            <p className="mb-4">Please fill all required details before submitting.</p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              OK
-            </button>
-          </div>
+  {/* Popup / Modal */ }
+  {
+    showPopup && (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
+          <p className="mb-4">Please fill all required details before submitting.</p>
+          <button
+            onClick={() => setShowPopup(false)}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            OK
+          </button>
         </div>
-      )}
-    </div>
+      </div>
+    )
+  }
+      </div >
 
-  );
-
-
-    </div>
-  );
-
+      );
 }
