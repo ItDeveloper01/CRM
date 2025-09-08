@@ -1,5 +1,6 @@
 
 import PhoneField from './PhoneInput';
+import cloneDeep from 'lodash/cloneDeep';
 import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
 import LeadAirTicketing from './LeadAirTicketing';
@@ -7,11 +8,14 @@ import axios from "axios";
 import React from 'react';
 import { getEmptyLeadObj } from "../src/Model/LeadModel";
 import config from './config';
+import { VISALeadObject } from './Model/VisaLeadModel';
+import { getEmptyVisaObj } from "./Model/VisaLeadModel";
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
 
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
+  const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
@@ -39,8 +43,8 @@ export default function LeadsGeneration({ lead }) {
 
   const APIURL = config.apiUrl + '/Leads/';
   const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
-  const generateLEadAPI = APIURL + "GenerateLead";
-  const updateLeadApi = APIURL + "UpdateLead";
+  const generateLEadAPI = config.apiUrl + "/TempLead/CreateLead";
+  const updateLeadApi = config.apiUrl + "/TempLead/UpdateLead";
 
   //Indian city api 
   useEffect(() => {
@@ -71,21 +75,111 @@ export default function LeadsGeneration({ lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
+ const mapIncomingVisaToModel = (incomingVisa) => {
+  const newVisa = { ...getEmptyVisaObj() }; // start with default model
+
+  debugger;
+  if (!incomingVisa) return newVisa;
+
+
+  debugger
+  // Map main properties
+  newVisa.id = incomingVisa.id || null;
+  newVisa.country1 = incomingVisa.country1?.trim() || '';
+  newVisa.country2 = incomingVisa.country2?.trim() || '';
+  newVisa.country3 = incomingVisa.country3 ?.trim()|| '';
+  newVisa.visaType = incomingVisa.visaType?.trim() || '';
+  newVisa.travelDate = incomingVisa.travelDate || null;
+  newVisa.noOfApplicants = incomingVisa.noOfApplicants|| null;
+  newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
+  newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
+  newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
+  newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
+  newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
+  newVisa.passportValidity = incomingVisa.passportValidity ?.trim()|| '';
+  newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
+  newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
+  newVisa.notes = incomingVisa.notes || '';
+  newVisa.visaCode = incomingVisa.visaCode || null;
+  newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
+  newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
+  newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
+  newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
+
+
+  debugger;  console.log("Mapped Visa Obj....:", newVisa);
+  return newVisa;
+};
+
+const mapIncomingLeadToModel = (incomingLead) => {
+  const newLead = { ...getEmptyLeadObj() }; // start with default model
+
+  debugger;
+  // Map main properties
+  newLead.leadID = incomingLead.leadID || null;
+  newLead.title = incomingLead.title?.trim() || '';
+  newLead.fName = incomingLead.fName || '';
+  newLead.mName = incomingLead.mName || '';
+  newLead.lName = incomingLead.lName || '';
+  newLead.mobileNo = incomingLead.mobileNo || '';
+  newLead.emailId = incomingLead.emailId || '';
+  newLead.gender = incomingLead.gender?.trim() || '';
+  newLead.birthDate = incomingLead.birthDate || '';
+  newLead.city = incomingLead.city || '';
+  newLead.area = incomingLead.area || '';
+  newLead.enquiryMode = incomingLead.enquiryMode || '';
+  newLead.enquirySource = incomingLead.enquirySource || '';
+  newLead.customerType = incomingLead.customerType || '';
+  newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
+  newLead.followUpDate = incomingLead.followUpDate || '';
+  newLead.histories = incomingLead.histories || [];
+  newLead.leadStatus = incomingLead.leadStatus || 'Open';
+  newLead.createdAt = incomingLead.createdAt || null;
+  newLead.updatedAt = incomingLead.updatedAt || null;
+  newLead.enquiryDate = incomingLead.enquiryDate || null;
+
+  
+   // setVisaObj(newLead.category);
+
+ // Map Visa category if exists
+  if (incomingLead.category && incomingLead.category.$type === "VISA") {
+    const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
+    newLead.category = mappedVisa;   // assign directly
+    setVisaObj(mappedVisa);          // update state
+    setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+  } else {
+    newLead.category = null;
+    setVisaObj(getEmptyVisaObj());
+  }
+
+  return newLead;
+};
+
   // Initialize leadObj on prop change
   useEffect(() => {
 
     debugger;
 
     if (lead && Object.keys(lead).length > 0) {
-      setLeadObj(lead);
+
+      debugger;
+     
+     
+  const mappedLead = mapIncomingLeadToModel(lead);
+
+      setLeadObj(mappedLead);
       setIsUpdateMode(true);
       setSubmitBtnTxt("Update Lead");
       setFormHeader("Update Lead Form");
-    } else {
+    } else {    
+      //***************************************    New Lead Generation    **********************************************///
       setLeadObj(getEmptyLeadObj());
+      setLeadObj(prev => ({ ...prev, category: null })); // reset category data
       setIsUpdateMode(false);
       setSubmitBtnTxt("Generate Lead");
       setFormHeader("Lead Generation Form");
+
+      /****************************************************************************************************************** */
     }
   }, [lead]);
 
@@ -123,12 +217,28 @@ export default function LeadsGeneration({ lead }) {
       .catch(err => console.error(err));
   }, []);
 
+const handleVisaChange = (e) => {
+  const { name, value } = e.target;
+  setVisaObj(prev => ({ ...prev, [name]: value }));
+};
+
   const handleChangeForCategory = (e) => {
+debugger;
+    console.log("In handle change for category changed...", e.target.value);
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
     setSelectedLeadName(leadCategoryList[val] || "");
+    debugger;
+     switch (leadCategoryList[val]) {
+       case 'Visa':
+         setLeadObj(prev => ({ ...prev, category:  getEmptyVisaObj() }));
+         break;
+    //   case 'Air Ticketing':
+       default:
+         return null;
+     }
+    
   };
-
 
   const validate = () => {
 
@@ -193,14 +303,20 @@ export default function LeadsGeneration({ lead }) {
   };
 
   const renderCategoryFields = () => {
-    switch (selectedLeadName) {
-      case 'Visa':
-        return <LeadVisa formData={formData} countries={countries} handleChange={handleChange} />;
-      case 'Air Ticketing':
+
+    debugger;
+    
+    console.log("In renderCategoryFields Lead Object....:", leadObj);
+    console.log("In renderCategoryFields VisaObj....:", visadObj);
+
+    switch (selectedLeadName.toLowerCase()) {
+      case 'visa':
+        return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj} />;
+      case 'air ticketing':
         return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
-      case 'Car Rentals':
+      case 'car rentals':
         return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange} />
-      case 'Holiday':
+      case 'holiday':
         return (
           <>
             <div className="flex-1">
@@ -262,9 +378,6 @@ export default function LeadsGeneration({ lead }) {
 
     e.preventDefault();
 
-
-
-
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
     const mobileNoError = validateBeforeSubmit(leadObj.mobileNo, "Mobile Number");
@@ -297,13 +410,51 @@ export default function LeadsGeneration({ lead }) {
 
     try {
       if (isUpdateMode) {
-        await axios.put(`${updateLeadApi}/${leadObj.leadID}`, leadObj, { headers: { "Content-Type": "application/json" } });
+
+const deepLeadCopy = cloneDeep(leadObj);
+const deepVisaCopy = cloneDeep(visadObj);
+deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+debugger;
+
+console.log("Final Lead Obj to Update:", deepLeadCopy);
+console.log ("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
+
+const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
+
+
+  console.log("Updated lead:", response.data);
+
+
+
+
+       
+
         alert("Lead updated successfully!");
       } else {
 
         debugger;
-        await axios.post(generateLEadAPI, leadObj, { headers: { "Content-Type": "application/json" } });
-        alert("Lead saved successfully!");
+
+
+      const deepCopy = cloneDeep(leadObj);
+      const deepVisaCopy = cloneDeep(visadObj);
+      deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+
+debugger;
+          console.log("Deep Copy Lead Obj...", deepCopy);
+
+
+         const newVisa={...visadObj};  
+         console.log("New Visa Obj...", newVisa);
+
+          const newLead = { ...leadObj };
+          newLead.category = { ...newVisa };
+          //newLead.category = { ...visadObj }; // ✅ attach visa data
+
+
+
+          console.log("New Lead Obj...", deepCopy);
+          await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
+          alert("Lead saved successfully!");
       }
     } catch (error) {
       debugger;
@@ -489,7 +640,12 @@ export default function LeadsGeneration({ lead }) {
       <div className='flex gap-4 mt-4'>
         <div className='flex flex-col flex-1'>
           <label className='label-style'>Category</label>
-          <select name="category" value={leadObj.fK_LeadCategoryID || ''} onChange={handleChangeForCategory} className='border-highlight'>
+          <select name="category" value={leadObj.fK_LeadCategoryID || ''} 
+          onChange={handleChangeForCategory}
+          
+
+          
+          className='border-highlight'>
             <option value=''>Select Category</option>
             {Object.entries(leadCategoryList).map(([key, val]) => (
               <option key={key} value={Number(key)}>{val}</option>
@@ -508,15 +664,15 @@ export default function LeadsGeneration({ lead }) {
           {submitBtnTxt}
         </button>
         <div className="flex items-center gap-2">
-          <label htmlFor="FollowUpDate" className="font-medium text-gray-600 whitespace-nowrap">
+          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
             Follow Up Date :
           </label>
           <div className="flex flex-col  justify-start leading-none">
             <input
               type="date"
-              id="FollowUpDate"
-              name="FollowUpDate"
-              value={leadObj.FollowUpDate || ''}
+              id="followUpDate"
+              name="followUpDate"
+              value={leadObj.followUpDate || ''}
               onChange={handleChange}
               min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
               // min={new Date().toISOString().split("T")[0]} //  disables past dates
