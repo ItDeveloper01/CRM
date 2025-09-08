@@ -21,24 +21,34 @@ export const validNameLive = (value, fieldName = "Name") => {
   }
 }
 
+//Live Validation for Mobile No
 export const validMobileNoLive = (value, fieldName = "Name") => {
-  try{
-  if (value.trim() !== "") {
-    if (/[^0-9]/.test(value)) {
-      return " Only numbers are allowed";
-    } else if (value.length > 10) {
-      return "Enter valid 10-digit mobile number";
-    } else {
-      return ""; // clear error if valid while typing
+  try {
+    if (value.trim() !== "") {
+      // Only digits allowed
+      if (/[^0-9]/.test(value)) {
+        return "Only numbers are allowed";
+      }
+
+      // Length check: must be exactly 10
+      if (value.length < 10) {
+        return "Enter a valid 10-digit mobile number";
+      }
+
+      if (value.length > 10) {
+        return "Enter a valid 10-digit mobile number";
+      }
+
+      return ""; //  valid
     }
+    return "";
+  } catch (error) {
+    console.error("Validation error for Mobile No", error);
+    return "Mobile Number Validation error";
   }
-  return "";
-}catch(error){
-  console("Validation error for Mobile No",error);
-  return "Mobile Number Validation error";
-}
 }
 
+// Live Validation for Email
 export const validEmailLive = (value, fieldName = "Name") => {
   try{
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}$/i;
