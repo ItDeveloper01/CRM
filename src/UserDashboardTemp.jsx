@@ -70,9 +70,15 @@ export default function UserDashboardTemp() {
 
   const LEADAPIURL = config.apiUrl + '/Leads/';
   const GetLeadsDashboardCounts = LEADAPIURL + 'GetLeadsDashboardCounts';
-  const GetActiveLeads = LEADAPIURL + 'GetActiveLeads';
-  const GetFollowUpLeads = LEADAPIURL + 'GetFollowUpLead';
-  const GetTodaysLeads = LEADAPIURL + 'GetTodaysLead';
+  //const GetActiveLeads = LEADAPIURL + 'GetActiveLeads';
+  //const GetFollowUpLeads = LEADAPIURL + 'GetFollowUpLead';
+  //const GetTodaysLeads = LEADAPIURL + 'GetTodaysLead';
+
+  const LEADAPIURL1 = config.apiUrl + '/TempLead/';
+  const GetFollowUpLeads = LEADAPIURL1 + 'GetFollowUpLeads';
+  const GetTodaysLeads = LEADAPIURL1 + 'GetTodaysLeads';
+
+
 
 
 /* ---------- Fetch Data from API ---------- */
@@ -105,14 +111,49 @@ export default function UserDashboardTemp() {
     async function fetchData() {
       try {
 
-        const activeRes = await axios.get(GetTodaysLeads);
+      //   const activeRes = await axios.get(GetTodaysLeads);
+      //   setActiveLeads(activeRes.data || []);
+      //   const followRes = await axios.get(GetFollowUpLeads);
+      //   setFollowLeads(followRes.data || []);
+      
+      // console.log("Active Leads...:", activeRes.data);
+      
+      // console.log("Follow Up Leads...:", followRes.data);
+
+
+
+  /**************************************************************** */
+
+
+  debugger;
+
+  console.log("Final request URL:", GetTodaysLeads);
+        const activeRes = await axios.get(GetTodaysLeads, {
+  params: {
+    userID: "gpatil"
+   
+  }
+});
         setActiveLeads(activeRes.data || []);
-        const followRes = await axios.get(GetFollowUpLeads);
+
+
+        const followRes = await axios.get(GetFollowUpLeads, {
+  params: {
+    userID: "gpatil"
+   
+  }
+});
         setFollowLeads(followRes.data || []);
+
+
+         console.log("DTO  Active Leads...:", activeRes.data);
       
-      console.log("Active Leads...:", activeRes.data);
+        console.log("DTO Follow Up Leads...:", followRes.data);
       
-      console.log("Follow Up Leads...:", followRes.data);
+
+
+  /***************************************************************** */
+
       
       } catch (err) {
 
