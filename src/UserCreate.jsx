@@ -1,11 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ArrowLeft from './arrow-left.png';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import config from './config';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { get } from 'lodash';
+import { getEmptyUserObj } from './Model/UserModel';
 
-export default function UserCreate() {
+
+
+
+export default function UserCreate({user}) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     empId: '',
@@ -28,12 +33,69 @@ export default function UserCreate() {
   });
 
   const [errors, setErrors] = useState({});
+  const [departments, setDepartments] = useState([]);
+  const [userRoles,setUserRoles]=useState([]);
+  const[userObjects,setUserObjects]=useState([]);
+  const[isUpdate,setIsUpdate]=useState(false);
+  const apiUrl = config.apiUrl;
+  const getDeptartmentsEndpoint = apiUrl+'/Users/GetDepartmentList';
+  const getUserRolesListEndPoint=apiUrl+'/Users/GetRolesList';
+
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    console.log('handleChange', e.target.name, e.target.value);
+    setUserObjects({ ...userObjects, [e.target.name]: e.target.value });
   };
 
-  const options = ['Select Department', 'Holiday', 'Air Ticketing', 'Visa'];
+  const fetchDepartments = async () => {
+    try { 
+
+      debugger;
+      const res = await axios.get(getDeptartmentsEndpoint);
+      console.log('Fetching departments in user  registration page ...', res.data);
+      // Assuming the API returns an array of department names
+      // If it returns objects, adjust accordingly
+      setDepartments(res.data);
+
+
+      const rol=  await axios.get (getUserRolesListEndPoint);
+      console.log('Fetching User roles  in user  registration page ...', rol.data);
+      // Assuming the API returns an array of department names
+      // If it returns objects, adjust accordingly
+      setUserRoles(rol.data);
+
+    } catch (err) {
+      console.error('Failed to fetch departments , Roles:', err);
+    }
+  };
+
+
+     useEffect(() => {
+        fetchDepartments();
+
+       if (user && Object.keys(user).length > 0)  {
+
+   /*****************************               EDIT    USER   ************************************************************* */
+
+            const userId = user.userId;
+            console.log('Editing user with ID:', userId);
+            setIsUpdate(true);   
+           
+            setUserObjects ( user); // Fetch user details and populate form
+                 
+              }else 
+              { 
+  /*********************************              NEW    USER    ******************************************************** */
+                      setIsUpdate(false); 
+                      setForm({
+                                ...form,
+                                empId: '',
+                                userId: '',
+                              });
+                      setUserObjects(getEmptyUserObj());
+                      setIsUpdate (false);
+              }
+    }, []);
 
   const handleChangeDropDown = (selectedOptions) => {
     console.log('Selected:', selectedOptions);
@@ -41,28 +103,30 @@ export default function UserCreate() {
 
   const validate = () => {
     let errs = {};
-    if (!form.empId.trim()) errs.empId = 'Employee ID is required';
-    if (!form.userId.trim()) errs.userId = 'User ID is required';
-    if (!form.firstName.trim()) errs.firstName = 'First name is required';
+    if (!userObjects.empId.trim()) errs.empId = 'Employee ID is required';
+    if (!userObjects.userId.trim()) errs.userId = 'User ID is required';
+    if (!userObjects.firstName.trim()) errs.firstName = 'First name is required';
     //   if (!form.middleName.trim()) errs.middleName = 'Middle name is required';
-    if (!form.lastName.trim()) errs.lastName = 'Last name is required';
-    if (!form.mobileNo.match(/^[0-9]{10}$/)) errs.mobileNo = 'Enter valid 10-digit mobile number';
-    if (!form.emailId.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
+    if (!userObjects.lastName.trim()) errs.lastName = 'Last name is required';
+    if (!userObjects.mobileNo.match(/^[0-9]{10}$/)) errs.mobileNo = 'Enter valid 10-digit mobile number';
+    if (!userObjects.emailId.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
       errs.emailId = 'Enter valid email address';
-    if (!form.role) errs.role = 'Select a role';
+    if (!userObjects.role) errs.role = 'Select a role';
     //   if (!form.reportingManager) errs.reportingManager = 'Select a reportingManager';
-    if (!form.password) errs.password = 'Password is required';
-    if (form.password !== form.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    if (!userObjects.password) errs.password = 'Password is required';
+    if (userObjects.password !== userObjects.confirmPassword) errs.confirmPassword = 'Passwords do not match';
     //   if (!form.department) errs.department = 'Select a department';
     //  if (!form.branch) errs.branch = 'Select a branch';
     return errs;
   };
 
   const handleSubmit = async (e) => {
+
+    debugger;
     e.preventDefault();
     console.log('form', form);
     const updatedData = {
-      ...form, // your existing form data
+      ...userObjects, // your existing form data
       createdBy: localStorage.getItem('loggedInUser'), // get from localStorage
       createdAt: new Date().toISOString(), // current date & time
     };
@@ -111,7 +175,7 @@ export default function UserCreate() {
           <input
             id='firstName'
             name='firstName'
-            value={form.firstName}
+            value={userObjects.firstName}
             onChange={handleChange}
             placeholder='First Name'
             className={`border p-2 rounded w-full ${errors.firstName ? 'border-red-500' : ''}`}
@@ -124,7 +188,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Middle Name</label>
           <input
             name='middleName'
-            value={form.middleName}
+            value={userObjects.middleName}
             onChange={handleChange}
             placeholder='Middle Name'
             className={`border p-2 rounded w-full ${errors.middleName ? 'border-red-500' : ''}`}
@@ -137,7 +201,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Last Name</label>
           <input
             name='lastName'
-            value={form.lastName}
+            value={userObjects.lastName}
             onChange={handleChange}
             placeholder='Last Name'
             className={`border p-2 rounded w-full ${errors.lastName ? 'border-red-500' : ''}`}
@@ -155,7 +219,7 @@ export default function UserCreate() {
           <input
             id='userId'
             name='userId'
-            value={form.userId}
+            value={userObjects.userId}
             onChange={handleChange}
             placeholder='User ID'
             className={`border p-2 rounded w-full ${errors.userId ? 'border-red-500' : ''}`}
@@ -169,7 +233,7 @@ export default function UserCreate() {
           <input
             type='password'
             name='password'
-            value={form.password}
+            value={userObjects.password}
             onChange={handleChange}
             placeholder='Password'
             className={`border p-2 rounded w-full ${errors.password ? 'border-red-500' : ''}`}
@@ -183,7 +247,7 @@ export default function UserCreate() {
           <input
             type='password'
             name='confirmPassword'
-            value={form.confirmPassword}
+            value={userObjects.confirmPassword}
             onChange={handleChange}
             placeholder='Confirm Password'
             className={`border p-2 rounded w-full ${
@@ -201,7 +265,7 @@ export default function UserCreate() {
           <input
             type='date'
             name='birthDate'
-            value={form.birthDate}
+            value={userObjects.birthDate}
             onChange={handleChange}
             className='border p-2 rounded w-full'
           />
@@ -212,7 +276,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Mobile No</label>
           <input
             name='mobileNo'
-            value={form.mobileNo}
+            value={userObjects.mobileNo}
             onChange={handleChange}
             placeholder='Mobile No'
             className={`border p-2 rounded w-full ${errors.mobileNo ? 'border-red-500' : ''}`}
@@ -226,7 +290,7 @@ export default function UserCreate() {
           <input
             type='email'
             name='emailId'
-            value={form.emailId}
+            value={userObjects.emailId}
             onChange={handleChange}
             placeholder='Email ID'
             className={`border p-2 rounded w-full ${errors.emailId ? 'border-red-500' : ''}`}
@@ -239,7 +303,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Reporting Manager</label>
           <select
             name='reportingManager'
-            value={form.reportingManager}
+            value={userObjects.reportingManager}
             onChange={handleChange}
             className={`border p-2 rounded w-full ${
               errors.reportingManager ? 'border-red-500' : ''
@@ -260,14 +324,15 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Role</label>
           <select
             name='role'
-            value={form.role}
+            value={userObjects.role}
             onChange={handleChange}
             className={`border p-2 rounded w-full ${errors.role ? 'border-red-500' : ''}`}>
             <option value=''>Select Role</option>
-            <option value='Super Admin'>Super Admin</option>
-            <option value='Admin'>Admin</option>
-            <option value='Manager'>Manager</option>
-            <option value='User'>User</option>
+             {userRoles.map((rol) => (
+              <option key={rol.id} value={(rol.id)}>
+                {rol.roleName}
+              </option>
+            ))}
           </select>
           {errors.role && <p className='text-red-500 text-sm'>{errors.role}</p>}
         </div>
@@ -281,7 +346,7 @@ export default function UserCreate() {
                 type='radio'
                 name='gender'
                 value='Male'
-                checked={form.gender === 'Male'}
+                checked={userObjects.gender === 'Male'}
                 onChange={handleChange}
               />{' '}
               Male
@@ -291,7 +356,7 @@ export default function UserCreate() {
                 type='radio'
                 name='gender'
                 value='Female'
-                checked={form.gender === 'Female'}
+                checked={userObjects.gender === 'Female'}
                 onChange={handleChange}
               />{' '}
               Female
@@ -301,18 +366,18 @@ export default function UserCreate() {
 
         {/* Department */}
         <div>
-          <label className='text-sm font-medium text-gray-700'>Reporting Manager</label>
+          <label className='text-sm font-medium text-gray-700'>Select  Department</label>
           <select
             name='department'
-            value={form.department}
+            value={userObjects.department}
             onChange={handleChange}
             className={`border p-2 rounded w-full ${errors.department ? 'border-red-500' : ''}`}>
             <option value=''>Select Department</option>
-            <option value='Holiday'>Holiday</option>
-            <option value='Air Ticketing'>Air Ticketing</option>
-            <option value='Visa'>Visa</option>
-            <option value='Cars and Coaches'>Cars and Coaches</option>
-            <option value='MICE'>MICE</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={(dept.id)}>
+                {dept.departmentName}
+              </option>
+            ))}
           </select>
           {errors.reportingManager && (
             <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
@@ -324,7 +389,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Designation</label>
           <input
             name='designation'
-            value={form.designation}
+            value={userObjects.designation}
             onChange={handleChange}
             placeholder='Designation'
             className='border p-2 rounded w-full'
@@ -337,7 +402,7 @@ export default function UserCreate() {
           <input
             type='date'
             name='joiningDate'
-            value={form.joiningDate}
+            value={userObjects.joiningDate}
             onChange={handleChange}
             className='border p-2 rounded w-full'
           />
@@ -348,7 +413,7 @@ export default function UserCreate() {
           <label className='text-sm font-medium text-gray-700'>Branch</label>
           <select
             name='branch'
-            value={form.branch}
+            value={userObjects.branch}
             onChange={handleChange}
             className={`border p-2 rounded w-full ${errors.branch ? 'border-red-500' : ''}`}>
             <option value=''>Select Branch</option>
@@ -369,7 +434,7 @@ export default function UserCreate() {
           <input
             id='empId'
             name='empId'
-            value={form.empId}
+            value={userObjects.empId}
             onChange={handleChange}
             placeholder='Employee ID'
             className={`border p-2 rounded w-full ${errors.empId ? 'border-red-500' : ''}`}

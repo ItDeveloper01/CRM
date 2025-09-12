@@ -25,7 +25,7 @@ export const VISALeadObject = {
   updatedAt: new Date().toISOString(),
 
   visaCode: null, // usually read-only
-
+  status: "Open",  // Open/In Process/Closed
   // NotMapped properties (UI/API only)
   quoteGiven: "",
   notes: "",

@@ -3,6 +3,8 @@ import axios from "axios";
 import LeadsTable from "./LeadsTable";
 import LeadTiles from "./DashboardTiles";
 import config from "./config";
+import {useGetSessionUser} from  "./SessionContext"
+    
 
 /* ---------- Helpers ---------- */
 
@@ -67,6 +69,8 @@ export default function UserDashboardTemp() {
   const [activePage, setActivePage] = useState(1);
   const [followPage, setFollowPage] = useState(1);
   const rowsPerPage = 5;
+  const { user: sessionUser } = useGetSessionUser();
+
 
   const LEADAPIURL = config.apiUrl + '/Leads/';
   const GetLeadsDashboardCounts = LEADAPIURL + 'GetLeadsDashboardCounts';
@@ -77,8 +81,6 @@ export default function UserDashboardTemp() {
   const LEADAPIURL1 = config.apiUrl + '/TempLead/';
   const GetFollowUpLeads = LEADAPIURL1 + 'GetFollowUpLeads';
   const GetTodaysLeads = LEADAPIURL1 + 'GetTodaysLeads';
-
-
 
 
 /* ---------- Fetch Data from API ---------- */
@@ -111,26 +113,27 @@ export default function UserDashboardTemp() {
     async function fetchData() {
       try {
 
-      //   const activeRes = await axios.get(GetTodaysLeads);
-      //   setActiveLeads(activeRes.data || []);
-      //   const followRes = await axios.get(GetFollowUpLeads);
-      //   setFollowLeads(followRes.data || []);
-      
-      // console.log("Active Leads...:", activeRes.data);
-      
-      // console.log("Follow Up Leads...:", followRes.data);
 
+debugger;
+
+const storedUser = localStorage.getItem("loggedInUser");
+
+if (storedUser) {
+  const userObj = JSON.parse(storedUser); // convert string -> object
+  console.log(userObj.name); // "Alice"
+  console.log(userObj.role); // "Admin"
+}
 
 
   /**************************************************************** */
-
+console.log("Session User.....",sessionUser);
 
   debugger;
 
   console.log("Final request URL:", GetTodaysLeads);
         const activeRes = await axios.get(GetTodaysLeads, {
   params: {
-    userID: "gpatil"
+    userID: sessionUser.user.userId
    
   }
 });
@@ -139,7 +142,7 @@ export default function UserDashboardTemp() {
 
         const followRes = await axios.get(GetFollowUpLeads, {
   params: {
-    userID: "gpatil"
+    userID: sessionUser.user.userId
    
   }
 });

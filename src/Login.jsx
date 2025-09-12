@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import config from './config';
 import axios from 'axios';
+import { UserProvider } from './SessionContext';
+import { useGetSessionUser } from './SessionContext';
 
-export default function Login({ setAuth }) {
+export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [userId, setUserId] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+const { setUser  } = useGetSessionUser();   // ✅ from context
+  //const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     console.log('user', username);
@@ -34,12 +39,34 @@ export default function Login({ setAuth }) {
       const res = await axios.post(APIURL, formdata);
       console.log('res', res);
       // Save userId to localStorage for later API calls
-      localStorage.setItem('loggedInUser', res.data.userId);
-      setAuth({ isLoggedIn: true, role: res.data.role });
+
+      // ✅ Save full user details in localStorage
+      localStorage.setItem("loggedInUser", JSON.stringify(res.data));
+      
+      // ✅ Update global auth context
+      const authData= {
+        isLoggedIn: true,
+        role: res.data.role,
+        user: {
+          id: res.data.userId,
+          name: res.data.firstName, // or whatever your API returns
+          ...res.data,              // store all user fields if needed
+        },
+      };
+      setUser(authData);
+      
       // alert('Login successful!');
       // Redirect to dashboard (if using React Router)
       debugger;
+      
+      
+      
       navigate('/dashboard');
+
+
+
+
+
     } catch (err) {
       if (err.response && err.response.data) {
         setError(err.response.data);

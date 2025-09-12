@@ -27,7 +27,8 @@ export const LeadObj = {
   updatedAt: null,
   fK_LeadCategoryID :null,
    // 🔹 Flexible slot for category-specific data
-  category: {} 
+  category: {} ,
+  histories: []  // Array to hold history records
 };
 
 

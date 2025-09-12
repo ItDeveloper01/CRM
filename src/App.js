@@ -13,20 +13,23 @@ import AdminRoute from './AdminRoute'; // ✅ import
 import UserDashboard from './UserDashboard';
 import UserDashboardTemp from './UserDashboardTemp';
 import LeadsUpdateForms from "./LeadsUpdateForms"
+import { useGetSessionUser } from "./SessionContext"; // ✅ import
+import { fa } from 'intl-tel-input/i18n';
 
 export default function App() {
-  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
+//  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
+   const { user, setUser } = useGetSessionUser(); // ✅ using user now
 
   return (
     <Router>
       <Routes>
-        {auth.isLoggedIn ? (
+        {user && user.isLoggedIn ? (
           <>
             <Route
               element={
                 <Layout
-                  auth={auth}
-                  setAuth={setAuth}
+                  auth={user}
+                  setAuth={setUser}
                 />
               }>
               <Route
@@ -50,7 +53,7 @@ export default function App() {
               <Route
                 path='/users'
                 element={
-                  <AdminRoute auth={auth}>
+                  <AdminRoute user={user}>
                     <Users />
                   </AdminRoute>
                 }
@@ -59,7 +62,7 @@ export default function App() {
               <Route
                 path='/users/create'
                 element={
-                  <AdminRoute auth={auth}>
+                  <AdminRoute user={user}>
                     <UserCreate />
                   </AdminRoute>
                 }
@@ -75,7 +78,7 @@ export default function App() {
           <>
             <Route
               path='/'
-              element={<Login setAuth={setAuth} />}
+              element={<Login setUser={setUser} />}
             />
 
             <Route path="/updateLeads/:id" element={<LeadsUpdateForms />} />
@@ -83,6 +86,7 @@ export default function App() {
               path='*'
               element={<Navigate to='/login' />}
             />
+            <Route path="/login" element={<Login />} />
           </>
         )}
       </Routes>

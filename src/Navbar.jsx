@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import logo from './logo.svg';
-import { LogOut, Settings, User } from 'lucide-react';
+import { LogIn, LogOut, Settings, User } from 'lucide-react';
+import {useGetSessionUser}  from "./SessionContext";
+import Login from './Login';
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ auth, setAuth }) {
   const [open, setOpen] = useState(false);
@@ -8,11 +11,56 @@ export default function Navbar({ auth, setAuth }) {
 
   const loggedInUser = localStorage.getItem('loggedInUser') || 'Guest';
   const initialLetter = loggedInUser.charAt(0).toUpperCase();
+   // ✅ Get user + setUser from context
+  const { user, setUser } = useGetSessionUser();
 
-  const handleLogout = () => {
-    localStorage.removeItem('loggedInUser');
-    setAuth({ isLoggedIn: false, role: null });
+   const navigate = useNavigate(); // ✅ now navigate is defined
+
+  // const handleLogout = () => {
+  //   localStorage.removeItem('loggedInUser');
+  //   setAuth({ isLoggedIn: false, role: null });
+  // };
+
+
+ // ✅ Safe logout handler
+  const handleLogout = async () => {
+    try {
+      // Call backend to invalidate session/token
+
+
+      debugger;
+
+
+      await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include", // if you use cookies
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      console.error("Logout API failed", error);
+    }
+
+   
+    // Clear local storage
+    localStorage.removeItem("auth");
+
+    // Reset context state
+    setUser({ isLoggedIn: false, role: null, user: null });
+
+    // Redirect
+   // window.location.href = "/login";
+    navigate("/login");
+
+   //
   };
+
+
+  // return (
+  //   <UserContext.Provider value={{ user, setUser, logout }}>
+  //     {children}
+  //   </UserContext.Provider>
+  // );
+
 
   // Close dropdown if clicked outside
   useEffect(() => {

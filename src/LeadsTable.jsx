@@ -33,6 +33,22 @@ const exportToCSV = (data, filename) => {
   document.body.removeChild(a);
 };
 
+
+// Pure JavaScript date formatting function
+export function formatDate(dateInput) {
+  if (!dateInput) return "";
+
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+  if (isNaN(date.getTime())) return ""; // invalid date check
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
+  const year = String(date.getFullYear());
+
+  return `${day}-${month}-${year}`;
+}
+
 /* ---------- Pagination Renderer ---------- */
 const renderPagination = (totalRows, currentPage, setPage) => {
   const rowsPerPage = 5;
@@ -185,7 +201,8 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               </th>
               <th className="text-left px-3 py-2">Last Name</th>
               <th className="text-left px-3 py-2">Mobile No</th>
-              <th className="text-left px-3 py-2">Destination</th>
+              <th className="text-left px-3 py-2">Category</th>
+                <th className="text-left px-3 py-2">FollowUpDate</th>
               <th className="text-left px-3 py-2">Status</th>
               <th className="text-left px-3 py-2">Enquiry Date</th>
               <th className="text-left px-3 py-2">Action</th>
@@ -199,9 +216,10 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                 <td className="px-3 py-2">{lead.fName}</td>
                 <td className="px-3 py-2">{lead.lName}</td>
                 <td className="px-3 py-2">{lead.mobileNo}</td>
-                <td className="px-3 py-2">{lead.destination}</td>
-                <td className="px-3 py-2">{lead.leadStatus}</td>
-                <td className="px-3 py-2">{lead.enquiryDate}</td>
+                <td className="px-3 py-2">{lead.categoryName}</td>
+                  <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
+                <td className="px-3 py-2">{lead.categoryStatus}</td>
+                <td className="px-3 py-2">  {formatDate(lead.enquiryDate)} </td>
                 <td className="px-3 py-2">
                   <button
                     className="text-blue-500 underline"
@@ -240,7 +258,8 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                 <th className="text-left px-3 py-2">First Name</th>
                 <th className="text-left px-3 py-2">Last Name</th>
                 <th className="text-left px-3 py-2">Mobile No</th>
-                <th className="text-left px-3 py-2">Destination</th>
+                <th className="text-left px-3 py-2">Category</th>
+                <th className="text-left px-3 py-2">FollowUpDate</th>
                 <th className="text-left px-3 py-2">Status</th>
                 <th className="text-left px-3 py-2">Enquiry Date</th>
                 <th className="text-left px-3 py-2">Action</th>
@@ -254,9 +273,10 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                   <td className="px-3 py-2">{lead.fName}</td>
                   <td className="px-3 py-2">{lead.lName}</td>
                   <td className="px-3 py-2">{lead.mobileNo}</td>
-                  <td className="px-3 py-2">{lead.destination}</td>
-                  <td className="px-3 py-2">{lead.leadStatus}</td>
-                  <td className="px-3 py-2">{lead.enquiryDate}</td>
+                  <td className="px-3 py-2">{lead.categoryName}</td>
+                  <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
+                  <td className="px-3 py-2">{lead.categoryStatus}</td>
+                  <td className="px-3 py-2">{formatDate(lead.enquiryDate)}</td>
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-500 underline"

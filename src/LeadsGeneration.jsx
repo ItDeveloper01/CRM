@@ -81,7 +81,6 @@ export default function LeadsGeneration({ lead }) {
   debugger;
   if (!incomingVisa) return newVisa;
 
-
   debugger
   // Map main properties
   newVisa.id = incomingVisa.id || null;
@@ -105,7 +104,7 @@ export default function LeadsGeneration({ lead }) {
   newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
   newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
   newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
-
+  newVisa.status = incomingVisa.status || 'Open';
 
   debugger;  console.log("Mapped Visa Obj....:", newVisa);
   return newVisa;
@@ -137,6 +136,7 @@ const mapIncomingLeadToModel = (incomingLead) => {
   newLead.createdAt = incomingLead.createdAt || null;
   newLead.updatedAt = incomingLead.updatedAt || null;
   newLead.enquiryDate = incomingLead.enquiryDate || null;
+  newLead.histories = incomingLead.histories || [];
 
   
    // setVisaObj(newLead.category);
@@ -311,7 +311,23 @@ debugger;
 
     switch (selectedLeadName.toLowerCase()) {
       case 'visa':
-        return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj} />;
+       // return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj}  histories={leadObj.histories} />;
+return (
+  <>
+    {  (
+
+      console.log("Histories to pass to HistoryHover:", leadObj.histories),
+      <LeadVisa
+        visadObj={visadObj}
+        countries={countries}
+        setVisaLeadObj={setVisaObj}
+        histories={leadObj.histories || []}
+        isUpdate={isUpdateMode} // fallback to empty array
+      />
+    )}
+  </>
+);
+
       case 'air ticketing':
         return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
       case 'car rentals':
