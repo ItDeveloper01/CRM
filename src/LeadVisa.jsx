@@ -1,13 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./LeadStyle.css";
 import config from './config';
 import { VISALeadObject } from "./Model/VisaLeadModel";
+import HistoryHover from "./HIstoryHover";
+import { set } from "lodash";
+import { useMemo } from "react";
 
 
+const LeadVisa = ({ visadObj, countries ,setVisaLeadObj ,histories, isUpdate}) => {
 
-const LeadVisa = ({ visadObj, countries ,setVisaLeadObj }) => {
 
+    // Memoize the histories array so reference doesn't change unnecessarily
+  const memoHistories = useMemo(() => histories || [], [histories]);
+  const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
 const handleChange = (e) => {
+
+    console.log("**********************IN VISA OBJECT   /**************************");
+console.log("Handle Change Called for Visa Obj  "); 
+console.log("Visa Obj before change.....:", visadObj);
+console.log("Histories received....",histories);
+console.log("isUpdate flag....",isUpdate);
+
 
     debugger;
     const { name, value } = e.target;
@@ -18,6 +31,12 @@ const handleChange = (e) => {
 
     console.log("Visa Obj.....:", visadObj);
   };
+
+  useEffect(() => { 
+    console.log("Visa Obj in useEffect.....:", visadObj);
+    console.log("Histories in useEffect.....:", histories);   
+    console.log("isUpdate flag....",isUpdate);  
+    }, [setVisaLeadObj,visadObj,histories]);
 
     return (
         <div>
@@ -77,29 +96,6 @@ const handleChange = (e) => {
                     </select>
                 </div>
             </div>
-
-            {/* <div className="flex-1 min-w-[250px]">
-            <label className="label-style">Country</label>
-            <select
-            className={`border-highlight`}
-            name="country"
-            value={visadObj.country}
-            onChange={(e) => {
-                handleChange(e);
-                e.target.size = 1;
-                e.target.blur();
-            }}
-            onFocus={(e) => (e.target.size = 6)}
-            onBlur={(e) => (e.target.size = 1)}
-            >
-            <option value="">Select Country</option>
-            {countries.map((country) => (
-                <option key={country.name} value={country.name}>
-                {country.name}
-                </option>
-            ))}
-            </select>
-        </div> */}
 
             {/* Travel Date, Applicants, Purpose */}
             <div className="flex gap-3 flex-wrap"> {/* reduced gap */}
@@ -345,9 +341,13 @@ const handleChange = (e) => {
                     placeholder="Remark"
                     onChange={handleChange}
                 />
+                 {/* History hover component */}
+                  {memoIsUpdate && (
+                         <HistoryHover histories={memoHistories} />)
+                  }
             </div>
         </div>
     );
 };
 
-export default LeadVisa;
+export default React.memo(LeadVisa);

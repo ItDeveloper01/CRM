@@ -80,85 +80,82 @@ export default function LeadsGeneration({ lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
-  const mapIncomingVisaToModel = (incomingVisa) => {
-    const newVisa = { ...getEmptyVisaObj() }; // start with default model
+const mapIncomingVisaToModel = (incomingVisa) => {
+  const newVisa = { ...getEmptyVisaObj() }; // start with default model
 
-    debugger;
-    if (!incomingVisa) return newVisa;
+  debugger;
+  if (!incomingVisa) return newVisa;
 
+  debugger;
+  // Map main properties
+  newVisa.id = incomingVisa.id || null;
+  newVisa.country1 = incomingVisa.country1?.trim() || '';
+  newVisa.country2 = incomingVisa.country2?.trim() || '';
+  newVisa.country3 = incomingVisa.country3?.trim() || '';
+  newVisa.visaType = incomingVisa.visaType?.trim() || '';
+  newVisa.travelDate = incomingVisa.travelDate || null;
+  newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
+  newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
+  newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
+  newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
+  newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
+  newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
+  newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
+  newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
+  newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
+  newVisa.notes = incomingVisa.notes || '';
+  newVisa.visaCode = incomingVisa.visaCode || null;
+  newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
+  newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
+  newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
+  newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
+  newVisa.status = incomingVisa.status || 'Open'; // ✅ your extra field
 
-    debugger
-    // Map main properties
-    newVisa.id = incomingVisa.id || null;
-    newVisa.country1 = incomingVisa.country1?.trim() || '';
-    newVisa.country2 = incomingVisa.country2?.trim() || '';
-    newVisa.country3 = incomingVisa.country3?.trim() || '';
-    newVisa.visaType = incomingVisa.visaType?.trim() || '';
-    newVisa.travelDate = incomingVisa.travelDate || null;
-    newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
-    newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
-    newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
-    newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
-    newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
-    newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
-    newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
-    newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
-    newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
-    newVisa.notes = incomingVisa.notes || '';
-    newVisa.visaCode = incomingVisa.visaCode || null;
-    newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
-    newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
-    newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
-    newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
+  debugger;
+  console.log("Mapped Visa Obj....:", newVisa);
+  return newVisa;
+};
 
+const mapIncomingLeadToModel = (incomingLead) => {
+  const newLead = { ...getEmptyLeadObj() }; // start with default model
 
-    debugger; console.log("Mapped Visa Obj....:", newVisa);
-    return newVisa;
-  };
+  debugger;
+  // Map main properties
+  newLead.leadID = incomingLead.leadID || null;
+  newLead.title = incomingLead.title?.trim() || '';
+  newLead.fName = incomingLead.fName || '';
+  newLead.mName = incomingLead.mName || '';
+  newLead.lName = incomingLead.lName || '';
+  newLead.mobileNo = incomingLead.mobileNo || '';
+  newLead.emailId = incomingLead.emailId || '';
+  newLead.gender = incomingLead.gender?.trim() || '';
+  newLead.birthDate = incomingLead.birthDate || '';
+  newLead.city = incomingLead.city || '';
+  newLead.area = incomingLead.area || '';
+  newLead.enquiryMode = incomingLead.enquiryMode || '';
+  newLead.enquirySource = incomingLead.enquirySource || '';
+  newLead.customerType = incomingLead.customerType || '';
+  newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
+  newLead.followUpDate = incomingLead.followUpDate || '';
+  newLead.histories = incomingLead.histories || []; // ✅ set once
+  newLead.leadStatus = incomingLead.leadStatus || 'Open';
+  newLead.createdAt = incomingLead.createdAt || null;
+  newLead.updatedAt = incomingLead.updatedAt || null;
+  newLead.enquiryDate = incomingLead.enquiryDate || null;
 
-  const mapIncomingLeadToModel = (incomingLead) => {
-    const newLead = { ...getEmptyLeadObj() }; // start with default model
+  // Map Visa category if exists
+  if (incomingLead.category && incomingLead.category.$type === "VISA") {
+    const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
+    newLead.category = mappedVisa;   // assign directly
+    setVisaObj(mappedVisa);          // update state
+    setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+  } else {
+    newLead.category = null;
+    setVisaObj(getEmptyVisaObj());
+  }
 
-    debugger;
-    // Map main properties
-    newLead.leadID = incomingLead.leadID || null;
-    newLead.title = incomingLead.title?.trim() || '';
-    newLead.fName = incomingLead.fName || '';
-    newLead.mName = incomingLead.mName || '';
-    newLead.lName = incomingLead.lName || '';
-    newLead.mobileNo = incomingLead.mobileNo || '';
-    newLead.emailId = incomingLead.emailId || '';
-    newLead.gender = incomingLead.gender?.trim() || '';
-    newLead.birthDate = incomingLead.birthDate || '';
-    newLead.city = incomingLead.city || '';
-    newLead.area = incomingLead.area || '';
-    newLead.enquiryMode = incomingLead.enquiryMode || '';
-    newLead.enquirySource = incomingLead.enquirySource || '';
-    newLead.customerType = incomingLead.customerType || '';
-    newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
-    newLead.followUpDate = incomingLead.followUpDate || '';
-    newLead.histories = incomingLead.histories || [];
-    newLead.leadStatus = incomingLead.leadStatus || 'Open';
-    newLead.createdAt = incomingLead.createdAt || null;
-    newLead.updatedAt = incomingLead.updatedAt || null;
-    newLead.enquiryDate = incomingLead.enquiryDate || null;
-
-
-    // setVisaObj(newLead.category);
-
-    // Map Visa category if exists
-    if (incomingLead.category && incomingLead.category.$type === "VISA") {
-      const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
-      newLead.category = mappedVisa;   // assign directly
-      setVisaObj(mappedVisa);          // update state
-      setSelectedLeadName(incomingLead.category.categoryName || "Visa");
-    } else {
-      newLead.category = null;
-      setVisaObj(getEmptyVisaObj());
-    }
-
-    return newLead;
-  };
+  return newLead;
+};
 
   // Initialize leadObj on prop change
   useEffect(() => {
@@ -345,7 +342,23 @@ export default function LeadsGeneration({ lead }) {
 
     switch (selectedLeadName.toLowerCase()) {
       case 'visa':
-        return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj} />;
+       // return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj}  histories={leadObj.histories} />;
+return (
+  <>
+    {  (
+
+      console.log("Histories to pass to HistoryHover:", leadObj.histories),
+      <LeadVisa
+        visadObj={visadObj}
+        countries={countries}
+        setVisaLeadObj={setVisaObj}
+        histories={leadObj.histories || []}
+        isUpdate={isUpdateMode} // fallback to empty array
+      />
+    )}
+  </>
+);
+
       case 'air ticketing':
         return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
       case 'car rentals':
