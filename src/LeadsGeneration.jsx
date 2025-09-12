@@ -28,6 +28,11 @@ export default function LeadsGeneration({ lead }) {
   const [countryCode, setCountryCode] = useState([]);
 
 
+  const [showPopup, setShowPopup] = useState(false);
+  //Requirment for car rental
+  const [requirementType, setRequirementType] = useState("");
+
+
   //for Indian City Dropdown through API
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,27 +80,27 @@ export default function LeadsGeneration({ lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
- const mapIncomingVisaToModel = (incomingVisa) => {
+const mapIncomingVisaToModel = (incomingVisa) => {
   const newVisa = { ...getEmptyVisaObj() }; // start with default model
 
   debugger;
   if (!incomingVisa) return newVisa;
 
-  debugger
+  debugger;
   // Map main properties
   newVisa.id = incomingVisa.id || null;
   newVisa.country1 = incomingVisa.country1?.trim() || '';
   newVisa.country2 = incomingVisa.country2?.trim() || '';
-  newVisa.country3 = incomingVisa.country3 ?.trim()|| '';
+  newVisa.country3 = incomingVisa.country3?.trim() || '';
   newVisa.visaType = incomingVisa.visaType?.trim() || '';
   newVisa.travelDate = incomingVisa.travelDate || null;
-  newVisa.noOfApplicants = incomingVisa.noOfApplicants|| null;
+  newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
   newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
   newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
   newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
   newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
   newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
-  newVisa.passportValidity = incomingVisa.passportValidity ?.trim()|| '';
+  newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
   newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
   newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
   newVisa.notes = incomingVisa.notes || '';
@@ -104,9 +109,10 @@ export default function LeadsGeneration({ lead }) {
   newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
   newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
   newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
-  newVisa.status = incomingVisa.status || 'Open';
+  newVisa.status = incomingVisa.status || 'Open'; // ✅ your extra field
 
-  debugger;  console.log("Mapped Visa Obj....:", newVisa);
+  debugger;
+  console.log("Mapped Visa Obj....:", newVisa);
   return newVisa;
 };
 
@@ -131,17 +137,13 @@ const mapIncomingLeadToModel = (incomingLead) => {
   newLead.customerType = incomingLead.customerType || '';
   newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
   newLead.followUpDate = incomingLead.followUpDate || '';
-  newLead.histories = incomingLead.histories || [];
+  newLead.histories = incomingLead.histories || []; // ✅ set once
   newLead.leadStatus = incomingLead.leadStatus || 'Open';
   newLead.createdAt = incomingLead.createdAt || null;
   newLead.updatedAt = incomingLead.updatedAt || null;
   newLead.enquiryDate = incomingLead.enquiryDate || null;
-  newLead.histories = incomingLead.histories || [];
 
-  
-   // setVisaObj(newLead.category);
-
- // Map Visa category if exists
+  // Map Visa category if exists
   if (incomingLead.category && incomingLead.category.$type === "VISA") {
     const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
     newLead.category = mappedVisa;   // assign directly
@@ -163,15 +165,15 @@ const mapIncomingLeadToModel = (incomingLead) => {
     if (lead && Object.keys(lead).length > 0) {
 
       debugger;
-     
-     
-  const mappedLead = mapIncomingLeadToModel(lead);
+
+
+      const mappedLead = mapIncomingLeadToModel(lead);
 
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
       setSubmitBtnTxt("Update Lead");
       setFormHeader("Update Lead Form");
-    } else {    
+    } else {
       //***************************************    New Lead Generation    **********************************************///
       setLeadObj(getEmptyLeadObj());
       setLeadObj(prev => ({ ...prev, category: null })); // reset category data
@@ -217,28 +219,50 @@ const mapIncomingLeadToModel = (incomingLead) => {
       .catch(err => console.error(err));
   }, []);
 
-const handleVisaChange = (e) => {
-  const { name, value } = e.target;
-  setVisaObj(prev => ({ ...prev, [name]: value }));
-};
+  const handleVisaChange = (e) => {
+    const { name, value } = e.target;
+    setVisaObj(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleChangeForCategory = (e) => {
-debugger;
+    debugger;
     console.log("In handle change for category changed...", e.target.value);
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
     setSelectedLeadName(leadCategoryList[val] || "");
     debugger;
-     switch (leadCategoryList[val]) {
-       case 'Visa':
-         setLeadObj(prev => ({ ...prev, category:  getEmptyVisaObj() }));
-         break;
-    //   case 'Air Ticketing':
-       default:
-         return null;
-     }
-    
+
+    switch (leadCategoryList[val]) {
+      case 'Visa':
+        setLeadObj(prev => ({ ...prev, categoryData: getEmptyVisaObj() }));
+        break;
+      //   case 'Air Ticketing':
+      default:
+        return null;
+    }
   };
+
+
+  React.useEffect(() => {
+
+    debugger;
+
+    // switch (selectedLeadName) {
+
+    //   case "Visa":
+    //     setLeadObj(prev => ({ ...prev, categoryData:visadObj }));
+    //     break;
+    //   // case "Hotel":
+    //   //   setLeadObj(prev => ({ ...prev, categoryData: hotelObj }));
+    //   //   break;
+    //   // case "Flight":
+    //   //   setLeadObj(prev => ({ ...prev, categoryData: flightObj }));
+    //   //   break;
+    //   default:
+    //     setLeadObj(prev => ({ ...prev, categoryData: null }));
+    // }
+  }, [selectedLeadName, visadObj]);
+
 
   const validate = () => {
 
@@ -283,7 +307,11 @@ debugger;
     setErrors((prev) => ({ ...prev, [name]: errMsg })); // common for all 
 
     // Live validation for Follow Up Date
+
+    // if (name === "followUpDate") {
+
     // if (name === "FollowUpDate") {
+
     //   let errMsg = "";
     //   if (!value) {
     //     errMsg = "Follow Up Date is required";
@@ -297,15 +325,18 @@ debugger;
     //   errMsg = "Follow Up Date cannot be in the past";
     // }
     //   }
+
+    // //   setErrors((prev) => ({ ...prev, followUpDate: errMsg }));
+
     // //   setErrors((prev) => ({ ...prev, FollowUpDate: errMsg }));
+
     // }
 
   };
 
   const renderCategoryFields = () => {
-
     debugger;
-    
+
     console.log("In renderCategoryFields Lead Object....:", leadObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
 
@@ -368,20 +399,20 @@ return (
                 onChange={handleChange}
                 className={`border-highlight`}
               />
-              
+
             </div>
             <div>
-                {/* Quote Given */}
-                <label className="label-style">Quote Given</label>
-                <input
-                    type="text"
-                    placeholder="Enter quote"
-                    className={`border-highlight`}
-                />
+              {/* Quote Given */}
+              <label className="label-style">Quote Given</label>
+              <input
+                type="text"
+                placeholder="Enter quote"
+                className={`border-highlight`}
+
+              />
             </div>
           </>
         );
-
 
       default:
         return null;
@@ -394,13 +425,16 @@ return (
 
     e.preventDefault();
 
+
+
+
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
     const mobileNoError = validateBeforeSubmit(leadObj.mobileNo, "Mobile Number");
     const emailIdError = validateBeforeSubmit(leadObj.emailId, "Email Address");
     const titleError = validateBeforeSubmit(leadObj.title, "Title");
     const genderError = validateBeforeSubmit(leadObj.gender, "Gender");
-    const FollowUpDateError = validateBeforeSubmit(leadObj.FollowUpDate, "Follow up Date");
+    const followUpDateError = validateBeforeSubmit(leadObj.followUpDate, "Follow up Date");
 
 
     const errs = validate();
@@ -410,7 +444,17 @@ return (
     if (emailIdError) errs.emailId = emailIdError;
     if (titleError) errs.title = titleError;
     if (genderError) errs.gender = genderError;
-    if (FollowUpDateError) errs.FollowUpDate = FollowUpDateError;
+    if (followUpDateError) errs.followUpDate = followUpDateError;
+
+    try {
+      if (Object.keys(errs).length > 0) {
+        setErrors(errs);        // highlight specific fields
+        setShowPopup(true);     // also show the popup
+        return;
+      }
+    } catch (error) {
+      console.error("Validation Failed", error);
+    }
 
     // Remove empty errors (fields without error)
     Object.keys(errs).forEach((key) => {
@@ -423,27 +467,22 @@ return (
       console.log("Form Submitted:", leadObj);
     }
 
-
     try {
       if (isUpdateMode) {
 
-const deepLeadCopy = cloneDeep(leadObj);
-const deepVisaCopy = cloneDeep(visadObj);
-deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
-debugger;
+        const deepLeadCopy = cloneDeep(leadObj);
+        const deepVisaCopy = cloneDeep(visadObj);
+        deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+        debugger;
 
-console.log("Final Lead Obj to Update:", deepLeadCopy);
-console.log ("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
+        console.log("Final Lead Obj to Update:", deepLeadCopy);
+        console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 
-const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
-
-
-  console.log("Updated lead:", response.data);
+        const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
 
 
+        console.log("Updated lead:", response.data);
 
-
-       
 
         alert("Lead updated successfully!");
       } else {
@@ -451,26 +490,14 @@ const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Cont
         debugger;
 
 
-      const deepCopy = cloneDeep(leadObj);
-      const deepVisaCopy = cloneDeep(visadObj);
-      deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
-
-debugger;
-          console.log("Deep Copy Lead Obj...", deepCopy);
+        const deepCopy = cloneDeep(leadObj);
+        const deepVisaCopy = cloneDeep(visadObj);
+        deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
 
 
-         const newVisa={...visadObj};  
-         console.log("New Visa Obj...", newVisa);
-
-          const newLead = { ...leadObj };
-          newLead.category = { ...newVisa };
-          //newLead.category = { ...visadObj }; // ✅ attach visa data
-
-
-
-          console.log("New Lead Obj...", deepCopy);
-          await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
-          alert("Lead saved successfully!");
+        console.log("New Lead Obj...", deepCopy);
+        await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
+        alert("Lead saved successfully!");
       }
     } catch (error) {
       debugger;
@@ -478,7 +505,6 @@ debugger;
       alert("Error while saving lead.");
     }
   };
-
   return (
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
@@ -559,11 +585,10 @@ debugger;
               <option value='Male'>Male</option>
               <option value='Female'>Female</option>
 
+
             </select>
             {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
           </div>
-
-
           {/* City */}
           <div className="flex flex-col flex-1">
             <label className="label-style">City</label>
@@ -583,7 +608,7 @@ debugger;
             </select>
           </div>
 
-          {/* Area */}
+               {/* Area */}
           <div className="flex flex-col flex-1">
             <label className="label-style">Area</label>
             <select
@@ -656,12 +681,11 @@ debugger;
       <div className='flex gap-4 mt-4'>
         <div className='flex flex-col flex-1'>
           <label className='label-style'>Category</label>
-          <select name="category" value={leadObj.fK_LeadCategoryID || ''} 
-          onChange={handleChangeForCategory}
-          
-
-          
-          className='border-highlight'>
+          <select
+           name="category" 
+           value={leadObj.fK_LeadCategoryID || ''} 
+           onChange={handleChangeForCategory} 
+           className='border-highlight'>
             <option value=''>Select Category</option>
             {Object.entries(leadCategoryList).map(([key, val]) => (
               <option key={key} value={Number(key)}>{val}</option>
@@ -670,56 +694,88 @@ debugger;
         </div>
       </div>
 
-      {/* Render dynamic fields */}
-      <div className='mt-4'>{renderCategoryFields()}</div>
+  {/* Render dynamic fields */ }
+        <div className='mt-4'>{renderCategoryFields()}</div>
 
-      <div className="flex justify-between items-center mt-6 gap-4">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-          {submitBtnTxt}
-        </button>
-        <div className="flex items-center gap-2">
-          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
-            Follow Up Date :
-          </label>
-          <div className="flex flex-col  justify-start leading-none">
-            <input
-              type="date"
-              id="followUpDate"
-              name="followUpDate"
-              value={leadObj.followUpDate || ''}
-              onChange={handleChange}
-              min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
-              // min={new Date().toISOString().split("T")[0]} //  disables past dates
-              className={`border-highlight ${errors.FollowUpDate ? "border-red-500" : " "}`}
-              required
-            />
+        <div className="flex justify-between items-center mt-6 gap-4">
+          <button
+            onClick={handleSubmit}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+            {submitBtnTxt}
+          </button>
+          <div className="flex items-center gap-2">
+            <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
+              Follow Up Date :
+            </label>
+            <div className="flex flex-col  justify-start leading-none">
+              <input
+                type="date"
+                id="followUpDate"
+                name="followUpDate"
+                value={leadObj.followUpDate || ''}
+                onChange={handleChange}
+                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
+                // min={new Date().toISOString().split("T")[0]} //  disables past dates
+                className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
+                required
+              />
+            </div>
           </div>
         </div>
-      </div>
-      <div className='text-right'>
-        {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
-      </div>
+        <div className='text-right'>
+
+          {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
+
+          {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
+
+        </div>
 
 
-      {/* Footer */}
-      {/* <div className="flex justify-between items-center mt-6 gap-4">
+  {/* Footer */ }
+  {/* <div className="flex justify-between items-center mt-6 gap-4">
         <button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
           {submitBtnTxt}
         </button>
         <div className="flex items-center gap-2">
+
+          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">Follow Up Date :</label>
+          <input 
+          type="date" 
+          id="followUpDate" 
+          name="followUpDate" 
+          value={leadObj.followUpDate || ''}
+
           <label htmlFor="FollowUpDate" className="font-medium text-gray-600 whitespace-nowrap">Follow Up Date :</label>
           <input 
           type="date" 
           id="FollowUpDate" 
           name="FollowUpDate" 
           value={leadObj.FollowUpDate || ''}
+
            onChange={handleChange} 
            className={`border-highlight`} 
           />
         </div>
       </div> */}
-    </div>
-  );
+
+  {/* Popup / Modal */ }
+  {
+    showPopup && (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+          <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
+          <p className="mb-4">Please fill all required details before submitting.</p>
+          <button
+            onClick={() => setShowPopup(false)}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    )
+  }
+      </div >
+
+      );
 }
