@@ -9,8 +9,16 @@ export default function Navbar({ auth, setAuth }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const loggedInUser = localStorage.getItem('loggedInUser') || 'Guest';
-  const initialLetter = loggedInUser.charAt(0).toUpperCase();
+  const storedUser = localStorage.getItem('loggedInUser');
+const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
+
+
+console.log("Logged in user: " , loggedInUser);
+
+console.log("LoggedIn user Name...."+loggedInUser.user.userId );
+
+  const initialLetter = loggedInUser.user?.userId?.charAt(0).toUpperCase();
+  console.log("Initial Letter...", initialLetter);
    // ✅ Get user + setUser from context
   const { user, setUser } = useGetSessionUser();
 
@@ -88,7 +96,12 @@ export default function Navbar({ auth, setAuth }) {
       <div
         className='flex items-center gap-4 relative'
         ref={dropdownRef}>
-        <span className='font-medium hidden sm:block'>{loggedInUser}</span>
+        <span className='font-medium hidden sm:block'>
+          
+           {loggedInUser?.user?.userId || "Guest"}
+
+
+        </span>
 
         {/* Avatar */}
         <div

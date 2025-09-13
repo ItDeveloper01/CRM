@@ -53,7 +53,7 @@ export default function App() {
               <Route
                 path='/users'
                 element={
-                  <AdminRoute user={user}>
+                  <AdminRoute auth={user}>
                     <Users />
                   </AdminRoute>
                 }
@@ -62,7 +62,7 @@ export default function App() {
               <Route
                 path='/users/create'
                 element={
-                  <AdminRoute user={user}>
+                  <AdminRoute auth={user}>
                     <UserCreate />
                   </AdminRoute>
                 }
