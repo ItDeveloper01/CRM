@@ -4,7 +4,7 @@ import MultiSelectDropdown from './MultiSelectDropdown';
 import config from './config';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { get } from 'lodash';
+import { get, update } from 'lodash';
 import { getEmptyUserObj } from './Model/UserModel';
 
 
@@ -125,12 +125,14 @@ export default function UserCreate({user}) {
     debugger;
     e.preventDefault();
     console.log('form', form);
+    const tempUser=localStorage.getItem('loggedInUser');
     const updatedData = {
       ...userObjects, // your existing form data
-      createdBy: localStorage.getItem('loggedInUser'), // get from localStorage
+      createdBy:tempUser?.user?.userId, // get from localStorage
+     
       createdAt: new Date().toISOString(), // current date & time
     };
-
+ console.log("createdBy.....:" , updatedData.createdBy);
     console.log('updated data:', updatedData);
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -143,7 +145,7 @@ export default function UserCreate({user}) {
       navigate('/users');
     } catch (error) {
       console.log('error1', error.response.data.errors);
-      alert('❌ Failed to create user', error.response.data.errors[0]);
+      alert('❌ Failed to create user', error.response.data.errors);
     }
   };
 

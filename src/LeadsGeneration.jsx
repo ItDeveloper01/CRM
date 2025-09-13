@@ -26,6 +26,7 @@ export default function LeadsGeneration({ lead }) {
   const [formHeader, setFormHeader] = useState('Lead Generation Form');
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
 
   const [showPopup, setShowPopup] = useState(false);
@@ -53,6 +54,16 @@ export default function LeadsGeneration({ lead }) {
 
   //Indian city api 
   useEffect(() => {
+
+
+    //**************************  Fecth Current User    *********************///////////////
+
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (loggedInUser) {
+      setCurrentUser(JSON.parse(loggedInUser)); // if stored as object
+      console.log("Loggend IN user in Lead generation..", loggedInUser);
+    }
+
     // Example API that provides Indian cities
     fetch("https://countriesnow.space/api/v0.1/countries/cities", {
       method: "POST",
@@ -80,82 +91,88 @@ export default function LeadsGeneration({ lead }) {
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
   };
 
-const mapIncomingVisaToModel = (incomingVisa) => {
-  const newVisa = { ...getEmptyVisaObj() }; // start with default model
+  const mapIncomingVisaToModel = (incomingVisa) => {
+    const newVisa = { ...getEmptyVisaObj() }; // start with default model
 
-  debugger;
-  if (!incomingVisa) return newVisa;
+    debugger;
+    if (!incomingVisa) return newVisa;
 
-  debugger;
-  // Map main properties
-  newVisa.id = incomingVisa.id || null;
-  newVisa.country1 = incomingVisa.country1?.trim() || '';
-  newVisa.country2 = incomingVisa.country2?.trim() || '';
-  newVisa.country3 = incomingVisa.country3?.trim() || '';
-  newVisa.visaType = incomingVisa.visaType?.trim() || '';
-  newVisa.travelDate = incomingVisa.travelDate || null;
-  newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
-  newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
-  newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
-  newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
-  newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
-  newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
-  newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
-  newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
-  newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
-  newVisa.notes = incomingVisa.notes || '';
-  newVisa.visaCode = incomingVisa.visaCode || null;
-  newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || '';
-  newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || 'gpatil';
-  newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
-  newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
-  newVisa.status = incomingVisa.status || 'Open'; // ✅ your extra field
 
-  debugger;
-  console.log("Mapped Visa Obj....:", newVisa);
-  return newVisa;
-};
+    debugger
+    // Map main properties
+    newVisa.id = incomingVisa.id || null;
+    newVisa.country1 = incomingVisa.country1?.trim() || '';
+    newVisa.country2 = incomingVisa.country2?.trim() || '';
+    newVisa.country3 = incomingVisa.country3?.trim() || '';
+    newVisa.visaType = incomingVisa.visaType?.trim() || '';
+    newVisa.travelDate = incomingVisa.travelDate || null;
+    newVisa.noOfApplicants = incomingVisa.noOfApplicants || null;
+    newVisa.purposeOfTravel = incomingVisa.purposeOfTravel?.trim() || '';
+    newVisa.noOfEntries = incomingVisa.noOfEntries?.trim() || '';
+    newVisa.travelPlanStatus = incomingVisa.travelPlanStatus?.trim() || '';
+    newVisa.hotelBooking = incomingVisa.hotelBooking?.trim() || '';
+    newVisa.overseasInsurance = incomingVisa.overseasInsurance?.trim() || '';
+    newVisa.passportValidity = incomingVisa.passportValidity?.trim() || '';
+    newVisa.airTicketIssuedBy = incomingVisa.airTicketIssuedBy?.trim() || '';
+    newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
+    newVisa.notes = incomingVisa.notes || '';
+    newVisa.visaCode = incomingVisa.visaCode || null;
+    debugger;
+    newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || currentUser?.user?.userId;
+    newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || currentUser?.user?.userId;
+    newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
+    newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
+    newVisa.status = incomingVisa.status || 'Open';
+    
 
-const mapIncomingLeadToModel = (incomingLead) => {
-  const newLead = { ...getEmptyLeadObj() }; // start with default model
+    debugger;
+    console.log("Mapped Visa Obj....:", newVisa);
+    return newVisa;
+  };
 
-  debugger;
-  // Map main properties
-  newLead.leadID = incomingLead.leadID || null;
-  newLead.title = incomingLead.title?.trim() || '';
-  newLead.fName = incomingLead.fName || '';
-  newLead.mName = incomingLead.mName || '';
-  newLead.lName = incomingLead.lName || '';
-  newLead.mobileNo = incomingLead.mobileNo || '';
-  newLead.emailId = incomingLead.emailId || '';
-  newLead.gender = incomingLead.gender?.trim() || '';
-  newLead.birthDate = incomingLead.birthDate || '';
-  newLead.city = incomingLead.city || '';
-  newLead.area = incomingLead.area || '';
-  newLead.enquiryMode = incomingLead.enquiryMode || '';
-  newLead.enquirySource = incomingLead.enquirySource || '';
-  newLead.customerType = incomingLead.customerType || '';
-  newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
-  newLead.followUpDate = incomingLead.followUpDate || '';
-  newLead.histories = incomingLead.histories || []; // ✅ set once
-  newLead.leadStatus = incomingLead.leadStatus || 'Open';
-  newLead.createdAt = incomingLead.createdAt || null;
-  newLead.updatedAt = incomingLead.updatedAt || null;
-  newLead.enquiryDate = incomingLead.enquiryDate || null;
+  const mapIncomingLeadToModel = (incomingLead) => {
+    const newLead = { ...getEmptyLeadObj() }; // start with default model
 
-  // Map Visa category if exists
-  if (incomingLead.category && incomingLead.category.$type === "VISA") {
-    const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
-    newLead.category = mappedVisa;   // assign directly
-    setVisaObj(mappedVisa);          // update state
-    setSelectedLeadName(incomingLead.category.categoryName || "Visa");
-  } else {
-    newLead.category = null;
-    setVisaObj(getEmptyVisaObj());
-  }
-
-  return newLead;
-};
+    debugger;
+    // Map main properties
+    newLead.leadID = incomingLead.leadID || null;
+    newLead.title = incomingLead.title?.trim() || '';
+    newLead.fName = incomingLead.fName || '';
+    newLead.mName = incomingLead.mName || '';
+    newLead.lName = incomingLead.lName || '';
+    newLead.mobileNo = incomingLead.mobileNo || '';
+    newLead.emailId = incomingLead.emailId || '';
+    newLead.gender = incomingLead.gender?.trim() || '';
+    newLead.birthDate = incomingLead.birthDate || '';
+    newLead.city = incomingLead.city || '';
+    newLead.area = incomingLead.area || '';
+    newLead.enquiryMode = incomingLead.enquiryMode || '';
+    newLead.enquirySource = incomingLead.enquirySource || '';
+    newLead.customerType = incomingLead.customerType || '';
+    newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
+    newLead.followUpDate = incomingLead.followUpDate || '';
+    newLead.histories = incomingLead.histories || [];
+    newLead.leadStatus = incomingLead.leadStatus || 'Open';
+    newLead.createdAt = incomingLead.createdAt || null;
+    newLead.updatedAt = incomingLead.updatedAt || null;
+    newLead.enquiryDate = incomingLead.enquiryDate || null;
+    newLead.assignee_UserID=incomingLead.assigneeTo_UserID;
+     
+    // Map Visa category if exists
+    if (incomingLead.category && incomingLead.category.$type === "VISA") {
+      const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
+      newLead.category = mappedVisa;   // assign directly
+      setVisaObj(mappedVisa);          // update state
+      setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+    } else {
+      newLead.category = null;
+      setVisaObj(getEmptyVisaObj());
+      visadObj.createdBy_UserID = currentUser?.user?.userId;
+      visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+      newLead.category = visadObj;
+    }
+    return newLead;
+  };
 
   // Initialize leadObj on prop change
   useEffect(() => {
@@ -165,7 +182,6 @@ const mapIncomingLeadToModel = (incomingLead) => {
     if (lead && Object.keys(lead).length > 0) {
 
       debugger;
-
 
       const mappedLead = mapIncomingLeadToModel(lead);
 
@@ -224,17 +240,25 @@ const mapIncomingLeadToModel = (incomingLead) => {
     setVisaObj(prev => ({ ...prev, [name]: value }));
   };
 
+
   const handleChangeForCategory = (e) => {
     debugger;
     console.log("In handle change for category changed...", e.target.value);
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
+
     setSelectedLeadName(leadCategoryList[val] || "");
     debugger;
 
     switch (leadCategoryList[val]) {
       case 'Visa':
+        debugger;
         setLeadObj(prev => ({ ...prev, categoryData: getEmptyVisaObj() }));
+
+        // const vis= getEmptyVisaObj()
+        // if(leadObj?.categoryData?.createdBy_UserID==null )
+        //  vis.createdBy_UserID= currentUser?.user?.userId ;
+        //  setLeadObj(prev => ({ ...prev, categoryData: vis }));
         break;
       //   case 'Air Ticketing':
       default:
@@ -341,25 +365,25 @@ const mapIncomingLeadToModel = (incomingLead) => {
     console.log("In renderCategoryFields VisaObj....:", visadObj);
 
     switch (selectedLeadName.toLowerCase()) {
-      case 'visa':
-       // return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj}  histories={leadObj.histories} />;
-return (
-  <>
-    {  (
+    
+          case 'visa':
+        // return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj}  histories={leadObj.histories} />;
+        return (
+          <>
+            {(
 
-      console.log("Histories to pass to HistoryHover:", leadObj.histories),
-      <LeadVisa
-        visadObj={visadObj}
-        countries={countries}
-        setVisaLeadObj={setVisaObj}
-        histories={leadObj.histories || []}
-        isUpdate={isUpdateMode} // fallback to empty array
-      />
-    )}
-  </>
-);
-
-      case 'air ticketing':
+              console.log("Histories to pass to HistoryHover:", leadObj.histories),
+              <LeadVisa
+                visadObj={visadObj}
+                countries={countries}
+                setVisaLeadObj={setVisaObj}
+                histories={leadObj.histories || []}
+                isUpdate={isUpdateMode} // fallback to empty array
+              />
+            )}
+          </>
+        ); 
+        case 'air ticketing':
         return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
       case 'car rentals':
         return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange} />
@@ -470,8 +494,29 @@ return (
     try {
       if (isUpdateMode) {
 
+
+
+        if (!visadObj.createdBy_UserID) {
+          visadObj.createdBy_UserID = currentUser?.user?.userId;
+        }
+
+        if (!visadObj.assigneeTo_UserID) {
+          visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        }
+
+
+        if (!leadObj.createdBy_UserID) {
+          leadObj.createdBy_UserID = currentUser?.user?.userId;
+        }
+
+        if (!leadObj.assigneeTo_UserID) {
+          leadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        }
+
         const deepLeadCopy = cloneDeep(leadObj);
         const deepVisaCopy = cloneDeep(visadObj);
+
+
         deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
         debugger;
 
@@ -488,7 +533,22 @@ return (
       } else {
 
         debugger;
+         if (!visadObj.createdBy_UserID) {
+          visadObj.createdBy_UserID = currentUser?.user?.userId;
+        }
 
+        if (!visadObj.assigneeTo_UserID) {
+          visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        }
+
+
+        if (!leadObj.createdBy_UserID) {
+          leadObj.createdBy_UserID = currentUser?.user?.userId;
+        }
+
+        if (!leadObj.assigneeTo_UserID) {
+          leadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        }
 
         const deepCopy = cloneDeep(leadObj);
         const deepVisaCopy = cloneDeep(visadObj);
@@ -608,7 +668,7 @@ return (
             </select>
           </div>
 
-               {/* Area */}
+          {/* Area */}
           <div className="flex flex-col flex-1">
             <label className="label-style">Area</label>
             <select
@@ -682,10 +742,10 @@ return (
         <div className='flex flex-col flex-1'>
           <label className='label-style'>Category</label>
           <select
-           name="category" 
-           value={leadObj.fK_LeadCategoryID || ''} 
-           onChange={handleChangeForCategory} 
-           className='border-highlight'>
+            name="category"
+            value={leadObj.fK_LeadCategoryID || ''}
+            onChange={handleChangeForCategory}
+            className='border-highlight'>
             <option value=''>Select Category</option>
             {Object.entries(leadCategoryList).map(([key, val]) => (
               <option key={key} value={Number(key)}>{val}</option>
@@ -694,45 +754,45 @@ return (
         </div>
       </div>
 
-  {/* Render dynamic fields */ }
-        <div className='mt-4'>{renderCategoryFields()}</div>
+      {/* Render dynamic fields */}
+      <div className='mt-4'>{renderCategoryFields()}</div>
 
-        <div className="flex justify-between items-center mt-6 gap-4">
-          <button
-            onClick={handleSubmit}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-            {submitBtnTxt}
-          </button>
-          <div className="flex items-center gap-2">
-            <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
-              Follow Up Date :
-            </label>
-            <div className="flex flex-col  justify-start leading-none">
-              <input
-                type="date"
-                id="followUpDate"
-                name="followUpDate"
-                value={leadObj.followUpDate || ''}
-                onChange={handleChange}
-                min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
-                // min={new Date().toISOString().split("T")[0]} //  disables past dates
-                className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
-                required
-              />
-            </div>
+      <div className="flex justify-between items-center mt-6 gap-4">
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+          {submitBtnTxt}
+        </button>
+        <div className="flex items-center gap-2">
+          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
+            Follow Up Date :
+          </label>
+          <div className="flex flex-col  justify-start leading-none">
+            <input
+              type="date"
+              id="followUpDate"
+              name="followUpDate"
+              value={leadObj.followUpDate || ''}
+              onChange={handleChange}
+              min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
+              // min={new Date().toISOString().split("T")[0]} //  disables past dates
+              className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
+              required
+            />
           </div>
         </div>
-        <div className='text-right'>
+      </div>
+      <div className='text-right'>
 
-          {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
+        {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
 
-          {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
+        {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
 
-        </div>
+      </div>
 
 
-  {/* Footer */ }
-  {/* <div className="flex justify-between items-center mt-6 gap-4">
+      {/* Footer */}
+      {/* <div className="flex justify-between items-center mt-6 gap-4">
         <button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
           {submitBtnTxt}
         </button>
@@ -758,24 +818,24 @@ return (
         </div>
       </div> */}
 
-  {/* Popup / Modal */ }
-  {
-    showPopup && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-          <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
-          <p className="mb-4">Please fill all required details before submitting.</p>
-          <button
-            onClick={() => setShowPopup(false)}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          >
-            OK
-          </button>
-        </div>
-      </div>
-    )
-  }
-      </div >
+      {/* Popup / Modal */}
+      {
+        showPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+              <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
+              <p className="mb-4">Please fill all required details before submitting.</p>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )
+      }
+    </div >
 
-      );
+  );
 }

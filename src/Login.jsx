@@ -36,35 +36,31 @@ const { setUser  } = useGetSessionUser();   // ✅ from context
       debugger; 
 
 
-      const res = await axios.post(APIURL, formdata);
-      console.log('res', res);
+      const response = await axios.post(APIURL, formdata);
+      console.log('res', response);
       // Save userId to localStorage for later API calls
 
       // ✅ Save full user details in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(res.data));
+      localStorage.setItem("loggedInUser", JSON.stringify(response.data));
       
       // ✅ Update global auth context
-      const authData= {
-        isLoggedIn: true,
-        role: res.data.role,
-        user: {
-          id: res.data.userId,
-          name: res.data.firstName, // or whatever your API returns
-          ...res.data,              // store all user fields if needed
-        },
-      };
-      setUser(authData);
-      
-      // alert('Login successful!');
-      // Redirect to dashboard (if using React Router)
-      debugger;
-      
-      
+
+      const authData = {
+    isLoggedIn: true,
+    role: response.data.user.role,
+    user: {
+      id: response.data.user.userId,
+      name: response.data.user.firstName,
+      ...response.data.user,
+    },
+    token: response.data.token, // ✅ also save JWT
+  };
+
+  setUser(authData); // update global auth context
       
       navigate('/dashboard');
 
-
-
+    
 
 
     } catch (err) {

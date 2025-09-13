@@ -20,7 +20,7 @@ export const VISALeadObject = {
   passportValidity: "",
   airTicketIssuedBy: "",
 
-  createdBy_UserID: "gpatil", // default user
+  createdBy_UserID: "", // default user
   createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"
   updatedAt: new Date().toISOString(),
 
