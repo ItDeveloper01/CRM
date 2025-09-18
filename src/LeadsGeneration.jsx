@@ -12,6 +12,10 @@ import { VISALeadObject } from './Model/VisaLeadModel';
 import { getEmptyVisaObj } from "./Model/VisaLeadModel";
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
+ import {mapObject} from './Model/MappingObjectFunction';
+
+  
+  //MappingObjectFunctions");
 
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
@@ -27,6 +31,7 @@ export default function LeadsGeneration({ lead }) {
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  
 
 
   const [showPopup, setShowPopup] = useState(false);
@@ -130,37 +135,42 @@ export default function LeadsGeneration({ lead }) {
     return newVisa;
   };
 
-  const mapIncomingLeadToModel = (incomingLead) => {
-    const newLead = { ...getEmptyLeadObj() }; // start with default model
 
-    debugger;
-    // Map main properties
-    newLead.leadID = incomingLead.leadID || null;
-    newLead.title = incomingLead.title?.trim() || '';
-    newLead.fName = incomingLead.fName || '';
-    newLead.mName = incomingLead.mName || '';
-    newLead.lName = incomingLead.lName || '';
-    newLead.mobileNo = incomingLead.mobileNo || '';
-    newLead.emailId = incomingLead.emailId || '';
-    newLead.gender = incomingLead.gender?.trim() || '';
-    newLead.birthDate = incomingLead.birthDate || '';
-    newLead.city = incomingLead.city || '';
-    newLead.area = incomingLead.area || '';
-    newLead.enquiryMode = incomingLead.enquiryMode || '';
-    newLead.enquirySource = incomingLead.enquirySource || '';
-    newLead.customerType = incomingLead.customerType || '';
-    newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
-    newLead.followUpDate = incomingLead.followUpDate || '';
-    newLead.histories = incomingLead.histories || [];
-    newLead.leadStatus = incomingLead.leadStatus || 'Open';
-    newLead.createdAt = incomingLead.createdAt || null;
-    newLead.updatedAt = incomingLead.updatedAt || null;
-    newLead.enquiryDate = incomingLead.enquiryDate || null;
-    newLead.assignee_UserID=incomingLead.assigneeTo_UserID;
+
+  const mapIncomingLeadToModel = (incomingLead) => {
+    //const newLead = { ...getEmptyLeadObj() }; // start with default model
+
+    // debugger;
+    // // Map main properties
+    // newLead.leadID = incomingLead.leadID || null;
+    // newLead.title = incomingLead.title?.trim() || '';
+    // newLead.fName = incomingLead.fName || '';
+    // newLead.mName = incomingLead.mName || '';
+    // newLead.lName = incomingLead.lName || '';
+    // newLead.mobileNo = incomingLead.mobileNo || '';
+    // newLead.emailId = incomingLead.emailId || '';
+    // newLead.gender = incomingLead.gender?.trim() || '';
+    // newLead.birthDate = incomingLead.birthDate || '';
+    // newLead.city = incomingLead.city || '';
+    // newLead.area = incomingLead.area || '';
+    // newLead.enquiryMode = incomingLead.enquiryMode || '';
+    // newLead.enquirySource = incomingLead.enquirySource || '';
+    // newLead.customerType = incomingLead.customerType || '';
+    // newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
+    // newLead.followUpDate = incomingLead.followUpDate || '';
+    // newLead.histories = incomingLead.histories || [];
+    // newLead.leadStatus = incomingLead.leadStatus || 'Open';
+    // newLead.createdAt = incomingLead.createdAt || null;
+    // newLead.updatedAt = incomingLead.updatedAt || null;
+    // newLead.enquiryDate = incomingLead.enquiryDate || null;
+    // newLead.assignee_UserID=incomingLead.assigneeTo_UserID;
+
+   const newLead =mapObject(lead, getEmptyLeadObj())
+
      
     // Map Visa category if exists
     if (incomingLead.category && incomingLead.category.$type === "VISA") {
-      const mappedVisa = mapIncomingVisaToModel(incomingLead.category);
+      const mappedVisa =  mapObject(incomingLead.category , getEmptyVisaObj())  //mapIncomingVisaToModel(incomingLead.category);
       newLead.category = mappedVisa;   // assign directly
       setVisaObj(mappedVisa);          // update state
       setSelectedLeadName(incomingLead.category.categoryName || "Visa");
@@ -184,6 +194,12 @@ export default function LeadsGeneration({ lead }) {
       debugger;
 
       const mappedLead = mapIncomingLeadToModel(lead);
+  
+      //const mappedLead=mapObject(lead, getEmptyLeadObj())
+
+      debugger;
+
+      console.log("Mapped Lead Object..." + mappedLead);
 
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
@@ -374,12 +390,13 @@ export default function LeadsGeneration({ lead }) {
 
               console.log("Histories to pass to HistoryHover:", leadObj.histories),
               <LeadVisa
-                visadObj={visadObj}
+                visadObj={visadObj} 
                 countries={countries}
                 setVisaLeadObj={setVisaObj}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
               />
+              
             )}
           </>
         ); 
