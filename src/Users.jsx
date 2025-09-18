@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import config from './config';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import {useGetSessionUser} from  "./SessionContext"
 
 export default function Users() {
   const [users, setUsers] = useState([
@@ -10,20 +11,48 @@ export default function Users() {
   ]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+   const { user: sessionUser } = useGetSessionUser();
+const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
+ useEffect(() => {
+  const fetchUsers = async () => {
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await axios.get(config.apiUrl + '/Users/GetAlUsers');
-        setUsers(res.data);
-      } catch (err) {
-        setError('Failed to fetch users.');
-      } finally {
-        setLoading(false);
+    debugger;
+    try {
+      const res = await axios.get(fetchUsersAPI, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
+        },
+      });
+
+      setUsers(res.data || []);
+    } catch (err) {
+
+      debugger;
+      console.error("Error fetching users:", err);
+
+      if (err.response) {
+        // Server responded with a status code outside 2xx
+        if (err.response.status === 401) {
+          console.log("Unauthorized - please login");
+          // redirect to login if needed
+        } else if (err.response.status === 403) {
+          console.log("Forbidden - you don’t have access");
+          // show access denied message
+        } else {
+          console.log(`Error ${err.response.status}:`, err.response.data);
+        }
+      } else {
+        // Network error
+        console.log("Network error - server unreachable");
       }
-    };
-    fetchUsers();
-  }, []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUsers();
+}, []);
+
   if (loading) return <p className='p-4'>Loading users...</p>;
   if (error) return <p className='p-4 text-red-500'>{error}</p>;
 
