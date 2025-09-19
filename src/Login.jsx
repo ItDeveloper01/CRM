@@ -10,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [userId, setUserId] = useState('');
   const [error, setError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
 const { setUser  } = useGetSessionUser();   // ✅ from context
@@ -64,10 +65,19 @@ const { setUser  } = useGetSessionUser();   // ✅ from context
 
 
     } catch (err) {
+      debugger;
+
+      
       if (err.response && err.response.data) {
-        setError(err.response.data);
+         console.log("Status:", err.response.status);
+          console.log("Error message:", err.response);
+          setErrorMsg(err.response.data.error);
+          setError(err.response.data);
       } else {
         setError('Invalid credentials');
+      setErrorMsg('Invalid credentials');
+        console.log("Error:", err.message);
+    alert("Server unreachable");
       }
     }
   };
@@ -97,6 +107,7 @@ const { setUser  } = useGetSessionUser();   // ✅ from context
           className='w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700'>
           Login
         </button>
+        {errorMsg && <div style={{ color: "red" }}>{errorMsg}</div>}
       </form>
     </div>
   );

@@ -13,7 +13,14 @@ import { getEmptyVisaObj } from "./Model/VisaLeadModel";
 import { getEmptyAirTicketObj } from './Model/AirTicketLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
+
 import { mapObject } from './Model/MappingObjectFunction';
+
+
+
+  
+ 
+
 
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
@@ -31,6 +38,7 @@ export default function LeadsGeneration({ lead }) {
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  
 
 
   const [showPopup, setShowPopup] = useState(false);
@@ -134,6 +142,7 @@ export default function LeadsGeneration({ lead }) {
     return newVisa;
   };
 
+
   const mapIncomingAirTicketToModel = (incomingAirTicketing) => {
     const newAirTicketing = { ...getEmptyAirTicketObj() }; // start with default model
 
@@ -223,6 +232,7 @@ export default function LeadsGeneration({ lead }) {
         //   setSelectedLeadName("Unknown Category");
         // }
       }
+
     } else {
       // No category → decide default (Visa example here)
       // const visadObj = getEmptyVisaObj();
@@ -272,8 +282,7 @@ export default function LeadsGeneration({ lead }) {
       debugger;
 
       const mappedLead = mapIncomingLeadToModel(lead);
-      // const mappedLead = mapIncomingLeadToModel(lead);
-
+      
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
       setSubmitBtnTxt("Update Lead");
@@ -454,12 +463,13 @@ export default function LeadsGeneration({ lead }) {
 
               console.log("Histories to pass to HistoryHover:", leadObj.histories),
               <LeadVisa
-                visadObj={visadObj}
+                visadObj={visadObj} 
                 countries={countries}
                 setVisaLeadObj={setVisaObj}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
               />
+              
             )}
           </>
         );
