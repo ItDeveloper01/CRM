@@ -6,20 +6,27 @@ import LeadVisa from './LeadVisa';
 import LeadAirTicketing from './LeadAirTicketing';
 import axios from "axios";
 import React from 'react';
-import { getEmptyLeadObj } from "../src/Model/LeadModel";
+import { getEmptyLeadObj, LeadObj } from "../src/Model/LeadModel";
 import config from './config';
 import { VISALeadObject } from './Model/VisaLeadModel';
 import { getEmptyVisaObj } from "./Model/VisaLeadModel";
+import { getEmptyAirTicketObj } from './Model/AirTicketLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
- import {mapObject} from './Model/MappingObjectFunction';
+
+import { mapObject } from './Model/MappingObjectFunction';
+
+
 
   
-  //MappingObjectFunctions");
+ 
+
 
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
+  const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj());
+
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
@@ -128,7 +135,7 @@ export default function LeadsGeneration({ lead }) {
     newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
     newVisa.updatedAt = incomingVisa.updatedAt || new Date().toISOString();
     newVisa.status = incomingVisa.status || 'Open';
-    
+
 
     debugger;
     console.log("Mapped Visa Obj....:", newVisa);
@@ -136,6 +143,40 @@ export default function LeadsGeneration({ lead }) {
   };
 
 
+  const mapIncomingAirTicketToModel = (incomingAirTicketing) => {
+    const newAirTicketing = { ...getEmptyAirTicketObj() }; // start with default model
+
+    debugger;
+    if (!incomingAirTicketing) return newAirTicketing;
+
+
+    debugger
+    // Map main properties
+    newAirTicketing.id = incomingAirTicketing.id || null;
+    newAirTicketing.airTicketType = incomingAirTicketing.airTicketType?.trim() || '';
+    newAirTicketing.travelDate = incomingAirTicketing.travelDate || null;
+    newAirTicketing.Sector = incomingAirTicketing.Sector?.trim() || '';
+    newAirTicketing.noOfTravelers = incomingAirTicketing.noOfTravelers || null;
+    newAirTicketing.travelClass = incomingAirTicketing?.travelClass || '';
+    newAirTicketing.ticketType = incomingAirTicketing?.ticketType || '';
+    newAirTicketing.airTicketStatus = incomingAirTicketing?.airTicketStatus || '';
+    newAirTicketing.visaStatus = incomingAirTicketing?.visaStatus || '';
+    newAirTicketing.passportValidity = incomingAirTicketing.passportValidity || null;
+    newAirTicketing.quoteGiven = incomingAirTicketing.quoteGiven?.trim() || '';
+    newAirTicketing.notes = incomingAirTicketing.notes || '';
+    newAirTicketing.airTicketCode = incomingAirTicketing.airTicketCode || null;
+    debugger;
+    newAirTicketing.assigneeTo_UserID = incomingAirTicketing.assigneeTo_UserID || currentUser?.user?.userId;
+    newAirTicketing.createdBy_UserID = incomingAirTicketing.createdBy_UserID || currentUser?.user?.userId;
+    newAirTicketing.createdAt = incomingAirTicketing.createdAt || new Date().toISOString();
+    newAirTicketing.updatedAt = incomingAirTicketing.updatedAt || new Date().toISOString();
+    newAirTicketing.status = incomingAirTicketing.status || 'Open';
+
+
+    debugger;
+    console.log("Mapped Air Ticketing Obj....:", newAirTicketing);
+    return newAirTicketing;
+  };
 
   const mapIncomingLeadToModel = (incomingLead) => {
     //const newLead = { ...getEmptyLeadObj() }; // start with default model
@@ -165,24 +206,71 @@ export default function LeadsGeneration({ lead }) {
     // newLead.enquiryDate = incomingLead.enquiryDate || null;
     // newLead.assignee_UserID=incomingLead.assigneeTo_UserID;
 
-   const newLead =mapObject(lead, getEmptyLeadObj())
+    const newLead = mapObject(lead, getEmptyLeadObj())
 
-     
-    // Map Visa category if exists
-    if (incomingLead.category && incomingLead.category.$type === "VISA") {
-      const mappedVisa =  mapObject(incomingLead.category , getEmptyVisaObj())  //mapIncomingVisaToModel(incomingLead.category);
-      newLead.category = mappedVisa;   // assign directly
-      setVisaObj(mappedVisa);          // update state
-      setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+    if (incomingLead.category) {
+      switch (incomingLead.category.$type?.toLowerCase()) {
+        case "visa": {
+          const mappedVisa = mapObject(incomingLead.category, getEmptyVisaObj());
+          newLead.category = mappedVisa;
+          setVisaObj(mappedVisa);
+          setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+          break;
+        }
+
+        case "air ticketing": {
+          const mappedAirTicketing = mapObject(incomingLead.category, getEmptyAirTicketObj());
+          newLead.category = mappedAirTicketing;
+          setAirTicketingLeadObj(mappedAirTicketing);
+          setSelectedLeadName(incomingLead.category.categoryName || "Air Ticketing");
+          break;
+        }
+
+        // default: {
+        //   // If category type is unknown → reset
+        //   newLead.category = null;
+        //   setSelectedLeadName("Unknown Category");
+        // }
+      }
+
     } else {
+      // No category → decide default (Visa example here)
+      // const visadObj = getEmptyVisaObj();
+      // visadObj.createdBy_UserID = currentUser?.user?.userId;
+      // visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+      // newLead.category = visadObj;
+      // setVisaObj(visadObj);
       newLead.category = null;
       setVisaObj(getEmptyVisaObj());
       visadObj.createdBy_UserID = currentUser?.user?.userId;
       visadObj.assigneeTo_UserID = currentUser?.user?.userId;
       newLead.category = visadObj;
     }
+
     return newLead;
+
+
+
+
+    // Map Visa category if exists  *********written by gayrti 
+    // if (incomingLead.category && incomingLead.category.$type === "VISA") {
+    //   const mappedVisa = mapObject(incomingLead.category, getEmptyVisaObj())  //mapIncomingVisaToModel(incomingLead.category);
+    //   newLead.category = mappedVisa;   // assign directly
+    //   setVisaObj(mappedVisa);          // update state
+    //   setSelectedLeadName(incomingLead.category.categoryName || "Visa");
+    // } else {
+    //   newLead.category = null;
+    //   setVisaObj(getEmptyVisaObj());
+    //   visadObj.createdBy_UserID = currentUser?.user?.userId;
+    //   visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+    //   newLead.category = visadObj;
+    // }
+    // return newLead;
+
+
   };
+
+
 
   // Initialize leadObj on prop change
   useEffect(() => {
@@ -194,13 +282,7 @@ export default function LeadsGeneration({ lead }) {
       debugger;
 
       const mappedLead = mapIncomingLeadToModel(lead);
-  
-      //const mappedLead=mapObject(lead, getEmptyLeadObj())
-
-      debugger;
-
-      console.log("Mapped Lead Object..." + mappedLead);
-
+      
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
       setSubmitBtnTxt("Update Lead");
@@ -256,6 +338,11 @@ export default function LeadsGeneration({ lead }) {
     setVisaObj(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleAirTicketingChange = (e) => {
+    const { name, value } = e.target;
+    setAirTicketingLeadObj(prev => ({ ...prev, [name]: value }));
+  };
+
 
   const handleChangeForCategory = (e) => {
     debugger;
@@ -269,14 +356,12 @@ export default function LeadsGeneration({ lead }) {
     switch (leadCategoryList[val]) {
       case 'Visa':
         debugger;
-        setLeadObj(prev => ({ ...prev, categoryData: getEmptyVisaObj() }));
-
-        // const vis= getEmptyVisaObj()
-        // if(leadObj?.categoryData?.createdBy_UserID==null )
-        //  vis.createdBy_UserID= currentUser?.user?.userId ;
-        //  setLeadObj(prev => ({ ...prev, categoryData: vis }));
+        setLeadObj(prev => ({ ...prev, category: getEmptyVisaObj() }));
         break;
-      //   case 'Air Ticketing':
+      case 'Air Ticketing':
+        setLeadObj(prev => ({ ...prev, category: getEmptyAirTicketObj() }));
+        break;
+
       default:
         return null;
     }
@@ -287,20 +372,7 @@ export default function LeadsGeneration({ lead }) {
 
     debugger;
 
-    // switch (selectedLeadName) {
 
-    //   case "Visa":
-    //     setLeadObj(prev => ({ ...prev, categoryData:visadObj }));
-    //     break;
-    //   // case "Hotel":
-    //   //   setLeadObj(prev => ({ ...prev, categoryData: hotelObj }));
-    //   //   break;
-    //   // case "Flight":
-    //   //   setLeadObj(prev => ({ ...prev, categoryData: flightObj }));
-    //   //   break;
-    //   default:
-    //     setLeadObj(prev => ({ ...prev, categoryData: null }));
-    // }
   }, [selectedLeadName, visadObj]);
 
 
@@ -379,10 +451,11 @@ export default function LeadsGeneration({ lead }) {
 
     console.log("In renderCategoryFields Lead Object....:", leadObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
+    console.log("In renderCategoryFields AirTicketingObj....:", airTicketingdObj);
 
     switch (selectedLeadName.toLowerCase()) {
-    
-          case 'visa':
+
+      case 'visa':
         // return <LeadVisa visadObj={visadObj} countries={countries} setVisaLeadObj={setVisaObj}  histories={leadObj.histories} />;
         return (
           <>
@@ -399,9 +472,25 @@ export default function LeadsGeneration({ lead }) {
               
             )}
           </>
-        ); 
-        case 'air ticketing':
-        return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
+        );
+      case 'air ticketing':
+        // return<LeadAirTicketing airTicketingdObj={airTicketingdObj} setAirTicketingLeadObj={setAirTicketingLeadObj} histories={leadObj.histories}>
+        // return <LeadAirTicketing formData={formData} handleChange={handleChange} />;
+        return (
+          <>
+            {(
+              console.log("History to pass to HistoryHover:", LeadObj.histories),
+              <LeadAirTicketing
+                airTicketingdObj={airTicketingdObj}
+                setAirTicketingLeadObj={setAirTicketingLeadObj}
+                histories={leadObj.histories || []}
+                isUpdate={isUpdateMode} // fallback to empty array
+              />
+            )}
+          </>
+
+        );
+
       case 'car rentals':
         return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange} />
       case 'holiday':
@@ -513,12 +602,21 @@ export default function LeadsGeneration({ lead }) {
 
 
 
-        if (!visadObj.createdBy_UserID) {
-          visadObj.createdBy_UserID = currentUser?.user?.userId;
+        // if (!visadObj.createdBy_UserID) {
+        //   visadObj.createdBy_UserID = currentUser?.user?.userId;
+        // }
+
+        // if (!visadObj.assigneeTo_UserID) {
+        //   visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        // }
+
+        // For Air Ticketing 
+        if (!airTicketingdObj.createdBy_UserID) {
+          airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
         }
 
-        if (!visadObj.assigneeTo_UserID) {
-          visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        if (!airTicketingdObj.assigneeTo_UserID) {
+          airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
         }
 
 
@@ -531,10 +629,13 @@ export default function LeadsGeneration({ lead }) {
         }
 
         const deepLeadCopy = cloneDeep(leadObj);
-        const deepVisaCopy = cloneDeep(visadObj);
+        // const deepVisaCopy = cloneDeep(visadObj);
+         const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
 
 
-        deepLeadCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+
+        // deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
+        deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
         debugger;
 
         console.log("Final Lead Obj to Update:", deepLeadCopy);
@@ -550,13 +651,22 @@ export default function LeadsGeneration({ lead }) {
       } else {
 
         debugger;
-         if (!visadObj.createdBy_UserID) {
-          visadObj.createdBy_UserID = currentUser?.user?.userId;
+        // if (!visadObj.createdBy_UserID) {
+        //   visadObj.createdBy_UserID = currentUser?.user?.userId;
+        // }
+
+        // if (!visadObj.assigneeTo_UserID) {
+        //   visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        // }
+
+        if (!airTicketingdObj.createdBy_UserID) {
+          airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
         }
 
-        if (!visadObj.assigneeTo_UserID) {
-          visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        if (!airTicketingdObj.assigneeTo_UserID) {
+          airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
         }
+
 
 
         if (!leadObj.createdBy_UserID) {
@@ -568,11 +678,18 @@ export default function LeadsGeneration({ lead }) {
         }
 
         const deepCopy = cloneDeep(leadObj);
-        const deepVisaCopy = cloneDeep(visadObj);
-        deepCopy.category = { ...deepVisaCopy }; // ✅ attach visa data
+        // const deepVisaCopy = cloneDeep(visadObj);
+        // deepCopy.category = { ...deepVisaCopy }; // attach visa data
+        debugger;
+        const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
+        deepCopy.category = { ...deepAirTicketingCopy }; // attach air ticketing data
 
 
         console.log("New Lead Obj...", deepCopy);
+        console.log("Payload being sent:", JSON.stringify(deepCopy, null, 2));
+        console.error("Error response:", errors.response?.data);
+        console.error("Error status:", errors.response?.status);
+        console.error("Error headers:", errors.response?.headers);
         await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
         alert("Lead saved successfully!");
       }
