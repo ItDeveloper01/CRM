@@ -1,11 +1,12 @@
 import { Menu, UserPlus, CalendarCheck, LayoutDashboard, LogOut, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { Roles } from './Constants';
 
 export default function Sidebar({ auth, setAuth }) {
   console.log('auth', auth);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
+debugger;
   return (
     <div
       className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}>
@@ -45,7 +46,7 @@ export default function Sidebar({ auth, setAuth }) {
           {sidebarOpen && 'Customers'}
         </Link>
  */}
-        {(auth.role === 'admin' || auth.role === 'Super Admin') && (
+        {auth && (auth.role === Roles.ADMIN || auth.role === Roles.SUPER_ADMIN) && (
           <Link
             to='/users'
             className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
