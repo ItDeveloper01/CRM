@@ -7,36 +7,36 @@ import { set } from "lodash";
 import { useMemo } from "react";
 
 
-const LeadVisa = ({ visadObj, countries ,setVisaLeadObj ,histories, isUpdate}) => {
+const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) => {
 
 
     // Memoize the histories array so reference doesn't change unnecessarily
-  const memoHistories = useMemo(() => histories || [], [histories]);
-  const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
-const handleChange = (e) => {
+    const memoHistories = useMemo(() => histories || [], [histories]);
+    const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
+    const handleChange = (e) => {
 
-    console.log("**********************IN VISA OBJECT   /**************************");
-console.log("Handle Change Called for Visa Obj  "); 
-console.log("Visa Obj before change.....:", visadObj);
-console.log("Histories received....",histories);
-console.log("isUpdate flag....",isUpdate);
+        console.log("**********************IN VISA OBJECT   /**************************");
+        console.log("Handle Change Called for Visa Obj  ");
+        console.log("Visa Obj before change.....:", visadObj);
+        console.log("Histories received....", histories);
+        console.log("isUpdate flag....", isUpdate);
 
 
-    debugger;
-    const { name, value } = e.target;
-    setVisaLeadObj(prev => ({
-      ...prev,
-      [name]: value
-    }));
+        debugger;
+        const { name, value } = e.target;
+        setVisaLeadObj(prev => ({
+            ...prev,
+            [name]: value
+        }));
 
-    console.log("Visa Obj.....:", visadObj);
-  };
+        console.log("Visa Obj.....:", visadObj);
+    };
 
-  useEffect(() => { 
-    console.log("Visa Obj in useEffect.....:", visadObj);
-    console.log("Histories in useEffect.....:", histories);   
-    console.log("isUpdate flag....",isUpdate);  
-    }, [setVisaLeadObj,visadObj,histories]);
+    useEffect(() => {
+        console.log("Visa Obj in useEffect.....:", visadObj);
+        console.log("Histories in useEffect.....:", histories);
+        console.log("isUpdate flag....", isUpdate);
+    }, [setVisaLeadObj, visadObj, histories]);
 
     return (
         <div>
@@ -47,7 +47,7 @@ console.log("isUpdate flag....",isUpdate);
                     <select
                         className={`border-highlight ${visadObj.country1 ? "selected" : ""}`}
                         name="country1"
-                        value={visadObj?.country1||""}
+                        value={visadObj?.country1 || ""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -66,7 +66,7 @@ console.log("isUpdate flag....",isUpdate);
                     <select
                         className={`border-highlight ${visadObj.country2 ? "selected" : ""}`}
                         name="country2"
-                        value={visadObj?.country2||""}
+                        value={visadObj?.country2 || ""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -84,7 +84,7 @@ console.log("isUpdate flag....",isUpdate);
                     <select
                         className={`border-highlight ${visadObj.country3 ? "selected" : ""}`}
                         name="country3"
-                        value={visadObj?.country3||""}
+                        value={visadObj?.country3 || ""}
                         onChange={handleChange}
                     >
                         <option value="">Select Country</option>
@@ -108,12 +108,12 @@ console.log("isUpdate flag....",isUpdate);
                         value={visadObj.travelDate || ""}
                         onChange={handleChange}
                         className={`border-highlight ${visadObj.travelDate ? "selected" : ""}`}
-                        //  This code is for more information of highlight concept
-                        //  className={`w-full rounded-lg p-2 focus:outline-none focus:ring-2 
-                        //         ${visadObj.travelDates
-                        //         ? "bg-blue-100 border border-blue-500"   // highlight when date is selected
-                        //         : "bg-white border border-gray-300"      // default gray border
-                        //     }`}
+                    //  This code is for more information of highlight concept
+                    //  className={`w-full rounded-lg p-2 focus:outline-none focus:ring-2 
+                    //         ${visadObj.travelDates
+                    //         ? "bg-blue-100 border border-blue-500"   // highlight when date is selected
+                    //         : "bg-white border border-gray-300"      // default gray border
+                    //     }`}
                     />
                 </div>
                 {/* <div className="flex-1">
@@ -137,17 +137,17 @@ console.log("isUpdate flag....",isUpdate);
                     <input
                         className={`border-highlight`}
                         name="noOfApplicants"
-                        value={Number (visadObj.noOfApplicants) || ""}
+                        value={Number(visadObj.noOfApplicants) || ""}
                         type="number"
                         min="1"
                         onChange={(e) => {
-    const value = e.target.value;
-    // Update as number if not empty, else empty string
-    setVisaLeadObj(prev => ({
-      ...prev,
-      noOfApplicants: value === "" ? "" : Number(value)
-    }));
-  }}
+                            const value = e.target.value;
+                            // Update as number if not empty, else empty string
+                            setVisaLeadObj(prev => ({
+                                ...prev,
+                                noOfApplicants: value === "" ? "" : Number(value)
+                            }));
+                        }}
                     />
                 </div>
 
@@ -156,8 +156,7 @@ console.log("isUpdate flag....",isUpdate);
                     <select
                         className={`border-highlight`}
                         name="purposeOfTravel"
-                        value={visadObj.purposeOfTravel
-}
+                        value={visadObj.purposeOfTravel}
                         onChange={handleChange}
                     >
                         <option value="">Select</option>
@@ -215,10 +214,10 @@ console.log("isUpdate flag....",isUpdate);
                         {["Confirmed", "Tentative"].map((status1) => (
                             <label
                                 key={status1}
-                                className={`flex items-center gap-2 flex-1 cursor-pointer rounded-md px-1
+                                className={`option-highlight
                                 ${visadObj.travelPlanStatus === status1
-                                        ? "bg-blue-100 border border-blue-500"
-                                        : "bg-white border border-transparent"
+                                        ? "option-highlight-active"
+                                        : "option-highlight-inactive"
                                     }`}
                             >
                                 <input
@@ -252,13 +251,13 @@ console.log("isUpdate flag....",isUpdate);
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
                         {["Booked", "Not Booked"].map((status) => (
                             <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input 
-                                    type="radio" 
-                                    name="hotelBooking" 
+                                <input
+                                    type="radio"
+                                    name="hotelBooking"
                                     value={status}
-                                    checked={visadObj.hotelBooking===status}
+                                    checked={visadObj.hotelBooking === status}
                                     onChange={handleChange}
-                                 />
+                                />
                                 {status}
                             </label>
                         ))}
@@ -273,11 +272,11 @@ console.log("isUpdate flag....",isUpdate);
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
                         {["Issued", "Not Issued"].map((insuranceStatus) => (
                             <label key={insuranceStatus} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input type="radio"  
-                                name="overseasInsurance"
-                                value={insuranceStatus}
-                                 checked={visadObj.overseasInsurance===insuranceStatus} 
-                                onChange={handleChange} />
+                                <input type="radio"
+                                    name="overseasInsurance"
+                                    value={insuranceStatus}
+                                    checked={visadObj.overseasInsurance === insuranceStatus}
+                                    onChange={handleChange} />
                                 {insuranceStatus}
                             </label>
                         ))}
@@ -289,11 +288,11 @@ console.log("isUpdate flag....",isUpdate);
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
                         {["Checked", "Not Checked", "Not Sure"].map((pValidity) => (
                             <label key={pValidity} className="flex items-center gap-2 flex-1 cursor-pointer">
-                                <input type="radio" 
-                                name="passportValidity" 
-                                value={pValidity} 
-                                checked={visadObj.passportValidity===pValidity}
-                                onChange={handleChange} />
+                                <input type="radio"
+                                    name="passportValidity"
+                                    value={pValidity}
+                                    checked={visadObj.passportValidity === pValidity}
+                                    onChange={handleChange} />
                                 {pValidity}
                             </label>
                         ))}
@@ -307,11 +306,11 @@ console.log("isUpdate flag....",isUpdate);
                 <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-4">
                     {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued"].map((airTckIssuedBy) => (
                         <label key={airTckIssuedBy} className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" 
-                            name="airTicketIssuedBy" 
-                            value={airTckIssuedBy} 
-                            checked={visadObj.airTicketIssuedBy===airTckIssuedBy}
-                            onChange={handleChange} />
+                            <input type="radio"
+                                name="airTicketIssuedBy"
+                                value={airTckIssuedBy}
+                                checked={visadObj.airTicketIssuedBy === airTckIssuedBy}
+                                onChange={handleChange} />
                             {airTckIssuedBy}
                         </label>
                     ))}
@@ -341,10 +340,10 @@ console.log("isUpdate flag....",isUpdate);
                     placeholder="Remark"
                     onChange={handleChange}
                 />
-                 {/* History hover component */}
-                  {memoIsUpdate && (
-                         <HistoryHover histories={memoHistories} />)
-                  }
+                {/* History hover component */}
+                {memoIsUpdate && (
+                    <HistoryHover histories={memoHistories} />)
+                }
             </div>
         </div>
     );

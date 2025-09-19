@@ -24,4 +24,14 @@
 }
 
 
+.option-highlight {
+  @apply flex items-center gap-2 flex-1 cursor-pointer rounded-md px-1;
+}
 
+.option-highlight-active {
+  @apply bg-blue-100 border border-blue-500;
+}
+
+.option-highlight-inactive {
+  @apply bg-white border border-transparent;
+}

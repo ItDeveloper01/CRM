@@ -29,7 +29,7 @@ export const LeadObj = {
                   
     createdBy_UserID:'',
 
-    assignee_UserID :'',
+    assigneeTo_UserID :'',
    // 🔹 Flexible slot for category-specific data
   category: {} ,
   histories: []  // Array to hold history records
