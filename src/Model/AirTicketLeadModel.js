@@ -6,16 +6,17 @@ export const AirTicketingLeadObject = {
     id: null,
 
     airTicketType: "",
-    onwordDate: "",
-    returnDate: "",
+    onwardDate: null,
+    returnDate: null,
     Sector: "",
     noOfTravelers: 0,
     travelClass: "",
     ticketType: "",
     airTicketStatus: "",
-    visaStatus: "",
+    visaStatus: null,
     passportValidityDate: null,
     overseasInsurance: "",
+    airportTransport: "",
 
     createdBy_UserID: "", // default user
     createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"
