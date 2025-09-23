@@ -39,6 +39,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
     }, [setVisaLeadObj, visadObj, histories]);
 
     return (
+   
         <div>
             <div className="flex gap-3 flex-wrap">
                 {/* Country1 Dropdown */}
@@ -304,7 +305,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
             <div className="flex-1">
                 <label className="label-style">Airticket</label>
                 <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-4">
-                    {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued"].map((airTckIssuedBy) => (
+                    {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued", "Issued Online"].map((airTckIssuedBy) => (
                         <label key={airTckIssuedBy} className="flex items-center gap-2 cursor-pointer">
                             <input type="radio"
                                 name="airTicketIssuedBy"
