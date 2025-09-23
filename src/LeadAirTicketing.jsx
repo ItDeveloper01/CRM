@@ -5,11 +5,16 @@ import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 
 
+
+
+
 const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories, isUpdate }) => {
+
 
   // Memoize the histories array so reference doesn't change unnecessarily
   const memoHistories = useMemo(() => histories || [], [histories]);
   const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
 
@@ -71,11 +76,12 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
       {/* Onword Date */}
       <div className="flex gap-3 flex-wrap">
         <div className="flex-1">
-          <label className="label-style">Onword Date</label>
+          <label className="label-style">Onward Date</label>
           <input
             type="date"
-            name="onwordDate"
-            value={airTicketingdObj.onwordDate || ""}
+            name="onwardDate"
+            min={new Date().toISOString().split("T")[0]} // onward >= today
+            value={airTicketingdObj.onwardDate || ""}
             onChange={handleChange}
             className={`border-highlight`}
 
@@ -88,11 +94,21 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           <input
             type="date"
             name="returnDate"
+            min={airTicketingdObj.onwardDate ? new Date(
+              new Date(airTicketingdObj.onwardDate).setDate(
+                new Date(airTicketingdObj.onwardDate).getDate() + 1
+              ))
+              .toISOString()
+              .split("T")[0]
+              : new Date().toISOString().split("T")[0]
+            }
             value={airTicketingdObj.returnDate || ""}
             onChange={handleChange}
             className={`border-highlight`}
-
+            // className={`border-highlight ${errors?.returnDate ? "border-red-500" : ""}`}
           />
+          {/* Show error below input ======work is Remaining of validation */}
+          {/* {errors?.returnDate && <p className="text-red-500 text-sm mt-1">{errors.returnDate}</p>}       */}
         </div>
       </div>
 
@@ -218,9 +234,9 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
                     key={insuranceStatus}
                     className={`option-highlight
                       ${airTicketingdObj.overseasInsurance === insuranceStatus
-                    ? "option-highlight-active"
-                    : "option-highlight-inactive"
-                  }`}
+                        ? "option-highlight-active"
+                        : "option-highlight-inactive"
+                      }`}
                   >
                     <input
                       type="radio"
@@ -241,7 +257,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
         <div className="flex-1 min-w-[200px] flex flex-col">
           <label className="label-style">Airport Transport</label>
           <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
-            {["Self", "Not Decided", "Book Through Girikand"].map((airTransport) => (
+            {["Self Arrange", "Not Decided", "Book Through Girikand"].map((airTransport) => (
               <label
                 key={airTransport}
                 className={`option-highlight
