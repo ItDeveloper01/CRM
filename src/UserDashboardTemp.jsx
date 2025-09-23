@@ -170,7 +170,7 @@ const activeRes=axios
       console.log("Data:", err.response.data);
 
       if (err.response.status === 401) {
-        setData("Unauthorized - please login");
+        setData("Unauthorized - please login.  Session Expired.");
       } else if (err.response.status === 403) {
         setData("Forbidden - you don’t have access");
       } else {
@@ -189,14 +189,48 @@ const activeRes=axios
 
        
 
+debugger;
+const followRes=axios
+  .get(GetFollowUpLeads, {
+    params: {
+      userID: sessionUser.user.userId, // ✅ sends ?userID=123 in query string
+    },
+    headers: {
+      Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT auth header
+    },
+  })
+  .then((res) => {
+    // ✅ Success response
+    debugger;
+    setData(res.data.message);
+     setFollowLeads(res.data || []);
+    
+  })
+  .catch((err) => {
+    console.error(err); // ✅ log the full error object for debugging
+    debugger;
+    if (err.response) {
+      // ✅ Server responded but with an error status
+      console.log("Status:", err.response.status);
+      console.log("Data:", err.response.data);
 
-        const followRes = await axios.get(GetFollowUpLeads, {
-  params: {
-    userID: sessionUser.user.userId
-   
-  }
-});
-        setFollowLeads(followRes.data || []);
+      if (err.response.status === 401) {
+        setData("Unauthorized - please login. Session Expired.");
+      } else if (err.response.status === 403) {
+        setData("Forbidden - you don’t have access");
+      } else {
+        setData(
+          `Error ${err.response.status}: ${
+            err.response.data.title || "Something went wrong"
+          }`
+        );
+      }
+    } else {
+      // ✅ Network error (server down, no internet, CORS, etc.)
+      console.log("Error",err);
+      setData("Network error - server unreachable");
+    }
+  });
 
 
          console.log("DTO  Active Leads...:", activeRes.data);

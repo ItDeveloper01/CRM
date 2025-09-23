@@ -4,11 +4,16 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import {useGetSessionUser} from  "./SessionContext"
 
+
+import {UserCreate} from "./UserCreate";
+import { useNavigate } from 'react-router-dom';
+
 export default function Users() {
   const [users, setUsers] = useState([
     { id: 1, username: 'admin', role: 'admin' },
     { id: 2, username: 'user', role: 'user' },
   ]);
+   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
    const { user: sessionUser } = useGetSessionUser();
@@ -24,7 +29,9 @@ const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
         },
       });
 
+      
       setUsers(res.data || []);
+      debugger;
     } catch (err) {
 
       debugger;
@@ -52,6 +59,16 @@ const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
 
   fetchUsers();
 }, []);
+
+
+const goToCreateUser = (user) => {
+  debugger;
+  console.log("Navigating to User..." );
+  console.log("Navigating to User..." , user);
+    const userObject = user; // or your actual user object
+    navigate('/users/create', { state: { user: userObject , myLocation:"Thats It..I can understand."} });
+  };
+
 
   if (loading) return <p className='p-4'>Loading users...</p>;
   if (error) return <p className='p-4 text-red-500'>{error}</p>;
@@ -97,11 +114,18 @@ const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
                 <td className='p-2'>{u.designation}</td>
                 <td className='p-2'>{u.role}</td>
                 <td className='p-2'>
-                  <Link
-                    to={`/users/${u.userId}`}
+                  {/* <Link
+                    to={`/users/${u}`}
                     className='text-blue-500 hover:underline'>
                     View Details
-                  </Link>
+                  </Link> */}
+
+                   <button
+                      className="text-blue-500 underline"
+                     onClick={() => goToCreateUser(u)}
+                                        >
+                      View Details
+                    </button>
                 </td>
               </tr>
             ))}

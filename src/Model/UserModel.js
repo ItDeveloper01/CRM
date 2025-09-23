@@ -20,10 +20,17 @@ export const UserObject = {
   createdAt: new Date().toISOString(),  // ISO datetime
   updatedAt: new Date().toISOString(),
   joiningDate: null   ,   // ISO date string "YYYY-MM-DD"
-
+  status :"Active",
   // Optional UI/API-only fields (NotMapped)
   notes: "",             // any internal notes
-  isActive: true         // toggle user active/inactive
+  isActive: true,         // toggle user active/inactive
+  photo:null,
+  photoBase64:"",      // base64 string for photo upload
+  
+  
+  
+  isUpdatepasword:false // to check password update or not
+
 };
 
 // Function to return a fresh empty lead object

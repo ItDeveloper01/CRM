@@ -104,11 +104,26 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
         </span>
 
         {/* Avatar */}
-        <div
+        {/* <div
           className='w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold cursor-pointer hover:bg-blue-600'
           onClick={() => setOpen(!open)}>
           {initialLetter}
-        </div>
+        </div> */}
+        <div
+  className='w-10 h-10 rounded-full overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90'
+  onClick={() => setOpen(!open)}
+  style={{ backgroundColor: !loggedInUser.user?.photoBase64 ? "#3b82f6" : "transparent" }} // fallback blue if no photo
+>
+  {loggedInUser.user?.photoBase64 ? (
+    <img
+  src={`data:image/${loggedInUser.user?.photoMimeType || 'jpeg'};base64,${loggedInUser.user?.photoBase64}`}
+  alt="User Avatar"
+  className="w-full h-full object-cover"
+/>
+  ) : (
+    <span className='text-white font-bold'>{initialLetter}</span>
+  )}
+</div>
 
         {/* Dropdown */}
         {open && (

@@ -14,7 +14,7 @@ export const AirTicketingLeadObject = {
     ticketType: "",
     airTicketStatus: "",
     visaStatus: "",
-    passportValidityDate: "",
+    passportValidityDate: null,
     overseasInsurance: "",
 
     createdBy_UserID: "", // default user
