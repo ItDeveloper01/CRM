@@ -24,11 +24,25 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
 
    const navigate = useNavigate(); // ✅ now navigate is defined
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem('loggedInUser');
-  //   setAuth({ isLoggedIn: false, role: null });
-  // };
+// ✅ User Profile handler
+  const handleProfile = async () => {
+    try {
+      // Call backend to invalidate session/token
+      //navigate to profile route
 
+      debugger;
+
+      navigate('/ProfileDisplay', { state: { user: loggedInUser.user } });
+      setOpen(false);
+
+      //{ navigate('/profile'); 
+      // setOpen(false); }}
+   
+    } catch (error) {
+      console.error("Logout API failed", error);
+    }
+    
+  };
 
  // ✅ Safe logout handler
   const handleLogout = async () => {
@@ -97,18 +111,8 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
         className='flex items-center gap-4 relative'
         ref={dropdownRef}>
         <span className='font-medium hidden sm:block'>
-          
-           {loggedInUser?.user?.userId || "Guest"}
-
-
+           {loggedInUser?.user?.fName || "Guest"}
         </span>
-
-        {/* Avatar */}
-        {/* <div
-          className='w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold cursor-pointer hover:bg-blue-600'
-          onClick={() => setOpen(!open)}>
-          {initialLetter}
-        </div> */}
         <div
   className='w-10 h-10 rounded-full overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90'
   onClick={() => setOpen(!open)}
@@ -124,11 +128,10 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
     <span className='text-white font-bold'>{initialLetter}</span>
   )}
 </div>
-
         {/* Dropdown */}
         {open && (
           <div className='absolute right-0 top-14 w-48 bg-white border rounded-lg shadow-lg z-50'>
-            <button className='flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100'>
+            <button className='flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100'  onClick={handleProfile} >
               <User size={18} /> Profile
             </button>
             <button className='flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100'>
@@ -141,7 +144,7 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
             </button>
           </div>
         )}
-      </div>
-    </header>
+  </div>
+  </header>
   );
 }

@@ -73,8 +73,6 @@ export default function UserDashboardTemp() {
   const { user: sessionUser } = useGetSessionUser();
 
 
-  const LEADAPIURL = config.apiUrl + '/Leads/';
-  const GetLeadsDashboardCounts = LEADAPIURL + 'GetLeadsDashboardCounts';
   //const GetActiveLeads = LEADAPIURL + 'GetActiveLeads';
   //const GetFollowUpLeads = LEADAPIURL + 'GetFollowUpLead';
   //const GetTodaysLeads = LEADAPIURL + 'GetTodaysLead';
@@ -82,14 +80,24 @@ export default function UserDashboardTemp() {
   const LEADAPIURL1 = config.apiUrl + '/TempLead/';
   const GetFollowUpLeads = LEADAPIURL1 + 'GetFollowUpLeads';
   const GetTodaysLeads = LEADAPIURL1 + 'GetTodaysLeads';
+  const GetLeadsDashboardCounts = LEADAPIURL1 + 'GetLeadsDashboardCounts';
 
 
 /* ---------- Fetch Data from API ---------- */
   useEffect(() => {
     async function fetchData() {
+      debugger;
       try {
-        const res = await axios.get(GetLeadsDashboardCounts);
-
+        //const res = await axios.get(GetLeadsDashboardCounts);
+        const res = await axios.get(GetLeadsDashboardCounts, {
+  headers: {
+    Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
+    "Content-Type": "application/json"
+  },
+  params: {
+    userId: sessionUser.user.userId,
+  }
+});
         debugger;
        
         // Set tile counts directly from API

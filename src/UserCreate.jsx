@@ -33,6 +33,7 @@ export default function UserCreate({ }) {
   const getUserRolesListEndPoint = apiUrl + '/Users/GetRolesList';
   const updateUserAPI = apiUrl + '/Users/UpdateUser';
    const createUserAPI = apiUrl + '/Users/CreateUser';
+   const sendCredantialsAPI= apiUrl + "/Contact/SendLoginInformation";
   const location = useLocation(); // ✅ get location here
 
   const user = location.state?.user || getEmptyUserObj();
@@ -44,53 +45,11 @@ export default function UserCreate({ }) {
   const [isUpdate, setIsUpdate] = useState(!!location.state?.user);
   const [axiosMsgData, setData] = useState("");
   const { user: sessionUser } = useGetSessionUser();
-   const [photo, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [photoPreview, setPhotoPreview] = useState(null); // store base64 for UI preview
+  
 
-  //const [form, setForm]=useState[()];
-  // if(user!=null)
-  // {
-  //   console.log("Setting User Objects...", user  );
-  //   //setUserObjects (user);
-  //   setIsUpdate(true);
-  // }
-  // else
-  // {
-  //    setIsUpdate(false);
-
-  // }
-
-
-  // const [form, setForm] = useState({
-  //   empId: '',
-  //   userId: '',
-  //   UserName: '',
-  //   firstName: '',
-  //   middleName: '',
-  //   lastName: '',
-  //   mobileNo: '',
-  //   emailId: '',
-  //   reportingManager: '',
-  //   gender: '',
-  //   role: '',
-  //   password: '',
-  //   department: '',
-  //   designation: '',
-  //   birthDate: '',
-  //   joiningDate: '',
-  //   branch: '',
-  // });
-
-  //   useEffect(() => {
-  //   if (!user) {
-
-
-  //   //setUserObjects (user);
-  //      setIsUpdate(true);
-  //     setUserObjects(getEmptyUserObj());
-  //   }
-  // }, [user]);
 
   useEffect(() => {
     console.log("Setting User Objects...", userObjects);
@@ -110,8 +69,6 @@ export default function UserCreate({ }) {
       setIsUpdate(false);
     }
   }, [user, userObjects]);
-
- 
 
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
@@ -188,9 +145,8 @@ export default function UserCreate({ }) {
       const userId = user.userId;
       console.log('Editing user with ID:', userId);
       setIsUpdate(true);
-setPhoto(user.PhotoBase64 ? `data:image/jpeg;base64,${user.PhotoBase64}` : null);
+      setPhoto(user.PhotoBase64 ? `data:image/jpeg;base64,${user.PhotoBase64}` : null);
       setUserObjects(user); // Fetch user details and populate form
-
     } else {
       /*********************************              NEW    USER    ******************************************************** */
       setIsUpdate(false);
@@ -258,12 +214,17 @@ try {
     // });
 
     await createUser(updatedData, photo);
+    await SendLoginCreadentials(updatedData);
+    
+    navigate("/users");
     // alert('✅ User created successfully!');
     // navigate('/users');
   } else {
  
     await saveUser(updatedData, photo);}
-
+    debugger;
+    await SendLoginCreadentials(updatedData);
+     navigate("/users");
 
 } catch (error) {
   console.error(error);
@@ -304,10 +265,9 @@ debugger;
       },
     });
 
-
     alert("✅ User created successfully!");
-    navigate("/users");
-    console.log("User crated", response.data);
+  
+    console.log("User created", response.data);
 
   } catch (error) {
     console.error(error);
@@ -315,6 +275,39 @@ debugger;
     alert(`❌ Failed: ${JSON.stringify(message)}`);
   }
 };
+
+
+
+const SendLoginCreadentials  = async (updatedData, selectedFile = null) => {
+  try {
+debugger;
+
+ const receiverId=updatedData.userId;
+ const senderId=sessionUser.user.userId;
+  
+ debugger;
+ const response = await axios.post(
+  sendCredantialsAPI,
+  updatedData,  // full Users object as JSON body
+  {
+    headers: {
+      Authorization: `Bearer ${sessionUser.token}`,
+      "Content-Type": "application/json"
+    }
+  }
+);
+
+    alert("✅ Credentials sent successfully!");
+  
+    console.log("Credentials sent successfully", response.data);
+
+  } catch (error) {
+    console.error(error);
+    const message = error.response?.data?.errors || error.response?.data?.title || error.message;
+    alert(`❌ Failed: ${JSON.stringify(message)}`);
+  }
+};
+
 
   
 
@@ -342,7 +335,7 @@ debugger;
 
 
     alert("✅ User saved successfully!");
-    navigate("/users");
+   
     console.log("User saved", response.data);
 
   } catch (error) {
