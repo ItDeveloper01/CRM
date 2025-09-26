@@ -1,7 +1,8 @@
-import { Menu, UserPlus, CalendarCheck, LayoutDashboard, LogOut, Users } from 'lucide-react';
+import { Menu, UserPlus, CalendarCheck, LayoutDashboard, LogOut, Users ,Settings} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Roles } from './Constants';
+import SMTPForm from './SMTPForm';
 
 export default function Sidebar({ auth, setAuth }) {
   console.log('auth', auth);
@@ -45,13 +46,24 @@ debugger;
           <CalendarCheck size={20} />
           {sidebarOpen && 'Customers'}
         </Link>
- */}
+         */}
         {auth && (auth.role === Roles.ADMIN || auth.role === Roles.SUPER_ADMIN) && (
           <Link
             to='/users'
             className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
             <Users size={20} />
             {sidebarOpen && 'Users'}
+          </Link>
+        )}
+
+          {auth && (auth.role === Roles.ADMIN || auth.role === Roles.SUPER_ADMIN) && (
+          <Link
+            to='/smtpsettings'
+            className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
+            {/* <Users size={20} /> */}
+            {/* <SMTPForm size={20} /> */}
+             <Settings size={20} />
+            {sidebarOpen && 'SMTP Settings'}
           </Link>
         )}
       </nav>

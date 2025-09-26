@@ -15,6 +15,8 @@ import UserDashboardTemp from './UserDashboardTemp';
 import LeadsUpdateForms from "./LeadsUpdateForms"
 import { useGetSessionUser } from "./SessionContext"; // ✅ import
 import { fa } from 'intl-tel-input/i18n';
+import ProfileDisplay from './ProfileDisplay';
+import SMTPForm from './SMTPForm';
 
 export default function App() {
 //  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -58,6 +60,14 @@ export default function App() {
                   </AdminRoute>
                 }
               />
+               <Route
+                path='/smtpsettings'
+                element={
+                  <AdminRoute auth={user}>
+                  <SMTPForm></SMTPForm>
+                  </AdminRoute>
+                }
+              />
               {/* ✅ User Creation inside same Layout */}
               <Route
                 path='/users/create'
@@ -67,8 +77,12 @@ export default function App() {
                   </AdminRoute>
                 }
               />
+               <Route
+              path='/ProfileDisplay'
+              element={<ProfileDisplay />}
+            />
             </Route>
-
+           
             <Route
               path='*'
               element={<Navigate to='/dashboard' />}
@@ -80,8 +94,9 @@ export default function App() {
               path='/'
               element={<Login setUser={setUser} />}
             />
-
+           
             <Route path="/updateLeads/:id" element={<LeadsUpdateForms />} />
+           
             <Route
               path='*'
               element={<Navigate to='/login' />}
