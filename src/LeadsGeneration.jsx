@@ -1,5 +1,5 @@
 
-import PhoneField from './PhoneInput';
+// import PhoneField from './PhoneInput';
 import cloneDeep from 'lodash/cloneDeep';
 import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
@@ -25,7 +25,12 @@ import { mapObject } from './Model/MappingObjectFunction';
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
-  const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj());
+
+  const [airTicketingdObj, setAirTicketingLeadObj] = useState({
+    ...getEmptyAirTicketObj(),
+    airTicketType: "Domestic"   // default selected
+  });
+  // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
@@ -40,6 +45,14 @@ export default function LeadsGeneration({ lead }) {
   const [currentUser, setCurrentUser] = useState(null);
 
 
+  // **********This logic for update AirTicket type ************
+  // const prepareAirTicketPayload = (obj) => {
+  //   if (obj.airTicketType?.toLowerCase() === "domestic") {
+  //     const { visaStatus, passportValidityDate, overseasInsurance, ...domesticObj } = obj;
+  //     return domesticObj;
+  //   }
+  //   return obj; // International → keep everything
+  // };
 
   const [showPopup, setShowPopup] = useState(false);
   //Requirment for car rental
@@ -63,6 +76,17 @@ export default function LeadsGeneration({ lead }) {
   const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
   const generateLEadAPI = config.apiUrl + "/TempLead/CreateLead";
   const updateLeadApi = config.apiUrl + "/TempLead/UpdateLead";
+
+
+  // const prepareAirTicketPayload = (obj) => {
+  //   if (obj.airTicketType?.toLowerCase() === "domestic") {
+  //     // Strip international-only fields
+  //     const { visaStatus, passportValidityDate, overseasInsurance, ...domesticObj } = obj;
+  //     return domesticObj;
+  //   }
+  //   return obj; // International → keep everything
+  // };
+
 
   //Indian city api 
   useEffect(() => {
@@ -471,6 +495,7 @@ export default function LeadsGeneration({ lead }) {
           <>
             {(
               console.log("History to pass to HistoryHover:", LeadObj.histories),
+
               <LeadAirTicketing
                 airTicketingdObj={airTicketingdObj}
                 setAirTicketingLeadObj={setAirTicketingLeadObj}
@@ -601,8 +626,23 @@ export default function LeadsGeneration({ lead }) {
       console.log("Form Submitted:", leadObj);
     }
 
+
+  //  **********This logic for update AirTicket type ************
+  //   try {
+  //   const payload = prepareAirTicketPayload(airTicketingdObj);
+
+  //   const { data } = await axios.put(config.apiUrl + "/TempLead/UpdateLead", payload);
+
+  //   console.log("Air ticket saved successfully:", data);
+
+  // } catch (error) {
+  //   console.error("Error saving air ticket:", error);
+  //   setErrors({ save: "Failed to save air ticket" });
+  // }
+    
+
     try {
-      // written by me 
+      // written by Priyanka
       if (isUpdateMode) {
 
         if (!leadObj.createdBy_UserID) {
@@ -617,6 +657,7 @@ export default function LeadsGeneration({ lead }) {
 
         switch (selectedLeadName.toLowerCase()) {
           case "visa":
+            debugger;
             if (!visadObj.createdBy_UserID) {
               visadObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -624,11 +665,13 @@ export default function LeadsGeneration({ lead }) {
             if (!visadObj.assigneeTo_UserID) {
               visadObj.assigneeTo_UserID = currentUser?.user?.userId;
             }
+            debugger;
             const deepVisaCopy = cloneDeep(visadObj);
             deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
             break;
 
           case "air ticketing":
+            debugger;
             if (!airTicketingdObj.createdBy_UserID) {
               airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -641,7 +684,7 @@ export default function LeadsGeneration({ lead }) {
             deepLeadCopy.category = { ...deepAirTicketingCopy };;
             break;
 
-            default:
+          default:
             debugger;
             deepLeadCopy.category = { ...getEmptyLeadObj() };
             console.warn("Unknown lead type:", selectedLeadName);
@@ -649,6 +692,7 @@ export default function LeadsGeneration({ lead }) {
 
         }
 
+        debugger;
         console.log("Final Lead Obj to Update:", deepLeadCopy);
         console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 
@@ -662,58 +706,58 @@ export default function LeadsGeneration({ lead }) {
         alert("Lead updated successfully!");
 
 
-      // *************** old update lead system before switch condition and its working fine for single lead type ************
-      // if (isUpdateMode) {
+        // *************** old update lead system before switch condition and its working fine for single lead type ************
+        // if (isUpdateMode) {
 
 
-      //   // old component for air ticket and visa its working proper for each visa or air ticketing 
-      //   if (!visadObj.createdBy_UserID) {
-      //     visadObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
+        //   // old component for air ticket and visa its working proper for each visa or air ticketing 
+        //   if (!visadObj.createdBy_UserID) {
+        //     visadObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   if (!visadObj.assigneeTo_UserID) {
-      //     visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
+        //   if (!visadObj.assigneeTo_UserID) {
+        //     visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   // For Air Ticketing 
-      //   if (!airTicketingdObj.createdBy_UserID) {
-      //     airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
+        //   // For Air Ticketing 
+        //   if (!airTicketingdObj.createdBy_UserID) {
+        //     airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   if (!airTicketingdObj.assigneeTo_UserID) {
-      //     airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
-
-
-      //   if (!leadObj.createdBy_UserID) {
-      //     leadObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
-
-      //   if (!leadObj.assigneeTo_UserID) {
-      //     leadObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
-
-      //   const deepLeadCopy = cloneDeep(leadObj);
-      //   const deepVisaCopy = cloneDeep(visadObj);
-      //   const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
+        //   if (!airTicketingdObj.assigneeTo_UserID) {
+        //     airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
 
+        //   if (!leadObj.createdBy_UserID) {
+        //     leadObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
-      //   deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
-      //   debugger;
+        //   if (!leadObj.assigneeTo_UserID) {
+        //     leadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   console.log("Final Lead Obj to Update:", deepLeadCopy);
-      //   console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
-
-      //   debugger;
-      //   const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
-
-
-      //   console.log("Updated lead:", response.data);
+        //   const deepLeadCopy = cloneDeep(leadObj);
+        //   const deepVisaCopy = cloneDeep(visadObj);
+        //   const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
 
 
-      //   alert("Lead updated successfully!");
+
+        //   deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
+        //   deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
+        //   debugger;
+
+        //   console.log("Final Lead Obj to Update:", deepLeadCopy);
+        //   console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
+
+        //   debugger;
+        //   const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
+
+
+        //   console.log("Updated lead:", response.data);
+
+
+        //   alert("Lead updated successfully!");
         // ******************************************************************************************************
 
 
