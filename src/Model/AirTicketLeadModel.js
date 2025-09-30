@@ -8,7 +8,7 @@ export const AirTicketingLeadObject = {
     airTicketType: "",
     onwardDate: null,
     returnDate: null,
-    Sector: "",
+    sector: "",
     noOfTravelers: 0,
     travelClass: "",
     ticketType: "",

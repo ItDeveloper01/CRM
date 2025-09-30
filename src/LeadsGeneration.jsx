@@ -1,5 +1,5 @@
 
-import PhoneField from './PhoneInput';
+// import PhoneField from './PhoneInput';
 import cloneDeep from 'lodash/cloneDeep';
 import { useEffect, useState } from 'react';
 import LeadVisa from './LeadVisa';
@@ -26,7 +26,12 @@ import LeadsTableForExistingPhone from './LeadsTableForExistingPhone';
 export default function LeadsGeneration({ lead }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
-  const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj());
+
+  const [airTicketingdObj, setAirTicketingLeadObj] = useState({
+    ...getEmptyAirTicketObj(),
+    airTicketType: "Domestic"   // default selected
+  });
+  // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
@@ -43,8 +48,6 @@ export default function LeadsGeneration({ lead }) {
   const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
   const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
 
-
- 
 
   const [showPopup, setShowPopup] = useState(false);
   //Requirment for car rental
@@ -69,6 +72,17 @@ export default function LeadsGeneration({ lead }) {
   const generateLEadAPI = config.apiUrl + "/TempLead/CreateLead";
   const updateLeadApi = config.apiUrl + "/TempLead/UpdateLead";
   const checkDuplicateMobileAPI = config.apiUrl + "/TempLead/CheckDuplicateMobile/";
+
+
+  // const prepareAirTicketPayload = (obj) => {
+  //   if (obj.airTicketType?.toLowerCase() === "domestic") {
+  //     // Strip international-only fields
+  //     const { visaStatus, passportValidityDate, overseasInsurance, ...domesticObj } = obj;
+  //     return domesticObj;
+  //   }
+  //   return obj; // International → keep everything
+  // };
+
 
   //Indian city api 
   useEffect(() => {
@@ -512,6 +526,7 @@ export default function LeadsGeneration({ lead }) {
           <>
             {(
               console.log("History to pass to HistoryHover:", LeadObj.histories),
+
               <LeadAirTicketing
                 airTicketingdObj={airTicketingdObj}
                 setAirTicketingLeadObj={setAirTicketingLeadObj}
@@ -642,8 +657,23 @@ export default function LeadsGeneration({ lead }) {
       console.log("Form Submitted:", leadObj);
     }
 
+
+  //  **********This logic for update AirTicket type ************
+  //   try {
+  //   const payload = prepareAirTicketPayload(airTicketingdObj);
+
+  //   const { data } = await axios.put(config.apiUrl + "/TempLead/UpdateLead", payload);
+
+  //   console.log("Air ticket saved successfully:", data);
+
+  // } catch (error) {
+  //   console.error("Error saving air ticket:", error);
+  //   setErrors({ save: "Failed to save air ticket" });
+  // }
+    
+
     try {
-      // written by me 
+      // written by Priyanka
       if (isUpdateMode) {
 
         if (!leadObj.createdBy_UserID) {
@@ -658,6 +688,7 @@ export default function LeadsGeneration({ lead }) {
 
         switch (selectedLeadName.toLowerCase()) {
           case "visa":
+            debugger;
             if (!visadObj.createdBy_UserID) {
               visadObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -665,11 +696,13 @@ export default function LeadsGeneration({ lead }) {
             if (!visadObj.assigneeTo_UserID) {
               visadObj.assigneeTo_UserID = currentUser?.user?.userId;
             }
+            debugger;
             const deepVisaCopy = cloneDeep(visadObj);
             deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
             break;
 
           case "air ticketing":
+            debugger;
             if (!airTicketingdObj.createdBy_UserID) {
               airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -690,6 +723,7 @@ export default function LeadsGeneration({ lead }) {
 
         }
 
+        debugger;
         console.log("Final Lead Obj to Update:", deepLeadCopy);
         console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 

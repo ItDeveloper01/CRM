@@ -16,6 +16,8 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
   const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
   const [errors, setErrors] = useState({});
 
+   
+
   const handleChange = (e) => {
 
     console.log("**********************IN AIR TICKETING OBJECT   /**************************");
@@ -105,7 +107,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             value={airTicketingdObj.returnDate || ""}
             onChange={handleChange}
             className={`border-highlight`}
-            // className={`border-highlight ${errors?.returnDate ? "border-red-500" : ""}`}
+          // className={`border-highlight ${errors?.returnDate ? "border-red-500" : ""}`}
           />
           {/* Show error below input ======work is Remaining of validation */}
           {/* {errors?.returnDate && <p className="text-red-500 text-sm mt-1">{errors.returnDate}</p>}       */}
@@ -113,13 +115,14 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
       </div>
 
       {/* Sector */}
+
       <div className="flex-1">
         <label className="label-style">Sector</label>
         <input
           type="text"
-          name="Sector"
+          name="sector"
           placeholder="Sector"
-          value={airTicketingdObj.Sector || ""}
+          value={airTicketingdObj.sector || ""}
           onChange={handleChange}
           className={`border-highlight`}
         />
@@ -156,8 +159,8 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             <option value="">Select Class</option>
             <option value="economy">Economy</option>
             <option value="premium-economy">Premium Economy</option>
-            <option value="business">Business Class</option>
-            <option value="first">First Class</option>
+            <option value="business class">Business Class</option>
+            <option value="first class">First Class</option>
           </select>
         </div>
       </div>
