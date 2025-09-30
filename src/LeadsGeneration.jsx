@@ -15,10 +15,11 @@ import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive 
 import LeadCarRental from './LeadCarRental';
 
 import { mapObject } from './Model/MappingObjectFunction';
-
-
-
-
+import { useGetSessionUser } from "./SessionContext"
+//import { ErrorMessages } from './Constants';
+//import { LeadStatusOptions } from './Constants';
+import * as Constants from './Constants';
+import LeadsTableForExistingPhone from './LeadsTableForExistingPhone';
 
 
 
@@ -38,8 +39,12 @@ export default function LeadsGeneration({ lead }) {
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
+  const { user: sessionUser } = useGetSessionUser();
+  const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
+  const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
 
 
+ 
 
   const [showPopup, setShowPopup] = useState(false);
   //Requirment for car rental
@@ -63,6 +68,7 @@ export default function LeadsGeneration({ lead }) {
   const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
   const generateLEadAPI = config.apiUrl + "/TempLead/CreateLead";
   const updateLeadApi = config.apiUrl + "/TempLead/UpdateLead";
+  const checkDuplicateMobileAPI = config.apiUrl + "/TempLead/CheckDuplicateMobile/";
 
   //Indian city api 
   useEffect(() => {
@@ -90,7 +96,7 @@ export default function LeadsGeneration({ lead }) {
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error fetching cities:", err);
+        console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
         setLoading(false);
       });
   }, []);
@@ -170,11 +176,11 @@ export default function LeadsGeneration({ lead }) {
     newAirTicketing.createdBy_UserID = incomingAirTicketing.createdBy_UserID || currentUser?.user?.userId;
     newAirTicketing.createdAt = incomingAirTicketing.createdAt || new Date().toISOString();
     newAirTicketing.updatedAt = incomingAirTicketing.updatedAt || new Date().toISOString();
-    newAirTicketing.status = incomingAirTicketing.status || 'Open';
+    newAirTicketing.status = incomingAirTicketing.status || Constants.LeadStatusOptions.OPEN;
 
 
     debugger;
-    console.log("Mapped Air Ticketing Obj....:", newAirTicketing);
+    console.log("Mapped Air Ticketing Obj....:", newAirTicketing) ;
     return newAirTicketing;
   };
 
@@ -270,6 +276,41 @@ export default function LeadsGeneration({ lead }) {
 
   };
 
+  const onMobileChangeFocus = async (value) => {
+    debugger;
+    setISLeadsForPhoneVisible(false);
+    //CheckDuplicateMobile
+    const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
+    if (str)
+      return; // if invalid mobile no then return
+    else if (!sessionUser?.token) return; // if no token then return
+    else if (!sessionUser?.user?.userId) return; // if no user id then return
+    else if (!leadObj?.mobileNo) return; // if no mobile no then return
+    else //if(leadObj?.mobileNo !== value) return; // if mobile no not match then return
+    {
+      const res = await axios.get(checkDuplicateMobileAPI, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
+          "Content-Type": "application/json"
+        },
+        params: {
+          assigneeUserID: sessionUser.user.userId,
+          mobile: leadObj.mobileNo
+        }
+      });
+
+      console.log("Duplicate mobile check response:", res.data);
+
+      if (res.data && res.data.length > 0) {
+        alert("Duplicate mobile number found. Please check the existing leads.");
+        setISLeadsForPhoneVisible(true);
+        setLeadsForPhoneNumber(res.data);
+      }
+      else
+        setISLeadsForPhoneVisible(false);
+
+    }
+  }
 
 
   // Initialize leadObj on prop change
@@ -641,7 +682,7 @@ export default function LeadsGeneration({ lead }) {
             deepLeadCopy.category = { ...deepAirTicketingCopy };;
             break;
 
-            default:
+          default:
             debugger;
             deepLeadCopy.category = { ...getEmptyLeadObj() };
             console.warn("Unknown lead type:", selectedLeadName);
@@ -662,58 +703,58 @@ export default function LeadsGeneration({ lead }) {
         alert("Lead updated successfully!");
 
 
-      // *************** old update lead system before switch condition and its working fine for single lead type ************
-      // if (isUpdateMode) {
+        // *************** old update lead system before switch condition and its working fine for single lead type ************
+        // if (isUpdateMode) {
 
 
-      //   // old component for air ticket and visa its working proper for each visa or air ticketing 
-      //   if (!visadObj.createdBy_UserID) {
-      //     visadObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
+        //   // old component for air ticket and visa its working proper for each visa or air ticketing 
+        //   if (!visadObj.createdBy_UserID) {
+        //     visadObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   if (!visadObj.assigneeTo_UserID) {
-      //     visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
+        //   if (!visadObj.assigneeTo_UserID) {
+        //     visadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   // For Air Ticketing 
-      //   if (!airTicketingdObj.createdBy_UserID) {
-      //     airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
+        //   // For Air Ticketing 
+        //   if (!airTicketingdObj.createdBy_UserID) {
+        //     airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   if (!airTicketingdObj.assigneeTo_UserID) {
-      //     airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
-
-
-      //   if (!leadObj.createdBy_UserID) {
-      //     leadObj.createdBy_UserID = currentUser?.user?.userId;
-      //   }
-
-      //   if (!leadObj.assigneeTo_UserID) {
-      //     leadObj.assigneeTo_UserID = currentUser?.user?.userId;
-      //   }
-
-      //   const deepLeadCopy = cloneDeep(leadObj);
-      //   const deepVisaCopy = cloneDeep(visadObj);
-      //   const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
+        //   if (!airTicketingdObj.assigneeTo_UserID) {
+        //     airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
 
+        //   if (!leadObj.createdBy_UserID) {
+        //     leadObj.createdBy_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
-      //   deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
-      //   debugger;
+        //   if (!leadObj.assigneeTo_UserID) {
+        //     leadObj.assigneeTo_UserID = currentUser?.user?.userId;
+        //   }
 
-      //   console.log("Final Lead Obj to Update:", deepLeadCopy);
-      //   console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
-
-      //   debugger;
-      //   const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
-
-
-      //   console.log("Updated lead:", response.data);
+        //   const deepLeadCopy = cloneDeep(leadObj);
+        //   const deepVisaCopy = cloneDeep(visadObj);
+        //   const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
 
 
-      //   alert("Lead updated successfully!");
+
+        //   deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
+        //   deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
+        //   debugger;
+
+        //   console.log("Final Lead Obj to Update:", deepLeadCopy);
+        //   console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
+
+        //   debugger;
+        //   const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
+
+
+        //   console.log("Updated lead:", response.data);
+
+
+        //   alert("Lead updated successfully!");
         // ******************************************************************************************************
 
 
@@ -822,7 +863,7 @@ export default function LeadsGeneration({ lead }) {
         <div className='flex gap-4 mb-4'>
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Mobile Number</label>
-            <input name='mobileNo' placeholder='Mobile Number' onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
+            <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
               className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
             />
             {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
@@ -938,8 +979,27 @@ export default function LeadsGeneration({ lead }) {
           </div>
         </div>
       </div>
-
+      {/* Render Table for exisitng leads with the matching phone no. */}
+      {isLeadsForPhoneVisible &&(
+      <div>
+        <div>
+        <LeadsTableForExistingPhone
+          followLeads={leadsForPhoneNumber}
+        ></LeadsTableForExistingPhone>
+        </div>
+        <div className='text-center my-4'>
+          <button
+            onClick={() => setISLeadsForPhoneVisible(false)}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+          >
+            Continue with New Lead
+          </button>
+        </div>
+      </div>
+      )}
       {/* Lead Details */}
+      {!isLeadsForPhoneVisible &&(
+      <div>
       <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
       <div className='flex gap-4'>
         <div className='flex flex-col flex-1'>
@@ -1039,33 +1099,7 @@ export default function LeadsGeneration({ lead }) {
 
       </div>
 
-
       {/* Footer */}
-      {/* <div className="flex justify-between items-center mt-6 gap-4">
-        <button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-          {submitBtnTxt}
-        </button>
-        <div className="flex items-center gap-2">
-
-          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">Follow Up Date :</label>
-          <input 
-          type="date" 
-          id="followUpDate" 
-          name="followUpDate" 
-          value={leadObj.followUpDate || ''}
-
-          <label htmlFor="FollowUpDate" className="font-medium text-gray-600 whitespace-nowrap">Follow Up Date :</label>
-          <input 
-          type="date" 
-          id="FollowUpDate" 
-          name="FollowUpDate" 
-          value={leadObj.FollowUpDate || ''}
-
-           onChange={handleChange} 
-           className={`border-highlight`} 
-          />
-        </div>
-      </div> */}
 
       {/* Popup / Modal */}
       {
@@ -1084,7 +1118,9 @@ export default function LeadsGeneration({ lead }) {
           </div>
         )
       }
-    </div >
+      </div >
+      )}
+    </div>
 
   );
 }
