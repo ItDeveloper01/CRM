@@ -6,8 +6,6 @@ import { useGetSessionUser, useSetSessionUser } from './SessionContext';
 import { getEmptyUserObj } from './Model/UserModel';
 
 
-
-
 export default function ProfileDisplay() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,13 +22,16 @@ export default function ProfileDisplay() {
    useEffect(() => {
     // This runs only once on first render
     initializePhotoPreview();
+    console.log("User Objects on first render:", userObjects);
+    console.log("User on first render:", user);
   }, []); // empty array means "run once"
 
   const initializePhotoPreview = () => {
-    if (userObjects?.PhotoBase64) {
-      console.log("Photo Base64 on first render:", userObjects.PhotoBase64);
+    debugger;
+    if (userObjects?.photoBase64) {
+      console.log("Photo Base64 on first render:", userObjects.photoBase64);
 
-      const ard = `data:${detectMimeType(userObjects.PhotoBase64)};base64,${userObjects.PhotoBase64}`;
+      const ard = `data:${detectMimeType(userObjects.photoBase64)};base64,${userObjects.photoBase64}`;
       setPhotoPreview(ard);
       console.log("Photo preview set to: ", ard);
       // You can set state here if needed
@@ -52,8 +53,8 @@ debugger;
 const setPhotoPreviewFunc= (preview) => {
   // This function can be used if you want to set photo preview state
   // Currently not used as photoPreviewSrc is derived directly
-const ard = userObjects.PhotoBase64
-    ? `data:${detectMimeType(userObjects.PhotoBase64)};base64,${userObjects.PhotoBase64}`
+const ard = userObjects.photoBase64
+    ? `data:${detectMimeType(userObjects.photoBase64)};base64,${userObjects.photoBase64}`
     : null;
 
     setPhotoPreview(ard);
