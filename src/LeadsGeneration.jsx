@@ -658,19 +658,19 @@ export default function LeadsGeneration({ lead }) {
     }
 
 
-  //  **********This logic for update AirTicket type ************
-  //   try {
-  //   const payload = prepareAirTicketPayload(airTicketingdObj);
+    //  **********This logic for update AirTicket type ************
+    //   try {
+    //   const payload = prepareAirTicketPayload(airTicketingdObj);
 
-  //   const { data } = await axios.put(config.apiUrl + "/TempLead/UpdateLead", payload);
+    //   const { data } = await axios.put(config.apiUrl + "/TempLead/UpdateLead", payload);
 
-  //   console.log("Air ticket saved successfully:", data);
+    //   console.log("Air ticket saved successfully:", data);
 
-  // } catch (error) {
-  //   console.error("Error saving air ticket:", error);
-  //   setErrors({ save: "Failed to save air ticket" });
-  // }
-    
+    // } catch (error) {
+    //   console.error("Error saving air ticket:", error);
+    //   setErrors({ save: "Failed to save air ticket" });
+    // }
+
 
     try {
       // written by Priyanka
@@ -893,7 +893,24 @@ export default function LeadsGeneration({ lead }) {
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
       {/* Customer Details */}
       <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
+        {/* <div className="flex items-center justify-between mb-4 border-b pb-2"> */}
         <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Customer Details</h3>
+         {/* <div className="flex items-center gap-2">
+          <label className="font-medium text-gray-700">Status:</label>
+          <select
+            name="leadStatus"
+            value={leadObj.leadStatus}
+            onChange={handleChange}
+            // onChange={(e) => setLeadStatus(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+          >
+            <option value="open">Open</option>
+            <option value="lost">Lost</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="postponed">Postponed</option>
+          </select>
+        </div>
+        </div> */}
         <div className='flex gap-4 mb-4'>
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Mobile Number</label>
@@ -1106,6 +1123,7 @@ export default function LeadsGeneration({ lead }) {
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
           {submitBtnTxt}
         </button>
+
         <div className="flex items-center gap-2">
           <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
             Follow Up Date :
