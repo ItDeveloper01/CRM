@@ -18,7 +18,11 @@ export const VISALeadObject = {
   hotelBooking: "",
   overseasInsurance: "",
   passportValidity: "",
+  passportValidityDate: null,
+  passportPages: "",
+  passportDuration: "",
   airTicketIssuedBy: "",
+
 
   createdBy_UserID: "", // default user
   createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"

@@ -39,7 +39,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
     }, [setVisaLeadObj, visadObj, histories]);
 
     return (
-   
+
         <div>
             <div className="flex gap-3 flex-wrap">
                 {/* Country1 Dropdown */}
@@ -250,8 +250,14 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Hotel</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Booked", "Not Booked"].map((status) => (
-                            <label key={status} className="flex items-center gap-2 flex-1 cursor-pointer">
+                        {["Booked", "Not Booked", "Girikand to Book"].map((status) => (
+                            <label key={status}
+                                className={`option-highlight
+                                        ${visadObj.hotelBooking === status
+                                        ? "option-highlight-active"
+                                        : "option-highlight-inactive"
+                                    }`}
+                            >
                                 <input
                                     type="radio"
                                     name="hotelBooking"
@@ -271,8 +277,14 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 <div className="flex-1 min-w-[200px]">
                     <label className="label-style">Overseas Insurance</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Issued", "Not Issued"].map((insuranceStatus) => (
-                            <label key={insuranceStatus} className="flex items-center gap-2 flex-1 cursor-pointer">
+                        {["Issued", "Not Issued", "Girikand to Issue"].map((insuranceStatus) => (
+                            <label key={insuranceStatus}
+                                className={`option-highlight
+                                        ${visadObj.overseasInsurance === insuranceStatus
+                                        ? "option-highlight-active"
+                                        : "option-highlight-inactive"
+                                    }`}
+                            >
                                 <input type="radio"
                                     name="overseasInsurance"
                                     value={insuranceStatus}
@@ -288,7 +300,13 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                     <label className="label-style">Passport Validity</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
                         {["Checked", "Not Checked", "Not Sure"].map((pValidity) => (
-                            <label key={pValidity} className="flex items-center gap-2 flex-1 cursor-pointer">
+                            <label key={pValidity}
+                                className={`option-highlight
+                                        ${visadObj.passportValidity === pValidity
+                                        ? "option-highlight-active"
+                                        : "option-highlight-inactive"
+                                    }`}
+                            >
                                 <input type="radio"
                                     name="passportValidity"
                                     value={pValidity}
@@ -301,23 +319,111 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 </div>
             </div>
 
-            {/* Airticket */}
-            <div className="flex-1">
-                <label className="label-style">Airticket</label>
-                <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-4">
-                    {["Issued by Girikand", "Issued from other agency", "Blocked", "Not Issued", "Issued Online"].map((airTckIssuedBy) => (
-                        <label key={airTckIssuedBy} className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio"
-                                name="airTicketIssuedBy"
-                                value={airTckIssuedBy}
-                                checked={visadObj.airTicketIssuedBy === airTckIssuedBy}
-                                onChange={handleChange} />
-                            {airTckIssuedBy}
-                        </label>
-                    ))}
+            {/*Passport Vlaidity date + passport pages */}
+            <div className="flex gap-3 flex-wrap"> {/* reduced gap */}
+
+                <div className="flex-1 min-w-[200px] flex flex-col">
+                    <label className="label-style mb-1">Passport Validity Date</label>
+                    <div className="border border-gray-300 rounded-lg flex-1 h-full flex items-center px-2 
+                    focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-300">
+                        <input
+                            type="date"
+                            name="passportValidityDate"
+                            value={visadObj.passportValidityDate || ""}
+                            onChange={handleChange}
+                            className="w-full h-full outline-none bg-white"
+
+                        />
+                    </div>
+
+                </div>
+
+                <div className="flex-1 min-w-[200px]">
+                    <label className="label-style">Sufficient Passport Pages</label>
+                    <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
+                        {["Yes", "No", "Not Sure"].map((passPages) => (
+                            <label key={passPages}
+                                className={`option-highlight
+                                        ${visadObj.passportPages === passPages
+                                        ? "option-highlight-active"
+                                        : "option-highlight-inactive"
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="passportPages"
+                                    value={passPages}
+                                    checked={visadObj.passportPages === passPages}
+                                    onChange={handleChange} />
+                                {passPages}
+                            </label>
+                        ))}
+                    </div>
                 </div>
             </div>
 
+
+            {/* Passport Duration */}
+
+            <div className="flex gap-3 flex-wrap">
+                <div className="flex-1">
+                    <label className="label-style">Passport Duration</label>
+                    <div className="border border-gray-300 rounded-lg p-2 flex flex-col gap-1">
+                        {["10 Years", "Less Than 10 Years", "Not Sure"].map((passDue) => (
+                            <label key={passDue}
+                                className={`option-highlight
+                                    ${visadObj.passportDuration === passDue
+                                        ? passDue === "Less Than 10 Years"
+                                            ? "bg-red-100 text-red-700 border border-red-300" // light red highlight
+                                            : "option-highlight-active"
+                                        : "option-highlight-inactive"
+                                    }`}
+                            >
+                                <input
+                                    type="radio"
+                                    name="passportDuration"
+                                    value={passDue}
+                                    checked={visadObj.passportDuration === passDue}
+                                    onChange={handleChange}
+                                    className={`mr-2
+                                ${passDue === "Less Than 10 Years" ? "accent-red-500" : "accent-blue-500"}`}
+                                />
+                                {passDue}
+                            </label>
+                        ))}
+
+                    </div>
+                </div>
+
+                {/* Airticket */}
+                <div className="flex-1">
+                    <label className="label-style">Airticket</label>
+                    <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-2 gap-1">
+                        {["Issued by Girikand", "Issued from other agency","Issued Online", "Not Issued", "Blocked" ].map(
+                            (airTckIssuedBy, idx) => (
+                                <label
+                                    key={airTckIssuedBy}
+                                    className={`option-highlight flex items-center gap-2 cursor-pointer
+                                            ${visadObj.airTicketIssuedBy === airTckIssuedBy
+                                            ? "option-highlight-active"
+                                            : "option-highlight-inactive"
+                                        }`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="airTicketIssuedBy"
+                                        value={airTckIssuedBy}
+                                        checked={visadObj.airTicketIssuedBy === airTckIssuedBy}
+                                        onChange={handleChange}
+                                        className="accent-blue-500"
+                                    />
+                                    {airTckIssuedBy}
+                                </label>
+                            )
+                        )}
+                    </div>
+                </div>
+            </div>
             {/* Quote Given */}
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Quote Given</label>
