@@ -111,7 +111,7 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
         className='flex items-center gap-4 relative'
         ref={dropdownRef}>
         <span className='font-medium hidden sm:block'>
-           {loggedInUser?.user?.fName || "Guest"}
+           {loggedInUser?.user?.firstName || "Guest"}
         </span>
         <div
   className='w-10 h-10 rounded-full overflow-hidden flex items-center justify-center cursor-pointer hover:opacity-90'
