@@ -1,10 +1,13 @@
 import React, { useEffect } from "react";
+import { useState } from 'react';
 import "./LeadStyle.css";
 import config from './config';
 import { VISALeadObject } from "./Model/VisaLeadModel";
 import HistoryHover from "./HIstoryHover";
 import { set } from "lodash";
 import { useMemo } from "react";
+import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
+import PassportDetails from "./PassportDetails";
 
 
 const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) => {
@@ -13,6 +16,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
     // Memoize the histories array so reference doesn't change unnecessarily
     const memoHistories = useMemo(() => histories || [], [histories]);
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
+    const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+
     const handleChange = (e) => {
 
         console.log("**********************IN VISA OBJECT   /**************************");
@@ -36,7 +41,25 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
         console.log("Visa Obj in useEffect.....:", visadObj);
         console.log("Histories in useEffect.....:", histories);
         console.log("isUpdate flag....", isUpdate);
-    }, [setVisaLeadObj, visadObj, histories]);
+        if (memoIsUpdate) {
+            console.log("In LeadVisa . Its an exisitng lead. Updating the passport details. ");
+
+
+            setPassportDetails(prev => ({
+                ...prev, // keep all other fields unchanged
+                overseasInsurance: visadObj.overseasInsurance,
+                passportValidity: visadObj.passportValidity,
+                // visaStatus: visadObj.visaStatus,
+                passportValidityDate: visadObj.passportValidityDate
+            }));
+
+            console.log("Updated Passport Details objects:", passportDetailsObj);
+        }
+        console.log("Visa Obj in useEffect.....:", visadObj);
+        console.log("Histories in useEffect.....:", histories);
+        console.log("isUpdate flag....", memoIsUpdate);
+
+    }, [memoIsUpdate]);
 
     return (
 
@@ -272,70 +295,31 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 </div>
             </div>
 
-            {/* Overseas Insurance & Passport Validity */}
-            <div className="flex gap-3 flex-wrap"> {/* reduced gap */}
-                <div className="flex-1 min-w-[200px]">
-                    <label className="label-style">Overseas Insurance</label>
-                    <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Issued", "Not Issued", "Girikand to Issue"].map((insuranceStatus) => (
-                            <label key={insuranceStatus}
-                                className={`option-highlight
-                                        ${visadObj.overseasInsurance === insuranceStatus
-                                        ? "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
-                            >
-                                <input type="radio"
-                                    name="overseasInsurance"
-                                    value={insuranceStatus}
-                                    checked={visadObj.overseasInsurance === insuranceStatus}
-                                    onChange={handleChange} />
-                                {insuranceStatus}
-                            </label>
-                        ))}
-                    </div>
-                </div>
+            {/* Overseas Insurance & Passport Validity date  */}
+        
+            < PassportDetails
+                passportDetailsObj={passportDetailsObj}
+                setPassportDetailsObj={setPassportDetails}
+                setParentObject={setVisaLeadObj}
+                showInsurance={true}
+                showPassportValidity={false}
+                showVisaStatus={false}
+                showPassportValidityDate={true}
+            />
 
-                <div className="flex-1 min-w-[200px]">
-                    <label className="label-style">Passport Validity</label>
-                    <div className="border border-gray-300 rounded-lg p-2 flex justify-between">
-                        {["Checked", "Not Checked", "Not Sure"].map((pValidity) => (
-                            <label key={pValidity}
-                                className={`option-highlight
-                                        ${visadObj.passportValidity === pValidity
-                                        ? "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
-                            >
-                                <input type="radio"
-                                    name="passportValidity"
-                                    value={pValidity}
-                                    checked={visadObj.passportValidity === pValidity}
-                                    onChange={handleChange} />
-                                {pValidity}
-                            </label>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/*Passport Vlaidity date + passport pages */}
+            {/*Passport Validity staus & passport pages */}
             <div className="flex gap-3 flex-wrap"> {/* reduced gap */}
 
                 <div className="flex-1 min-w-[200px] flex flex-col">
-                    <label className="label-style mb-1">Passport Validity Date</label>
-                    <div className="border border-gray-300 rounded-lg flex-1 h-full flex items-center px-2 
-                    focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-300">
-                        <input
-                            type="date"
-                            name="passportValidityDate"
-                            value={visadObj.passportValidityDate || ""}
-                            onChange={handleChange}
-                            className="w-full h-full outline-none bg-white"
-
-                        />
-                    </div>
-
+                    < PassportDetails
+                        passportDetailsObj={passportDetailsObj}
+                        setPassportDetailsObj={setPassportDetails}
+                        setParentObject={setVisaLeadObj}
+                        showInsurance={false}
+                        showPassportValidity={true}
+                        showVisaStatus={false}
+                        showPassportValidityDate={false}
+                    />
                 </div>
 
                 <div className="flex-1 min-w-[200px]">
@@ -399,7 +383,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 <div className="flex-1">
                     <label className="label-style">Airticket</label>
                     <div className="border border-gray-300 rounded-lg p-2 grid grid-cols-2 gap-1">
-                        {["Issued by Girikand", "Issued from other agency","Issued Online", "Not Issued", "Blocked" ].map(
+                        {["Issued by Girikand", "Issued from other agency", "Issued Online", "Not Issued", "Blocked"].map(
                             (airTckIssuedBy, idx) => (
                                 <label
                                     key={airTckIssuedBy}

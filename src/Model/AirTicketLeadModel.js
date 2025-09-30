@@ -1,5 +1,6 @@
 
 import dayjs from "dayjs";
+import { PassportDetailsObject } from "./PassportDetailsModel";
 
 export const AirTicketingLeadObject = {
 
@@ -13,9 +14,11 @@ export const AirTicketingLeadObject = {
     travelClass: "",
     ticketType: "",
     airTicketStatus: "",
-    visaStatus: null,
+    visaStatus: "",
     passportValidityDate: null,
     overseasInsurance: "",
+   
+   // ...PassportDetailsObject,
     airportTransport: "",
 
     createdBy_UserID: "", // default user

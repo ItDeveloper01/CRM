@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { AirTicketingLeadObject } from "./Model/AirTicketLeadModel";
 import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
-
+import PassportDetails from "./PassportDetails"
+import { PassportDetailsObject } from "./Model/PassportDetailsModel";
+import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 
 
 
@@ -15,8 +17,9 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
   const memoHistories = useMemo(() => histories || [], [histories]);
   const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
   const [errors, setErrors] = useState({});
+  const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
 
-   
+
 
   const handleChange = (e) => {
 
@@ -24,7 +27,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     console.log("Handle Change Called for Air Ticekting Obj  ");
     console.log("Air Ticketing Obj before change.....:", airTicketingdObj);
     console.log("Histories received....", histories);
-    console.log("isUpdate flag....", isUpdate);
+    console.log("isUpdate flag....", memoIsUpdate);
 
 
     debugger;
@@ -39,10 +42,27 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
   };
 
   useEffect(() => {
-    console.log("Visa Obj in useEffect.....:", airTicketingdObj);
+    debugger;
+    console.log("****.....In Lead Air Ticketing Useffect..............**");
+    if (memoIsUpdate) {
+      console.log("In LeadAirTicketing . Its an exisitng lead. Updating the passport details. ");
+
+
+      setPassportDetails(prev => ({
+        ...prev, // keep all other fields unchanged
+        overseasInsurance: airTicketingdObj.overseasInsurance,
+        visaStatus: airTicketingdObj.visaStatus,
+        passportValidityDate: airTicketingdObj.passportValidityDate
+      }));
+      
+
+
+      console.log("Updated Passport Details objects:", passportDetailsObj);
+    }
+    console.log("Airticketing Obj in useEffect.....:", airTicketingdObj);
     console.log("Histories in useEffect.....:", histories);
-    console.log("isUpdate flag....", isUpdate);
-  }, [setAirTicketingLeadObj, airTicketingdObj, histories]);
+    console.log("isUpdate flag....", memoIsUpdate);
+  }, [memoIsUpdate]);
 
 
 
@@ -182,78 +202,17 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
 
         {/* Show extra fields depending on trip type */}
         {airTicketingdObj?.airTicketType?.trim()?.toLowerCase() === "international" && (
-          <div>
-            {/* Visa Status & Passport Validity Date */}
-            <div className="flex gap-3 flex-wrap items-stretch">
 
-              {/* Visa Status */}
-              <div className="flex-1 min-w-[200px] flex flex-col">
-                <label className="label-style mb-1">Visa Status</label>
-                <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
-                  {["Valid", "In Process", "Not Applied"].map((visastatus) => (
-                    <label
-                      key={visastatus}
-                      className={`flex items-center gap-2 flex-1 cursor-pointer rounded-md px-1
-                      ${airTicketingdObj.visaStatus === visastatus
-                          ? "bg-blue-100 border border-blue-500"
-                          : "bg-white border border-transparent"
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        name="visaStatus"
-                        value={visastatus}
-                        checked={airTicketingdObj.visaStatus === visastatus}
-                        onChange={handleChange}
-                      />
-                      {visastatus}
-                    </label>
-                  ))}
-                </div>
-              </div>
+          // *********** if want to show some specific feilds make true or false according to need************
 
-              {/* Passport Validity Date */}
-              <div className="flex-1 min-w-[200px] flex flex-col">
-                <label className="label-style mb-1">Passport Validity</label>
-                <div className="border border-gray-300 rounded-lg flex-1 h-full flex items-center px-2 
-                focus-within:border-blue-300 focus-within:ring-1 focus-within:ring-blue-300">
-                  <input
-                    type="date"
-                    name="passportValidityDate"
-                    value={airTicketingdObj.passportValidityDate || ""}
-                    onChange={handleChange}
-                    className="w-full h-full outline-none bg-white"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Overseas Insurance */}
-            <div className="flex-1 min-w-[200px] flex flex-col">
-              <label className="label-style mb-1">Overseas Insurance</label>
-              <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
-                {["Issued", "Not Issued"].map((insuranceStatus) => (
-                  <label
-                    key={insuranceStatus}
-                    className={`option-highlight
-                      ${airTicketingdObj.overseasInsurance === insuranceStatus
-                        ? "option-highlight-active"
-                        : "option-highlight-inactive"
-                      }`}
-                  >
-                    <input
-                      type="radio"
-                      name="overseasInsurance"
-                      value={insuranceStatus}
-                      checked={airTicketingdObj.overseasInsurance === insuranceStatus}
-                      onChange={handleChange}
-                    />
-                    {insuranceStatus}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
+          <PassportDetails
+            passportDetailsObj={passportDetailsObj}
+            setPassportDetailsObj={setPassportDetails}
+            setParentObject={setAirTicketingLeadObj}
+            showVisaStatus={true}
+            showPassportValidityDate={true}
+            showInsurance={true}   //  hide insurance here change condition according to requirement 
+          />
         )}
 
 
