@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 export default function Navbar({ auth, setAuth }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+   const { logout } = useGetSessionUser();
 
   const storedUser = localStorage.getItem('loggedInUser');
 const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
@@ -20,7 +21,7 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
   const initialLetter = loggedInUser.user?.userId?.charAt(0).toUpperCase();
   console.log("Initial Letter...", initialLetter);
    // ✅ Get user + setUser from context
-  const { user, setUser } = useGetSessionUser();
+  const { user, setUser ,menu,setMenu} = useGetSessionUser();
 
    const navigate = useNavigate(); // ✅ now navigate is defined
 
@@ -31,7 +32,11 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
       //navigate to profile route
 
       debugger;
-
+     
+      const storedUser = localStorage.getItem('loggedInUser');
+      const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
+      console.log("Navigating to profile with user:", loggedInUser);
+    
       navigate('/ProfileDisplay', { state: { user: loggedInUser.user } });
       setOpen(false);
 
@@ -48,10 +53,8 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
   const handleLogout = async () => {
     try {
       // Call backend to invalidate session/token
-
-
       debugger;
-
+      logout();
 
       await fetch("/api/logout", {
         method: "POST",

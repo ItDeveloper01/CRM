@@ -22,6 +22,7 @@ import LeadAnalytics from './LeadAnalytics';
 export default function App() {
 //  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
+   const { menu, setMenu } = useGetSessionUser(); // ✅ using menu now
 
   return (
     <Router>
@@ -33,6 +34,7 @@ export default function App() {
                 <Layout
                   auth={user}
                   setAuth={setUser}
+                  menu={menu}
                 />
               }>
               <Route
