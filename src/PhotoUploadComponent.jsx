@@ -1,6 +1,6 @@
 
 import React, { useRef } from 'react';
-export function PhotoUploadComponent({ setPhotoFile, setPhotoPreview, photoSrc, errorMsg }) {
+export function PhotoUploadComponent({ setPhotoFile, setPhotoPreview, photoSrc, errorMsg,readOnly=false }) {
     const fileInputRef = useRef(null);
 
     const handleClick = () => {
@@ -52,9 +52,11 @@ const handlePhotoChange = (event) => {
                 {!photoSrc ? <span className='text-gray-600'>Photo</span> :
                 <img src={photoSrc} alt='User Avatar' className='w-full h-full object-cover' />}
             </div>
+ {readOnly && !photoSrc && <p className='text-gray-500 text-sm'>No photo available</p>}     
+            {!readOnly &&(
             <button type="button" onClick={handleClick} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
                 Upload Photo
-            </button>
+            </button>)}
             <input type="file" accept="image/*" ref={fileInputRef} onChange={handlePhotoChange} className="hidden"/>
             {errorMsg && <p className='text-red-600 text-sm'>{errorMsg}</p>}
         </div>

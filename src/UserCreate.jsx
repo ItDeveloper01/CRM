@@ -4,8 +4,8 @@ import MultiSelectDropdown from './MultiSelectDropdown';
 import config from './config';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { cloneDeep, get, set, update } from 'lodash';
-import { getEmptyUserObj } from './Model/UserModel';
+import { cloneDeep, get, has, set, update } from 'lodash';
+import { getEmptyUserObj, UserObject } from './Model/UserModel';
 import { useLocation } from 'react-router-dom';
 import React from 'react';
 import { useGetSessionUser } from './SessionContext';
@@ -15,6 +15,8 @@ import UserStatusSelector from './UserStatusSelecter';
 import { useRef } from 'react';
 import { PhotoUploadComponent } from './PhotoUploadComponent';
 import { PasswordField } from './PasswordConfirmationComponent';
+import qs from 'qs';
+
 
 
 
@@ -32,8 +34,10 @@ export default function UserCreate({ }) {
   const getDeptartmentsEndpoint = apiUrl + '/Users/GetDepartmentList';
   const getUserRolesListEndPoint = apiUrl + '/Users/GetRolesList';
   const updateUserAPI = apiUrl + '/Users/UpdateUser';
-   const createUserAPI = apiUrl + '/Users/CreateUser';
-   const sendCredantialsAPI= apiUrl + "/Contact/SendLoginInformation";
+  const createUserAPI = apiUrl + '/Users/CreateUser';
+  const sendCredantialsAPI = apiUrl + "/Contact/SendLoginInformation";
+  const fetchManagerListAPI = apiUrl + '/Users/GetManagerList';
+
   const location = useLocation(); // ✅ get location here
 
   const user = location.state?.user || getEmptyUserObj();
@@ -48,20 +52,36 @@ export default function UserCreate({ }) {
   const [photo, setPhoto] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [photoPreview, setPhotoPreview] = useState(null); // store base64 for UI preview
-  
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
+  const [isDepartmentMultiselect, setIsDepartmentMultiselect] = useState(true);
+  const hasFetchedManagers = useRef(false); // ✅ to avoid multiple fetches
+
+  useEffect(() => {
+    hasFetchedManagers.current = false; // ✅ reset when role or department changes
+    // Reset manager selection
+    setUserObjects(prev => ({ ...prev, reportingManager: "" }));
+    setUserObjects(prev => ({ ...prev, reportingManagerList: [] }));
+
+  }, [userObjects.role, userObjects.selectedDepartmentList]);
 
 
   useEffect(() => {
     console.log("Setting User Objects...", userObjects);
     console.log("Location object..", location);
-    debugger;
+    //safeDepartments = Array.isArray(dummyDepartments) ? dummyDepartments : [];
+    //safeSelectedList = Array.isArray(userObjects.selectedDepartmentList) ? userObjects.selectedDepartmentList : [];
+
+    //setSafeDepartments(Array.isArray(dummyDepartments) ? dummyDepartments : []);
+    //setsafeSlectedList(Array.isArray(userObjects.selectedDepartmentList) ? userObjects.selectedDepartmentList : []);
+
+
     if (location.state?.user) {
       setIsUpdate(true);
-       if (user.photoBase64) {
-      setPhoto(`data:image/jpeg;base64,${user.photoBase64}`);
-      setPhotoPreview(`data:image/jpeg;base64,${user.photoBase64}`);
-      console.log("Photo set for preview:", user.photoBase64);
-    }
+      if (user.photoBase64) {
+        setPhoto(`data:image/jpeg;base64,${user.photoBase64}`);
+        setPhotoPreview(`data:image/jpeg;base64,${user.photoBase64}`);
+        console.log("Photo set for preview:", user.photoBase64);
+      }
       console.log("User to edit:", userObjects);
       setbtnText("Update User");
     }
@@ -97,32 +117,46 @@ export default function UserCreate({ }) {
 
   const handleChange = (e) => {
     console.log('handleChange', e.target.name, e.target.value);
-    debugger;
-    if (e.target.name == "password") {
 
+    if (e.target.name == "password") {
       setPassword(e.target.value)
 
-      //  if(password!=null || password!='')
-      //    setShow(true);
-      //   else
-      //     setShow(false);
     }
+    if (e.target.name == "role" && e.target.value == 5) {
+      setIsDepartmentMultiselect(false);
+    }
+    else if (e.target.name == "role" && e.target.value !== 5) {
+      setIsDepartmentMultiselect(true);
+    }
+
     setUserObjects({ ...userObjects, [e.target.name]: e.target.value });
   };
 
   const fetchDepartments = async () => {
     try {
 
-      debugger;
-      const res = await axios.get(getDeptartmentsEndpoint);
+
+      console.log("Entry into fetchDepartments....");
+      console.log("Token being sent:", sessionUser.token);
+      const res = await axios.get(getDeptartmentsEndpoint,
+        {
+          headers: { Authorization: `Bearer ${sessionUser.token}` }
+        }
+      );
       console.log('Fetching departments in user  registration page ...', res.data);
       // Assuming the API returns an array of department names
       // If it returns objects, adjust accordingly
       setDepartments(res.data);
 
 
-      const rol = await axios.get(getUserRolesListEndPoint);
-      console.log('Fetching User roles  in user  registration page ...', rol.data);
+      //Fetch User Roles
+
+      const rol = await axios.get(getUserRolesListEndPoint,
+        {
+          headers: { Authorization: `Bearer ${sessionUser.token}` }
+        });
+
+      console.log('Fetching User roles  in user  registration page ...Fdepartment', rol.data);
       // Assuming the API returns an array of department names
       // If it returns objects, adjust accordingly
       setUserRoles(rol.data);
@@ -134,9 +168,10 @@ export default function UserCreate({ }) {
 
 
   useEffect(() => {
-
     console.log("Entry into UserCreate........");
     fetchDepartments();
+    console.log("Departments fetched...", departments);
+    console.log("User Roles fetched...", userRoles);
 
     if (user && Object.keys(user).length > 0) {
 
@@ -161,10 +196,44 @@ export default function UserCreate({ }) {
   }, []);
 
   const handleChangeDropDown = (selectedOptions) => {
+    debugger;
     console.log('Selected:', selectedOptions);
+    fetchManagers();
+  }
+
+  const fetchManagers = async () => {
+    if (hasFetchedManagers.current) return; // ✅ already fetched for current dept/role combo
+    hasFetchedManagers.current = true; // ✅ mark as fetched to avoid loops
+
+    try {
+      debugger;
+      console.log("Entry into fetchManagers....");
+      console.log("Selected Departments:", userObjects.selectedDepartmentList);
+      console.log("Selected Role:", userObjects.role);
+      console.log("Token being sent:", sessionUser.token);
+      const res = await axios.get(fetchManagerListAPI, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}` // keep only Authorization
+        },
+        params: {
+          deptId: userObjects.selectedDepartmentList, // array of IDs
+          role: userObjects.role                       // must be a valid number
+        },
+        paramsSerializer: params => qs.stringify(params, { arrayFormat: 'repeat' })
+
+      });
+
+      console.log('Fetching Managers based on department and role ...', res.data);
+      setUserObjects({ ...userObjects, reportingManagerList: res.data }); // reset reporting manager
+      hasFetchedManagers.current = true; // ✅ mark as fetched
+    } catch (err) {
+      console.error('Failed to fetch Managers :', err);
+    }
   };
 
+
   const validate = () => {
+    debugger;
     let errs = {};
     if (!userObjects.empId.trim()) errs.empId = 'Employee ID is required';
     if (!userObjects.userId.trim()) errs.userId = 'User ID is required';
@@ -176,8 +245,10 @@ export default function UserCreate({ }) {
       errs.emailId = 'Enter valid email address';
     if (!userObjects.role) errs.role = 'Select a role';
     //   if (!form.reportingManager) errs.reportingManager = 'Select a reportingManager';
-    if (!userObjects.password) errs.password = 'Password is required';
-    if (userObjects.password !== userObjects.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    if (userObjects.isUpdatepasword) {
+      if (!userObjects.password) errs.password = 'Password is required';
+      if (userObjects.password !== userObjects.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+    }
     //   if (!form.department) errs.department = 'Select a department';
     //  if (!form.branch) errs.branch = 'Select a branch';
     return errs;
@@ -185,7 +256,6 @@ export default function UserCreate({ }) {
 
   const handleSubmit = async (e) => {
 
-    debugger;
     e.preventDefault();
     //console.log('form', form);
     const tempUser = localStorage.getItem('loggedInUser');
@@ -200,41 +270,46 @@ export default function UserCreate({ }) {
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      //return;
+      return;
     }
-   
 
-try {
-  if (!isUpdate) {
-    // await axios.post(config.apiUrl + '/users/', updatedData, {
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${sessionUser.token}`,
-    //   },
-    // });
 
-    await createUser(updatedData, photo);
-    await SendLoginCreadentials(updatedData);
-    
-    navigate("/users");
-    // alert('✅ User created successfully!');
-    // navigate('/users');
-  } else {
- 
-    await saveUser(updatedData, photo);}
-    debugger;
-    await SendLoginCreadentials(updatedData);
-     navigate("/users");
+    try {
+      debugger;
 
-} catch (error) {
-  console.error(error);
-  const message =
-    error.response?.data?.errors ||
-    error.response?.data?.title ||
-    error.message;
-  alert(`❌ Failed: ${JSON.stringify(message)}`);
-  setData(message);
-}
+      let deepCopy= cloneDeep(updatedData);
+      if (!isUpdate) {
+        // await axios.post(config.apiUrl + '/users/', updatedData, {
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     Authorization: `Bearer ${sessionUser.token}`,
+        //   },
+        // });
+
+        await createUser(deepCopy, photo);
+        await SendLoginCreadentials(deepCopy);
+
+        navigate("/users");
+        // alert('✅ User created successfully!');
+        // navigate('/users');
+      } else {
+        await updateUser(deepCopy, photo);
+      }
+      alert('✅ User saved successfully!');
+      if (deepCopy.isUpdatepasword) {
+        await SendLoginCreadentials(deepCopy);
+      }
+      navigate("/users");
+
+    } catch (error) {
+      console.error(error);
+      const message =
+        error.response?.data?.errors ||
+        error.response?.data?.title ||
+        error.message;
+      alert(`❌ Failed: ${JSON.stringify(message)}`);
+      setData(message);
+    }
     console.log("Axios message data:", axiosMsgData);
 
   };
@@ -243,107 +318,93 @@ try {
 
 
 
-const createUser = async (updatedData, selectedFile = null) => {
-  try {
-    //const formData = new FormData();
-debugger;
-    // append all user fields
-    // for (let key in updatedData) {
-    //   if (updatedData[key] !== undefined && updatedData[key] !== null) {
-    //     formData.append(key, updatedData[key]);
-    //   }
-    // }
+  const createUser = async (updatedData, selectedFile = null) => {
+    try {
+      //const formData = new FormData();
 
-    // append photo if exists
-       // keep old if no new file
-    const payload = { ...userObjects, PhotoBase64: photo || userObjects.PhotoBase64 };
-    
-    const response = await axios.post(createUserAPI, payload, {
-      headers: {
-        Authorization: `Bearer ${sessionUser.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+      // append all user fields
+      // for (let key in updatedData) {
+      //   if (updatedData[key] !== undefined && updatedData[key] !== null) {
+      //     formData.append(key, updatedData[key]);
+      //   }
+      // }
 
-    alert("✅ User created successfully!");
-  
-    console.log("User created", response.data);
+      // append photo if exists
+      // keep old if no new file
+      const payload = { ...userObjects, PhotoBase64: photo || userObjects.PhotoBase64 };
 
-  } catch (error) {
-    console.error(error);
-    const message = error.response?.data?.errors || error.response?.data?.title || error.message;
-    alert(`❌ Failed: ${JSON.stringify(message)}`);
-  }
-};
+      const response = await axios.post(createUserAPI, payload, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
+      alert("✅ User created successfully!");
 
+      console.log("User created", response.data);
 
-const SendLoginCreadentials  = async (updatedData, selectedFile = null) => {
-  try {
-debugger;
-
- const receiverId=updatedData.userId;
- const senderId=sessionUser.user.userId;
-  
- debugger;
- const response = await axios.post(
-  sendCredantialsAPI,
-  updatedData,  // full Users object as JSON body
-  {
-    headers: {
-      Authorization: `Bearer ${sessionUser.token}`,
-      "Content-Type": "application/json"
+    } catch (error) {
+      console.error(error);
+      const message = error.response?.data?.errors || error.response?.data?.title || error.message;
+      alert(`❌ Failed: ${JSON.stringify(message)}`);
     }
-  }
-);
-
-    alert("✅ Credentials sent successfully!");
-  
-    console.log("Credentials sent successfully", response.data);
-
-  } catch (error) {
-    console.error(error);
-    const message = error.response?.data?.errors || error.response?.data?.title || error.message;
-    alert(`❌ Failed: ${JSON.stringify(message)}`);
-  }
-};
+  };
 
 
-  
 
-const saveUser = async (updatedData, selectedFile = null) => {
-  try {
-    //const formData = new FormData();
-debugger;
-    // append all user fields
-    // for (let key in updatedData) {
-    //   if (updatedData[key] !== undefined && updatedData[key] !== null) {
-    //     formData.append(key, updatedData[key]);
-    //   }
-    // }
-
-    // append photo if exists
-       // keep old if no new file
-    const payload = { ...userObjects, PhotoBase64: photo || userObjects.PhotoBase64 };
-    
-    const response = await axios.put(updateUserAPI, payload, {
-      headers: {
-        Authorization: `Bearer ${sessionUser.token}`,
-        "Content-Type": "application/json",
-      },
-    });
+  const SendLoginCreadentials = async (updatedData, selectedFile = null) => {
+    try {
 
 
-    alert("✅ User saved successfully!");
-   
-    console.log("User saved", response.data);
+      const receiverId = updatedData.userId;
+      const senderId = sessionUser.user.userId;
 
-  } catch (error) {
-    console.error(error);
-    const message = error.response?.data?.errors || error.response?.data?.title || error.message;
-    alert(`❌ Failed: ${JSON.stringify(message)}`);
-  }
-};
+
+      const response = await axios.post(
+        sendCredantialsAPI,
+        updatedData,  // full Users object as JSON body
+        {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      alert("✅ Credentials sent successfully!");
+
+      console.log("Credentials sent successfully", response.data);
+
+    } catch (error) {
+      console.error(error);
+      const message = error.response?.data?.errors || error.response?.data?.title || error.message;
+      alert(`❌ Failed: ${JSON.stringify(message)}`);
+    }
+  };
+
+
+
+
+  const updateUser = async (updatedData, selectedFile = null) => {
+    try {
+
+      const response = await axios.put(updateUserAPI ,updatedData, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      alert("✅ User saved successfully!");
+      console.log("User saved", response.data);
+
+    } catch (error) {
+      console.error(error);
+      const message = error.response?.data?.errors || error.response?.data?.title || error.message;
+      alert(`❌ Failed: ${JSON.stringify(message)}`);
+      throw error;
+    }
+  };
 
   const fileInputRef = useRef(null);
 
@@ -352,8 +413,6 @@ debugger;
   };
 
   const handleCancelSubmit = (e) => {
-
-    debugger;
 
     navigate('/users');
     e.preventDefault();
@@ -375,12 +434,12 @@ debugger;
             </div>
             {/* Place photo upload on top right corner */}
             <div className="col-start-3 row-start-1 flex justify-end">
-             <PhotoUploadComponent
-    setPhotoFile={setPhoto}       // store the File object
-    setPhotoPreview={setPhotoPreview} // store base64 for preview
-    photoSrc={photoPreview}
-    errorMsg={errorMsg}
-/>
+              <PhotoUploadComponent
+                setPhotoFile={setPhoto}       // store the File object
+                setPhotoPreview={setPhotoPreview} // store base64 for preview
+                photoSrc={photoPreview}
+                errorMsg={errorMsg}
+              />
             </div>
           </div>
           {/* Form fields */}
@@ -496,14 +555,18 @@ debugger;
                 name='reportingManager'
                 value={userObjects.reportingManager}
                 onChange={handleChange}
+                onFocus={handleChangeDropDown} // ✅ triggers only when dropdown opens
+                onMouseDown={handleChangeDropDown} // ✅ triggers only when dropdown opens
                 className={`border p-2 rounded w-full ${errors.reportingManager ? 'border-red-500' : ''
                   }`}>
-                <option value=''>Select Manager</option>
-                <option value='Akhilesh Joshi'>Akhilesh Joshi</option>
-                <option value='Shreedev Hole'>Shreedev Hole</option>
-                <option value='Minal Joshi'>Minal Joshi</option>
-                <option value='Akhilesh Joshi'>Akhilesh Joshi</option>
+                <option value="">Select Manager</option>
+                {userObjects.reportingManagerList.map((mgr) => (
+                  <option key={mgr.userId} value={(mgr.userId)}>
+                    {mgr.firstName} {mgr.lastName}
+                  </option>
+                ))}
               </select>
+
               {errors.reportingManager && (
                 <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
               )}
@@ -557,7 +620,41 @@ debugger;
             {/* Department */}
             <div>
               <label className='text-sm font-medium text-gray-700'>Select  Department</label>
-              <select
+              {/* Passing props to the DepartmentMultiSelectDropdown component */}
+              {/* <MultiSelectDropdown
+              departments={dummyDepartments}
+              selectedDepartmentList={userObjects.selectedDepartmentList}
+              setSelectedDepartmentList={(list) => setUserObjects({ ...userObjects, selectedDepartmentList: list })}
+              errors={dummyErrors}
+            /> */}
+              {/* <MultiSelectDropdown
+        options={departments} // assuming departments are objects with a 'name' property
+        selected={userObjects.selectedDepartmentList || []} // ensure it's always an array
+        setSelected={setSelectedDepartments}
+        errors={dummyErrors}
+             
+            /> */}
+
+              <MultiSelectDropdown setUserObjects={setUserObjects}
+                name="selectedDepartmentListCustomBox"
+                userObjects={userObjects}
+                departmentList={departments}
+                selectedDepartmentList={userObjects.selectedDepartmentList || []} // ensure it's always an array
+                setSelectedDepartmentList={(list) => setUserObjects({ ...userObjects, selectedDepartmentList: list })}
+                errors={errors}
+                multiSelect={isDepartmentMultiselect}
+                onDropDownClosed={handleChangeDropDown}
+              />
+
+              {/* <MultiSelectDropdown
+        departments={departments}
+        selectedDepartmentList={userObjects.selectedDepartmentList}
+        setSelectedDepartmentList={setSelectedDepartments}
+        errors={{}}
+        /> */}
+
+
+              {/* <select
                 name='department'
                 value={userObjects.department}
                 onChange={handleChange}
@@ -568,7 +665,8 @@ debugger;
                     {dept.departmentName}
                   </option>
                 ))}
-              </select>
+              </select> */}
+
               {errors.reportingManager && (
                 <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
               )}

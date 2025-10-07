@@ -20,10 +20,12 @@ import { useGetSessionUser } from "./SessionContext"
 //import { LeadStatusOptions } from './Constants';
 import * as Constants from './Constants';
 import LeadsTableForExistingPhone from './LeadsTableForExistingPhone';
+import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 
 
-export default function LeadsGeneration({ lead }) {
+export default function LeadsGeneration({ lead ,onClose}) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
 
@@ -47,6 +49,7 @@ export default function LeadsGeneration({ lead }) {
   const { user: sessionUser } = useGetSessionUser();
   const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
   const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
+  const navigate = useNavigate();
 
 
   const [showPopup, setShowPopup] = useState(false);
@@ -89,7 +92,6 @@ export default function LeadsGeneration({ lead }) {
 
 
     //**************************  Fecth Current User    *********************///////////////
-
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (loggedInUser) {
       setCurrentUser(JSON.parse(loggedInUser)); // if stored as object
@@ -292,6 +294,7 @@ export default function LeadsGeneration({ lead }) {
 
   const onMobileChangeFocus = async (value) => {
     debugger;
+    if(isUpdateMode) return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
     //CheckDuplicateMobile
     const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
@@ -735,6 +738,9 @@ export default function LeadsGeneration({ lead }) {
 
 
         alert("Lead updated successfully!");
+         // Close the modal after successful update
+        onClose(); 
+        navigate("/dashboard"); // Navigate after operation
 
 
         // *************** old update lead system before switch condition and its working fine for single lead type ************
@@ -838,9 +844,21 @@ export default function LeadsGeneration({ lead }) {
         debugger;
         await axios.post(generateLEadAPI, deepCopy, {
           headers: { "Content-Type": "application/json" }
-        });
+        }).then((response) => {
+          console.log("Lead created successfully:", response.data)  ;
 
         alert("Lead saved successfully!");
+        }).catch((error) => {
+          console.error("Error saving lead:", error);
+          alert("Error while saving lead.");
+        }).finally(() => {
+          // Any cleanup or final actions
+          navigate("/dashboard"); // Navigate after operation
+        });
+
+        // *************** old lead generation system before switch condition and its working fine for single lead type ************
+        // else {
+        //   // New Lead Creation
 
 
         // debugger;
@@ -1014,7 +1032,7 @@ export default function LeadsGeneration({ lead }) {
         </div>
       </div>
       {/* Render Table for exisitng leads with the matching phone no. */}
-      {isLeadsForPhoneVisible &&(
+      {isLeadsForPhoneVisible  &&(
       <div>
         <div>
         <LeadsTableForExistingPhone

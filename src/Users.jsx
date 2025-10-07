@@ -18,6 +18,9 @@ export default function Users() {
   const [error, setError] = useState('');
    const { user: sessionUser } = useGetSessionUser();
 const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
+const fetchUserImageAPI=config.apiUrl + '/Users/GetPhotoForUserID';
+
+
  useEffect(() => {
   const fetchUsers = async () => {
 
@@ -61,13 +64,50 @@ const fetchUsersAPI=config.apiUrl + '/Users/GetAlUsers';
 }, []);
 
 
-const goToCreateUser = (user) => {
+const  goToCreateUser = (user) => {
   debugger;
-  console.log("Navigating to User..." );
-  console.log("Navigating to User..." , user);
-    const userObject = user; // or your actual user object
-    navigate('/users/create', { state: { user: userObject , myLocation:"Thats It..I can understand."} });
-  };
+
+  /*Fetch image for user*/
+
+ 
+       axios.get(fetchUserImageAPI, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
+        },
+        params: { userId: user.userId }
+      }).then((res) => {
+        debugger;
+        user = res.data;
+        console.log("User Image / Reporting Manager and Categories fetch response:", res);
+        debugger;
+        // Now navigate
+        console.log("Navigating to User..." );
+        console.log("Navigating to User..." , user);
+          const userObject = user; // or your actual user object
+          navigate('/users/create', { state: { user: userObject , myLocation:"Thats It..I can understand."} });
+      }).catch((err) => {
+        console.error("Error fetching user image:", err);
+        debugger  ;
+
+      console.log("User Image fetch response:", err);
+      
+
+      debugger;
+      }).finally(() => {
+       setLoading(false);
+      }); 
+  
+  } 
+     //finally {
+      //setLoading(false);
+    //}
+
+
+  //console.log("Navigating to User..." );
+  //console.log("Navigating to User..." , user);
+    //const userObject = user; // or your actual user object
+   // navigate('/users/create', { state: { user: userObject , myLocation:"Thats It..I can understand."} });
+  
 
 
   if (loading) return <p className='p-4'>Loading users...</p>;
@@ -96,6 +136,7 @@ const goToCreateUser = (user) => {
               <th className='p-2 text-left'>Department</th>
               <th className='p-2 text-left'>Designation</th>
               <th className='p-2 text-left'>Role</th>
+               <th className='p-2 text-left'>Status</th>
               <th className='p-2 text-left'>Actions</th>
             </tr>
           </thead>
@@ -113,6 +154,7 @@ const goToCreateUser = (user) => {
                 <td className='p-2'>{u.department}</td>
                 <td className='p-2'>{u.designation}</td>
                 <td className='p-2'>{u.role}</td>
+                <td className='p-2'>{u.status}</td>
                 <td className='p-2'>
                   {/* <Link
                     to={`/users/${u}`}

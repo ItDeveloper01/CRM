@@ -1,78 +1,86 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 
-const MultiSelectDropdown = ({ options, onChange, placeholder = "Select options" }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState([]);
+export default function MultiSelectDropdown({ departmentList = [], selectedDepartmentList = [], setUserObjects, userObjects, errors, multiSelect=false ,onDropDownClosed }) {
+  const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Toggle dropdown
-  const toggleDropdown = () => setIsOpen(!isOpen);
-  
-  // Select Department Dropdown 
-  // Handle selection
-  const handleSelect = (option) => {
-    let newSelected;
-    if (selected.includes(option)) {
-      newSelected = selected.filter((item) => item !== option);
-    } else {
-      newSelected = [...selected, option];
-    }
-    setSelected(newSelected);
-    onChange && onChange(newSelected);
-  };
-
-  // Close dropdown if clicked outside
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
+    const handleClickOutside = (event) => {
+     
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+        // ✅ Trigger callback only when dropdown is actually closing
+        // if (onDropDownClosed) {
+        //   onDropDownClosed(selectedDepartmentList);
+        // }
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener('mousemove', handleClickOutside);
+    return () => document.removeEventListener('mousemove', handleClickOutside);
+  }, [open, selectedDepartmentList, onDropDownClosed]);
+
+  const handleSelect = (deptId) => {
+    if (multiSelect) {
+      const updatedList = selectedDepartmentList.includes(deptId)
+        ? selectedDepartmentList.filter((id) => id !== deptId)
+        : [...selectedDepartmentList, deptId];
+      setUserObjects({ ...userObjects, selectedDepartmentList: updatedList });
+    } else {
+      setUserObjects({ ...userObjects, selectedDepartmentList: [deptId] });
+    }
+    debugger;
+    
+  };
 
   return (
-    <div className="relative w-64" ref={dropdownRef}>
-      {/* Selected box */}
+    <div className="relative w-full text-sm" ref={dropdownRef}>
       <div
-        className="border rounded-lg px-4 py-2 flex justify-between items-center cursor-pointer bg-white shadow-sm"
-        onClick={toggleDropdown}
+        className={`border ${errors?.department ? 'border-red-500' : 'border-gray-300'} rounded w-full cursor-pointer bg-white flex justify-between items-center px-2 py-2 shadow-sm hover:border-blue-400`}
+        onClick={() => setOpen(!open)}
       >
-        <span className="truncate">
-          {selected.length > 0 ? selected.join(", ") : placeholder}
+        <span className="text-gray-700 text-sm truncate">
+          {selectedDepartmentList.length > 0
+            ? selectedDepartmentList
+                .map((id) => departmentList.find((dept) => dept.id === id)?.departmentName)
+                .filter(Boolean)
+                .join(', ')
+            : 'Select Department'}
         </span>
         <svg
-          className={`w-5 h-5 transform transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 ml-1 transform transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </div>
 
-      {/* Dropdown menu */}
-      {isOpen && (
-        <div className="absolute mt-2 w-full bg-white border rounded-lg shadow-lg z-10 max-h-60 overflow-auto">
-          {options.map((option, idx) => (
+      {open && departmentList.length > 0 && (
+        <div className="absolute mt-1 w-full bg-white border rounded shadow-md z-10 max-h-48 overflow-auto text-sm">
+          {departmentList.map((dept) => (
             <label
-              key={idx}
-              className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              key={dept.id}
+              className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
             >
               <input
                 type="checkbox"
-                checked={selected.includes(option)}
-                onChange={() => handleSelect(option)}
-                className="mr-2"
+                checked={selectedDepartmentList.includes(dept.id)}
+                onChange={() => handleSelect(dept.id)}
+                className="mr-2 h-5 w-5"
               />
-              {option}
+              <span className="text-sm text-gray-700">{dept.departmentName}</span>
             </label>
           ))}
         </div>
       )}
+
+      {open && departmentList.length === 0 && (
+        <div className="absolute mt-1 w-full bg-white border rounded shadow-md z-10 p-2 text-gray-500 text-sm">
+          No departments available
+        </div>
+      )}
     </div>
   );
-};
-
-export default MultiSelectDropdown;
+}
