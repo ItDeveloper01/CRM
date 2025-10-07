@@ -14,9 +14,9 @@ export const LeadObj = {
   leadStatus: "Open",
   city: "",
   area: "",
-  enquiryMode: "",
-  enquirySource: "",
-  customerType: "",    // New/Existing
+  enquiryMode: null,
+  enquirySource: null,
+  customerType: null,    // New/Existing
   enquiryDate: "",
   destination: "",
   notes: "",

@@ -210,6 +210,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             setPassportDetailsObj={setPassportDetails}
             setParentObject={setAirTicketingLeadObj}
             showVisaStatus={true}
+            showPassportValidity = {false}
             showPassportValidityDate={true}
             showInsurance={true}   //  hide insurance here change condition according to requirement 
           />

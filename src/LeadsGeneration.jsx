@@ -13,6 +13,7 @@ import { getEmptyVisaObj } from "./Model/VisaLeadModel";
 import { getEmptyAirTicketObj } from './Model/AirTicketLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
+import MessageBox from "./MessageBox";
 
 import { mapObject } from './Model/MappingObjectFunction';
 import { useGetSessionUser } from "./SessionContext"
@@ -38,8 +39,9 @@ export default function LeadsGeneration({ lead ,onClose}) {
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
-  const [enquirySource, setEnquirySource] = useState('');
-  const [enquiryMode, setEnquiryMode] = useState('');
+  const [enquirySource, setEnquirySource] = useState([]);
+  const [enquiryMode, setEnquiryMode] = useState([]);
+  const [customerType, setCustomerType] = useState([]);
   const [formData, setFormData] = useState({});
   const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
   const [formHeader, setFormHeader] = useState('Lead Generation Form');
@@ -53,6 +55,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
   const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState("INFO");
   //Requirment for car rental
   const [requirementType, setRequirementType] = useState("");
 
@@ -63,18 +66,21 @@ export default function LeadsGeneration({ lead ,onClose}) {
   const [errors, setErrors] = useState({});
   const [leadcategory, setleadcategory] = useState({});
 
-  const enquirySources = [
-    'Referred by client', 'Repeat Guest', 'Paper Advt', 'Paper Advt-Sakal', 'Paper Advt-Maharashtra Times',
-    'Paper Advt-Loksatta', 'Paper Advt-Lokmat', 'Paper Advt-TOI', 'Paper Advt-Others', 'Corporate',
-    'Other', 'Website', 'Social Media'
-  ];
-  const enquiryModes = ['WalkIn', 'Telephonic', 'Email', 'Social Media'];
+  // const enquirySources = [
+  //   'Referred by client', 'Repeat Guest', 'Paper Advt', 'Paper Advt-Sakal', 'Paper Advt-Maharashtra Times',
+  //   'Paper Advt-Loksatta', 'Paper Advt-Lokmat', 'Paper Advt-TOI', 'Paper Advt-Others', 'Corporate',
+  //   'Other', 'Website', 'Social Media'
+  // ];
+  // const enquiryModes = ['WalkIn', 'Telephonic', 'Email', 'Social Media'];
 
   const APIURL = config.apiUrl + '/Leads/';
   const LeadCategoryAPI = APIURL + "GetLeadCategoryList";
   const generateLEadAPI = config.apiUrl + "/TempLead/CreateLead";
   const updateLeadApi = config.apiUrl + "/TempLead/UpdateLead";
   const checkDuplicateMobileAPI = config.apiUrl + "/TempLead/CheckDuplicateMobile/";
+  const getEnquiryModesListEndPoint = config.apiUrl + '/MasterData/GetEnquiryModesList';
+  const getEnquirySourceListEndPoint = config.apiUrl + '/MasterData/GetEnquirySourceList';
+  const getCustomerTypeListEndPoint = config.apiUrl + '/MasterData/GetCustomerTypeList';
 
 
   // const prepareAirTicketPayload = (obj) => {
@@ -196,7 +202,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
     debugger;
-    console.log("Mapped Air Ticketing Obj....:", newAirTicketing) ;
+    console.log("Mapped Air Ticketing Obj....:", newAirTicketing);
     return newAirTicketing;
   };
 
@@ -329,6 +335,63 @@ export default function LeadsGeneration({ lead ,onClose}) {
     }
   }
 
+  const fetchEnquiryDetails = async () => {
+    debugger;
+    const enqmodes = await axios.get(getEnquiryModesListEndPoint, {
+      headers: {
+        Authorization: `Bearer ${sessionUser.token}`,
+      },
+    })
+      .then((res) => {
+        console.log('Fetching Enquiry Modes in Lead Generate Page ...', res.data);
+        setEnquiryMode(res.data || []);
+      }
+      ).catch((err) => {
+        debugger;
+        console.error("Failed to fetch Enquiry Modes :", err);
+        console.error("Failed ......... :", err.response.data);
+        // <MessageBox
+        //   show={true}
+        //   type={"ERROR"} // "WARNING" | "ERROR" | "INFO"
+        //   message={err.response.data}
+        //   onClose={() => setShowPopup(true)}
+        // // onClick={() => setShowPopup(false)}
+        // />
+      })
+      .finally(() => {
+        // Always executed, regardless of success or error
+        console.log('Enquiry Modes Fetch function finished.')
+        // alert("Enquiry Modes Fetch function finished.");
+      })
+
+    // for Enquiry Source API
+    try {
+      const enqSource = await axios.get(getEnquirySourceListEndPoint, {
+
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        }
+      });
+      setEnquirySource(enqSource.data || []);
+      console.log("Enquiry Source fetch Successfully", enqSource.data);
+    } catch (err) {
+      console.log("Failed to fetch Enquiry Source: ", err);
+    }
+
+    // for CustomerType API
+    try {
+      const custType = await axios.get(getCustomerTypeListEndPoint, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`
+        }
+      });
+      setCustomerType(custType.data || []);
+      console.log("customer Type fetch Successfully", custType.data);
+    } catch (err) {
+      console.log("Failed to fetch Customer Type: ", err);
+    }
+  }
+
 
   // Initialize leadObj on prop change
   useEffect(() => {
@@ -368,6 +431,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
       }
     };
     fetchLeadCategories();
+    fetchEnquiryDetails();
   }, []);
 
   // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
@@ -445,6 +509,13 @@ export default function LeadsGeneration({ lead ,onClose}) {
     return errs;
   }
 
+  const handleChangeforDropdown = (e) => {
+    const { name, value } = e.target;
+    setLeadObj((prev) => ({
+      ...prev,
+      [name]: value === "" ? null : value, // convert empty string to null
+    }));
+  };
 
   const handleChange = (e) => {
 
@@ -452,6 +523,15 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
     const { name, value } = e.target;
     setLeadObj(prev => ({ ...prev, [name]: value }));
+    // setLeadObj((prev) => ({
+    //   ...prev,
+    //   [name]:
+    //     value === "" // if empty string
+    //       ? null      // convert to null
+    //       : isNaN(value) // check if it's a number (like IDs in dropdown)
+    //       ? value     // keep as string (e.g., text, email)
+    //       : Number(value), // convert to number if numeric
+    // }));
     setFormData(prev => ({ ...prev, [name]: value }));
     console.log("Category Changed...", formData);
 
@@ -911,24 +991,25 @@ export default function LeadsGeneration({ lead ,onClose}) {
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
       {/* Customer Details */}
       <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
-        {/* <div className="flex items-center justify-between mb-4 border-b pb-2"> */}
-        <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Customer Details</h3>
-         {/* <div className="flex items-center gap-2">
-          <label className="font-medium text-gray-700">Status:</label>
-          <select
-            name="leadStatus"
-            value={leadObj.leadStatus}
-            onChange={handleChange}
-            // onChange={(e) => setLeadStatus(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-          >
-            <option value="open">Open</option>
-            <option value="lost">Lost</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="postponed">Postponed</option>
-          </select>
+        <div className="flex items-center justify-between mb-4 border-b pb-2">
+          <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
+          <div className="flex items-center gap-2">
+            <label className="font-medium text-gray-700">Status:</label>
+            <select
+              name="leadStatus"
+              value={leadObj.leadStatus || "Open"}   // default = open
+              onChange={handleChange}
+              disabled={!isUpdateMode}                   // disabled while creating new
+              className={`border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""
+                }`}
+            >
+              <option value="Open">Open</option>
+              <option value="Lost">Lost</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Postponed">Postponed</option>
+            </select>
+          </div>
         </div>
-        </div> */}
         <div className='flex gap-4 mb-4'>
           <div className='flex flex-col flex-1'>
             <label className='label-style'>Mobile Number</label>
@@ -1067,54 +1148,67 @@ export default function LeadsGeneration({ lead ,onClose}) {
       </div>
       )}
       {/* Lead Details */}
-      {!isLeadsForPhoneVisible &&(
-      <div>
-      <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-      <div className='flex gap-4'>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Enquiry Mode</label>
-          <select name="enquiryMode" value={leadObj.enquiryMode?.trim() || ""} onChange={handleChange} className='border-highlight'>
-            <option value="">Select Mode</option>
-            {enquiryModes.map(boy => <option key={boy} value={boy}>
+      {!isLeadsForPhoneVisible && (
+        <div>
+          <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
+          <div className='flex gap-4'>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Enquiry Mode</label>
+              <select name="enquiryMode" value={leadObj.enquiryMode || ""}
+                onChange={handleChangeforDropdown} 
+                className='border-highlight'>
+                <option value="">Select Mode</option>
+                {/* {enquiryModes.map(boy => <option key={boy} value={boy}>
 
-              {boy}
-
-
-            </option>)}
-          </select>
-        </div>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Enquiry Source</label>
-          <select name="enquirySource" value={leadObj.enquirySource?.trim() || ""} onChange={handleChange} className='border-highlight'>
-            <option value="">Select Source</option>
-            {enquirySources.map(cat => <option key={cat} value={cat}>
+                  {boy}
 
 
-              {cat}
+                </option>)} */}
+                {enquiryMode.map((enqmodes) => (
+                  <option key={enqmodes.id} value={(enqmodes.id)}>
+                    {enqmodes.enquiryMode}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Enquiry Source</label>
+              <select name="enquirySource" value={leadObj.enquirySource}  onChange={handleChangeforDropdown} className='border-highlight'>
+                <option value="">Select Source</option>
+                {/* {enquirySources.map(cat => <option key={cat} value={cat}>
 
-            </option>)}
-          </select>
-        </div>
-        {/* Customer Type */}
-        <div className='flex flex-col flex-1'>
-          <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
-          <select
-            className={`border-highlight`}
-            // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            name="customerType"
-            value={leadObj.customerType?.trim() || ""}
-            onChange={handleChange}
-          >
-            <option value="">Select</option>
-            <option value="General">General</option>
-            <option value="VVIP">VVIP</option>
-            <option value="VIP">VIP</option>
-            <option value="Miser">Miser</option>
-            <option value="Friends">Friends</option>
-            <option value="Family">Family</option>
-          </select>
-        </div>
-      </div>
+
+                {cat}
+
+              </option>)} */}
+                {enquirySource.map((enqSource) => (
+                  <option key={enqSource.id} value={(enqSource.id)}>
+                    {enqSource.enquirySource}
+                  </option>
+                ))}
+
+              </select>
+            </div>
+            {/* Customer Type */}
+            <div className='flex flex-col flex-1'>
+              <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
+              <select
+                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                name="customerType"
+                value={leadObj.customerType}
+                onChange={handleChangeforDropdown} 
+                className={`border-highlight`}
+              >
+                <option value="">Select Type</option>
+                {customerType.map((custType) => (
+                  <option key={custType.id} value={(custType.id)}>
+                    {custType.customerType}
+                  </option>
+                ))}
+
+              </select>
+            </div>
+          </div>
 
       <div className='flex gap-4 mt-4'>
         <div className='flex flex-col flex-1'>
@@ -1142,53 +1236,60 @@ export default function LeadsGeneration({ lead ,onClose}) {
           {submitBtnTxt}
         </button>
 
-        <div className="flex items-center gap-2">
-          <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
-            Follow Up Date :
-          </label>
-          <div className="flex flex-col  justify-start leading-none">
-            <input
-              type="date"
-              id="followUpDate"
-              name="followUpDate"
-              value={leadObj.followUpDate || ''}
-              onChange={handleChange}
-              min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
-              // min={new Date().toISOString().split("T")[0]} //  disables past dates
-              className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
-              required
-            />
-          </div>
-        </div>
-      </div>
-      <div className='text-right'>
-
-        {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
-
-        {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
-
-      </div>
-
-      {/* Footer */}
-
-      {/* Popup / Modal */}
-      {
-        showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
-              <p className="mb-4">Please fill all required details before submitting.</p>
-              <button
-                onClick={() => setShowPopup(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-              >
-                OK
-              </button>
+            <div className="flex items-center gap-2">
+              <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
+                Follow Up Date :
+              </label>
+              <div className="flex flex-col  justify-start leading-none">
+                <input
+                  type="date"
+                  id="followUpDate"
+                  name="followUpDate"
+                  value={leadObj.followUpDate || ''}
+                  onChange={handleChange}
+                  min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
+                  // min={new Date().toISOString().split("T")[0]} //  disables past dates
+                  className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
+                  required
+                />
+              </div>
             </div>
           </div>
-        )
-      }
-      </div >
+          <div className='text-right'>
+
+            {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
+
+            {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
+
+          </div>
+
+          {/* Footer */}
+
+          {/* Popup / Modal */}
+          <MessageBox
+            show={showPopup}
+            type={"WARNING"} // "WARNING" | "ERROR" | "INFO"
+            message="Please fill all required details before submitting."
+            onClose={() => setShowPopup(false)}
+          // onClick={() => setShowPopup(false)}
+          />
+          {/* {
+            showPopup && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+                  <h3 className="text-lg font-semibold mb-4">⚠️ Required Fields Missing</h3>
+                  <p className="mb-4">Please fill all required details before submitting.</p>
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            )
+          } */}
+        </div >
       )}
     </div>
 
