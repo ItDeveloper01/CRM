@@ -26,6 +26,7 @@ export const AirTicketingLeadObject = {
     updatedAt: new Date().toISOString(),
 
     airTicketCode: null,
+    // status:"",
     status: "Open",// Open/In Process/Closed
     // NotMapped properties (UI/API only)
 
