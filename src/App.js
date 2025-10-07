@@ -17,6 +17,7 @@ import { useGetSessionUser } from "./SessionContext"; // ✅ import
 import { fa } from 'intl-tel-input/i18n';
 import ProfileDisplay from './ProfileDisplay';
 import SMTPForm from './SMTPForm';
+import LeadAnalytics from './LeadAnalytics';
 
 export default function App() {
 //  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
@@ -50,6 +51,11 @@ export default function App() {
                 path='/LeadsGeneration'
                 element={<LeadsGeneration />}
               />
+               <Route
+                path='/LeadsAnalytics'
+                element={<LeadAnalytics/>}
+              />
+
 
               {/* ✅ Users List */}
               <Route

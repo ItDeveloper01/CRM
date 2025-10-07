@@ -9,11 +9,12 @@ export const UserObject = {
   emailId: "",
   gender: "",            // "Male"/"Female"/"Other"
   
-  role: "",              // e.g., "Admin", "User"
-  department: "",
+  role: 0 ,              // e.g., "Admin", "User"
+  department: 0,    // Department ID
   branch: "",
   designation: "",
   reportingManager: "",
+  reportingManagerList:[], // list of possible managers based on dept/role
 
   password: "",          // hashed/encrypted password
   createdBy: "",         // ID of creator
@@ -29,8 +30,8 @@ export const UserObject = {
   
   
   
-  isUpdatepasword:false // to check password update or not
-
+  isUpdatepasword:false, // to check password update or not
+  selectedDepartmentList:[],  // to store department list
 };
 
 // Function to return a fresh empty lead object

@@ -20,7 +20,7 @@ export default function UpdateLeadsModal({ isOpen, onClose, lead }) {
 
         {/* Body (Lead Generation Form) */}
         <div className="p-4 overflow-y-auto flex-1 max-h-[calc(90vh-60px)]">
-          <Leadgeneration lead={lead} />
+          <Leadgeneration lead={lead}  onClose={onClose} />
         </div>
       </div>
     </div>

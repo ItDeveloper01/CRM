@@ -40,6 +40,9 @@ export default function UserStatusSelector({ initialStatus = "Active", onChange,
   };
 
   const handleConfirm = () => {
+    debugger;
+    console.log("Confirm text entered: ", confirmText);
+    console.log("Random text to match: ", randomText);
     if (confirmText.trim() !== randomText) {
       setErrorMsg(`Incorrect text entered. Please try again.`);
       setAlertMsg(`Status change alert: Incorrect confirmation text.`);

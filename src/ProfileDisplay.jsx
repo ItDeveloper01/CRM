@@ -62,13 +62,13 @@ const ard = userObjects.photoBase64
 }
   
   const renderField = (label, value) => (
-    
-    <div>
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <p className="text-gray-800">{value || "-"}</p>
+  <div className="flex flex-col">
+    <label className="text-sm font-semibold text-gray-700 mb-1">{label}</label>
+    <div className="text-base text-gray-900 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+      {value || "-"}
     </div>
-  );
-
+  </div>
+);
   // const photoPreview = user.userObj.PhotoBase64
   //   ? `data:image/jpeg;base64,${user.userObj.PhotoBase64}`
   //   : null;

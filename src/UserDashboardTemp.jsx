@@ -164,7 +164,7 @@ const activeRes=axios
     },
   })
   .then((res) => {
-    // ✅ Success response
+    // ✅ Success response 
     debugger;
     setData(res.data.message);
      setActiveLeads(res.data || []);
@@ -175,7 +175,7 @@ const activeRes=axios
     if (err.response) {
       // ✅ Server responded but with an error status
       console.log("Status:", err.response.status);
-      console.log("Data:", err.response.data);
+      console.log("Data:",  err.response.data);
 
       if (err.response.status === 401) {
         setData("Unauthorized - please login.  Session Expired.");
@@ -193,6 +193,9 @@ const activeRes=axios
       console.log("Error",err);
       setData("Network error - server unreachable");
     }
+  }).finally(() => {
+    // Always executed, regardless of success or error
+    console.log(" Get Todays Leads Request completed.");
   });
 
        
@@ -282,7 +285,7 @@ const followRes=axios
     const pages = Math.max(1, Math.ceil(out.length / PAGE_SIZE));
     if (activePage > pages) setActivePage(1);
     return out;
-  }, [activeByInterval, selectedStatus, activeCategory, activeDate, activePage]);
+  } , [activeByInterval, selectedStatus, activeCategory, activeDate, activePage]);
 
   const filteredFollow = useMemo(() => {
     const out = followByInterval.filter((l) => {
