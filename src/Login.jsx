@@ -13,7 +13,7 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
 
-const { setUser  } = useGetSessionUser();   // ✅ from context
+const { setUser,setMenu } = useGetSessionUser();   // ✅ from context
   //const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -38,12 +38,16 @@ const { setUser  } = useGetSessionUser();   // ✅ from context
 
 
       const response = await axios.post(APIURL, formdata);
-      console.log('res', response);
+      console.log('Login response with menu:', response);
+
       // Save userId to localStorage for later API calls
 
       // ✅ Save full user details in localStorage
       localStorage.setItem("loggedInUser", JSON.stringify(response.data));
-      
+
+      debugger
+      localStorage.setItem("menu", JSON.stringify(response.data.menu || [])); // Save menu too
+
       // ✅ Update global auth context
 
       const authData = {
@@ -58,6 +62,7 @@ const { setUser  } = useGetSessionUser();   // ✅ from context
   };
 
   setUser(authData); // update global auth context
+  setMenu(response.data.menu || []); // update menu context
       
       navigate('/dashboard');
 

@@ -246,8 +246,9 @@ export default function UserCreate({ }) {
     if (!userObjects.role) errs.role = 'Select a role';
     //   if (!form.reportingManager) errs.reportingManager = 'Select a reportingManager';
     if (userObjects.isUpdatepasword) {
-      if (!userObjects.password) errs.password = 'Password is required';
-      if (userObjects.password !== userObjects.confirmPassword) errs.confirmPassword = 'Passwords do not match';
+      if (!userObjects.password)
+        errs.password = 'Password is required';
+      // if (userObjects.password !== userObjects.confirmPassword) errs.confirmPassword = 'Passwords do not match';
     }
     //   if (!form.department) errs.department = 'Select a department';
     //  if (!form.branch) errs.branch = 'Select a branch';
@@ -277,7 +278,7 @@ export default function UserCreate({ }) {
     try {
       debugger;
 
-      let deepCopy= cloneDeep(updatedData);
+      let deepCopy = cloneDeep(updatedData);
       if (!isUpdate) {
         // await axios.post(config.apiUrl + '/users/', updatedData, {
         //   headers: {
@@ -389,7 +390,7 @@ export default function UserCreate({ }) {
   const updateUser = async (updatedData, selectedFile = null) => {
     try {
 
-      const response = await axios.put(updateUserAPI ,updatedData, {
+      const response = await axios.put(updateUserAPI, updatedData, {
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
           "Content-Type": "application/json",
@@ -547,49 +548,6 @@ export default function UserCreate({ }) {
               />
               {errors.emailId && <p className='text-red-500 text-sm'>{errors.emailId}</p>}
             </div>
-
-            {/* Reporting Manager */}
-            <div>
-              <label className='text-sm font-medium text-gray-700'>Reporting Manager</label>
-              <select
-                name='reportingManager'
-                value={userObjects.reportingManager}
-                onChange={handleChange}
-                onFocus={handleChangeDropDown} // ✅ triggers only when dropdown opens
-                onMouseDown={handleChangeDropDown} // ✅ triggers only when dropdown opens
-                className={`border p-2 rounded w-full ${errors.reportingManager ? 'border-red-500' : ''
-                  }`}>
-                <option value="">Select Manager</option>
-                {userObjects.reportingManagerList.map((mgr) => (
-                  <option key={mgr.userId} value={(mgr.userId)}>
-                    {mgr.firstName} {mgr.lastName}
-                  </option>
-                ))}
-              </select>
-
-              {errors.reportingManager && (
-                <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
-              )}
-            </div>
-
-            {/* Role */}
-            <div>
-              <label className='text-sm font-medium text-gray-700'>Role</label>
-              <select
-                name='role'
-                value={userObjects.role}
-                onChange={handleChange}
-                className={`border p-2 rounded w-full ${errors.role ? 'border-red-500' : ''}`}>
-                <option value=''>Select Role</option>
-                {userRoles.map((rol) => (
-                  <option key={rol.id} value={(rol.id)}>
-                    {rol.roleName}
-                  </option>
-                ))}
-              </select>
-              {errors.role && <p className='text-red-500 text-sm'>{errors.role}</p>}
-            </div>
-
             {/* Gender */}
             <div>
               <label className='text-sm font-medium text-gray-700'>Gender</label>
@@ -616,6 +574,27 @@ export default function UserCreate({ }) {
                 </label>
               </div>
             </div>
+
+
+            {/* Role */}
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Role</label>
+              <select
+                name='role'
+                value={userObjects.role}
+                onChange={handleChange}
+                className={`border p-2 rounded w-full ${errors.role ? 'border-red-500' : ''}`}>
+                <option value=''>Select Role</option>
+                {userRoles.map((rol) => (
+                  <option key={rol.id} value={(rol.id)}>
+                    {rol.roleName}
+                  </option>
+                ))}
+              </select>
+              {errors.role && <p className='text-red-500 text-sm'>{errors.role}</p>}
+            </div>
+
+
 
             {/* Department */}
             <div>
@@ -666,6 +645,32 @@ export default function UserCreate({ }) {
                   </option>
                 ))}
               </select> */}
+
+              {errors.reportingManager && (
+                <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
+              )}
+            </div>
+            {/* Reporting Manager */}
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Reporting Manager</label>
+              <select
+                name='reportingManager'
+                value={userObjects.reportingManager}
+                onChange={handleChange}
+                onFocus={handleChangeDropDown} // ✅ triggers only when dropdown opens
+                onMouseDown={handleChangeDropDown} // ✅ triggers only when dropdown opens
+                disabled={
+                  !userObjects.role || userObjects.selectedDepartmentList.length === 0
+                }
+                className={`border p-2 rounded w-full ${errors.reportingManager ? 'border-red-500' : ''
+                  }`}>
+                <option value="">Select Manager</option>
+                {userObjects.reportingManagerList.map((mgr) => (
+                  <option key={mgr.userId} value={(mgr.userId)}>
+                    {mgr.firstName} {mgr.lastName}
+                  </option>
+                ))}
+              </select>
 
               {errors.reportingManager && (
                 <p className='text-red-500 text-sm'>{errors.reportingManager}</p>

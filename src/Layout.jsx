@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
-export default function Layout({ auth, setAuth }) {
+export default function Layout({ auth, setAuth ,menu }) {
   return (
     <div className='flex h-screen bg-gray-100'>
       <Sidebar

@@ -151,9 +151,9 @@ const  goToCreateUser = (user) => {
                 </td>
                 <td className='p-2'>{u.mobileNo}</td>
                 <td className='p-2'>{u.emailId}</td>
-                <td className='p-2'>{u.department}</td>
+                <td className='p-2'>{u.categoryNames}</td>
                 <td className='p-2'>{u.designation}</td>
-                <td className='p-2'>{u.role}</td>
+                <td className='p-2'>{u.roleName}</td>
                 <td className='p-2'>{u.status}</td>
                 <td className='p-2'>
                   {/* <Link
