@@ -31,6 +31,7 @@ import { UserObject } from "./Model/UserModel";
         setErrors(prev => ({ ...prev, confirmPassword: '' }));
         setErrors(prev => ({ ...prev, password: '' }));
         setUserObject(prev => ({ ...prev, password: value }));
+        
         setUserObject(prev => ({ ...prev, isUpdatepasword: true }));
         console.log("Password set in user object");
       }

@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import { LogIn, LogOut, Settings, User } from 'lucide-react';
 import {useGetSessionUser}  from "./SessionContext";
 import Login from './Login';
+import { ErrorMessages } from './Constants';
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ auth, setAuth }) {
@@ -44,10 +45,10 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
       // setOpen(false); }}
    
     } catch (error) {
-      console.error("Logout API failed", error);
+      console.error(ErrorMessages.PROFILE_NAVIGATION_FAILED, error);
     }
     
-  };
+  }; 
 
  // ✅ Safe logout handler
   const handleLogout = async () => {
@@ -62,7 +63,7 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
         headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
-      console.error("Logout API failed", error);
+      console.error(ErrorMessages.LOGOUT_API_FAILED, error);
     }
 
    

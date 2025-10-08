@@ -16,6 +16,7 @@ import { useRef } from 'react';
 import { PhotoUploadComponent } from './PhotoUploadComponent';
 import { PasswordField } from './PasswordConfirmationComponent';
 import qs from 'qs';
+import { emphasize } from '@mui/material/styles';
 
 
 
@@ -37,82 +38,61 @@ export default function UserCreate({ }) {
   const createUserAPI = apiUrl + '/Users/CreateUser';
   const sendCredantialsAPI = apiUrl + "/Contact/SendLoginInformation";
   const fetchManagerListAPI = apiUrl + '/Users/GetManagerList';
+  const checkUserIdEndpoint = apiUrl + '/Users/CheckIfUserIdExists';
+  const checkEmpIdEndpoint=apiUrl+ '/users/CheckIfEmpIdIdExists';
 
   const location = useLocation(); // ✅ get location here
 
   const user = location.state?.user || getEmptyUserObj();
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(false); // This state seems unused, consider removing it.
   const [password, setPassword] = useState('');
 
   // Initialize your state with the user object
   const [userObjects, setUserObjects] = useState(user);
   const [isUpdate, setIsUpdate] = useState(!!location.state?.user);
   const [axiosMsgData, setData] = useState("");
-  const { user: sessionUser } = useGetSessionUser();
-  const [photo, setPhoto] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [photoPreview, setPhotoPreview] = useState(null); // store base64 for UI preview
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [isDepartmentMultiselect, setIsDepartmentMultiselect] = useState(true);
   const hasFetchedManagers = useRef(false); // ✅ to avoid multiple fetches
 
+  const { user: sessionUser } = useGetSessionUser();
+
+  // This effect runs only ONCE on component mount to initialize the form and fetch data
   useEffect(() => {
-    hasFetchedManagers.current = false; // ✅ reset when role or department changes
-    // Reset manager selection
-    setUserObjects(prev => ({ ...prev, reportingManager: "" }));
-    setUserObjects(prev => ({ ...prev, reportingManagerList: [] }));
+debugger;
 
-  }, [userObjects.role, userObjects.selectedDepartmentList]);
-
-
-  useEffect(() => {
-    console.log("Setting User Objects...", userObjects);
-    console.log("Location object..", location);
-    //safeDepartments = Array.isArray(dummyDepartments) ? dummyDepartments : [];
-    //safeSelectedList = Array.isArray(userObjects.selectedDepartmentList) ? userObjects.selectedDepartmentList : [];
-
-    //setSafeDepartments(Array.isArray(dummyDepartments) ? dummyDepartments : []);
-    //setsafeSlectedList(Array.isArray(userObjects.selectedDepartmentList) ? userObjects.selectedDepartmentList : []);
-
-
+    fetchDepartments(); // ✅ Fetch dropdown data on component load
+debugger;
     if (location.state?.user) {
+      // --- EDIT MODE ---
       setIsUpdate(true);
-      if (user.photoBase64) {
-        setPhoto(`data:image/jpeg;base64,${user.photoBase64}`);
-        setPhotoPreview(`data:image/jpeg;base64,${user.photoBase64}`);
-        console.log("Photo set for preview:", user.photoBase64);
+      const userToEdit = { ...location.state.user }; // Create a copy to avoid direct mutation
+
+      // ✅ Safely initialize array properties to prevent crashes
+      if (!Array.isArray(userToEdit.selectedDepartmentList)) {
+        userToEdit.selectedDepartmentList = [];
       }
-      console.log("User to edit:", userObjects);
+      if (!Array.isArray(userToEdit.reportingManagerList)) {
+        userToEdit.reportingManagerList = [];
+      }
+
+      // Explicitly set the user object from location state to ensure all fields are populated
+      setUserObjects(userToEdit);
+
+      // Set initial photo preview from the user data
+      const photoData = location.state.user.photoBase64 ? `data:image/jpeg;base64,${location.state.user.photoBase64}` : null;
+      setPhotoPreview(photoData);
+
+      console.log("User to edit:", location.state.user);
       setbtnText("Update User");
-    }
-    else {
+    } else {
+      // --- CREATE MODE ---
       setIsUpdate(false);
+      setUserObjects(getEmptyUserObj());
     }
-  }, [user, userObjects]);
-
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setErrorMsg("Invalid file type. Please select an image.");
-      setPhoto(null);
-      return;
-    }
-
-    // Validate file size
-    if (file.size > 1024 * 1024) {
-      setErrorMsg("File size must be below 1 MB");
-      setPhoto(null);
-      return;
-    }
-
-    setErrorMsg("");
-    const reader = new FileReader();
-    reader.onload = () => setPhoto(reader.result);
-    reader.readAsDataURL(file);
-  };
+  }, []); // Rerun if the user being edited changes
 
 
   const handleChange = (e) => {
@@ -122,14 +102,101 @@ export default function UserCreate({ }) {
       setPassword(e.target.value)
 
     }
-    if (e.target.name == "role" && e.target.value == 5) {
-      setIsDepartmentMultiselect(false);
-    }
-    else if (e.target.name == "role" && e.target.value !== 5) {
-      setIsDepartmentMultiselect(true);
+
+    const { name, value } = e.target;
+
+    // When role or department changes, reset the manager list and selection
+    if (name === "role" || name === "selectedDepartmentList") {
+      hasFetchedManagers.current = false;
+      setUserObjects(prev => ({ ...prev, reportingManager: "", reportingManagerList: [], [name]: value }));
+    } else {
+      setUserObjects(prev => ({ ...prev, [name]: value }));
     }
 
-    setUserObjects({ ...userObjects, [e.target.name]: e.target.value });
+    if (name === "role" && value == 5) {
+      setIsDepartmentMultiselect(false);
+    } else if (name === "role" && value !== 5) {
+      setIsDepartmentMultiselect(true);
+    }
+  };
+
+const handleEmpIDValidation=async ()=> {
+if (!userObjects.userId) return; // skip if empty
+    if (isUpdate) return; // skip if updating existing user (no change allowed)
+    try {
+      // const res = await axios.get(`${checkUserIdEndpoint}/${userObjects.userId}`, {
+      //   headers: { Authorization: `Bearer ${sessionUser.token}` }
+      // });
+
+
+const res = await axios.get(checkEmpIdEndpoint,
+        {
+          headers: { Authorization: `Bearer ${sessionUser.token}` },
+          params: { empId: userObjects.empId }
+        }
+      );
+
+      console.log('Emp ID validation response:', res.data);
+debugger;
+      if (res.data == false) {
+       // alert(`✅ User ID "${userObjects.userId}" is available.`);
+        setErrors(prev => ({ ...prev, empId: '' })); // clear error
+      }else 
+      {
+        alert(`❌ User ID "${userObjects.empId}" is already taken. Please choose another.`);
+         setErrors(prev => ({ ...prev, empId: `empId ID "${userObjects.empId}" is already taken. Please choose another.` }));
+        setUserObjects(prev => ({ ...prev, empId: '' })); // clear invalid userId
+      }
+
+
+    } catch (err) {
+      console.error('Failed to validate User ID:', err);
+      alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+      setErrors(prev => ({ ...prev, userId: `User ID "${userObjects.userId}" is already taken. Please choose another.` }));
+      setUserObjects(prev => ({ ...prev, userId: '' })); // clear invalid userId  
+      
+    }
+
+
+}
+
+  const handleUserIDValidation = async () => {
+
+    if (!userObjects.userId) return; // skip if empty
+    if (isUpdate) return; // skip if updating existing user (no change allowed)
+    try {
+      // const res = await axios.get(`${checkUserIdEndpoint}/${userObjects.userId}`, {
+      //   headers: { Authorization: `Bearer ${sessionUser.token}` }
+      // });
+
+
+const res = await axios.get(checkUserIdEndpoint,
+        {
+          headers: { Authorization: `Bearer ${sessionUser.token}` },
+          params: { userId: userObjects.userId }
+        }
+      );
+
+      console.log('User ID validation response:', res.data);
+debugger;
+      if (res.data == false) {
+       // alert(`✅ User ID "${userObjects.userId}" is available.`);
+        setErrors(prev => ({ ...prev, userId: '' })); // clear error
+      }else 
+      {
+        alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+         setErrors(prev => ({ ...prev, userId: `User ID "${userObjects.userId}" is already taken. Please choose another.` }));
+        setUserObjects(prev => ({ ...prev, userId: '' })); // clear invalid userId
+      }
+
+
+    } catch (err) {
+      console.error('Failed to validate User ID:', err);
+      alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+      setErrors(prev => ({ ...prev, userId: `User ID "${userObjects.userId}" is already taken. Please choose another.` }));
+      setUserObjects(prev => ({ ...prev, userId: '' })); // clear invalid userId  
+      
+    }
   };
 
   const fetchDepartments = async () => {
@@ -165,35 +232,6 @@ export default function UserCreate({ }) {
       console.error('Failed to fetch departments , Roles:', err);
     }
   };
-
-
-  useEffect(() => {
-    console.log("Entry into UserCreate........");
-    fetchDepartments();
-    console.log("Departments fetched...", departments);
-    console.log("User Roles fetched...", userRoles);
-
-    if (user && Object.keys(user).length > 0) {
-
-      /*****************************               EDIT    USER   ************************************************************* */
-
-      const userId = user.userId;
-      console.log('Editing user with ID:', userId);
-      setIsUpdate(true);
-      setPhoto(user.PhotoBase64 ? `data:image/jpeg;base64,${user.PhotoBase64}` : null);
-      setUserObjects(user); // Fetch user details and populate form
-    } else {
-      /*********************************              NEW    USER    ******************************************************** */
-      setIsUpdate(false);
-      // setForm({
-      //   ...form,
-      //   empId: '',
-      //   userId: '',
-      // });
-      setUserObjects(getEmptyUserObj());
-      setIsUpdate(false);
-    }
-  }, []);
 
   const handleChangeDropDown = (selectedOptions) => {
     debugger;
@@ -287,14 +325,14 @@ export default function UserCreate({ }) {
         //   },
         // });
 
-        await createUser(deepCopy, photo);
+        await createUser(deepCopy);
         await SendLoginCreadentials(deepCopy);
 
         navigate("/users");
         // alert('✅ User created successfully!');
         // navigate('/users');
       } else {
-        await updateUser(deepCopy, photo);
+        await updateUser(deepCopy);
       }
       alert('✅ User saved successfully!');
       if (deepCopy.isUpdatepasword) {
@@ -319,7 +357,7 @@ export default function UserCreate({ }) {
 
 
 
-  const createUser = async (updatedData, selectedFile = null) => {
+  const createUser = async (updatedData) => {
     try {
       //const formData = new FormData();
 
@@ -332,9 +370,7 @@ export default function UserCreate({ }) {
 
       // append photo if exists
       // keep old if no new file
-      const payload = { ...userObjects, PhotoBase64: photo || userObjects.PhotoBase64 };
-
-      const response = await axios.post(createUserAPI, payload, {
+      const response = await axios.post(createUserAPI, updatedData, {
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
           "Content-Type": "application/json",
@@ -387,10 +423,10 @@ export default function UserCreate({ }) {
 
 
 
-  const updateUser = async (updatedData, selectedFile = null) => {
+  const updateUser = async (updatedData) => {
     try {
 
-      const response = await axios.put(updateUserAPI, updatedData, {
+      const response = await axios.put(updateUserAPI, updatedData, { // updatedData now contains the new photo
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
           "Content-Type": "application/json",
@@ -436,7 +472,10 @@ export default function UserCreate({ }) {
             {/* Place photo upload on top right corner */}
             <div className="col-start-3 row-start-1 flex justify-end">
               <PhotoUploadComponent
-                setPhotoFile={setPhoto}       // store the File object
+                setPhotoFile={(base64String) => {
+                  // ✅ Directly update the user object with the new photo data
+                  setUserObjects(prev => ({ ...prev, photoBase64: base64String }));
+                }}
                 setPhotoPreview={setPhotoPreview} // store base64 for preview
                 photoSrc={photoPreview}
                 errorMsg={errorMsg}
@@ -501,6 +540,7 @@ export default function UserCreate({ }) {
                 name='userId'
                 value={userObjects.userId}
                 onChange={handleChange}
+                onBlur={handleUserIDValidation}
                 placeholder='User ID'
                 className={`border p-2 rounded w-full ${errors.userId ? 'border-red-500' : ''}`}
               />
@@ -516,7 +556,7 @@ export default function UserCreate({ }) {
               <input
                 type='date'
                 name='birthDate'
-                value={userObjects.birthDate}
+                value={userObjects.birthDate ? userObjects.birthDate.split('T')[0] : ''}
                 onChange={handleChange}
                 className='border p-2 rounded w-full'
               />
@@ -557,7 +597,7 @@ export default function UserCreate({ }) {
                     type='radio'
                     name='gender'
                     value='Male'
-                    checked={userObjects.gender === 'Male'}
+                    checked={userObjects.gender === 'Male' || false}
                     onChange={handleChange}
                   />{' '}
                   Male
@@ -567,7 +607,7 @@ export default function UserCreate({ }) {
                     type='radio'
                     name='gender'
                     value='Female'
-                    checked={userObjects.gender === 'Female'}
+                    checked={userObjects.gender === 'Female' || false}
                     onChange={handleChange}
                   />{' '}
                   Female
@@ -695,7 +735,7 @@ export default function UserCreate({ }) {
               <input
                 type='date'
                 name='joiningDate'
-                value={userObjects.joiningDate}
+                value={userObjects.joiningDate ? userObjects.joiningDate.split('T')[0] : ''}
                 onChange={handleChange}
                 className='border p-2 rounded w-full'
               />
@@ -729,6 +769,7 @@ export default function UserCreate({ }) {
                 name='empId'
                 value={userObjects.empId}
                 onChange={handleChange}
+                onBlur={handleEmpIDValidation}
                 placeholder='Employee ID'
                 className={`border p-2 rounded w-full ${errors.empId ? 'border-red-500' : ''}`}
               />

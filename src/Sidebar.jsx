@@ -36,28 +36,34 @@ useEffect(() => {
       </div>
 
       <nav className="mt-6 space-y-2 px-2">
-        {menu
-          .filter((item) => {
-            // Optional: filter by role if you have allowedRoles in backend
-            if (!auth || !auth.role) return false;
-            return true; // or add role-based filtering
-          })
-          .map((item) => {
-            const Icon = iconMap[item.icon]; // dynamically pick icon
-            const isActive = location.pathname === item.route;
-            return (
-              <Link
-                key={item.route}
-                to={item.route}
-                className={`flex items-center gap-3 p-2 rounded hover:bg-blue-100 ${
-                  isActive ? 'bg-blue-200 font-bold' : ''
-                }`}
-              >
-                {Icon && <Icon size={20} />}
-                {sidebarOpen && item.menuName}
-              </Link>
-            );
-          })}
+        {!Array.isArray(menu) || menu.length === 0 ? (
+          <p className="px-2 text-sm text-gray-500">
+            No tasks assigned to the user. Contact admin.
+          </p>
+        ) : (
+          menu
+            .filter((item) => {
+              // Optional: filter by role if you have allowedRoles in backend
+              if (!auth || !auth.role) return false;
+              return true; // or add role-based filtering
+            })
+            .map((item) => {
+              const Icon = iconMap[item.icon]; // dynamically pick icon
+              const isActive = location.pathname === item.route;
+              return (
+                <Link
+                  key={item.route}
+                  to={item.route}
+                  className={`flex items-center gap-3 p-2 rounded hover:bg-blue-100 ${
+                    isActive ? 'bg-blue-200 font-bold' : ''
+                  }`}
+                >
+                  {Icon && <Icon size={20} />}
+                  {sidebarOpen && item.menuName}
+                </Link>
+              );
+            })
+        )}
       </nav>
     </div>
   );
