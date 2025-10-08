@@ -39,6 +39,7 @@ const handlePhotoChange = (event) => {
 
   const reader = new FileReader();
   reader.onloadend = () => {
+    debugger;
     const base64String = reader.result.split(',')[1]; // for backend
     setPhotoFile(base64String);       // send this to backend
     setPhotoPreview(reader.result);   // preview in <img>

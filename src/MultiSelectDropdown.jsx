@@ -41,7 +41,7 @@ export default function MultiSelectDropdown({ departmentList = [], selectedDepar
         <span className="text-gray-700 text-sm truncate">
           {selectedDepartmentList.length > 0
             ? selectedDepartmentList
-                .map((id) => departmentList.find((dept) => dept.id === id)?.departmentName)
+                .map((id) => departmentList.find((dept) => dept.id === id)?.category)
                 .filter(Boolean)
                 .join(', ')
             : 'Select Department'}
@@ -70,7 +70,7 @@ export default function MultiSelectDropdown({ departmentList = [], selectedDepar
                 onChange={() => handleSelect(dept.id)}
                 className="mr-2 h-5 w-5"
               />
-              <span className="text-sm text-gray-700">{dept.departmentName}</span>
+              <span className="text-sm text-gray-700">{dept.category}</span>
             </label>
           ))}
         </div>
