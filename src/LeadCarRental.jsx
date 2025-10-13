@@ -1,24 +1,82 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from 'react';
+import config from "./config";
+import axios from "axios";
+import { CarLeadObject } from "./Model/CarLeadModel";
+import { useMemo } from "react";
+import HistoryHover from "./HIstoryHover";
 
 
-const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
-// const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
-    
+const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate, handleChangeForDropdown }) => {
+    // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
+
+    // Memoize the histories array so reference doesn't change unnecessarily
+    const memoHistories = useMemo(() => histories || [], [histories]);
+    const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
+    const [errors, setErrors] = useState({});
     //Requirment for car rental
     const [requirementType, setRequirementType] = useState("");
-    
-   
+    const [specialRequirements, setSpecialRequirements] = useState([]);
 
-    return(
-        
+    const getSpecialRequirementsListEndPoint = config.apiUrl + '/MasterData/GetSpecialRequirementsList';
+    const handleChange = (e) => {
+
+        console.log("**********************IN CAR LEAD OBJECT   /**************************");
+        console.log("Handle Change Called for Car Lead Obj  ");
+        console.log("Car Lead Obj before change.....:", carLeaddObj);
+        console.log("Histories received....", histories);
+        console.log("isUpdate flag....", memoIsUpdate);
+
+
+        debugger;
+        const { name, value } = e.target;
+        console.log("printing name and value : ", name, value);
+        setCarLeadObj(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    }
+    // To fetch special requirements API  
+    useEffect(() => {
+        const fetchSpecialRequirements = async () => {
+            try {
+                const specialReq = await axios.get(getSpecialRequirementsListEndPoint, {
+                    // headers: {
+                    //     Authorization: `Bearer ${sessionUser.token}`,
+                    // }
+                });
+                setSpecialRequirements(specialReq.data || []);
+            } catch (error) {
+                console.error("Error fetching special requirements:", error);
+            }
+        };
+
+        fetchSpecialRequirements();
+    }, []);
+
+    useEffect(() => {
+        debugger;
+        console.log("****.....In Lead Air Ticketing Useffect..............**");
+        if (memoIsUpdate) {
+            console.log("In LeadCarRental . Its an exisitng lead. Updating the passport details. ");
+
+        }
+        console.log("Car Lead Obj in useEffect.....:", carLeaddObj);
+        console.log("Histories in useEffect.....:", memoHistories);
+        console.log("isUpdate flag....", memoIsUpdate);
+    }, [memoIsUpdate]);
+
+
+    return (
+
         <div>
             <div className="flex gap-3 flex-wrap">
                 <div className="flex-1">
                     <label className="label-style">No of Travelers</label>
                     <input
-                        name="numTravelers"
                         type="number"
+                        value={Number(carLeaddObj.noOfTravelers) || ""}
+                        name="noOfTravelers"
                         min="1"
                         onChange={handleChange}
                         className={`border-highlight`}
@@ -28,7 +86,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <label className="label-style">Type of Vehicle</label>
                     <select
                         name="vehicleType"
-                        value={formData.vehicleType}
+                        value={carLeaddObj.vehicleType}
                         onChange={handleChange}
                         className={`border-highlight`}
                     >
@@ -40,8 +98,10 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <label className="label-style">Type of Duty</label>
                     <div>
                         <select
-                            name="duty"
+                            name="dutyType"
+                            value={carLeaddObj.dutyType || ""}
                             className={`border-highlight`}
+                            onChange={handleChange}
                         >
                             <option value="">Select Duty Type</option>
                             <option value="Transfer">Transfer</option>
@@ -57,6 +117,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <label className="label-style">Trip Description</label>
                     <input
                         name="tripDescription"
+                        value={carLeaddObj.tripDescription || ""}
                         placeholder="Trip Description"
                         onChange={handleChange}
                         className="border-highlight"
@@ -68,7 +129,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <label className="label-style">Serving City</label>
                     <select
                         name="servingCity"
-                        value={formData.cities}
+                        value={carLeaddObj.servingcity}
                         onChange={handleChange}
                         className="border-highlight"
                     >
@@ -77,14 +138,21 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                             <option>Loading...</option>
                         ) : (
                             <> */}
-                                <option value="">Select City</option>
-                                {cities.map((city, index) => (
-                                    <option key={index} value={city}>
-                                        {city}
-                                    </option>
-                                ))}
-                            {/* </>
-                        )} */}
+                        <option value="">Select City</option>
+                        {/* {carLeaddObj.cities.map((city, index) => ( ...........to set in car lead but not working check latwer */}
+                        {cities.map((city) => (
+                            <option key={city} value={city}>
+                                {city}
+                            </option>
+                        ))}
+
+                        {/* Old formate  */}
+                        {/* {cities.map((city, index) => (
+                            <option key={index} value={city}>
+                                {city}
+                            </option>
+                        ))} */}
+
                     </select>
                 </div>
             </div>
@@ -96,6 +164,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <input
                         type="date"
                         name="travelDate"
+                        value={carLeaddObj.travelDate || ""}
                         onChange={handleChange}
                         className="border-highlight"
                     />
@@ -107,6 +176,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                     <input
                         type="number"
                         name="noOfDays"
+                        value={Number(carLeaddObj.noOfDays) || ""}
                         min="1"
                         onChange={handleChange}
                         className="border-highlight"
@@ -115,23 +185,29 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
             </div>
 
             <div>
+            
                 {/* Requirement Type Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Requirement Type</label>
                     <select
                         name="requirementType"
-                        value={requirementType}
-                        onChange={(e) => setRequirementType(e.target.value)}
+                        value={carLeaddObj.requirementType}
+                        onChange={handleChange}
                         className="border-highlight"
                     >
                         <option value="">Select Requirement</option>
-                        <option value="personal">Personal Requirement</option>
-                        <option value="corporate">Corporate Requirement</option>
+                        {["Individual", "Corporate", "Event", "Inbound"].map((type) => (
+                            <option key={type} value={type}>
+                                {/* {type.charAt(0).toUpperCase() + type.slice(1)} Requirement     */}
+                                {type} Requirement
+                            </option>
+                        ))}
                     </select>
                 </div>
 
+
                 {/* Show only if corporate selected */}
-                {requirementType === "corporate" && (
+                {carLeaddObj?.requirementType?.trim()?.toLowerCase() === "corporate" && (
                     <div className="flex gap-3 flex-wrap">
                         {/* Company Name */}
                         <div className="flex-1 min-w-[200px]">
@@ -139,6 +215,7 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                             <input
                                 type="text"
                                 name="companyName"
+                                value={carLeaddObj.companyName || ""}
                                 onChange={handleChange}
                                 placeholder="Enter Company Name"
                                 className="border-highlight"
@@ -150,7 +227,8 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                             <label className="label-style">Telephone No</label>
                             <input
                                 type="tel"
-                                name="telephone"
+                                name="telephoneNo"
+                                value={carLeaddObj.telephoneNo || ""}
                                 onChange={handleChange}
                                 placeholder="Enter Telephone No"
                                 className="border-highlight"
@@ -161,22 +239,26 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                 )}
             </div>
 
-            {/* Rental Type */}
-            <div className="flex-1 min-w-[250px]">
-                <label className="label-style">Rental Type</label>
-                <div className="flex-1 min-w-[250px]">
-                    <select
-                        name="rentalType"
-                        className="border-highlight"
-                    >
-                        <option value="">Select Rental Type</option>
-                        <option value="events">Events</option>
-                        <option value="individual">Individual</option>
-                        <option value="inbond">InBound</option>
-                        <option value="group">Group</option>
-                    </select>
-                </div>
+            <div>
+                {/* Special Requirements Dropdown */}
+                <label className="label-style">Special Requirements</label>
+                <select name="specialRequirements" value={carLeaddObj.specialRequirements || ""}
+                    onChange={(e) =>
+                        setCarLeadObj((prev) => ({
+                            ...prev,
+                            [e.target.name]: e.target.value === "" ? null : e.target.value,
+                        }))
+                    }
+                    className='border-highlight'>
+                    <option value="">Select Requirement</option>
+                    {specialRequirements.map((specialReq) => (
+                        <option key={specialReq.id} value={(specialReq.id)}>
+                            {specialReq.specialRequirements}
+                        </option>
+                    ))}
+                </select>
             </div>
+
 
             <div>
                 {/* Quote Given */}
@@ -184,23 +266,32 @@ const LeadCarRental = ({ cities = [], formData = {}, handleChange }) => {
                 <input
                     type="text"
                     placeholder="Enter quote"
+                    name="quoteGiven"
+                    value={carLeaddObj.quoteGiven || ""}
                     className={`border-highlight`}
+                    onChange={handleChange}
                 />
             </div>
 
-            {/* Special Requirement */}
+            {/* Remark */}
             <div>
-                <label className="label-style">Special Requirement</label>
+                <label className="label-style">Remark</label>
                 <input
                     type="text"
-                    placeholder="Special requirement "
+                    name="notes"
+                    value={carLeaddObj.notes || ""}
+                    placeholder="Remark "
                     className={`border-highlight`}
+                    onChange={handleChange}
                 />
+
+                {/* History hover component */}
+                {memoIsUpdate && (
+                    <HistoryHover histories={memoHistories} />)
+                }
             </div>
         </div>
     );
 };
 
 export default LeadCarRental;
-
-
