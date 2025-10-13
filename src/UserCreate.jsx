@@ -17,10 +17,8 @@ import { PhotoUploadComponent } from './PhotoUploadComponent';
 import { PasswordField } from './PasswordConfirmationComponent';
 import qs from 'qs';
 import { emphasize } from '@mui/material/styles';
-
-
-
-
+import { useMessageBox } from "./Notification";
+import { MESSAGE_TYPES } from './Constants';
 
 export default function UserCreate({ }) {
   const navigate = useNavigate();
@@ -29,8 +27,7 @@ export default function UserCreate({ }) {
   const [userRoles, setUserRoles] = useState([]);
   const [btnText, setbtnText] = useState("Creat User");
   const [cancelBtnText, setCancelBtnText] = useState("Cancel");
-  //const [userObjects, setUserObjects] = useState(() => user || getEmptyUserObj());
-  //const[isUpdate,setIsUpdate]=useState(false);
+  const { showMessage } = useMessageBox();
   const apiUrl = config.apiUrl;
   const getDeptartmentsEndpoint = apiUrl + '/Users/GetDepartmentList';
   const getUserRolesListEndPoint = apiUrl + '/Users/GetRolesList';
@@ -318,23 +315,19 @@ debugger;
 
       let deepCopy = cloneDeep(updatedData);
       if (!isUpdate) {
-        // await axios.post(config.apiUrl + '/users/', updatedData, {
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${sessionUser.token}`,
-        //   },
-        // });
 
         await createUser(deepCopy);
         await SendLoginCreadentials(deepCopy);
-
+        showMessage("User Saved Successfully.", MESSAGE_TYPES.INFO);
         navigate("/users");
-        // alert('✅ User created successfully!');
-        // navigate('/users');
       } else {
+        debugger;
         await updateUser(deepCopy);
+        showMessage("User Updated Successfully.", MESSAGE_TYPES.INFO);
       }
-      alert('✅ User saved successfully!');
+
+      
+
       if (deepCopy.isUpdatepasword) {
         await SendLoginCreadentials(deepCopy);
       }
@@ -346,7 +339,8 @@ debugger;
         error.response?.data?.errors ||
         error.response?.data?.title ||
         error.message;
-      alert(`❌ Failed: ${JSON.stringify(message)}`);
+      //alert(`❌ Failed: ${JSON.stringify(message)}`);
+      showMessage("Failed:"+ message, MESSAGE_TYPES.ERROR);
       setData(message);
     }
     console.log("Axios message data:", axiosMsgData);
@@ -432,13 +426,15 @@ debugger;
           "Content-Type": "application/json",
         },
       });
-      alert("✅ User saved successfully!");
+      //alert("✅ User saved successfully!");
+      showMessage("User updated successfully." , MESSAGE_TYPES.INFO);
       console.log("User saved", response.data);
 
     } catch (error) {
       console.error(error);
       const message = error.response?.data?.errors || error.response?.data?.title || error.message;
-      alert(`❌ Failed: ${JSON.stringify(message)}`);
+      //alert(`❌ Failed: ${JSON.stringify(message)}`);
+      showMessage(JSON.stringify(message), MESSAGE_TYPES.ERROR);
       throw error;
     }
   };
@@ -777,12 +773,18 @@ debugger;
             </div>
             <div>
               <label className='text-sm font-medium text-gray-700'>Status</label>
-              <UserStatusSelector
+              {/* <UserStatusSelector
 
-                status={userObjects.status}
-                onStatusChange={(newStatus) => setUserObjects({ ...userObjects, status: newStatus })}
-                onUpdate={() => { }}
+                initialStatus={userObjects.status}
+                // onStatusChange={(newStatus) => setUserObjects({ ...userObjects, status: newStatus })}
+                onUpdate={(newStatus) => setUserObjects({ ...userObjects, status: newStatus })}
                 isUpdate={isUpdate}
+              /> */}
+              <UserStatusSelector
+              initialStatus={(userObjects.status || '').trim() }
+              userObject={userObjects}
+              isUpdate  ={isUpdate}
+              onUpdate={(newStatus) => setUserObjects({ ...userObjects, status: newStatus })}
               />
 
             </div>

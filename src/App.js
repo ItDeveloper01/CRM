@@ -18,13 +18,17 @@ import { fa } from 'intl-tel-input/i18n';
 import ProfileDisplay from './ProfileDisplay';
 import SMTPForm from './SMTPForm';
 import LeadAnalytics from './LeadAnalytics';
+import MessageBox from './MessageBox';
+// ✅ import your NotificationProvider
+import { NotificationProvider } from "./Notification";
+
 
 export default function App() {
-//  const [auth, setAuth] = useState({ isLoggedIn: false, role: null });
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
    const { menu, setMenu } = useGetSessionUser(); // ✅ using menu now
-
+   //const NotificationContext = createContext();
   return (
+    <NotificationProvider>
     <Router>
       <Routes>
         {user && user.isLoggedIn ? (
@@ -114,5 +118,6 @@ export default function App() {
         )}
       </Routes>
     </Router>
+    </NotificationProvider>
   );
 }
