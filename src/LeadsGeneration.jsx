@@ -11,6 +11,7 @@ import config from './config';
 import { VISALeadObject } from './Model/VisaLeadModel';
 import { getEmptyVisaObj } from "./Model/VisaLeadModel";
 import { getEmptyAirTicketObj } from './Model/AirTicketLeadModel';
+import { getEmptyCarLeadObj } from './Model/CarLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
 import MessageBox from "./MessageBox";
@@ -34,6 +35,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
     ...getEmptyAirTicketObj(),
     airTicketType: "Domestic"   // default selected
   });
+  const [carLeaddObj, setCarLeadObj] = useState(getEmptyCarLeadObj());
   // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
 
   const [isUpdateMode, setIsUpdateMode] = useState(false);
@@ -64,6 +66,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
+  const [specialRequirements, setSpecialRequirements] = useState([]);
   const [leadcategory, setleadcategory] = useState({});
 
   // const enquirySources = [
@@ -121,6 +124,21 @@ export default function LeadsGeneration({ lead ,onClose}) {
         console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
         setLoading(false);
       });
+
+    // Fetch Special Requirements for Car Rental
+    const fetchSpecialRequirements = async () => {
+      try {
+        // Replace with your actual API endpoint
+        const response = await axios.get(config.apiUrl + '/MasterData/GetSpecialRequirements');
+        setSpecialRequirements(response.data || []);
+        console.log("Special requirements fetched successfully", response.data);
+      } catch (err) {
+        console.error("Failed to fetch special requirements:", err);
+        // For demonstration, using mock data on failure
+        setSpecialRequirements(['Child Seat', 'Wheelchair Accessible', 'Pet Friendly', 'GPS Navigation']);
+      }
+    };
+    fetchSpecialRequirements();
   }, []);
 
   const cityAreas = {
@@ -259,6 +277,13 @@ export default function LeadsGeneration({ lead ,onClose}) {
         //   newLead.category = null;
         //   setSelectedLeadName("Unknown Category");
         // }
+        case "car rentals": {
+          const mappedCarRentals = mapObject(incomingLead.category, getEmptyCarLeadObj());
+          newLead.category = mappedCarRentals;
+          setCarLeadObj(mappedCarRentals);
+          setSelectedLeadName(incomingLead.category.categoryName || "Car Rentals");
+          break;
+        }
       }
 
     } else {
@@ -473,6 +498,10 @@ export default function LeadsGeneration({ lead ,onClose}) {
       case 'Air Ticketing':
         setLeadObj(prev => ({ ...prev, category: getEmptyAirTicketObj() }));
         break;
+      
+      case 'Car Rentals':
+        setLeadObj(prev => ({ ...prev, category: getEmptyCarLeadObj() }));
+        break;
 
       default:
         return null;
@@ -575,6 +604,22 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
   };
 
+  const handleSpecialRequirementsChange = (e) => {
+    const { value, checked } = e.target;
+    setLeadObj(prev => {
+      const currentReqs = prev.specialRequirements || [];
+      if (checked) {
+        // Add requirement if it's not already there
+        return { ...prev, specialRequirements: [...new Set([...currentReqs, value])] };
+      } else {
+        // Remove requirement
+        return { ...prev, specialRequirements: currentReqs.filter(req => req !== value) };
+      }
+    });
+  };
+
+
+
   const renderCategoryFields = () => {
     debugger;
 
@@ -622,7 +667,36 @@ export default function LeadsGeneration({ lead ,onClose}) {
         );
 
       case 'car rentals':
-        return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange} />
+        //return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange}  />
+        return (
+          <>
+          {(
+            console.log("History to pass to HistoryHover:", LeadObj.histories),
+            <LeadCarRental
+              carLeaddObj={carLeaddObj}
+              setCarLeadObj={setCarLeadObj}
+              cities={cities}
+              handleChange={handleChange}
+              histories={leadObj.histories || []}
+              isUpdate={isUpdateMode} // fallback to empty array
+            />
+  
+          )}
+          </>
+        );
+        // return <LeadCarRental
+        //   cities={cities}
+        //   loading={loading}
+        //   formData={leadObj}
+        //   carLeaddObj={carLeaddObj}
+        //   setCarLeadObj={setCarLeadObj}
+        //   handleChange={handleChange}
+        //   histories={leadObj.histories || []}
+        //   handleChangeForDropdown={handleChangeForDropdown}
+        //   specialRequirementsOptions={specialRequirements}
+        //   onSpecialRequirementsChange={handleSpecialRequirementsChange}
+        //   selectedRequirements={leadObj.specialRequirements || []}
+        // />
       case 'holiday':
         return (
           <>
@@ -797,6 +871,20 @@ export default function LeadsGeneration({ lead ,onClose}) {
             const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
             deepLeadCopy.category = { ...deepAirTicketingCopy };;
             break;
+          
+          case "car rentals":
+            debugger;
+            if (!carLeaddObj.createdBy_UserID) {
+              carLeaddObj.createdBy_UserID = currentUser?.user?.userId;
+            }
+
+            if (!carLeaddObj.assigneeTo_UserID) {
+              carLeaddObj.assigneeTo_UserID = currentUser?.user?.userId;
+            }
+
+            const deepCarRentalsCopy = cloneDeep(carLeaddObj);
+            deepLeadCopy.category = { ...deepCarRentalsCopy };;
+            break;
 
           default:
             debugger;
@@ -908,6 +996,13 @@ export default function LeadsGeneration({ lead ,onClose}) {
             airTicketingdObj.assigneeTo_UserID ||= currentUser?.user?.userId;
             const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
             deepCopy.category = { ...deepAirTicketingCopy };
+            break;
+
+          case "car rentals": // lowercase because of .toLowerCase()
+            carLeaddObj.createdBy_UserID ||= currentUser?.user?.userId;
+            carLeaddObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            const deepCarRentalsCopy = cloneDeep(carLeaddObj);
+            deepCopy.category = { ...deepCarRentalsCopy };
             break;
 
           default:
