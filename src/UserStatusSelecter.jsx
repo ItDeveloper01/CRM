@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { AiOutlineWarning } from 'react-icons/ai';
 
-export default function UserStatusSelector({ initialStatus = "Active", onChange, onUpdate, isUpdate = true }) {
-  const [status, setStatus] = useState(initialStatus);
+export default function UserStatusSelector({ initialStatus ,userObject,  onUpdate, isUpdate = true }) {
+  const [status, setStatus] = useState((initialStatus||'').trim());
   const [confirmText, setConfirmText] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingStatus, setPendingStatus] = useState(null);
@@ -19,6 +19,16 @@ export default function UserStatusSelector({ initialStatus = "Active", onChange,
   };
 
   const [successColor, setSuccessColor] = useState("");
+
+
+
+  // useEffect(() => {
+  //   setStatus((initialStatus||'').trim());
+      
+  // }, [initialStatus]);
+
+  
+
 
   useEffect(() => {
     if (showConfirm) {

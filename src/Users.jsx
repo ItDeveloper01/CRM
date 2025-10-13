@@ -8,6 +8,8 @@ import Select from 'react-select';
 import { ChevronsUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import {UserCreate} from "./UserCreate";
 import { useNavigate } from 'react-router-dom';
+import { MESSAGE_TYPES } from './Constants';
+import { useMessageBox } from "./Notification";
 
 export default function Users() {
   const [users, setUsers] = useState([
@@ -17,6 +19,7 @@ export default function Users() {
    const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+ const { showMessage } = useMessageBox();
 
   // State for multi-select filters
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -50,6 +53,8 @@ const fetchUserImageAPI=config.apiUrl + '/Users/GetPhotoForUserID';
       const fetchedUsers = res.data || [];
       setUsers(fetchedUsers);
 
+      showMessage("Users Fetched", MESSAGE_TYPES.INFO);
+
       // --- Populate Filter Options ---
       // Roles
       const uniqueRoles = [...new Set(fetchedUsers.map(u => u.roleName).filter(Boolean))];
@@ -71,7 +76,7 @@ const fetchUserImageAPI=config.apiUrl + '/Users/GetPhotoForUserID';
 
       debugger;
       console.error("Error fetching users:", err);
-
+       showMessage(err.message, MESSAGE_TYPES.ERROR ); // ✅ globally shows MessageBox
       if (err.response) {
         // Server responded with a status code outside 2xx
         if (err.response.status === 401) {
@@ -85,6 +90,7 @@ const fetchUserImageAPI=config.apiUrl + '/Users/GetPhotoForUserID';
         }
       } else {
         // Network error
+        showMessage("Network Error", MESSAGE_TYPES.ERROR);
         console.log("Network error - server unreachable");
       }
     } finally {
@@ -114,6 +120,7 @@ const goToCreateUser = async (user) => {
     console.error("Error fetching user details:", err);
     // If the API fails, navigate with the original user data from the table.
     // This makes the UI more resilient.
+     showMessage(err.message, MESSAGE_TYPES.ERROR );
     console.log("Navigating with fallback user data due to API error.");
     navigate('/users/create', { state: { user: user } });
   }
