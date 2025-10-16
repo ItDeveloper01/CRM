@@ -3,8 +3,15 @@ import { ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 import LeadDetailsModal from "./UpdateLeadsModal"; // Tailwind modal
 import LeadsGeneration from "./LeadsGeneration"; // Import the lead generation component
 import UpdateLeadsModal from "./UpdateLeadsModal";
-import { LeadObj } from "./Model/LeadModel";  
+import { LeadObj } from "./Model/LeadModel";
 import { getEmptyLeadObj } from "./Model/LeadModel";
+import config from "./config";
+import axios from "axios";
+import { useGetSessionUser } from "./SessionContext"
+import { MESSAGE_TYPES } from "./Constants"
+import { useMessageBox } from "./Notification";
+
+
 
 
 /* ---------- CSV Export Function ---------- */
@@ -32,7 +39,6 @@ const exportToCSV = (data, filename) => {
   a.click();
   document.body.removeChild(a);
 };
-
 
 // Pure JavaScript date formatting function
 export function formatDate(dateInput) {
@@ -76,22 +82,20 @@ const renderPagination = (totalRows, currentPage, setPage) => {
   return (
     <div className="flex justify-end mt-3 space-x-1 text-sm">
       <button
-        className={`px-2 py-1 rounded border ${
-          currentPage === 1
-            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-200"
-        }`}
+        className={`px-2 py-1 rounded border ${currentPage === 1
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+          : "bg-white text-gray-700 hover:bg-gray-200"
+          }`}
         disabled={currentPage === 1}
         onClick={() => setPage(1)}
       >
         ⏮
       </button>
       <button
-        className={`px-2 py-1 rounded border ${
-          currentPage === 1
-            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-200"
-        }`}
+        className={`px-2 py-1 rounded border ${currentPage === 1
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+          : "bg-white text-gray-700 hover:bg-gray-200"
+          }`}
         disabled={currentPage === 1}
         onClick={() => setPage(currentPage - 1)}
       >
@@ -105,11 +109,10 @@ const renderPagination = (totalRows, currentPage, setPage) => {
         ) : (
           <button
             key={p}
-            className={`px-2 py-1 rounded border ${
-              currentPage === p
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-200"
-            }`}
+            className={`px-2 py-1 rounded border ${currentPage === p
+              ? "bg-blue-500 text-white"
+              : "bg-white text-gray-700 hover:bg-gray-200"
+              }`}
             onClick={() => setPage(p)}
           >
             {p}
@@ -117,22 +120,20 @@ const renderPagination = (totalRows, currentPage, setPage) => {
         )
       )}
       <button
-        className={`px-2 py-1 rounded border ${
-          currentPage === totalPages
-            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-200"
-        }`}
+        className={`px-2 py-1 rounded border ${currentPage === totalPages
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+          : "bg-white text-gray-700 hover:bg-gray-200"
+          }`}
         disabled={currentPage === totalPages}
         onClick={() => setPage(currentPage + 1)}
       >
         ▶
       </button>
       <button
-        className={`px-2 py-1 rounded border ${
-          currentPage === totalPages
-            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-            : "bg-white text-gray-700 hover:bg-gray-200"
-        }`}
+        className={`px-2 py-1 rounded border ${currentPage === totalPages
+          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+          : "bg-white text-gray-700 hover:bg-gray-200"
+          }`}
         disabled={currentPage === totalPages}
         onClick={() => setPage(totalPages)}
       >
@@ -150,7 +151,10 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
- const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+  const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+  const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
+  const { user: sessionUser } = useGetSessionUser();
+  const { showMessage } = useMessageBox();
 
   const activeVisible = activeLeads.slice(
     (activePage - 1) * rowsPerPage,
@@ -161,11 +165,62 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
     followPage * rowsPerPage
   );
 
-  const handleViewClick = (lead) => {
-  console.log("Viewing lead.....:", lead);    
-   setSelectedLead(lead);
-    setModalOpen(true);
+  const handleViewClick = async (lead) => {
+    console.log("Viewing lead.....:", lead);
+    //API call  to lead details. 
+
+    debugger;
+    try {
+
+      let  templead = await fetchLeadDetails(lead);
+      setSelectedLead(templead);
+      setModalOpen(true);
+    } catch {
+      showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
+    }
   };
+
+  async function fetchLeadDetails(lead) {
+    let res = null;
+    try {
+      debugger;
+      console.log("GetLeadsForEditAPI:", GetLeadsForEditAPI);
+      console.log("LEad data to be passed to API", lead);
+      res = await axios.post(GetLeadsForEditAPI, lead, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
+          "Content-Type": "application/json"
+
+        },
+        // params: {
+        //   lead: lead,
+        // }
+      });
+      debugger;
+      if (res && res.data) {
+        console.log("Leads details fetched:"+ res.data);
+        return res.data;
+      } else {
+        showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
+        return null;
+      }
+
+    } catch (error) {
+      debugger;
+      console.log("Error fetching Lead for edit...", error);
+
+      const message =
+        error.response?.data ||
+        error.response?.statusText ||
+        error.message ||
+        "Unknown error";
+
+      showMessage(JSON.stringify(message), MESSAGE_TYPES.ERROR);
+      return null;
+
+    }
+
+  }
 
   return (
     <>
@@ -202,7 +257,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               <th className="text-left px-3 py-2">Last Name</th>
               <th className="text-left px-3 py-2">Mobile No</th>
               <th className="text-left px-3 py-2">Category</th>
-                <th className="text-left px-3 py-2">FollowUpDate</th>
+              <th className="text-left px-3 py-2">FollowUpDate</th>
               <th className="text-left px-3 py-2">Status</th>
               <th className="text-left px-3 py-2">Enquiry Date</th>
               <th className="text-left px-3 py-2">Action</th>
@@ -212,12 +267,12 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
             {activeVisible.map((lead) => (
               <tr key={lead.leadID} className="hover:bg-gray-100 transition">
                 <td className="px-3 py-2">{lead.leadID}</td>
-                 <td className="px-3 py-2">{lead.title}</td>
+                <td className="px-3 py-2">{lead.title}</td>
                 <td className="px-3 py-2">{lead.fName}</td>
                 <td className="px-3 py-2">{lead.lName}</td>
                 <td className="px-3 py-2">{lead.mobileNo}</td>
                 <td className="px-3 py-2">{lead.categoryName}</td>
-                  <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
+                <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
                 <td className="px-3 py-2">{lead.categoryStatus}</td>
                 <td className="px-3 py-2">  {formatDate(lead.enquiryDate)} </td>
                 <td className="px-3 py-2">
@@ -269,7 +324,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               {followVisible.map((lead) => (
                 <tr key={lead.leadID} className="hover:bg-gray-100 transition">
                   <td className="px-3 py-2">{lead.leadID}</td>
-                   <td className="px-3 py-2">{lead.title}</td>
+                  <td className="px-3 py-2">{lead.title}</td>
                   <td className="px-3 py-2">{lead.fName}</td>
                   <td className="px-3 py-2">{lead.lName}</td>
                   <td className="px-3 py-2">{lead.mobileNo}</td>
@@ -280,8 +335,8 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                   <td className="px-3 py-2">
                     <button
                       className="text-blue-500 underline"
-                     onClick={() => handleViewClick(lead)}
-                                        >
+                      onClick={() => handleViewClick(lead)}
+                    >
                       View Details
                     </button>
                   </td>
@@ -293,7 +348,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
         </div>
       )}
 
-   {/* Modal */}
+      {/* Modal */}
       <UpdateLeadsModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
