@@ -16,7 +16,7 @@ export function mapObject(source = {}, template) {
     console.log("Mapping Object templae = .."+target);
 
   for (const key in template) {
-    debugger;
+   
     const value = source[key];
  
     console.log("Mapping Object key = .."+key);

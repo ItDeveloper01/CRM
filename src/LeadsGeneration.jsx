@@ -621,8 +621,6 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
   const renderCategoryFields = () => {
-    debugger;
-
     console.log("In renderCategoryFields Lead Object....:", leadObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
     console.log("In renderCategoryFields AirTicketingObj....:", airTicketingdObj);

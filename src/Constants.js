@@ -17,8 +17,13 @@ export const ErrorMessages={
 ERROR_FETCHING_CITIES : "Error fetching cities:",
 }
 
-// constants.js
 export const MESSAGE_TYPES = {
+ WARNING: "WARNING",
+ ERROR: "ERROR",
+  INFO:"INFO"
+};
+// constants.js
+export const MESSAGE_TYPES_DETAILS = {
   WARNING: {
     icon: "⚠️",
     label: "Warning",
@@ -35,6 +40,8 @@ export const MESSAGE_TYPES = {
     color: "bg-blue-500 hover:bg-blue-600",
   },
 };
+
+
 
 
 // export const MESSAGE_TYPES = {
