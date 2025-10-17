@@ -126,19 +126,19 @@ export default function LeadsGeneration({ lead ,onClose}) {
       });
 
     // Fetch Special Requirements for Car Rental
-    const fetchSpecialRequirements = async () => {
-      try {
-        // Replace with your actual API endpoint
-        const response = await axios.get(config.apiUrl + '/MasterData/GetSpecialRequirements');
-        setSpecialRequirements(response.data || []);
-        console.log("Special requirements fetched successfully", response.data);
-      } catch (err) {
-        console.error("Failed to fetch special requirements:", err);
-        // For demonstration, using mock data on failure
-        setSpecialRequirements(['Child Seat', 'Wheelchair Accessible', 'Pet Friendly', 'GPS Navigation']);
-      }
-    };
-    fetchSpecialRequirements();
+    // const fetchSpecialRequirements = async () => {
+    //   try {
+    //     // Replace with your actual API endpoint
+    //     const response = await axios.get(config.apiUrl + '/MasterData/GetSpecialRequirements');
+    //     setSpecialRequirements(response.data || []);
+    //     console.log("Special requirements fetched successfully", response.data);
+    //   } catch (err) {
+    //     console.error("Failed to fetch special requirements:", err);
+    //     // For demonstration, using mock data on failure
+    //     setSpecialRequirements(['Child Seat', 'Wheelchair Accessible', 'Pet Friendly', 'GPS Navigation']);
+    //   }
+    // };
+    // fetchSpecialRequirements();
   }, []);
 
   const cityAreas = {
@@ -225,32 +225,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
   };
 
   const mapIncomingLeadToModel = (incomingLead) => {
-    //const newLead = { ...getEmptyLeadObj() }; // start with default model
-
-    // debugger;
-    // // Map main properties
-    // newLead.leadID = incomingLead.leadID || null;
-    // newLead.title = incomingLead.title?.trim() || '';
-    // newLead.fName = incomingLead.fName || '';
-    // newLead.mName = incomingLead.mName || '';
-    // newLead.lName = incomingLead.lName || '';
-    // newLead.mobileNo = incomingLead.mobileNo || '';
-    // newLead.emailId = incomingLead.emailId || '';
-    // newLead.gender = incomingLead.gender?.trim() || '';
-    // newLead.birthDate = incomingLead.birthDate || '';
-    // newLead.city = incomingLead.city || '';
-    // newLead.area = incomingLead.area || '';
-    // newLead.enquiryMode = incomingLead.enquiryMode || '';
-    // newLead.enquirySource = incomingLead.enquirySource || '';
-    // newLead.customerType = incomingLead.customerType || '';
-    // newLead.fK_LeadCategoryID = incomingLead.fK_LeadCategoryID || null;
-    // newLead.followUpDate = incomingLead.followUpDate || '';
-    // newLead.histories = incomingLead.histories || [];
-    // newLead.leadStatus = incomingLead.leadStatus || 'Open';
-    // newLead.createdAt = incomingLead.createdAt || null;
-    // newLead.updatedAt = incomingLead.updatedAt || null;
-    // newLead.enquiryDate = incomingLead.enquiryDate || null;
-    // newLead.assignee_UserID=incomingLead.assigneeTo_UserID;
+   
 
     const newLead = mapObject(lead, getEmptyLeadObj())
 
@@ -272,11 +247,6 @@ export default function LeadsGeneration({ lead ,onClose}) {
           break;
         }
 
-        // default: {
-        //   // If category type is unknown → reset
-        //   newLead.category = null;
-        //   setSelectedLeadName("Unknown Category");
-        // }
         case "car rentals": {
           const mappedCarRentals = mapObject(incomingLead.category, getEmptyCarLeadObj());
           newLead.category = mappedCarRentals;
@@ -305,20 +275,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
 
-    // Map Visa category if exists  *********written by gayrti 
-    // if (incomingLead.category && incomingLead.category.$type === "VISA") {
-    //   const mappedVisa = mapObject(incomingLead.category, getEmptyVisaObj())  //mapIncomingVisaToModel(incomingLead.category);
-    //   newLead.category = mappedVisa;   // assign directly
-    //   setVisaObj(mappedVisa);          // update state
-    //   setSelectedLeadName(incomingLead.category.categoryName || "Visa");
-    // } else {
-    //   newLead.category = null;
-    //   setVisaObj(getEmptyVisaObj());
-    //   visadObj.createdBy_UserID = currentUser?.user?.userId;
-    //   visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-    //   newLead.category = visadObj;
-    // }
-    // return newLead;
+    
 
 
   };
@@ -375,13 +332,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
         debugger;
         console.error("Failed to fetch Enquiry Modes :", err);
         console.error("Failed ......... :", err.response.data);
-        // <MessageBox
-        //   show={true}
-        //   type={"ERROR"} // "WARNING" | "ERROR" | "INFO"
-        //   message={err.response.data}
-        //   onClose={() => setShowPopup(true)}
-        // // onClick={() => setShowPopup(false)}
-        // />
+      
       })
       .finally(() => {
         // Always executed, regardless of success or error
@@ -521,20 +472,6 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
     let errs = {};
 
-    // Follow Up Date
-    // if (!leadObj.FollowUpDate) {
-    //   errs.FollowUpDate = "Follow Up Date is required";
-    // } else {
-    //   const today = new Date();
-    //   const selectedDate = new Date(leadObj.FollowUpDate);
-    //   today.setHours(0, 0, 0, 0);
-    //   selectedDate.setHours(0, 0, 0, 0);
-
-    //   if (selectedDate <= today) {
-    //     errs.FollowUpDate = "Follow Up Date cannot be in the past";
-    //   }
-    // }
-
     return errs;
   }
 
@@ -576,31 +513,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
     setErrors((prev) => ({ ...prev, [name]: errMsg })); // common for all 
 
-    // Live validation for Follow Up Date
-
-    // if (name === "followUpDate") {
-
-    // if (name === "FollowUpDate") {
-
-    //   let errMsg = "";
-    //   if (!value) {
-    //     errMsg = "Follow Up Date is required";
-    // } else {
-    //   const today = new Date();
-    //   const selectedDate = new Date(value);
-    //   today.setHours(0, 0, 0, 0);
-    //   selectedDate.setHours(0, 0, 0, 0);
-
-    // if (selectedDate <= today) {
-    //   errMsg = "Follow Up Date cannot be in the past";
-    // }
-    //   }
-
-    // //   setErrors((prev) => ({ ...prev, followUpDate: errMsg }));
-
-    // //   setErrors((prev) => ({ ...prev, FollowUpDate: errMsg }));
-
-    // }
+    
 
   };
 
@@ -682,19 +595,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
           )}
           </>
         );
-        // return <LeadCarRental
-        //   cities={cities}
-        //   loading={loading}
-        //   formData={leadObj}
-        //   carLeaddObj={carLeaddObj}
-        //   setCarLeadObj={setCarLeadObj}
-        //   handleChange={handleChange}
-        //   histories={leadObj.histories || []}
-        //   handleChangeForDropdown={handleChangeForDropdown}
-        //   specialRequirementsOptions={specialRequirements}
-        //   onSpecialRequirementsChange={handleSpecialRequirementsChange}
-        //   selectedRequirements={leadObj.specialRequirements || []}
-        // />
+        
       case 'holiday':
         return (
           <>
@@ -813,18 +714,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
     }
 
 
-    //  **********This logic for update AirTicket type ************
-    //   try {
-    //   const payload = prepareAirTicketPayload(airTicketingdObj);
-
-    //   const { data } = await axios.put(config.apiUrl + "/TempLead/UpdateLead", payload);
-
-    //   console.log("Air ticket saved successfully:", data);
-
-    // } catch (error) {
-    //   console.error("Error saving air ticket:", error);
-    //   setErrors({ save: "Failed to save air ticket" });
-    // }
+    
 
 
     try {
@@ -1029,49 +919,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
           navigate("/dashboard"); // Navigate after operation
         });
 
-        // *************** old lead generation system before switch condition and its working fine for single lead type ************
-        // else {
-        //   // New Lead Creation
-
-
-        // debugger;
-        // if (!visadObj.createdBy_UserID) {
-        //   visadObj.createdBy_UserID = currentUser?.user?.userId;
-        // }
-
-        // if (!visadObj.assigneeTo_UserID) {
-        //   visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-        // }
-
-        // if (!airTicketingdObj.createdBy_UserID) {
-        //   airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
-        // }
-
-        // if (!airTicketingdObj.assigneeTo_UserID) {
-        //   airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
-        // }
-
-
-        // if (!leadObj.createdBy_UserID) {
-        //   leadObj.createdBy_UserID = currentUser?.user?.userId;
-        // }
-
-        // if (!leadObj.assigneeTo_UserID) {
-        //   leadObj.assigneeTo_UserID = currentUser?.user?.userId;
-        // }
-
-        // const deepCopy = cloneDeep(leadObj);
-        // const deepVisaCopy = cloneDeep(visadObj);
-        // deepCopy.category = { ...deepVisaCopy }; // attach visa data
-        // debugger;
-        // const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
-        // deepCopy.category = { ...deepAirTicketingCopy }; // attach air ticketing data
-
-
-        // console.log("New Lead Obj...", deepCopy);
-        // console.log("Payload being sent:", JSON.stringify(deepCopy, null, 2));
-        // await axios.post(generateLEadAPI, deepCopy, { headers: { "Content-Type": "application/json" } });
-        // alert("Lead saved successfully!");
+        
       }
     } catch (error) {
       debugger;

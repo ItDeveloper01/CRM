@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 
 
-const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate, handleChangeForDropdown }) => {
+const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate }) => {
     // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
 
     // Memoize the histories array so reference doesn't change unnecessarily
@@ -16,9 +16,12 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const [errors, setErrors] = useState({});
     //Requirment for car rental
     const [requirementType, setRequirementType] = useState("");
-    const [specialRequirements, setSpecialRequirements] = useState([]);
+    const [specialRequirement, setSpecialRequirements] = useState([]);
+    const [vehicleType, setVehicleType] = useState([]);
+
 
     const getSpecialRequirementsListEndPoint = config.apiUrl + '/MasterData/GetSpecialRequirementsList';
+    const getVehicleTypeListEndPoint = config.apiUrl + '/MasterData/GetVehicleModelList';
     const handleChange = (e) => {
 
         console.log("**********************IN CAR LEAD OBJECT   /**************************");
@@ -50,8 +53,22 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 console.error("Error fetching special requirements:", error);
             }
         };
-
         fetchSpecialRequirements();
+
+
+        const fetchVehicleTypes = async () => {
+            try {
+                const vehType = await axios.get(getVehicleTypeListEndPoint, {
+                    // headers: {
+                    //     Authorization: `Bearer ${sessionUser.token}`,
+                    // }
+                });
+                setVehicleType(vehType.data || []);
+            } catch (error) {
+                console.error("Error fetching special requirements:", error);
+            }
+        };
+        fetchVehicleTypes();
     }, []);
 
     useEffect(() => {
@@ -78,7 +95,15 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         value={Number(carLeaddObj.noOfTravelers) || ""}
                         name="noOfTravelers"
                         min="1"
-                        onChange={handleChange}
+                        // onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Update as number if not empty, else empty string
+                            setCarLeadObj(prev => ({
+                                ...prev,
+                                noOfTravelers: value === "" ? "" : Number(value)
+                            }));
+                        }}
                         className={`border-highlight`}
                     />
                 </div>
@@ -86,12 +111,22 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     <label className="label-style">Type of Vehicle</label>
                     <select
                         name="vehicleType"
-                        value={carLeaddObj.vehicleType}
-                        onChange={handleChange}
+                        value={carLeaddObj.vehicleType || ""}
+                        onChange={(e) => {
+                            const value = e.target.value === "" ? null : Number(e.target.value);
+                            setCarLeadObj((prev) => ({
+                                ...prev,
+                                [e.target.name]: value,
+                            }));
+                        }}
                         className={`border-highlight`}
                     >
-                        <option value="">Select Vehicle</option>
-                        <option value="maruti">Maruti</option>
+                        <option value="">Select Vehicle Type</option>
+                        {vehicleType.map((vehType) => (
+                            <option key={vehType.vehicleTypeID} value={(vehType.vehicleTypeID)}>
+                                {vehType.vehicleType}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div className="flex-1 flex-col">
@@ -129,7 +164,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     <label className="label-style">Serving City</label>
                     <select
                         name="servingCity"
-                        value={carLeaddObj.servingcity}
+                        value={carLeaddObj.servingCity}
                         onChange={handleChange}
                         className="border-highlight"
                     >
@@ -178,14 +213,22 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         name="noOfDays"
                         value={Number(carLeaddObj.noOfDays) || ""}
                         min="1"
-                        onChange={handleChange}
+                        // onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Update as number if not empty, else empty string
+                            setCarLeadObj(prev => ({
+                                ...prev,
+                                noOfDays: value === "" ? "" : Number(value)
+                            }));
+                        }}
                         className="border-highlight"
                     />
                 </div>
             </div>
 
             <div>
-            
+
                 {/* Requirement Type Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Requirement Type</label>
@@ -242,16 +285,25 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
             <div>
                 {/* Special Requirements Dropdown */}
                 <label className="label-style">Special Requirements</label>
-                <select name="specialRequirements" value={carLeaddObj.specialRequirements || ""}
-                    onChange={(e) =>
+                <select name="specialRequirement" value={carLeaddObj.specialRequirement || ""}
+                    // onChange={(e) =>
+                    //     setCarLeadObj((prev) => ({
+                    //         ...prev,
+                    //         [e.target.name]: e.target.value === "" ? null : e.target.value,
+                    //     }))
+                    // }
+
+                    onChange={(e) => {
+                        const value = e.target.value === "" ? null : Number(e.target.value);
                         setCarLeadObj((prev) => ({
                             ...prev,
-                            [e.target.name]: e.target.value === "" ? null : e.target.value,
-                        }))
-                    }
+                            [e.target.name]: value,
+                        }));
+                    }}
+
                     className='border-highlight'>
                     <option value="">Select Requirement</option>
-                    {specialRequirements.map((specialReq) => (
+                    {specialRequirement.map((specialReq) => (
                         <option key={specialReq.id} value={(specialReq.id)}>
                             {specialReq.specialRequirements}
                         </option>

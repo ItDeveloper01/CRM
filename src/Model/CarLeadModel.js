@@ -4,16 +4,16 @@ export const CarLeadObject= {
     id: null,
 
     noOfTravelers: 0,
-    vehicleType: "",
+    vehicleType: null,
     dutyType: "",
     tripDescription: "",
-    servingcity: "",
+    servingCity: "",
     travelDate: null,
     noOfDays: 0,
     requirementType: "",
-    companyName:"",
+    companyName:null,
     telephoneNo: null,
-    specialRequirements: "",
+    specialRequirement: null,
     createdBy_UserID: "", // default user
     createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"
     updatedAt: new Date().toISOString(),
