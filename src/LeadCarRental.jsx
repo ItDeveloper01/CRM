@@ -7,6 +7,8 @@ import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 
 
+
+
 const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate }) => {
     // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
 
@@ -38,6 +40,25 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
             ...prev,
             [name]: value
         }));
+
+        // Live validation logic for Telephone no 
+        let errMsg = "";
+        if (name === "telephoneNo") {
+            if (!/^[0-9]*$/.test(value)) {
+                errMsg = "Only numbers are allowed";
+            } else if (value && value.length < 7) {
+                errMsg = "Enter a valid telephone number";
+            } else {
+                errMsg = "";
+            }
+        }
+
+        // Update errors state
+        setErrors(prev => ({
+            ...prev,
+            [name]: errMsg
+        }));
+
     }
     // To fetch special requirements API  
     useEffect(() => {
@@ -274,8 +295,11 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                                 value={carLeaddObj.telephoneNo || ""}
                                 onChange={handleChange}
                                 placeholder="Enter Telephone No"
-                                className="border-highlight"
+                                // className="border-highlight"
+                                className={`border-highlight ${errors.telephoneNo ? "border-red-500" : ""}`} 
+                                maxLength={10}
                             />
+                                {errors.telephoneNo && (<p className="text-red-500 text-sm mt-1">{errors.telephoneNo}</p>)}
                         </div>
                     </div>
 
