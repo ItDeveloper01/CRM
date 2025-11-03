@@ -15,6 +15,7 @@ import { getEmptyCarLeadObj } from './Model/CarLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
 import MessageBox from "./MessageBox";
+import { STATUS_STYLES,COLORS } from './Constants';
 
 import { mapObject } from './Model/MappingObjectFunction';
 import { useGetSessionUser } from "./SessionContext"
@@ -27,7 +28,7 @@ import { Navigate } from 'react-router-dom';
 
 
 
-export default function LeadsGeneration({ lead ,onClose}) {
+export default function LeadsGeneration({ lead, onClose }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
 
@@ -54,8 +55,9 @@ export default function LeadsGeneration({ lead ,onClose}) {
   const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
   const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
   const navigate = useNavigate();
-
-
+  const status = leadObj.leadStatus || "Open";
+  const { border, ring,bg } = STATUS_STYLES[status] || STATUS_STYLES.Open ;
+  const { borderColor, ringColor } = STATUS_STYLES[status];
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("INFO");
   //Requirment for car rental
@@ -225,7 +227,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
   };
 
   const mapIncomingLeadToModel = (incomingLead) => {
-   
+
 
     const newLead = mapObject(lead, getEmptyLeadObj())
 
@@ -275,14 +277,14 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
 
-    
+
 
 
   };
 
   const onMobileChangeFocus = async (value) => {
     debugger;
-    if(isUpdateMode) return; // if in update mode then return
+    if (isUpdateMode) return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
     //CheckDuplicateMobile
     const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
@@ -332,7 +334,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
         debugger;
         console.error("Failed to fetch Enquiry Modes :", err);
         console.error("Failed ......... :", err.response.data);
-      
+
       })
       .finally(() => {
         // Always executed, regardless of success or error
@@ -449,7 +451,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
       case 'Air Ticketing':
         setLeadObj(prev => ({ ...prev, category: getEmptyAirTicketObj() }));
         break;
-      
+
       case 'Car Rentals':
         setLeadObj(prev => ({ ...prev, category: getEmptyCarLeadObj() }));
         break;
@@ -513,7 +515,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
     setErrors((prev) => ({ ...prev, [name]: errMsg })); // common for all 
 
-    
+
 
   };
 
@@ -581,21 +583,21 @@ export default function LeadsGeneration({ lead ,onClose}) {
         //return <LeadCarRental cities={cities} loading={loading} handleChange={handleChange}  />
         return (
           <>
-          {(
-            console.log("History to pass to HistoryHover:", LeadObj.histories),
-            <LeadCarRental
-              carLeaddObj={carLeaddObj}
-              setCarLeadObj={setCarLeadObj}
-              cities={cities}
-              handleChange={handleChange}
-              histories={leadObj.histories || []}
-              isUpdate={isUpdateMode} // fallback to empty array
-            />
-  
-          )}
+            {(
+              console.log("History to pass to HistoryHover:", LeadObj.histories),
+              <LeadCarRental
+                carLeaddObj={carLeaddObj}
+                setCarLeadObj={setCarLeadObj}
+                cities={cities}
+                handleChange={handleChange}
+                histories={leadObj.histories || []}
+                isUpdate={isUpdateMode} // fallback to empty array
+              />
+
+            )}
           </>
         );
-        
+
       case 'holiday':
         return (
           <>
@@ -714,7 +716,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
     }
 
 
-    
+
 
 
     try {
@@ -759,7 +761,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
             const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
             deepLeadCopy.category = { ...deepAirTicketingCopy };;
             break;
-          
+
           case "car rentals":
             debugger;
             if (!carLeaddObj.createdBy_UserID) {
@@ -794,8 +796,8 @@ export default function LeadsGeneration({ lead ,onClose}) {
 
 
         alert("Lead updated successfully!");
-         // Close the modal after successful update
-        onClose(); 
+        // Close the modal after successful update
+        onClose();
         navigate("/dashboard"); // Navigate after operation
 
 
@@ -908,9 +910,9 @@ export default function LeadsGeneration({ lead ,onClose}) {
         await axios.post(generateLEadAPI, deepCopy, {
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
-          console.log("Lead created successfully:", response.data)  ;
+          console.log("Lead created successfully:", response.data);
 
-        alert("Lead saved successfully!");
+          alert("Lead saved successfully!");
         }).catch((error) => {
           console.error("Error saving lead:", error);
           alert("Error while saving lead.");
@@ -919,7 +921,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
           navigate("/dashboard"); // Navigate after operation
         });
 
-        
+
       }
     } catch (error) {
       debugger;
@@ -941,8 +943,12 @@ export default function LeadsGeneration({ lead ,onClose}) {
               value={leadObj.leadStatus || "Open"}   // default = open
               onChange={handleChange}
               disabled={!isUpdateMode}                   // disabled while creating new
-              className={`border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+                ${border} ${ring} ${bg}
+                ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""}
+              `}
+            
+
             >
               <option value="Open">Open</option>
               <option value="Lost">Lost</option>
@@ -1071,22 +1077,22 @@ export default function LeadsGeneration({ lead ,onClose}) {
         </div>
       </div>
       {/* Render Table for exisitng leads with the matching phone no. */}
-      {isLeadsForPhoneVisible  &&(
-      <div>
+      {isLeadsForPhoneVisible && (
         <div>
-        <LeadsTableForExistingPhone
-          followLeads={leadsForPhoneNumber}
-        ></LeadsTableForExistingPhone>
+          <div>
+            <LeadsTableForExistingPhone
+              followLeads={leadsForPhoneNumber}
+            ></LeadsTableForExistingPhone>
+          </div>
+          <div className='text-center my-4'>
+            <button
+              onClick={() => setISLeadsForPhoneVisible(false)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+            >
+              Continue with New Lead
+            </button>
+          </div>
         </div>
-        <div className='text-center my-4'>
-          <button
-            onClick={() => setISLeadsForPhoneVisible(false)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-          >
-            Continue with New Lead
-          </button>
-        </div>
-      </div>
       )}
       {/* Lead Details */}
       {!isLeadsForPhoneVisible && (
@@ -1096,7 +1102,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Enquiry Mode</label>
               <select name="enquiryMode" value={leadObj.enquiryMode || ""}
-                onChange={handleChangeforDropdown} 
+                onChange={handleChangeforDropdown}
                 className='border-highlight'>
                 <option value="">Select Mode</option>
                 {/* {enquiryModes.map(boy => <option key={boy} value={boy}>
@@ -1114,7 +1120,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Enquiry Source</label>
-              <select name="enquirySource" value={leadObj.enquirySource}  onChange={handleChangeforDropdown} className='border-highlight'>
+              <select name="enquirySource" value={leadObj.enquirySource} onChange={handleChangeforDropdown} className='border-highlight'>
                 <option value="">Select Source</option>
                 {/* {enquirySources.map(cat => <option key={cat} value={cat}>
 
@@ -1137,7 +1143,7 @@ export default function LeadsGeneration({ lead ,onClose}) {
                 // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 name="customerType"
                 value={leadObj.customerType}
-                onChange={handleChangeforDropdown} 
+                onChange={handleChangeforDropdown}
                 className={`border-highlight`}
               >
                 <option value="">Select Type</option>
@@ -1151,31 +1157,31 @@ export default function LeadsGeneration({ lead ,onClose}) {
             </div>
           </div>
 
-      <div className='flex gap-4 mt-4'>
-        <div className='flex flex-col flex-1'>
-          <label className='label-style'>Category</label>
-          <select
-            name="category"
-            value={leadObj.fK_LeadCategoryID || ''}
-            onChange={handleChangeForCategory}
-            className='border-highlight'>
-            <option value=''>Select Category</option>
-            {Object.entries(leadCategoryList).map(([key, val]) => (
-              <option key={key} value={Number(key)}>{val}</option>
-            ))}
-          </select>
-        </div>
-      </div>
+          <div className='flex gap-4 mt-4'>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Category</label>
+              <select
+                name="category"
+                value={leadObj.fK_LeadCategoryID || ''}
+                onChange={handleChangeForCategory}
+                className='border-highlight'>
+                <option value=''>Select Category</option>
+                {Object.entries(leadCategoryList).map(([key, val]) => (
+                  <option key={key} value={Number(key)}>{val}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-      {/* Render dynamic fields */}
-      <div className='mt-4'>{renderCategoryFields()}</div>
+          {/* Render dynamic fields */}
+          <div className='mt-4'>{renderCategoryFields()}</div>
 
-      <div className="flex justify-between items-center mt-6 gap-4">
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-          {submitBtnTxt}
-        </button>
+          <div className="flex justify-between items-center mt-6 gap-4">
+            <button
+              onClick={handleSubmit}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+              {submitBtnTxt}
+            </button>
 
             <div className="flex items-center gap-2">
               <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">

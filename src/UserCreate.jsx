@@ -25,12 +25,14 @@ export default function UserCreate({ }) {
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
+  const [branch,setBranch]=useState([]);
   const [btnText, setbtnText] = useState("Creat User");
   const [cancelBtnText, setCancelBtnText] = useState("Cancel");
   const { showMessage } = useMessageBox();
   const apiUrl = config.apiUrl;
   const getDeptartmentsEndpoint = apiUrl + '/Users/GetDepartmentList';
   const getUserRolesListEndPoint = apiUrl + '/Users/GetRolesList';
+  const getbranchListEndPoint = apiUrl + '/Users/GetBranchList';
   const updateUserAPI = apiUrl + '/Users/UpdateUser';
   const createUserAPI = apiUrl + '/Users/CreateUser';
   const sendCredantialsAPI = apiUrl + "/Contact/SendLoginInformation";
@@ -224,6 +226,18 @@ debugger;
       // Assuming the API returns an array of department names
       // If it returns objects, adjust accordingly
       setUserRoles(rol.data);
+
+
+      //Fetch Branch List
+
+      const  brch= await axios.get(getbranchListEndPoint,
+        {
+          headers: { Authorization: `Bearer ${sessionUser.token}` }
+        });
+
+      console.log('Fetching Branch List  in user  registration page ...Fdepartment', brch.data);
+      setBranch
+      (brch.data);
 
     } catch (err) {
       console.error('Failed to fetch departments , Roles:', err);
@@ -746,9 +760,11 @@ debugger;
                 onChange={handleChange}
                 className={`border p-2 rounded w-full ${errors.branch ? 'border-red-500' : ''}`}>
                 <option value=''>Select Branch</option>
-                <option value='Pune HO'>Pune HO</option>
-                <option value='PCMC'>PCMC</option>
-                <option value='Nashik'>Nashik</option>
+                {branch.map((brch) => (
+                  <option key={brch.id} value={(brch.id)}>
+                    {brch.branch}
+                  </option>
+                ))}
               </select>
               {errors.branch && <p className='text-red-500 text-sm'>{errors.branch}</p>}
             </div>
