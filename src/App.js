@@ -1,8 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState } from 'react';
-import Dashboard from './Dashboard';
 import Leads from './Leads';
-import Bookings from './Bookings';
 import Login from './Login';
 import Layout from './Layout';
 import NewCustomerInfo from './NewCustomerInfo';
@@ -10,23 +7,34 @@ import Users from './Users';
 import LeadsGeneration from './LeadsGeneration';
 import UserCreate from './UserCreate'; // ✅ import
 import AdminRoute from './AdminRoute'; // ✅ import
-import UserDashboard from './UserDashboard';
 import UserDashboardTemp from './UserDashboardTemp';
 import LeadsUpdateForms from "./LeadsUpdateForms"
 import { useGetSessionUser } from "./SessionContext"; // ✅ import
-import { fa } from 'intl-tel-input/i18n';
 import ProfileDisplay from './ProfileDisplay';
 import SMTPForm from './SMTPForm';
 import LeadAnalytics from './LeadAnalytics';
-import MessageBox from './MessageBox';
 // ✅ import your NotificationProvider
 import { NotificationProvider } from "./Notification";
+import { useEffect } from 'react';
+import { GlobalDebug } from './Remove-Console';
 
 
 export default function App() {
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
    const { menu, setMenu } = useGetSessionUser(); // ✅ using menu now
    //const NotificationContext = createContext();
+
+   /**
+   * @REMOVE_CONSOLES
+   * // remove the working of console logs
+   * // remove any accidental use of console logs
+   */
+  useEffect(() => {
+    (process.env.NODE_ENV === "production" ||
+     process.env.REACT_APP_ENV === "STAGING") &&
+      GlobalDebug(false);
+  }, []);
+
   return (
     <NotificationProvider>
     <Router>

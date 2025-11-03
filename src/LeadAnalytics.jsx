@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Loader2, Users, CheckCircle, XCircle, Clock } from "lucide-react";
+import config from "./config";
+import axios from "axios";
+import { useGetSessionUser } from "./SessionContext"; // ✅ import
+import { TIME_OPTIONS } from "./Constants";
+import { MONTHS } from "./Constants";
+import { QUARTERS } from "./Constants";
+import Select from "react-select";
+import { Quarter_WISE_Months } from "./Constants";
+import { useMessageBox } from "./Notification";
+import { useMemo } from "react";
+
 import {
   PieChart,
   Pie,
@@ -14,6 +25,7 @@ import {
   Line,
   Legend,
 } from "recharts";
+import MessageBox from "./MessageBox";
 
 // Pie chart colors
 const PIE_COLORS = ["#4CAF50", "#FF5252", "#8884d8", "#FFC107"];
@@ -51,309 +63,886 @@ const fetchLeadAnalytics = () =>
   });
 
 const LeadAnalytics = () => {
-  const [selectedMonth, setSelectedMonth] = useState("Jan");
-  const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+
+
+  //const sessionUser = JSON.parse(sessionStorage.getItem("sessionUser"));
+  //const GetLostLeads = config.apiUrl + "/Analytics/GetLostLeads";
+  //const GetConfirmedLeads = config.apiUrl + "/Analytics/GetConfirmedLeads";
+  const { user: sessionUser } = useGetSessionUser();
+
+  const [selectedPeriodForLostCounts, setSelectedPeriodForLostCounts] = useState("");
+  const { showMessage } = useMessageBox();
+  const [isMUltiSelectedDisabled, setIsMultiSelectedDisabled] = useState(false);
+  const [monthsToCalculateData, setMonthsToCalculateData] = useState([]);
+  const [quartersToCalculateData, setQuartersToCalculateData] = useState([]);
+  const [selectedYear, setSelectedYear] = useState("");
+  const [secondDropdownOptions, setSecondDropdownOptions] = useState([]);
+  const [selectedValue, setSelectedValue] = useState("");
+  const [selectedPeriod, setSelectedPeriod] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("analytics");
   const [searchText, setSearchText] = useState("");
-  const [data, setData] = useState({
-    totalLeads: 0,
-    convertedLeadsCount: 0,
-    lostLeadsCount: 0,
-    postponedLeadsCount: 0,
-    leadsOverTime: [],
-    lostLeadsReasons: [],
-    lostLeadsList: [],
-    confirmedLeadsList: [],
+  const [dynamicYearOptions, setDynamicYearOptions] = useState([]);
+  const [periodOptions, setPeriodOptions] = useState({
+    [TIME_OPTIONS.Monthly]: MONTHS,
+    [TIME_OPTIONS.Quarterly]: QUARTERS,
+    [TIME_OPTIONS.Yearly]: dynamicYearOptions
   });
+  const [placeHolderText, setPlaceholderText] = useState("Select months");
+  const [data, setData] = useState({
+  totalLeads: 0,
+
+  convertedLeadsCount: 0,
+
+   TotalCount : 0,
+
+  ConfirmedCount: 0,
+
+  LostCount: 0,
+
+  OpenCount: 0,
+
+  PostponedCount: 0,
+
+  LostLeads: [],
+
+  ConfirmedLeads: [],
+
+  PostponedLeads: [],
+
+  OpenLeads: [],
+
+  leadsOverTime: [],
+  });
+const [lineChartData, setLineChartData] = useState([
+  { selectedPeriod: "", totalCount: 0 , confirmedCount: 0,  lostCount: 0, openCount: 0, postponedCount: 0 },
+]);
+
+
+const [lostLeadsChartData, setLostLeadsChartData] = useState([
+  {
+    Name: "Q1",
+    data: [
+      { reason: "High Price", count: 12  },
+      { reason: "Competitor", count: 8 },
+      { reason: "No Response", count: 5 },
+      { reason: "Budget Issues", count: 5 }
+    ]
+  },
+  {
+Name: "Q2",
+    data: [
+      { reason: "High Price", count: 10 },
+      { reason: "Competitor", count: 6 },
+      { reason: "No Response", count: 4 },  
+      { reason: "Budget Issues", count: 4 }
+    ]
+  }
+]);
+
+
+  const fetchQuarterlyLeadsData = async () => {
+ setLoading(true); 
+    try {
+      // Simulate API call delay
+    debugger;
+let string=config.apiUrl + "/Analytics/GetLeadsStatisticsPerQuarter";
+const res = await axios.post(string, {
+        userId: sessionUser.user.userId,
+        months: monthsToCalculateData,
+        selectedYear: selectedYear,
+        quarter: quartersToCalculateData,
+        years: []
+      },
+    {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      });
+      debugger;
+
+      console.log("Quarterly Stats Data: ", res.data.quarterlyStats);
+       consolidatedMonthlyData(res.data.quarterlyStats);
+
+    } catch (error) {
+      showMessage({
+        type: "ERROR",
+        message: "Error fetching quarterly leads data.",
+      });
+      console.error("Error fetching quarterly leads data: ", error);
+      setLoading(false);
+    }
+     finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMonthlyLeadsData = async () => {
+
+    debugger;
+    setLoading(true); 
+    try {
+      // Simulate API call delay
+      //const res = await fetchLeadAnalytics();
+let string=config.apiUrl + "/Analytics/GetMonthlyLeadAnalytics";
+const res = await axios.post(string, {
+        userId: sessionUser.user.userId,
+        months: monthsToCalculateData,
+        selectedYear: selectedYear,
+        quarter: quartersToCalculateData,
+        years: []
+      },
+    {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      
+    }
+    
+    );
+      debugger;
+
+     // setData(res.data.monthlyStats);
+      console.log("Monthly Stats Data: ", res.data.monthlyStats);
+      consolidatedMonthlyData(res.data.monthlyStats);
+     // console.log("Monthly Leads Data Fetched: ", data);
+    } catch (error) {
+      showMessage({
+        type: "ERROR",
+        message: "Error fetching monthly leads data.",
+      });
+      console.error("Error fetching monthly leads data: ", error);
+      setLoading(false);
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
+  // When user logs in or changes, generate year list dynamically
+  useEffect(() => {
+    if (sessionUser.user) {
+
+      debugger;
+      const dynamicYears = getYearOptions(sessionUser.user.userObj);
+
+      // setPeriodOptions({
+      //   [TIME_OPTIONS.Monthly]: MONTHS,
+      //   [TIME_OPTIONS.Quarterly]: QUARTERS,
+      //   [TIME_OPTIONS.Yearly]: dynamicYears,
+      // });
+
+      setDynamicYearOptions(dynamicYears);
+      setPeriodOptions((prevOptions) => ({
+        ...prevOptions,
+        [TIME_OPTIONS.Yearly]: dynamicYears,
+      }));
+      console.log("Period Options:", periodOptions);
+      let currentMonth = new Date().getMonth();
+
+      setSelectedYear(new Date().getFullYear().toString());
+      setSelectedPeriod(TIME_OPTIONS.Monthly);
+      setSecondDropdownOptions(MONTHS);
+      setSelectedValue(currentMonth.toString());
+
+    }
+  }, []);
+
+
+  const getYearOptions = (user) => {
+    const currentYear = new Date().getFullYear();
+    const d = new Date(user.createdAt);
+    //console.log(d.getFullYear()); // 2025
+    const years = [];
+    debugger;
+    // For example, use user's join year or data start year
+    const startYear = d.getFullYear() || currentYear; // fallback
+    const endYear = currentYear; // fallback
+
+    for (let y = startYear; y <= endYear; y++) {
+      years.push(y.toString());
+    }
+    return years;
+  };
 
   useEffect(() => {
-    setLoading(true);
-    fetchLeadAnalytics().then((res) => {
-      setData(res);
-      setLoading(false);
-    });
-  }, [selectedMonth, selectedPeriod]);
+    // Get dropdown options dynamically
+    //const abc = periodOptions[selectedPeriod] || [];
+    //setSecondDropdownOptions(abc);
+    // fetchLostLeadsData();
+  }, [selectedPeriod]);
 
-  const openLeadsCount =
-    data.totalLeads -
-    (data.convertedLeadsCount + data.lostLeadsCount + data.postponedLeadsCount);
-
+  const openLeadsCount = data.OpenCount || 0;
+    
   const conversionRate =
-    openLeadsCount + data.convertedLeadsCount > 0
+    openLeadsCount + data.ConfirmedCount > 0
       ? Math.round(
-          (data.convertedLeadsCount / (openLeadsCount + data.convertedLeadsCount)) * 100
-        )
+        (data.ConfirmedCount / (openLeadsCount + data.ConfirmedCount)) * 100
+      )
       : 0;
 
   const pieData = [
-    { name: "Confirmed", value: data.convertedLeadsCount },
-    { name: "Lost", value: data.lostLeadsCount },
-    { name: "Open", value: openLeadsCount },
-    { name: "Postponed", value: data.postponedLeadsCount },
+    { name: "Confirmed", value: data.ConfirmedCount },
+    { name: "Lost", value: data.LostCount },
+    { name: "Open", value: data.OpenCount },
+    { name: "Postponed", value: data.PostponedCount },
   ];
 
-  // Filtered tables
-  const filteredLostLeads = data.lostLeadsList.filter(
-    (lead) =>
-      lead.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      lead.id.toString().includes(searchText)
-  );
-  const filteredConfirmedLeads = data.confirmedLeadsList.filter(
-    (lead) =>
-      lead.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      lead.id.toString().includes(searchText)
-  );
+// Handle dropdown change
+const handlePeriodChangeForLostCounts = (e) => {
+  setSelectedPeriodForLostCounts(e.target.value);
+};
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 space-y-4">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
-        <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-          <div>
-            <p className="text-gray-500 text-sm">Total Leads</p>
-            <p className="text-lg font-semibold">{data.totalLeads}</p>
-          </div>
-          <Users className="text-blue-500 w-6 h-6" />
-        </div>
+// Compute chart data for the selected period
+const selectedData = useMemo(() => {
+  if (!Array.isArray(lostLeadsChartData) || lostLeadsChartData.length === 0)
+    return [];
 
-        <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-          <div>
-            <p className="text-gray-500 text-sm">Confirmed</p>
-            <p className="text-lg font-semibold">{data.convertedLeadsCount}</p>
-          </div>
-          <CheckCircle className="text-green-500 w-6 h-6" />
-        </div>
+  // Handle both `.data` and `.lostDataCount` structures
+  const found =
+    lostLeadsChartData.find(
+      (p) => p.selectedPeriod === selectedPeriodForLostCounts
+    ) || lostLeadsChartData[0]; // fallback to first period if not selected yet
 
-        <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-          <div>
-            <p className="text-gray-500 text-sm">Lost</p>
-            <p className="text-lg font-semibold">{data.lostLeadsCount}</p>
-          </div>
-          <XCircle className="text-red-500 w-6 h-6" />
-        </div>
+  return found.lostDataCount || found.data || [];
+}, [lostLeadsChartData, selectedPeriodForLostCounts]);
 
-        <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-          <div>
-            <p className="text-gray-500 text-sm">Open</p>
-            <p className="text-lg font-semibold">{openLeadsCount}</p>
-          </div>
-          <Clock className="text-purple-500 w-6 h-6" />
-        </div>
+  const onYearChange = (e) => {
+    let year = e.target.value;
+    setSelectedYear(year);
 
-        <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
-          <div>
-            <p className="text-gray-500 text-sm">Conversion Rate</p>
-            <p className="text-lg font-semibold">{conversionRate}%</p>
-          </div>
-          <CheckCircle className="text-yellow-500 w-6 h-6" />
-        </div>
-      </div>
+    setSelectedPeriod(TIME_OPTIONS.Monthly);
+    setSecondDropdownOptions(MONTHS);
+    setPlaceholderText("Select months");
+    setIsMultiSelectedDisabled(false);
+    setMonthsToCalculateData([]);
+    setQuartersToCalculateData([]);
+    // Clear selected value which is displayed in 2nd dropdown
+    setSelectedValue([]);
+  }
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 md:gap-4 items-center">
-        <select
+  ///Called when period changes [Monthly/Quarterly/Yearly]
+  const onPeriodChange = (e) => {
+
+    let period = e.target.value;
+    setSelectedPeriod(period);
+    const abc = periodOptions[period] || [];
+    setSecondDropdownOptions(abc);
+    debugger;
+    switch (period) {
+
+      case TIME_OPTIONS.Monthly:
+        setPlaceholderText("Select months");
+        setIsMultiSelectedDisabled(false);
+
+        // For Monthly, clear selected months
+        setMonthsToCalculateData([]);
+
+        // For Monthly, clear selected quarters
+        setQuartersToCalculateData([]);
+
+        // Clear selected value which is displayed in 2nd dropdown
+        setSelectedValue([]);
+        break;
+
+      case TIME_OPTIONS.Quarterly:
+        setPlaceholderText("Select quarters");
+        setIsMultiSelectedDisabled(false);
+
+        // For Quarterly, clear selected months
+        setMonthsToCalculateData([]);
+        // Clear selected value which is displayed in 2nd dropdown
+        setSelectedValue([]);
+
+        break;
+
+      case TIME_OPTIONS.Yearly:
+        setPlaceholderText("Select years");
+        setIsMultiSelectedDisabled(true);
+
+        // For Yearly, select all months by default
+        setMonthsToCalculateData(MONTHS);
+
+        // Clear selected value which is displayed in 2nd dropdown
+        setSelectedValue([]);
+
+        break;
+      default:
+        setPlaceholderText("Select");
+    }
+  }
+
+  const onMonthChange = (e) => {
+
+    debugger;
+    let gh = e.map(item => item.value);
+    console.log("Selected Months:", gh);
+
+
+    switch (selectedPeriod) {
+      case TIME_OPTIONS.Monthly:
+
+        setMonthsToCalculateData(gh);
+        console.log("Months to Calculate Data (Monthly):", monthsToCalculateData);
+        break;
+      case TIME_OPTIONS.Quarterly:
+
+        const selectedQuarters = e.map(item => item.value);
+
+        setQuartersToCalculateData(selectedQuarters);
+
+        console.log("Quarters to Calculate Data :", selectedQuarters);
+        break;
+      case TIME_OPTIONS.Yearly:
+
+        setMonthsToCalculateData(MONTHS);
+        console.log("Years to Calculate Data (Yearly):", monthsToCalculateData);
+        break;
+      default:
+        setPlaceholderText("Select");
+    }
+
+
+    //setSelectedValue(gh);
+    const month = e.value;
+    setSelectedValue(month);
+  }
+
+  const onGenerateStatisticksClicked = () => {
+    console.log("Generating statistics for: ",
+      " Year: ", selectedYear,
+      " Period: ", selectedPeriod,
+      " Months: ", monthsToCalculateData
+    );
+debugger;
+    switch (selectedPeriod) {
+
+      case TIME_OPTIONS.Monthly:
+
+        //fetchLostLeadsDataMonthly();
+
+        fetchMonthlyLeadsData();
+
+
+      break;
+
+      case TIME_OPTIONS.Quarterly:
+
+        fetchQuarterlyLeadsData();
+
+      break;
+
+      case TIME_OPTIONS.Yearly:
+
+      break;
+      default:
+        setPlaceholderText("Select");
+
+    }
+  };
+
+
+  const consolidatedMonthlyData = (monthlyStats) => {
+    // Process and consolidate monthly stats data
+    debugger;
+    let totalLeadsCount = 0;
+    let convertedLeadsCount = 0;
+    let lostLeadsCount = 0;
+    let postponedLeadsCount = 0;
+    let lostLeads = [];
+    let confirmedLeads = [];
+    let openLeads = [];
+    let openLeadsCount = 0;
+    let postponedLeads = [];
+
+
+  const tempLineChartData = [];
+  const tempLostLeadsChartData = [];
+
+monthlyStats.forEach((monthData) => {
+  totalLeadsCount += monthData.totalCount;
+  convertedLeadsCount += monthData.confirmedCount;
+  lostLeadsCount += monthData.lostCount;
+  postponedLeadsCount += monthData.postponedCount;
+  openLeadsCount += monthData.openCount;
+
+  openLeads.push(...monthData.openLeads);
+  lostLeads.push(...monthData.lostLeads);
+  confirmedLeads.push(...monthData.confirmedLeads);
+  postponedLeads.push(...monthData.postponedLeads);
+
+  const entry = selectedPeriod === TIME_OPTIONS.Monthly
+    ? {
+        selectedPeriod: monthData.selectedMonth,
+        totalCount: monthData.totalCount,
+        confirmedCount: monthData.confirmedCount,
+        lostCount: monthData.lostCount,
+        openCount: monthData.openCount,
+        postponedCount: monthData.postponedCount,
+      }
+    : {
+        selectedPeriod: monthData.selectedQuarter,
+        totalCount: monthData.totalCount,
+        confirmedCount: monthData.confirmedCount,
+        lostCount: monthData.lostCount,
+        openCount: monthData.openCount,
+        postponedCount: monthData.postponedCount,
+      };
+
+      const entryForLostCount= selectedPeriod === TIME_OPTIONS.Monthly
+    ? {
+        selectedPeriod: monthData.selectedMonth,
+        lostDataCount: monthData.lostLeadsReasonsCount,
+      }
+    : {
+        selectedPeriod: monthData.selectedQuarter,
+        lostDataCount: monthData.lostLeadsReasonsCount,
+      };
+
+  tempLostLeadsChartData.push(entryForLostCount);
+  tempLineChartData.push(entry);
+});
+
+// ✅ Update state once — after loop completes
+console.log("Line Chart Data: ", tempLineChartData);
+
+setLineChartData(tempLineChartData);
+setLostLeadsChartData(tempLostLeadsChartData);
+console.log("Lost Leads Chart Data: ", tempLostLeadsChartData);
+
+  let leadsOverTime = monthlyStats;
+    
+
+
+    setData({
+      TotalCount: totalLeadsCount,
+      ConvertedCount: convertedLeadsCount,
+    // Consolidated data
+      LostCount: lostLeadsCount,
+      PostponedCount: postponedLeadsCount,
+      OpenCount: openLeadsCount,
+      ConfirmedCount: convertedLeadsCount,
+     
+
+      LostLeads: lostLeads,
+      ConfirmedLeads: confirmedLeads,
+      PostponedLeads: postponedLeads,
+      OpenLeads: openLeads,
+
+      
+    });
+  };
+    // Filtered tables
+    const filteredLostLeads = data.LostLeads.filter(
+      (lead) =>
+        lead.fName.toLowerCase().includes(searchText.toLowerCase()) ||
+        lead.leadID.toString().includes(searchText)
+    );
+    const filteredConfirmedLeads = data.ConfirmedLeads.filter(
+      (lead) =>
+        lead.fName.toLowerCase().includes(searchText.toLowerCase()) ||
+        lead.leadID.toString().includes(searchText)
+    );
+
+    const customStyles = {
+      container: (base) => ({
+        ...base,
+        width: "250px", // total width
+      }),
+      valueContainer: (base) => ({
+        ...base,
+        display: "flex",
+        flexWrap: "nowrap",   // ❌ no wrapping to next line
+        overflowX: "auto",    // ✅ enable horizontal scroll
+        scrollbarWidth: "thin",
+        msOverflowStyle: "none",
+        "::-webkit-scrollbar": {
+          height: "6px",      // optional thin scrollbar
+        },
+        gap: "4px",           // small space between chips
+      }),
+      multiValue: (base) => ({
+        ...base,
+        flex: "0 0 auto",     // chips don't shrink
+        backgroundColor: "#e6f3ff",
+      }),
+      control: (base) => ({
+        ...base,
+        minHeight: "36px",
+      }),
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6 space-y-4">
+        {/* KPI Cards */}
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+  {/* Total Leads */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Total Leads</p>
+      <p className="text-lg font-semibold">{data.TotalCount}</p>
+    </div>
+    <Users className="text-blue-500 w-6 h-6" />
+  </div>
+
+  {/* Confirmed */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Confirmed</p>
+      <p className="text-lg font-semibold">{data.ConfirmedCount}</p>
+    </div>
+    <CheckCircle className="text-green-500 w-6 h-6" />
+  </div>
+
+  {/* Lost */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Lost</p>
+      <p className="text-lg font-semibold">{data.LostCount}</p>
+    </div>
+    <XCircle className="text-red-500 w-6 h-6" />
+  </div>
+
+  {/* Open */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Open</p>
+      <p className="text-lg font-semibold">{data.OpenCount}</p>
+    </div>
+    <Clock className="text-purple-500 w-6 h-6" />
+  </div>
+
+  {/* Postponed */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Postponed</p>
+      <p className="text-lg font-semibold">{data.PostponedCount}</p>
+    </div>
+    <Clock className="text-orange-500 w-6 h-6" />
+  </div>
+
+  {/* Conversion Rate */}
+  <div className="bg-white p-3 rounded-lg shadow-md flex items-center justify-between border border-gray-200">
+    <div>
+      <p className="text-gray-500 text-sm">Conversion Rate</p>
+      <p className="text-lg font-semibold">{conversionRate}%</p>
+    </div>
+    <CheckCircle className="text-yellow-500 w-6 h-6" />
+  </div>
+</div>
+
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 md:gap-4 items-center">
+          {/* Year    */}
+          <select
+
+            value={selectedYear}
+            onChange={(e) => onYearChange(e)}
+            className="custom-select"
+          // className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm"
+          >
+            <option value="">Select</option>
+            {dynamicYearOptions.map((key) => (
+              <option key={key} value={key}>
+                {key}
+              </option>
+            ))}
+
+            {/* <option value="monthly">Monthly</option> */}
+            {/* <option value={TIME_OPTIONS.Monthly}>{TIME_OPTIONS.Monthly}</option>
+          <option value={TIME_OPTIONS.Quarterly}>{TIME_OPTIONS.Quarterly}</option>
+          <option value={TIME_OPTIONS.Yearly}>{TIME_OPTIONS.Yearly}</option> */}
+          </select>
+
+          {/* <select
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
           className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm"
         >
-          <option value="Jan">January</option>
-          <option value="Feb">February</option>
-          <option value="Mar">March</option>
-          <option value="Apr">April</option>
-        </select>
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+        </select> */}
 
-        <select
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
+          <select
+
+            value={selectedPeriod}
+            onChange={(e) => onPeriodChange(e)}
+            className="custom-select"
+          >
+            {/* <option value="">Select</option>
+        {periodOptions.map((key) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))} */}
+
+            {/* <option value="monthly">Monthly</option> */}
+            <option value={TIME_OPTIONS.Monthly}>{TIME_OPTIONS.Monthly}</option>
+            <option value={TIME_OPTIONS.Quarterly}>{TIME_OPTIONS.Quarterly}</option>
+            <option value={TIME_OPTIONS.Yearly}>{TIME_OPTIONS.Yearly}</option>
+          </select>
+          {/* Second Dropdown */}
+          {/* <select
+         styles={customStyles}
+          value={selectedValue}
+          onChange={(e) => setSelectedValue(e.target.value)}
           className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm"
         >
-          <option value="monthly">Monthly</option>
-          <option value="quarterly">Quarterly</option>
-          <option value="yearly">Yearly</option>
-        </select>
-
-        <input
-          type="text"
-          placeholder="Search Lead ID or Name..."
-          value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
-          className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm flex-1 min-w-[200px]"
-        />
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-4 border-b border-gray-200">
-        {["analytics", "lost", "confirmed"].map((tab) => (
+          <option value="">Select</option>
+          {secondDropdownOptions.map((opt) => (
+            <option key={opt} value={opt}>
+              {opt}
+            </option>
+          ))}
+        </select> */}
+          <Select
+            isMulti
+            styles={customStyles}
+            options={secondDropdownOptions.map((opt) => ({ value: opt, label: opt }))}
+            value={selectedValue}
+            onChange={onMonthChange}
+            placeholder={placeHolderText}
+            isDisabled={isMUltiSelectedDisabled}
+          />
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`pb-2 font-semibold text-sm transition-colors ${
-              activeTab === tab
+            onClick={onGenerateStatisticksClicked}
+            className="bg-blue-500 text-white rounded px-4 py-2"
+          >
+            Generate Statistics
+          </button>
+          <input
+            type="text"
+            placeholder="Search Lead ID or Name..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm flex-1 min-w-[200px]"
+          />
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-gray-200">
+          {["analytics", "lost", "confirmed"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`pb-2 font-semibold text-sm transition-colors ${activeTab === tab
                 ? "border-b-2 border-blue-500 text-blue-500"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {tab === "analytics"
-              ? "Analytics"
-              : tab === "lost"
-              ? "Lost Leads"
-              : "Confirmed Leads"}
-          </button>
-        ))}
+                }`}
+            >
+              {tab === "analytics"
+                ? "Analytics"
+                : tab === "lost"
+                  ? "Lost Leads"
+                  : "Confirmed Leads"}
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-4">
+          {/* Analytics Charts */}
+          {activeTab === "analytics" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Leads Over Time */}
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-md font-semibold mb-2">Leads Over Time</h2>
+                <div className="h-64">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={lineChartData}>
+                        <XAxis dataKey="selectedPeriod" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line type="monotone" dataKey="openCount" stroke="#8884d8" />
+                         <Line type="monotone" dataKey="lostCount" stroke="#FF5252" />
+                        <Line type="monotone" dataKey="confirmedCount" stroke="#4CAF50" />
+                        <Line type="monotone" dataKey="postponedCount" stroke="#FFC107" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+
+              {/* Leads Status Pie Chart */}
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+                <h2 className="text-md font-semibold mb-2">Leads Status</h2>
+                <div className="h-64">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={pieData}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          dataKey="value"
+                          label
+                        >
+                          {pieData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={PIE_COLORS[index % PIE_COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+
+{/* Lost Leads Reasons */}
+<div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
+  <div className="flex justify-between items-center mb-2">
+    <h2 className="text-md font-semibold">Lost Leads - Reasons</h2>
+
+    {/* Period Dropdown */}
+    <select
+      value={selectedPeriodForLostCounts}
+      onChange={handlePeriodChangeForLostCounts}
+      className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none"
+    >
+      {lostLeadsChartData.map((p) => (
+        <option key={p.selectedPeriod} value={p.selectedPeriod}>
+          {p.selectedPeriod}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div className="h-64">
+    {loading ? (
+      <div className="flex justify-center items-center h-full">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
       </div>
-
-      <div className="space-y-4">
-        {/* Analytics Charts */}
-        {activeTab === "analytics" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Leads Over Time */}
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h2 className="text-md font-semibold mb-2">Leads Over Time</h2>
-              <div className="h-64">
-                {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data.leadsOverTime}>
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="total" stroke="#8884d8" />
-                      <Line type="monotone" dataKey="converted" stroke="#4CAF50" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-
-            {/* Leads Status Pie Chart */}
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-              <h2 className="text-md font-semibold mb-2">Leads Status</h2>
-              <div className="h-64">
-                {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                  </div>
-                ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                        label
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={PIE_COLORS[index % PIE_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-
-            {/* Lost Leads Reasons */}
-            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
-              <h2 className="text-md font-semibold mb-2">Lost Leads - Reasons</h2>
-              <div className="h-64">
-                {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                  </div>
-                ) : (
-  
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.lostLeadsReasons}>
-                      <XAxis dataKey="reason" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#eb4c30ff" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Lost Leads Table */}
-        {activeTab === "lost" && (
-          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-x-auto">
-            <h2 className="text-md font-semibold mb-2">Lost Leads</h2>
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <table className="min-w-full text-sm divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-1 text-left">ID</th>
-                    <th className="px-3 py-1 text-left">Name</th>
-                    <th className="px-3 py-1 text-left">Reason</th>
-                    <th className="px-3 py-1 text-left">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredLostLeads.map((lead) => (
-                    <tr key={lead.id}>
-                      <td className="px-3 py-1">{lead.id}</td>
-                      <td className="px-3 py-1">{lead.name}</td>
-                      <td className="px-3 py-1">{lead.reason}</td>
-                      <td className="px-3 py-1">{lead.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
-
-        {/* Confirmed Leads Table */}
-        {activeTab === "confirmed" && (
-          <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-x-auto">
-            <h2 className="text-md font-semibold mb-2">Confirmed Leads</h2>
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <table className="min-w-full text-sm divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-1 text-left">ID</th>
-                    <th className="px-3 py-1 text-left">Name</th>
-                    <th className="px-3 py-1 text-left">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
-                  {filteredConfirmedLeads.map((lead) => (
-                    <tr key={lead.id}>
-                      <td className="px-3 py-1">{lead.id}</td>
-                      <td className="px-3 py-1">{lead.name}</td>
-                      <td className="px-3 py-1">{lead.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
+    ) : selectedData.length === 0 ? (
+      <div className="flex justify-center items-center h-full text-gray-500">
+        No data available
       </div>
-    </div>
-  );
-};
+    ) : (
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={selectedData}>
+          <XAxis dataKey="reason" tick={{ fontSize: 12 }} />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="count" fill="#eb4c30ff" radius={[6, 6, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    )}
+  </div>
+</div>
 
-export default LeadAnalytics;
+
+
+
+               {/* Bar CChart */}
+              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
+                <h2 className="text-md font-semibold mb-2">Bar Chart</h2>
+                <div className="h-64">
+                  {loading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                    </div>
+                  ) : (
+
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={lineChartData}>
+                         <XAxis dataKey="selectedPeriod" /> {/* e.g., Jan, Feb, Q1, Q2 */}
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="confirmedCount" fill="#30eb59ff" />
+                        <Bar dataKey="lostCount" fill="#eb4c30ff" />
+                        <Bar dataKey="openCount" fill="#dfeb30ff" />
+                        <Bar dataKey="postponedCount" fill="#eb30b6ff" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Lost Leads Table */}
+          {activeTab === "lost" && (
+            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-x-auto">
+              <h2 className="text-md font-semibold mb-2">Lost Leads</h2>
+              {loading ? (
+                <div className="flex justify-center items-center h-40">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                </div>
+              ) : (
+                <table className="min-w-full text-sm divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-1 text-left">ID</th>
+                      <th className="px-3 py-1 text-left">Name</th>
+                      <th className="px-3 py-1 text-left">Reason</th>
+                      <th className="px-3 py-1 text-left">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredLostLeads.map((lead) => (
+                      <tr key={lead.leadID}>
+                        <td className="px-3 py-1">{lead.leadID}</td>
+                        <td className="px-3 py-1">{lead.fName}</td>
+                        <td className="px-3 py-1">{lead.lName}</td>
+                        <td className="px-3 py-1">{lead.enquiryDate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+
+          {/* Confirmed Leads Table */}
+          {activeTab === "confirmed" && (
+            <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-x-auto">
+              <h2 className="text-md font-semibold mb-2">Confirmed Leads</h2>
+              {loading ? (
+                <div className="flex justify-center items-center h-40">
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+                </div>
+              ) : (
+                <table className="min-w-full text-sm divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-1 text-left">ID</th>
+                      <th className="px-3 py-1 text-left">Name</th>
+                      <th className="px-3 py-1 text-left">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {filteredConfirmedLeads.map((lead) => (
+                      <tr key={lead.leadID}>
+                        <td className="px-3 py-1">{lead.leadID}</td>
+                        <td className="px-3 py-1">{lead.fName}</td>
+                        <td className="px-3 py-1">{lead.enquiryDate}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  export default LeadAnalytics;
