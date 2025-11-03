@@ -41,6 +41,31 @@ export const MESSAGE_TYPES_DETAILS = {
   },
 };
 
+export const TIME_OPTIONS = {
+  Monthly: "Monthly",
+  Quarterly: "Quarterly",
+  Yearly: "Yearly",
+};
+
+  // Define options for each period type
+
+  export const MONTHS = [
+    "January", "February", "March", "April",
+    "May", "June", "July", "August",
+    "September", "October", "November", "December",
+  ];
+
+  export const QUARTERS = [ "Q1 (Apr–Jun)", "Q2 (Jul–Sep)", "Q3 (Oct–Dec)","Q4 (Jan–Mar)"];
+
+  export const Quarter_WISE_Months = {
+    "Q1 (Apr–Jun)": ["April", "May", "June"],
+    "Q2 (Jul–Sep)": ["July", "August", "September"],
+    "Q3 (Oct–Dec)": ["October", "November", "December"],
+    "Q4 (Jan–Mar)": ["January", "February", "March"],
+  };
+
+
+
 
 
 

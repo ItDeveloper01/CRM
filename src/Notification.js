@@ -6,9 +6,9 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
   const [show, setShow] = useState(false);
   const [message, setMessage] = useState("");
-  const [type, setType] = useState("INFO");
+  const [type, setType] = useState("");
 
-  const showMessage = (msg, msgType = "INFO") => {
+  const showMessage = (msg, msgType ) => {
     setMessage(msg);
     setType(msgType);
     setShow(true);
