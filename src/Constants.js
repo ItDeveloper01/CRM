@@ -67,7 +67,54 @@ export const TIME_OPTIONS = {
 
 
 
+//  If you want to change color  then change in Tailwind.config.js file it will show effectively every where for more check status in leadgeneration
+export const COLORS = {
+  brandYellow: "brandYellow",
+  brandRed: "brandRed",
+  brandGreen: "brandGreen",
+  brandPurple: "brandPurple",
+  brandGray: "brandGray",
+  brandBlue: "brandBlue",
+};
 
+export const STATUS_STYLES = {
+  Open: {
+    border: "border-brandYellow",
+    ring: "focus:ring-brandYellow",
+  },
+  Lost: {
+    border: "border-brandRed",
+    ring: "border-brandRed",
+  },
+  Confirmed: {
+    border: "border-brandGreen",
+    ring: "focus:ring-brandGreen",
+  },
+  Postponed: {
+    border: "border-brandPurple",
+    ring:"border-brandPurple",
+  },
+ 
+};
+// export const STATUS_STYLES = {
+//   Open: {
+//     border: "border-[#ecd57fff]",
+//     ring: "focus:ring-[#ecd57fff]",
+//   },
+//   Lost: {
+//     border: "border-red-400",
+//     ring: "focus:ring-red-300",
+//   },
+//   Confirmed: {
+//     border: "border-green-400",
+//     ring: "focus:ring-green-300",
+//   },
+//   Postponed: {
+//     border: "border-purple-400",
+//     ring: "focus:ring-purple-300",
+//   },
+ 
+// };
 
 // export const MESSAGE_TYPES = {
 //   WARNING: {
