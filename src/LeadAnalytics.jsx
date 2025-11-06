@@ -10,6 +10,8 @@ import Select from "react-select";
 import { Quarter_WISE_Months } from "./Constants";
 import { useMessageBox } from "./Notification";
 import { useMemo } from "react";
+import { ResizableBox } from "react-resizable";
+import "react-resizable/css/styles.css";
 
 import {
   PieChart,
@@ -26,6 +28,7 @@ import {
   Legend,
 } from "recharts";
 import MessageBox from "./MessageBox";
+import { de } from "intl-tel-input/i18n";
 
 // Pie chart colors
 const PIE_COLORS = ["#4CAF50", "#FF5252", "#8884d8", "#FFC107"];
@@ -74,6 +77,7 @@ const LeadAnalytics = () => {
   const { showMessage } = useMessageBox();
   const [isMUltiSelectedDisabled, setIsMultiSelectedDisabled] = useState(false);
   const [monthsToCalculateData, setMonthsToCalculateData] = useState([]);
+  const [yearsToCalculateData, setYearsToCalculateData] = useState([]);
   const [quartersToCalculateData, setQuartersToCalculateData] = useState([]);
   const [selectedYear, setSelectedYear] = useState("");
   const [secondDropdownOptions, setSecondDropdownOptions] = useState([]);
@@ -83,12 +87,15 @@ const LeadAnalytics = () => {
   const [activeTab, setActiveTab] = useState("analytics");
   const [searchText, setSearchText] = useState("");
   const [dynamicYearOptions, setDynamicYearOptions] = useState([]);
+  const [multiplePieData, setMultiplePieData] = useState([]);
   const [periodOptions, setPeriodOptions] = useState({
     [TIME_OPTIONS.Monthly]: MONTHS,
     [TIME_OPTIONS.Quarterly]: QUARTERS,
     [TIME_OPTIONS.Yearly]: dynamicYearOptions
   });
+  const [viewMode, setViewMode] = useState("cumulative"); // "cumulative" or "individual"
   const [placeHolderText, setPlaceholderText] = useState("Select months");
+  const [initialLoad, setInitialLoad] = useState(false);
   const [data, setData] = useState({
   totalLeads: 0,
 
@@ -114,6 +121,7 @@ const LeadAnalytics = () => {
 
   leadsOverTime: [],
   });
+
 const [lineChartData, setLineChartData] = useState([
   { selectedPeriod: "", totalCount: 0 , confirmedCount: 0,  lostCount: 0, openCount: 0, postponedCount: 0 },
 ]);
@@ -139,6 +147,43 @@ Name: "Q2",
     ]
   }
 ]);
+
+const  fetchYearlyLeadsData  = async () => {
+    setLoading(true);
+
+    try {
+      // Simulate API call delay
+      debugger;
+      let string=config.apiUrl + "/Analytics/GetLeadsStatisticsPerYear";
+      const res = await axios.post(string, {
+          userId: sessionUser.user.userId,
+          months: monthsToCalculateData,
+          selectedYear: selectedYear,
+          quarter: quartersToCalculateData,
+          years: yearsToCalculateData
+        },
+      {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+          },
+        });
+      debugger;
+
+      console.log("Yearly Stats Data: ", res.data.yearlyStats);
+      consolidatedMonthlyData(res.data.yearlyStats);
+
+    } catch (error) {
+      showMessage({
+        type: "ERROR",
+        message: "Error fetching yearly leads data.",
+      });
+      console.error("Error fetching yearly leads data: ", error);
+      setLoading(false);
+    }
+     finally {
+      setLoading(false);
+    }
+  };
 
 
   const fetchQuarterlyLeadsData = async () => {
@@ -226,28 +271,37 @@ const res = await axios.post(string, {
       debugger;
       const dynamicYears = getYearOptions(sessionUser.user.userObj);
 
-      // setPeriodOptions({
-      //   [TIME_OPTIONS.Monthly]: MONTHS,
-      //   [TIME_OPTIONS.Quarterly]: QUARTERS,
-      //   [TIME_OPTIONS.Yearly]: dynamicYears,
-      // });
-
       setDynamicYearOptions(dynamicYears);
       setPeriodOptions((prevOptions) => ({
         ...prevOptions,
         [TIME_OPTIONS.Yearly]: dynamicYears,
       }));
       console.log("Period Options:", periodOptions);
-      let currentMonth = new Date().getMonth();
+      
+      
 
+      // Set default selections on first load
+      let currentMonth = new Date().getMonth();
       setSelectedYear(new Date().getFullYear().toString());
       setSelectedPeriod(TIME_OPTIONS.Monthly);
       setSecondDropdownOptions(MONTHS);
-      setSelectedValue(currentMonth.toString());
+      setSelectedValue([{ value: MONTHS[currentMonth], label: MONTHS[currentMonth] }]);
+      setMonthsToCalculateData([MONTHS[currentMonth]]);
+      console.log("Current Month:", MONTHS[currentMonth]);
+      setSelectedPeriodForLostCounts(TIME_OPTIONS.Monthly);
+      setInitialLoad(true);
+      // Fetch initial data :End
 
     }
   }, []);
 
+
+  useEffect(() => {
+    if (initialLoad) {
+      console.log("Initial load - fetching monthly leads data");
+      fetchMonthlyLeadsData();
+    }
+  }, [initialLoad]);
 
   const getYearOptions = (user) => {
     const currentYear = new Date().getFullYear();
@@ -281,12 +335,12 @@ const res = await axios.post(string, {
       )
       : 0;
 
-  const pieData = [
+  const [pieData, setPieData] = useState([
     { name: "Confirmed", value: data.ConfirmedCount },
     { name: "Lost", value: data.LostCount },
     { name: "Open", value: data.OpenCount },
     { name: "Postponed", value: data.PostponedCount },
-  ];
+  ]);
 
 // Handle dropdown change
 const handlePeriodChangeForLostCounts = (e) => {
@@ -357,11 +411,18 @@ const selectedData = useMemo(() => {
         break;
 
       case TIME_OPTIONS.Yearly:
+        debugger;
         setPlaceholderText("Select years");
         setIsMultiSelectedDisabled(true);
 
         // For Yearly, select all months by default
-        setMonthsToCalculateData(MONTHS);
+       
+        setQuartersToCalculateData([]);
+        setMonthsToCalculateData([]);
+
+        // For Yearly, set selected year
+        setYearsToCalculateData([selectedYear]);
+
 
         // Clear selected value which is displayed in 2nd dropdown
         setSelectedValue([]);
@@ -377,7 +438,6 @@ const selectedData = useMemo(() => {
     debugger;
     let gh = e.map(item => item.value);
     console.log("Selected Months:", gh);
-
 
     switch (selectedPeriod) {
       case TIME_OPTIONS.Monthly:
@@ -395,8 +455,8 @@ const selectedData = useMemo(() => {
         break;
       case TIME_OPTIONS.Yearly:
 
-        setMonthsToCalculateData(MONTHS);
-        console.log("Years to Calculate Data (Yearly):", monthsToCalculateData);
+       // setMonthsToCalculateData(MONTHS);
+        console.log("Years to Calculate Data (Yearly):", selectedYear);
         break;
       default:
         setPlaceholderText("Select");
@@ -434,6 +494,8 @@ debugger;
 
       case TIME_OPTIONS.Yearly:
 
+            fetchYearlyLeadsData();
+
       break;
       default:
         setPlaceholderText("Select");
@@ -441,6 +503,17 @@ debugger;
     }
   };
 
+ const  calculatePercentage= (data)=> {
+
+  debugger;
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  if (total === 0) return data.map(item => ({ ...item, value: 0 }));
+
+  return data.map(item => ({
+    name: item.name,
+    value: ((item.value / total) * 100),
+  }));
+}
 
   const consolidatedMonthlyData = (monthlyStats) => {
     // Process and consolidate monthly stats data
@@ -458,8 +531,10 @@ debugger;
 
   const tempLineChartData = [];
   const tempLostLeadsChartData = [];
+  
+  let tempPiedataList = [];
 
-monthlyStats.forEach((monthData) => {
+  monthlyStats.forEach((monthData) => {
   totalLeadsCount += monthData.totalCount;
   convertedLeadsCount += monthData.confirmedCount;
   lostLeadsCount += monthData.lostCount;
@@ -471,44 +546,100 @@ monthlyStats.forEach((monthData) => {
   confirmedLeads.push(...monthData.confirmedLeads);
   postponedLeads.push(...monthData.postponedLeads);
 
-  const entry = selectedPeriod === TIME_OPTIONS.Monthly
-    ? {
-        selectedPeriod: monthData.selectedMonth,
-        totalCount: monthData.totalCount,
-        confirmedCount: monthData.confirmedCount,
-        lostCount: monthData.lostCount,
-        openCount: monthData.openCount,
-        postponedCount: monthData.postponedCount,
-      }
-    : {
-        selectedPeriod: monthData.selectedQuarter,
-        totalCount: monthData.totalCount,
-        confirmedCount: monthData.confirmedCount,
-        lostCount: monthData.lostCount,
-        openCount: monthData.openCount,
-        postponedCount: monthData.postponedCount,
-      };
 
-      const entryForLostCount= selectedPeriod === TIME_OPTIONS.Monthly
-    ? {
-        selectedPeriod: monthData.selectedMonth,
-        lostDataCount: monthData.lostLeadsReasonsCount,
+  let tempPieData = [{
+name:"Confirmed", value:monthData.confirmedCount
+  },{
+name:"Lost", value:monthData.lostCount
+  },{
+name:"Open", value:monthData.openCount
+  },{
+name:"Postponed", value:monthData.postponedCount
+  }];
+
+const entry = {};
+
+        entry.totalCount = monthData.totalCount;
+        entry.confirmedCount = monthData.confirmedCount;
+        entry.lostCount = monthData.lostCount;
+        entry.openCount = monthData.openCount;
+        entry.postponedCount = monthData.postponedCount;
+
+        
+         
+        switch (selectedPeriod) 
+          {
+                case TIME_OPTIONS.Monthly:{
+                  entry.selectedPeriod = monthData.selectedMonth;
+                }
+                break;
+              case TIME_OPTIONS.Quarterly: 
+              {
+                  entry.selectedPeriod = monthData.selectedQuarter;
+                }
+                break;
+              case TIME_OPTIONS.Yearly:
+                {
+                  entry.selectedPeriod = monthData.selectedYear;
+                }
+                  break;
+              default:
+                  setPlaceholderText("Select");
+          };
+
+
+      let entryForLostCount= {};
+      entryForLostCount.lostDataCount = monthData.lostLeadsReasonsCount;
+
+      switch (selectedPeriod) {
+
+      case TIME_OPTIONS.Monthly:{
+        entryForLostCount.selectedPeriod = monthData.selectedMonth;
+        
+      }  break;
+      case TIME_OPTIONS.Quarterly: {
+        entryForLostCount.selectedPeriod = monthData.selectedQuarter;
+      }  break;
+      case TIME_OPTIONS.Yearly: {
+        entryForLostCount.selectedPeriod = monthData.selectedYear;
+      }  break;
+      default:{
+        entryForLostCount.selectedPeriod = "Unknown";
+        entryForLostCount.lostDataCount = 0;
       }
-    : {
-        selectedPeriod: monthData.selectedQuarter,
-        lostDataCount: monthData.lostLeadsReasonsCount,
-      };
+    };
+
+  //    const pieData = [
+  //   { name: "Confirmed", value: data.ConfirmedCount },
+  //   { name: "Lost", value: data.LostCount },
+  //   { name: "Open", value: data.OpenCount },
+  //   { name: "Postponed", value: data.PostponedCount },
+  // ];
+
+  let calculatedPieData = calculatePercentage(tempPieData);
+   
+  tempPiedataList.push({
+  label: entryForLostCount.selectedPeriod,
+  data: calculatedPieData,
+});
+
+
+ 
+
 
   tempLostLeadsChartData.push(entryForLostCount);
   tempLineChartData.push(entry);
 });
 
+
 // ✅ Update state once — after loop completes
 console.log("Line Chart Data: ", tempLineChartData);
-
+debugger;
+setMultiplePieData(tempPiedataList);
 setLineChartData(tempLineChartData);
 setLostLeadsChartData(tempLostLeadsChartData);
 console.log("Lost Leads Chart Data: ", tempLostLeadsChartData);
+console.log("Multiple Pie Data: ", tempPiedataList);
 
   let leadsOverTime = monthlyStats;
     
@@ -531,7 +662,18 @@ console.log("Lost Leads Chart Data: ", tempLostLeadsChartData);
 
       
     });
+    let tempPie=([{ name: "Confirmed", value: convertedLeadsCount },
+    { name: "Lost", value: lostLeadsCount },
+    { name: "Open", value: openLeadsCount },
+    { name: "Postponed", value: postponedLeadsCount },
+    ]);
+    
+    debugger;
+    let abc=calculatePercentage(tempPie);
+    setPieData(abc);
+    console.log("Cumulative Pie Data: ", abc);
   };
+  
     // Filtered tables
     const filteredLostLeads = data.LostLeads.filter(
       (lead) =>
@@ -745,135 +887,356 @@ console.log("Lost Leads Chart Data: ", tempLostLeadsChartData);
         <div className="space-y-4">
           {/* Analytics Charts */}
           {activeTab === "analytics" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Leads Over Time */}
-              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-md font-semibold mb-2">Leads Over Time</h2>
-                <div className="h-64">
-                  {loading ? (
-                    <div className="flex justify-center items-center h-full">
-                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={lineChartData}>
-                        <XAxis dataKey="selectedPeriod" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Line type="monotone" dataKey="openCount" stroke="#8884d8" />
-                         <Line type="monotone" dataKey="lostCount" stroke="#FF5252" />
-                        <Line type="monotone" dataKey="confirmedCount" stroke="#4CAF50" />
-                        <Line type="monotone" dataKey="postponedCount" stroke="#FFC107" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
+           <div className="space-y-4">
+  {/* Analytics Charts */}
+  {activeTab === "analytics" && (
+    <div className="grid grid-cols-2 gap-4"> {/* Always 2 columns */}
+      
+      {/* ---------- Leads Over Time ---------- */}
+      <div
+        className="resize overflow-auto border border-gray-300 rounded-lg p-4 bg-white shadow-sm"
+        style={{
+          width: "100%",
+          height: "350px",
+          minWidth: "300px",
+          minHeight: "250px",
+          maxWidth: "100%",
+          maxHeight: "800px",
+        }}
+      >
+        <h2 className="text-md font-semibold mb-2">Leads Over Time</h2>
+        <div className="h-[calc(100%-2rem)]">
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={lineChartData}>
+                <XAxis dataKey="selectedPeriod" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="openCount" name="Open" stroke="#8884d8" />
+                <Line type="monotone" dataKey="lostCount" name="Lost" stroke="#FF5252" />
+                <Line type="monotone" dataKey="confirmedCount" name="Confirmed" stroke="#4CAF50" />
+                <Line type="monotone" dataKey="postponedCount" name="Postponed" stroke="#FFC107" />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
 
-              {/* Leads Status Pie Chart */}
-              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-                <h2 className="text-md font-semibold mb-2">Leads Status</h2>
-                <div className="h-64">
-                  {loading ? (
-                    <div className="flex justify-center items-center h-full">
-                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={pieData}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          dataKey="value"
-                          label
-                        >
-                          {pieData.map((entry, index) => (
-                            <Cell
-                              key={`cell-${index}`}
-                              fill={PIE_COLORS[index % PIE_COLORS.length]}
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
+      {/* ---------- Leads Status (Pie) ---------- */}
+      <div
+        className="resize overflow-auto border border-gray-300 rounded-lg p-4 bg-white shadow-sm"
+        style={{
+          width: "100%",
+          height: "350px",
+          minWidth: "300px",
+          minHeight: "250px",
+          maxWidth: "100%",
+          maxHeight: "800px",
+        }}
+      >
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-md font-semibold">Leads Status</h2>
+          <select
+            className="border border-gray-300 rounded-md text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value)}
+          >
+            <option value="cumulative">Cumulative</option>
+            <option value="individual">Individual</option>
+          </select>
+        </div>
 
-{/* Lost Leads Reasons */}
-<div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
-  <div className="flex justify-between items-center mb-2">
-    <h2 className="text-md font-semibold">Lost Leads - Reasons</h2>
-
-    {/* Period Dropdown */}
-    <select
-      value={selectedPeriodForLostCounts}
-      onChange={handlePeriodChangeForLostCounts}
-      className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none"
+        <div className="h-[calc(100%-2rem)]">
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          ) : viewMode === "cumulative" ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={125}
+                  dataKey="value"
+                   label={({ name, value }) => `${name} (${value.toFixed(2)}%)`}// format label
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                {/* Tooltip with 2 decimals and % sign */}
+                <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto h-full p-2">
+  {multiplePieData?.map((dataItem, idx) => (
+    <div
+      key={idx}
+      className="flex flex-col items-center border rounded-lg p-2 shadow-sm"
     >
-      {lostLeadsChartData.map((p) => (
-        <option key={p.selectedPeriod} value={p.selectedPeriod}>
-          {p.selectedPeriod}
-        </option>
-      ))}
-    </select>
+      {/* Title */}
+      <h3 className="text-xs font-medium mb-1 text-center">{dataItem.label}</h3>
+
+      {Array.isArray(dataItem.data) && dataItem.data.some((d) => d.value > 0) ? (
+        <>
+          {/* Chart area */}
+          <div className="w-full h-32 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={dataItem.data}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={50}
+                  dataKey="value"
+                  labelLine={false}
+                >
+                  {dataItem.data.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PIE_COLORS[index % PIE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Legend area (auto grows) */}
+          <div className="mt-2 flex flex-col items-start text-xs w-full">
+            {dataItem.data.map((d, idx) => (
+              <span key={idx} className="flex items-center gap-1">
+                <span
+                  className="w-3 h-3 inline-block rounded-sm"
+                  style={{
+                    backgroundColor: PIE_COLORS[idx % PIE_COLORS.length],
+                  }}
+                ></span>
+                {d.name} ({d.value.toFixed(2)}%)
+              </span>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="text-gray-400 text-xs text-center h-40 flex items-center justify-center">
+          No Data
+        </p>
+      )}
+    </div>
+  ))}
+</div>
+
+          )}
+        </div>
+      </div>
+    </div>
+  //  <div className="flex gap-4 w-full">
+  // {/* ---------- Leads Over Time ---------- */}
+  // <ResizableBox
+  //   width={600}       // initial width
+  //   height={350}      // initial height
+  //   minConstraints={[300, 250]} // min width & height
+  //   maxConstraints={[1000, 800]} // max width & height
+  //   resizeHandles={["e", "s", "se"]} // allow horizontal, vertical, and corner resize
+  //   className="border border-gray-300 rounded-lg bg-white p-4 shadow-sm"
+  // >
+  //   <h2 className="text-md font-semibold mb-2">Leads Over Time</h2>
+  //   <div className="h-[calc(100%-2rem)]">
+  //     {loading ? (
+  //       <div className="flex justify-center items-center h-full">
+  //         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+  //       </div>
+  //     ) : (
+  //       <ResponsiveContainer width="100%" height="100%">
+  //         <LineChart data={lineChartData}>
+  //           <XAxis dataKey="selectedPeriod" />
+  //           <YAxis />
+  //           <Tooltip />
+  //           <Legend />
+  //           <Line type="monotone" dataKey="openCount" name="Open" stroke="#8884d8" />
+  //           <Line type="monotone" dataKey="lostCount" name="Lost" stroke="#FF5252" />
+  //           <Line type="monotone" dataKey="confirmedCount" name="Confirmed" stroke="#4CAF50" />
+  //           <Line type="monotone" dataKey="postponedCount" name="Postponed" stroke="#FFC107" />
+  //         </LineChart>
+  //       </ResponsiveContainer>
+  //     )}
+  //   </div>
+  // </ResizableBox>
+
+  // {/* ---------- Leads Status Pie Chart ---------- */}
+  // <ResizableBox
+  //   width={600}
+  //   height={350}
+  //   minConstraints={[300, 250]}
+  //   maxConstraints={[1000, 800]}
+  //   resizeHandles={["w", "s", "sw"]}
+  //   className="border border-gray-300 rounded-lg bg-white p-4 shadow-sm"
+  // >
+  //   <div className="flex justify-between items-center mb-2">
+  //     <h2 className="text-md font-semibold">Leads Status</h2>
+  //     <select
+  //       className="border border-gray-300 rounded-md text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+  //       value={viewMode}
+  //       onChange={(e) => setViewMode(e.target.value)}
+  //     >
+  //       <option value="cumulative">Cumulative</option>
+  //       <option value="individual">Individual</option>
+  //     </select>
+  //   </div>
+
+  //   <div className="h-[calc(100%-2rem)]">
+  //     {loading ? (
+  //       <div className="flex justify-center items-center h-full">
+  //         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+  //       </div>
+  //     ) : viewMode === "cumulative" ? (
+  //       <ResponsiveContainer width="100%" height="100%">
+  //         <PieChart>
+  //           <Pie
+  //             data={pieData}
+  //             cx="50%"
+  //             cy="50%"
+  //             outerRadius={125}
+  //             dataKey="value"
+  //             label={({ name, value }) => `${name} (${value.toFixed(2)}%)`}
+  //           >
+  //             {pieData.map((entry, index) => (
+  //               <Cell
+  //                 key={`cell-${index}`}
+  //                 fill={PIE_COLORS[index % PIE_COLORS.length]}
+  //               />
+  //             ))}
+  //           </Pie>
+  //           <Tooltip formatter={(value) => `${Number(value).toFixed(2)}%`} />
+  //           <Legend />
+  //         </PieChart>
+  //       </ResponsiveContainer>
+  //     ) : (
+  //       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto h-full p-2">
+  //         {multiplePieData?.map((dataItem, idx) => (
+  //           <div
+  //             key={idx}
+  //             className="flex flex-col items-center border rounded-lg p-2 shadow-sm"
+  //           >
+  //             <h3 className="text-xs font-medium mb-1">{dataItem.label}</h3>
+  //             <div className="w-full h-40 flex flex-col items-center">
+  //               <ResponsiveContainer width="100%" height="70%">
+  //                 <PieChart>
+  //                   <Pie
+  //                     data={dataItem.data}
+  //                     cx="50%"
+  //                     cy="50%"
+  //                     outerRadius={60}
+  //                     dataKey="value"
+  //                     label={false}
+  //                   >
+  //                     {dataItem.data.map((entry, index) => (
+  //                       <Cell
+  //                         key={`cell-${index}`}
+  //                         fill={PIE_COLORS[index % PIE_COLORS.length]}
+  //                       />
+  //                     ))}
+  //                   </Pie>
+  //                 </PieChart>
+  //               </ResponsiveContainer>
+  //               {/* Stacked labels below the pie */}
+  //               <div className="mt-2 flex flex-col items-start text-xs">
+  //                 {dataItem.data.map((d, idx) => (
+  //                   <span key={idx} className="flex items-center gap-1">
+  //                     <span
+  //                       className="w-3 h-3 inline-block"
+  //                       style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+  //                     ></span>
+  //                     {d.name} ({d.value.toFixed(2)}%)
+  //                   </span>
+  //                 ))}
+  //               </div>
+  //             </div>
+  //           </div>
+  //         ))}
+  //       </div>
+  //     )}
+  //   </div>
+  // </ResizableBox>
+  // </div>
+  )}
+
+  {/* ---------- Lost Leads Reasons ---------- */}
+  <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
+    <div className="flex justify-between items-center mb-2">
+      <h2 className="text-md font-semibold">Lost Leads - Reasons</h2>
+      <select
+        value={selectedPeriodForLostCounts}
+        onChange={handlePeriodChangeForLostCounts}
+        className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none"
+      >
+        {lostLeadsChartData.map((p) => (
+          <option key={p.selectedPeriod} value={p.selectedPeriod}>
+            {p.selectedPeriod}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div className="h-64">
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
+      ) : selectedData.length === 0 ? (
+        <div className="flex justify-center items-center h-full text-gray-500">
+          No data available
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={selectedData}>
+            <XAxis dataKey="reason" tick={{ fontSize: 12 }} />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#eb4c30ff" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   </div>
 
-  <div className="h-64">
-    {loading ? (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    ) : selectedData.length === 0 ? (
-      <div className="flex justify-center items-center h-full text-gray-500">
-        No data available
-      </div>
-    ) : (
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={selectedData}>
-          <XAxis dataKey="reason" tick={{ fontSize: 12 }} />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="count" fill="#eb4c30ff" radius={[6, 6, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
-    )}
+  {/* ---------- Bar Chart ---------- */}
+  <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
+    <h2 className="text-md font-semibold mb-2">Bar Chart</h2>
+    <div className="h-64">
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={lineChartData}>
+            <XAxis dataKey="selectedPeriod" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="confirmedCount" name="Confirmed" fill="#4CAF50" />
+            <Bar dataKey="lostCount" name="Lost" fill="#eb4c30ff" />
+            <Bar dataKey="openCount" name="Open" fill="#8884d8" />
+            <Bar dataKey="postponedCount" name="Postponed" fill="#FFC107" />
+          </BarChart>
+        </ResponsiveContainer>
+      )}
+    </div>
   </div>
 </div>
 
-
-
-
-               {/* Bar CChart */}
-              <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 lg:col-span-2">
-                <h2 className="text-md font-semibold mb-2">Bar Chart</h2>
-                <div className="h-64">
-                  {loading ? (
-                    <div className="flex justify-center items-center h-full">
-                      <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-                    </div>
-                  ) : (
-
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={lineChartData}>
-                         <XAxis dataKey="selectedPeriod" /> {/* e.g., Jan, Feb, Q1, Q2 */}
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="confirmedCount" fill="#30eb59ff" />
-                        <Bar dataKey="lostCount" fill="#eb4c30ff" />
-                        <Bar dataKey="openCount" fill="#dfeb30ff" />
-                        <Bar dataKey="postponedCount" fill="#eb30b6ff" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
-            </div>
           )}
 
           {/* Lost Leads Table */}

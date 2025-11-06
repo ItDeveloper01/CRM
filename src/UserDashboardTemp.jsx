@@ -4,6 +4,7 @@ import LeadsTable from "./LeadsTable";
 import LeadTiles from "./DashboardTiles";
 import config from "./config";
 import {useGetSessionUser} from  "./SessionContext"
+import AppreciationBanner from "./AppreciationBanner";
     
 
 /* ---------- Helpers ---------- */
@@ -335,6 +336,7 @@ const followRes=axios
   /* ---------- UI Rendering ---------- */
   return (
     <div className="p-4 space-y-6">
+      <AppreciationBanner />
       {/* Tiles Section */}
         <LeadTiles tileCounts={tileCounts} />
 
