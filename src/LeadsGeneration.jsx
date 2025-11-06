@@ -944,7 +944,8 @@ export default function LeadsGeneration({ lead, onClose }) {
               onChange={handleChange}
               disabled={!isUpdateMode}                   // disabled while creating new
                 className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
-                ${border} ${ring} ${bg}
+                  ${border} ${ring} ${bg}
+                
                 ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""}
               `}
             

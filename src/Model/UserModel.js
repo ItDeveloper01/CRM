@@ -11,7 +11,7 @@ export const UserObject = {
   
   role: 0 ,              // e.g., "Admin", "User"
   department: 0,    // Department ID
-  branch: "",
+  branch: 0,
   designation: "",
   reportingManager: "",
   reportingManagerList:[], // list of possible managers based on dept/role

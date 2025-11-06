@@ -19,6 +19,7 @@ import qs from 'qs';
 import { emphasize } from '@mui/material/styles';
 import { useMessageBox } from "./Notification";
 import { MESSAGE_TYPES } from './Constants';
+import { mapObject } from './Model/MappingObjectFunction';
 
 export default function UserCreate({ }) {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function UserCreate({ }) {
   const [isDepartmentMultiselect, setIsDepartmentMultiselect] = useState(true);
   const hasFetchedManagers = useRef(false); // ✅ to avoid multiple fetches
 
+  
   const { user: sessionUser } = useGetSessionUser();
 
   // This effect runs only ONCE on component mount to initialize the form and fetch data
@@ -67,7 +69,8 @@ debugger;
     if (location.state?.user) {
       // --- EDIT MODE ---
       setIsUpdate(true);
-      const userToEdit = { ...location.state.user }; // Create a copy to avoid direct mutation
+      let tempuser = mapObject(location.state.user, getEmptyUserObj())
+      const userToEdit = { ...tempuser }; // Create a copy to avoid direct mutation
 
       // ✅ Safely initialize array properties to prevent crashes
       if (!Array.isArray(userToEdit.selectedDepartmentList)) {
@@ -349,6 +352,7 @@ debugger;
 
     } catch (error) {
       console.error(error);
+      console.log("Axios message data:", error);
       const message =
         error.response?.data?.errors ||
         error.response?.data?.title ||
@@ -433,7 +437,7 @@ debugger;
 
   const updateUser = async (updatedData) => {
     try {
-
+debugger;
       const response = await axios.put(updateUserAPI, updatedData, { // updatedData now contains the new photo
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
@@ -441,10 +445,12 @@ debugger;
         },
       });
       //alert("✅ User saved successfully!");
+      debugger;
       showMessage("User updated successfully." , MESSAGE_TYPES.INFO);
       console.log("User saved", response.data);
 
     } catch (error) {
+      debugger;
       console.error(error);
       const message = error.response?.data?.errors || error.response?.data?.title || error.message;
       //alert(`❌ Failed: ${JSON.stringify(message)}`);
