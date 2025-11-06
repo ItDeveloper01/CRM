@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, LayoutDashboard, UserPlus, BarChart, Users, Settings } from 'lucide-react';
+import { Menu, LayoutDashboard, UserPlus, BarChart, Users, Settings , Megaphone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useGetSessionUser } from './SessionContext'; // ✅ import
 
@@ -9,6 +9,7 @@ const iconMap = {
   users: Users,
   newlead: UserPlus,
   leadanalytics: BarChart,
+  broadcastmessage: Megaphone,
 };
 
 export default function Sidebar({ auth, setAuth}) {

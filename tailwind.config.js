@@ -5,6 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+
       brandYellow: "#facc15",
       brandGreen: "#42f905e4",
       brandRed: "#f30518ff",
@@ -13,6 +14,17 @@ module.exports = {
       brandBlue: "#3b82f6",
       primary: COLORS.primary,
     },
+
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+      },
+      animation: {
+        marquee: "marquee 45s linear infinite",
+      },
+
     },
   },
   plugins: [],

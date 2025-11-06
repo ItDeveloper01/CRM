@@ -17,6 +17,7 @@ import LeadAnalytics from './LeadAnalytics';
 import { NotificationProvider } from "./Notification";
 import { useEffect } from 'react';
 import { GlobalDebug } from './Remove-Console';
+import AppreciationBannerAdmin from './AppreciationBannerAdmin';
 
 
 export default function App() {
@@ -68,6 +69,10 @@ export default function App() {
                <Route
                 path='/LeadsAnalytics'
                 element={<LeadAnalytics/>}
+              />
+              <Route
+                path='/appreciation'
+                element={<AppreciationBannerAdmin />}
               />
 
 
