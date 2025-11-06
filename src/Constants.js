@@ -75,11 +75,13 @@ export const COLORS = {
   brandPurple: "brandPurple",
   brandGray: "brandGray",
   brandBlue: "brandBlue",
+  primary: "#facc15",
+
 };
 
 export const STATUS_STYLES = {
   Open: {
-    border: "border-brandYellow",
+    border: "border-primary",
     ring: "focus:ring-brandYellow",
   },
   Lost: {
