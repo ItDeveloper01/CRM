@@ -17,6 +17,20 @@ export const ErrorMessages={
 ERROR_FETCHING_CITIES : "Error fetching cities:",
 }
 
+export const BannerMessages = {
+  EMPTY_MESSAGE_ERROR: "Please enter a message before sending!",
+  BROADCAST_SUCCESS: "Message broadcasted successfully!",
+  SEND_FAIL: "Failed to send message.",
+  DELETE_SUCCESS: "Message deleted successfully!",
+  DELETE_FAIL: "Failed to delete message.",
+};
+
+export const ApiEndpoints = {
+  GET_USER_MESSAGES_FOR_DELETE: "/Broadcast/GetUserWiseMessagesForDelete",
+  DELETE_MESSAGE: "/Broadcast/DeleteMessage",
+  POST_MESSAGE: "/BroadCast/PostMessage",
+};
+
 export const MESSAGE_TYPES = {
  WARNING: "WARNING",
  ERROR: "ERROR",
@@ -133,4 +147,3 @@ export const STATUS_STYLES = {
 //     color: "bg-blue-500 hover:bg-blue-600",
 //   },
 // };
-
