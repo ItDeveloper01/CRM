@@ -1,3 +1,5 @@
+import { bg } from "intl-tel-input/i18n";
+
 export const Roles = {
   SUPER_ADMIN: "SuperAdmin",
   ADMIN: "Admin",
@@ -83,32 +85,36 @@ export const TIME_OPTIONS = {
 
 //  If you want to change color  then change in Tailwind.config.js file it will show effectively every where for more check status in leadgeneration
 export const COLORS = {
-  brandYellow: "brandYellow",
-  brandRed: "brandRed",
-  brandGreen: "brandGreen",
-  brandPurple: "brandPurple",
-  brandGray: "brandGray",
-  brandBlue: "brandBlue",
-  primary: "#facc15",
+  primarylightblue: "#158bfaff",
+  yellowborder: "#facc15",
+  redborder: "#f30518ff",
+  greenborder: "#42f905e4",
+  purpleborder: "#9b5de5",
+  grayborder: "#d1d5db",
+ 
 
 };
 
 export const STATUS_STYLES = {
   Open: {
-    border: "border-primary",
-    ring: "focus:ring-brandYellow",
+    border: "border-yellowBorder",           // use color from tailwind.config.js
+    ring: "focus:ring-yellowBorder",
+    
   },
   Lost: {
-    border: "border-brandRed",
-    ring: "border-brandRed",
+    border: "border-redBorder",
+    ring: "focus:ring-redBorder",
+    
   },
   Confirmed: {
-    border: "border-brandGreen",
-    ring: "focus:ring-brandGreen",
+    border: "border-greenBorder",
+    ring: "focus:ring-greenBorder",
+    
   },
   Postponed: {
-    border: "border-brandPurple",
-    ring:"border-brandPurple",
+    border: "border-purpleBorder",
+    ring:"focus:ring-purpleBorder",
+    
   },
  
 };

@@ -5,14 +5,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+      primarylightblue: COLORS.primarylightblue,
+      // secondar:           its blue border
+      yellowBorder: COLORS.yellowborder,
+      redBorder: COLORS.redborder,
+      greenBorder: COLORS.greenborder,
+      purpleBorder: COLORS.purpleborder,
+      grayBorder: COLORS.grayborder,
 
-      brandYellow: "#facc15",
-      brandGreen: "#42f905e4",
-      brandRed: "#f30518ff",
-      brandPurple: "#9b5de5",
-      brandGray: "#d1d5db",
-      brandBlue: "#3b82f6",
-      primary: COLORS.primary,
+
     },
 
       keyframes: {

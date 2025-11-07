@@ -15,7 +15,8 @@ import { getEmptyCarLeadObj } from './Model/CarLeadModel';
 import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive } from './validations';
 import LeadCarRental from './LeadCarRental';
 import MessageBox from "./MessageBox";
-import { STATUS_STYLES,COLORS } from './Constants';
+// import { STATUS_STYLES,COLORS } from './Constants';
+import { STATUS_STYLES} from './Constants';
 
 import { mapObject } from './Model/MappingObjectFunction';
 import { useGetSessionUser } from "./SessionContext"
@@ -57,7 +58,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   const navigate = useNavigate();
   const status = leadObj.leadStatus || "Open";
   const { border, ring,bg } = STATUS_STYLES[status] || STATUS_STYLES.Open ;
-  const { borderColor, ringColor } = STATUS_STYLES[status];
+  // const { borderColor, ringColor } = STATUS_STYLES[status];
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("INFO");
   //Requirment for car rental

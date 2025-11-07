@@ -5,7 +5,7 @@ export default function LeadTiles({ tileCounts }) {
 
   const tiles = [
     { label: "Total Leads", value: tileCounts.TotalCount, bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-400", link: "/leads/total" },
-    { label: "Open Leads", value: tileCounts.OpenCount, bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-400", link: "/leads/open" },
+    { label: "Open Leads", value: tileCounts.OpenCount, bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellowBorder", link: "/leads/open" },
     { label: "Lost", value: tileCounts.LostCount, bg: "bg-red-100", text: "text-red-800", border: "border-red-400", link: "/leads/lost" },
     { label: "Confirmed", value: tileCounts.ConfirmedCount, bg: "bg-green-100", text: "text-green-800", border: "border-green-400", link: "/leads/confirmed" },
     { label: "Postponed Leads", value: tileCounts.PostponedCount, bg: "bg-purple-100", text: "text-purple-800", border: "border-purple-400", link: "/leads/postponed" },
