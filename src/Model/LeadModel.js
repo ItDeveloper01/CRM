@@ -11,7 +11,9 @@ export const LeadObj = {
   emailId: "",
   pax: 1,
   gender: "",           // Male/Female
-  leadStatus: "Open",
+  // leadStatus: "Open",
+  leadStatus: 1,
+  leadStatusReason: null,
   city: "",
   area: "",
   enquiryMode: null,

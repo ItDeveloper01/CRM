@@ -18,7 +18,7 @@ export const CarLeadObject= {
     createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"
     updatedAt: new Date().toISOString(),
     carCode: null,
-    status: "Open",// Open/In Process/Closed
+    status: 1,// Open/In Process/Closed
 
 
     quoteGiven: "",

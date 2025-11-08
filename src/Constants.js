@@ -86,11 +86,23 @@ export const TIME_OPTIONS = {
 //  If you want to change color  then change in Tailwind.config.js file it will show effectively every where for more check status in leadgeneration
 export const COLORS = {
   primarylightblue: "#158bfaff",
+  blueborder: "#60A5FA",
   yellowborder: "#facc15",
-  redborder: "#f30518ff",
-  greenborder: "#42f905e4",
+  redborder: "#f36975ff",
+  greenborder: "#6aee3ec6",
   purpleborder: "#9b5de5",
   grayborder: "#d1d5db",
+  bluebg : "#DBEAFE",
+  yellowbg : "#FEF9C3",
+  redbg : "#FEE2E2",
+  greenbg : "#DCFCE7",
+  purplebg : "#F3E8FF",
+  bluetext : "#1E40AF",
+  yellowtext : "#854D0E",
+  redtext: "#991B1B",
+  greentext: "#166534",
+  purpletext: "#6B21A8"
+  // FEE2E2
  
 
 };
