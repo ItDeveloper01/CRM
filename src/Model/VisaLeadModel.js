@@ -30,7 +30,7 @@ export const VISALeadObject = {
 
   visaCode: null, // usually read-only
   // status: "",
-  status: "Open",  // Open/In Process/Closed
+  status: 1,  // Open/In Process/Closed
   // NotMapped properties (UI/API only)
   quoteGiven: "",
   notes: "",

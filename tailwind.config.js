@@ -7,11 +7,23 @@ module.exports = {
       colors: {
       primarylightblue: COLORS.primarylightblue,
       // secondar:           its blue border
+      blueBorder : COLORS.blueborder,
       yellowBorder: COLORS.yellowborder,
       redBorder: COLORS.redborder,
       greenBorder: COLORS.greenborder,
       purpleBorder: COLORS.purpleborder,
       grayBorder: COLORS.grayborder,
+      blueBg: COLORS.bluebg,
+      yellowBg: COLORS.yellowbg,
+      redBg: COLORS.redbg,
+      greenBg: COLORS.greenbg,
+      purpleBg: COLORS.purplebg,
+      blueText: COLORS.bluetext,
+      yellowText: COLORS.yellowtext,
+      redText: COLORS.redtext,
+      greenText: COLORS.greentext,
+      purpleText: COLORS.purpletext,
+
 
 
     },

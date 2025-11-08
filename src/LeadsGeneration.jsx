@@ -16,7 +16,8 @@ import { validMobileNoLive, validNameLive, validateBeforeSubmit, validEmailLive 
 import LeadCarRental from './LeadCarRental';
 import MessageBox from "./MessageBox";
 // import { STATUS_STYLES,COLORS } from './Constants';
-import { STATUS_STYLES} from './Constants';
+import { STATUS_STYLES } from './Constants';
+import LeadStatusReason from './LeadStatusReason';
 
 import { mapObject } from './Model/MappingObjectFunction';
 import { useGetSessionUser } from "./SessionContext"
@@ -26,6 +27,8 @@ import * as Constants from './Constants';
 import LeadsTableForExistingPhone from './LeadsTableForExistingPhone';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
+import { constant, set } from 'lodash';
+import { id } from 'intl-tel-input/i18n';
 
 
 
@@ -39,13 +42,14 @@ export default function LeadsGeneration({ lead, onClose }) {
   });
   const [carLeaddObj, setCarLeadObj] = useState(getEmptyCarLeadObj());
   // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
-
+  const [statusReason, setStatusReason] = useState(false);     // for status popup
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [leadCategoryList, setLeadCategoryList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState([]);
   const [enquiryMode, setEnquiryMode] = useState([]);
   const [customerType, setCustomerType] = useState([]);
+  const [leadStatusMasterList , setleadStatusMasterList] = useState([]);
   const [formData, setFormData] = useState({});
   const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
   const [formHeader, setFormHeader] = useState('Lead Generation Form');
@@ -56,8 +60,9 @@ export default function LeadsGeneration({ lead, onClose }) {
   const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
   const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
   const navigate = useNavigate();
-  const status = leadObj.leadStatus || "Open";
-  const { border, ring,bg } = STATUS_STYLES[status] || STATUS_STYLES.Open ;
+  const status = leadObj.leadStatus || 1;
+  const [statusText, setStatusText] = useState("Open");
+  const { border, ring, bg } = STATUS_STYLES[statusText] || STATUS_STYLES.Open;
   // const { borderColor, ringColor } = STATUS_STYLES[status];
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("INFO");
@@ -87,6 +92,8 @@ export default function LeadsGeneration({ lead, onClose }) {
   const getEnquiryModesListEndPoint = config.apiUrl + '/MasterData/GetEnquiryModesList';
   const getEnquirySourceListEndPoint = config.apiUrl + '/MasterData/GetEnquirySourceList';
   const getCustomerTypeListEndPoint = config.apiUrl + '/MasterData/GetCustomerTypeList';
+  const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
+
 
 
   // const prepareAirTicketPayload = (obj) => {
@@ -372,6 +379,28 @@ export default function LeadsGeneration({ lead, onClose }) {
   }
 
 
+//  for Lead Status API
+  const fetchLeadStatus = async () => {
+    try {
+      const leadStatus = await axios.get(getLeadStatusListMasterEndPoint, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      });
+      setleadStatusMasterList(leadStatus.data || []);
+      console.log("Lead Status fetch Successfully", leadStatus.data);
+    } catch (err) {
+      console.error("Error fetching Lead Status:", err);
+      throw err;
+    }
+    finally
+    {
+
+    }
+  };
+
+
+
   // Initialize leadObj on prop change
   useEffect(() => {
 
@@ -411,6 +440,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     };
     fetchLeadCategories();
     fetchEnquiryDetails();
+    fetchLeadStatus();
   }, []);
 
   // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
@@ -461,7 +491,26 @@ export default function LeadsGeneration({ lead, onClose }) {
         return null;
     }
   };
+  const handleChangeStatusReason = (e) => {
+    const value = e.target.value;
+    debugger;
+    handleChange(e);
+    debugger;
+    console.log(" status value :", value)
+    let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
+    setStatusText(tempStatus);
+    console.log("lead status master list:", leadStatusMasterList  );
+    console.log("status text : ", tempStatus);
+    if (tempStatus === "Lost" || tempStatus === "Postponed") {
 
+      setStatusReason(true);
+    }
+  };
+
+  const handleSaveReason = (reason) => {
+    handleChange({ target: { name: "leadReason", value: reason } });
+    setStatusReason(false);
+  };
 
   React.useEffect(() => {
 
@@ -941,23 +990,29 @@ export default function LeadsGeneration({ lead, onClose }) {
             <label className="font-medium text-gray-700">Status:</label>
             <select
               name="leadStatus"
-              value={leadObj.leadStatus || "Open"}   // default = open
-              onChange={handleChange}
+              value={leadObj.leadStatus || 1}   // default = open
+              // onChange={handleChange}
+              onChange={handleChangeStatusReason}
               disabled={!isUpdateMode}                   // disabled while creating new
-                className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+              className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
                   ${border} ${ring} ${bg}
                 
                 ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""}
               `}
-            
-
             >
-              <option value="Open">Open</option>
-              <option value="Lost">Lost</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Postponed">Postponed</option>
+            {leadStatusMasterList &&
+                leadStatusMasterList.map((lStatus) => (
+                  <option key={lStatus.id} value={(lStatus.id)}>
+                    {lStatus.statusName}
+                  </option>
+                ))}
             </select>
           </div>
+          <LeadStatusReason
+            isOpen={statusReason}
+            onClose={() => setStatusReason(false)}
+            onSave={handleSaveReason}
+          />
         </div>
         <div className='flex gap-4 mb-4'>
           <div className='flex flex-col flex-1'>
