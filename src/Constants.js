@@ -30,7 +30,7 @@ export const BannerMessages = {
 export const ApiEndpoints = {
   GET_USER_MESSAGES_FOR_DELETE: "/Broadcast/GetUserWiseMessagesForDelete",
   DELETE_MESSAGE: "/Broadcast/DeleteMessage",
-  POST_MESSAGE: "/BroadCast/PostMessage",
+  POST_MESSAGE: "/Broadcast/PostMessage",
 };
 
 export const MESSAGE_TYPES = {

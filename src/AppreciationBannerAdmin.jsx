@@ -44,15 +44,22 @@ debugger;
     console.log("Deleting message:", messageToDelete);
     if (!messageToDelete) return;
 
-    
+    let sendinfVar={  id:messageToDelete.id,
+          message: messageToDelete.message ,
+          userId: messageToDelete.userId,
+          UserNameForDisplay:messageToDelete.userNameForDisplay,
+          requestedByUserID:sessionUser.user.userId,
+          createdAt:messageToDelete.createdAt,
+         
+        }
 
     setLoading(true);
     try {
       const deleteUrl = config.apiUrl + ApiEndpoints.DELETE_MESSAGE;
 
-      await axios.post(deleteUrl, messageToDelete, {
-        headers: { "Content-Type": "application/json" },
-               });
+      await axios.post( deleteUrl,sendinfVar,{
+          headers: { "Content-Type": "application/json" },
+        });
 
      // showMessage("Message deleted successfully!", MESSAGE_TYPES.INFO);
 
@@ -85,7 +92,11 @@ debugger;
       await axios.post(
         apiStr,
         { message: text ,
-          UserId: sessionUser.user.userId
+          userId: sessionUser.user.userId,
+          userNameForDisplay:"",
+          requestedByUserID:sessionUser.user.userId,
+          createdAt:new Date().toISOString()
+
         },
         {
           headers: { "Content-Type": "application/json" },

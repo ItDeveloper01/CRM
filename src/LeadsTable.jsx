@@ -215,7 +215,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
         error.message ||
         "Unknown error";
 
-      showMessage(JSON.stringify(message), MESSAGE_TYPES.ERROR);
+      showMessage("Error fetching Lead for edit." + JSON.stringify(message), MESSAGE_TYPES.ERROR);
       return null;
 
     }

@@ -5,6 +5,7 @@ import axios from "axios";
 import { CarLeadObject } from "./Model/CarLeadModel";
 import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
+import { MESSAGE_TYPES } from "./Constants";
 
 
 
@@ -72,6 +73,10 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 setSpecialRequirements(specialReq.data || []);
             } catch (error) {
                 console.error("Error fetching special requirements:", error);
+                 showMessage({
+        type: MESSAGE_TYPES.ERROR,
+        message: "Error fetching special requirements data.",
+      });
             }
         };
         fetchSpecialRequirements();
@@ -86,7 +91,11 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 });
                 setVehicleType(vehType.data || []);
             } catch (error) {
-                console.error("Error fetching special requirements:", error);
+                console.error("Error fetching vehicle types:", error);
+                 showMessage({
+                                type: MESSAGE_TYPES.ERROR,
+                                message: "Error fetching vehicle types data.",
+                            });
             }
         };
         fetchVehicleTypes();
