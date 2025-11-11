@@ -153,7 +153,11 @@ debugger;
 
     } catch (err) {
       console.error('Failed to validate User ID:', err);
-      alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+      //alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+      showMessage({
+        type: MESSAGE_TYPES.ERROR,
+        message: `User ID "${userObjects.userId}" is already taken. Please choose another.`
+      });
       setErrors(prev => ({ ...prev, userId: `User ID "${userObjects.userId}" is already taken. Please choose another.` }));
       setUserObjects(prev => ({ ...prev, userId: '' })); // clear invalid userId  
       
@@ -194,7 +198,10 @@ debugger;
 
     } catch (err) {
       console.error('Failed to validate User ID:', err);
-      alert(`❌ User ID "${userObjects.userId}" is already taken. Please choose another.`);
+      showMessage({
+        type: MESSAGE_TYPES.ERROR,
+        message: `User ID "${userObjects.userId}" is already taken. Please choose another.`
+      });
       setErrors(prev => ({ ...prev, userId: `User ID "${userObjects.userId}" is already taken. Please choose another.` }));
       setUserObjects(prev => ({ ...prev, userId: '' })); // clear invalid userId  
       
@@ -396,7 +403,7 @@ debugger;
     } catch (error) {
       console.error(error);
       const message = error.response?.data?.errors || error.response?.data?.title || error.message;
-      alert(`❌ Failed: ${JSON.stringify(message)}`);
+      showMessage (`❌ Failed: ${JSON.stringify(message)}`,MESSAGE_TYPES.ERROR);
     }
   };
 
@@ -438,7 +445,7 @@ debugger;
   const updateUser = async (updatedData) => {
     try {
 debugger;
-      const response = await axios.put(updateUserAPI, updatedData, { // updatedData now contains the new photo
+      const response = await axios.post(updateUserAPI, updatedData, { // updatedData now contains the new photo
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
           "Content-Type": "application/json",

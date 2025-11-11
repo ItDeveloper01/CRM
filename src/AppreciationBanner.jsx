@@ -28,7 +28,9 @@ function AppreciationBanner() {
         }
         console.log("✅ Initial messages fetched:", res.data);
       })
-      .catch((err) => console.error("Error fetching messages:", err));
+      .catch((err) => console.error("Error fetching messages:", err)
+    
+    );
 
     // SignalR connection
     const connection = new signalR.HubConnectionBuilder()
@@ -66,19 +68,27 @@ function AppreciationBanner() {
     return `Render count: ${renderCounter.current}`;
   }, [messages]);
 
-  if (!messages || messages.length === 0) return null;
+  debugger;
+  //if (!messages || messages.length == 0) return null;
 
+  debugger;
   // If messages = [{ id: 1, message: "hello" }, { id: 2, message: "hi" }]
-   const combinedMessage = messages.map(m => m.message).join("        🌟        ");
+   if (!messages || messages.length === 0) return null;
 
-  return (
-    <div className="relative overflow-hidden bg-green-100 text-green-800 font-semibold py-2 shadow-md">
-      {/* <div className="text-xs text-gray-600 mb-1 text-center">{renderStats}</div> */}
-      <div className="whitespace-nowrap animate-marquee">
-        🌟 {combinedMessage} 🌟
-      </div>
+const combinedMessage = messages
+  .filter(m => m?.message?.trim())
+  .map(m => m.message)
+  .join("        🌟        ");
+
+if (!combinedMessage) return null;
+
+return (
+  <div className="relative overflow-hidden bg-green-100 text-green-800 font-semibold py-2 shadow-md">
+    <div className="whitespace-nowrap animate-marquee">
+      🌟 {combinedMessage} 🌟
     </div>
-  );
+  </div>
+);
 }
 
 export default AppreciationBanner;

@@ -3,7 +3,7 @@ import { Loader2, Users, CheckCircle, XCircle, Clock } from "lucide-react";
 import config from "./config";
 import axios from "axios";
 import { useGetSessionUser } from "./SessionContext"; // ✅ import
-import { TIME_OPTIONS } from "./Constants";
+import { MESSAGE_TYPES, TIME_OPTIONS } from "./Constants";
 import { MONTHS } from "./Constants";
 import { QUARTERS } from "./Constants";
 import Select from "react-select";
@@ -174,7 +174,7 @@ const  fetchYearlyLeadsData  = async () => {
 
     } catch (error) {
       showMessage({
-        type: "ERROR",
+        type: MESSAGE_TYPES.ERROR,
         message: "Error fetching yearly leads data.",
       });
       console.error("Error fetching yearly leads data: ", error);
@@ -211,7 +211,7 @@ const res = await axios.post(string, {
 
     } catch (error) {
       showMessage({
-        type: "ERROR",
+        type: MESSAGE_TYPES.ERROR,
         message: "Error fetching quarterly leads data.",
       });
       console.error("Error fetching quarterly leads data: ", error);
@@ -253,7 +253,7 @@ const res = await axios.post(string, {
      // console.log("Monthly Leads Data Fetched: ", data);
     } catch (error) {
       showMessage({
-        type: "ERROR",
+        type: MESSAGE_TYPES.ERROR,
         message: "Error fetching monthly leads data.",
       });
       console.error("Error fetching monthly leads data: ", error);
