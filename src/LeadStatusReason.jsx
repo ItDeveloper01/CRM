@@ -1,15 +1,57 @@
 import React from "react";
+import { useState } from "react";
+import { useEffect } from "react";
+import config from "./config";
+import axios from "axios";
+import { LeadObj } from "./Model/LeadModel";
+import { useGetSessionUser } from "./SessionContext";
 
-const LeadStatusReason = ({ isOpen, onClose, onSave }) => {
-  const [reason, setReason] = React.useState("");
+
+const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
+  const [leadStatusReason, setLeadStatusReason] = useState([]);
+  const[selectedReason,setSelectedReason] = useState([]);
+  const { user: sessionUser } = useGetSessionUser();
+  const getReasonListEndPoint = config.apiUrl + '/MasterData/GetReasonList';
+
+  useEffect(() => {
+    const fetchReasonList = async () => {
+      try {
+        const reason = await axios.get(getReasonListEndPoint, {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+          },
+        });
+        debugger;
+        console.log("Reason fetch Successfully", reason);
+        debugger;
+        setLeadStatusReason(reason.data || []);
+      } catch (error) {
+        console.error("Error fetching special requirements:", error);
+      }
+    };
+
+    fetchReasonList();
+  }, []);
+
+  const handleSave = () => {
+    debugger;
+    handleChange({ target: { name: "leadStatusReason", value: selectedReason } });
+    //handleChange({ target: { name: "notes", value: selectedRemarsk} });
+
+    onClose();  
+
+  };
+
+  const  reasonCHange = (e) => {
+    const selectedId = e.target.value;
+    let tempReason = leadStatusReason.find(s => s.id == selectedId) || null;
+    setSelectedReason(selectedId);
+    console.log("Category Changed...", selectedReason);
+  };
+
 
   if (!isOpen) return null; // don’t render if not open
 
-  const handleSave = () => {
-    if (reason.trim() === "") return;
-    onSave(reason);
-    setReason("");
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -18,13 +60,22 @@ const LeadStatusReason = ({ isOpen, onClose, onSave }) => {
           Please provide a reason
         </h2>
 
-        <input
-          type="text"
-          placeholder="Enter reason..."
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          className="border-2 border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:outline-none mb-4"
-        />
+        <select name="leadStatusReason" 
+         
+         value={selectedReason}
+          
+          onChange={reasonCHange}
+
+          className="border-2 border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:outline-none mb-4">
+
+          {/* //  className='border-highlight'> */}
+          <option value="">Select Reason</option>
+          {leadStatusReason.map((reason) => (
+            <option key={reason.id} value={(reason.id)}>
+              {reason.reasonName}
+            </option>
+          ))}
+        </select>
 
         <div className="flex justify-end gap-2">
           <button
