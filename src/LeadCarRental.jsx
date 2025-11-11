@@ -6,6 +6,8 @@ import { CarLeadObject } from "./Model/CarLeadModel";
 import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 import { MESSAGE_TYPES } from "./Constants";
+import { useMessageBox } from "./Notification"; 
+
 
 
 
@@ -21,6 +23,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const [requirementType, setRequirementType] = useState("");
     const [specialRequirement, setSpecialRequirements] = useState([]);
     const [vehicleType, setVehicleType] = useState([]);
+     const { showMessage } = useMessageBox();
 
 
     const getSpecialRequirementsListEndPoint = config.apiUrl + '/MasterData/GetSpecialRequirementsList';
