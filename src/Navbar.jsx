@@ -59,7 +59,7 @@ console.log("LoggedIn user Name...."+loggedInUser.user.userId );
 
       await fetch("/api/logout", {
         method: "POST",
-        credentials: "include", // if you use cookies
+        //credentials: "include", // if you use cookies
         headers: { "Content-Type": "application/json" },
       });
     } catch (error) {
