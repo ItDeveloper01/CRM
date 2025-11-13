@@ -7,9 +7,10 @@ import { LeadObj } from "./Model/LeadModel";
 import { useGetSessionUser } from "./SessionContext";
 
 
-const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
+const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange,handleLostPosteponedRemarkChange,leadCategory, }) => {
   const [leadStatusReason, setLeadStatusReason] = useState([]);
   const[selectedReason,setSelectedReason] = useState([]);
+  const[selectedRemarks,setSelectedRemarks] = useState("");
   const { user: sessionUser } = useGetSessionUser();
   const getReasonListEndPoint = config.apiUrl + '/MasterData/GetReasonList';
 
@@ -36,7 +37,12 @@ const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
   const handleSave = () => {
     debugger;
     handleChange({ target: { name: "leadStatusReason", value: selectedReason } });
-    //handleChange({ target: { name: "notes", value: selectedRemarsk} });
+    //  handleChange({ target: { name: "notes", value: selectedRemarks } });
+    handleLostPosteponedRemarkChange(
+      { target: { name: "notes", value: selectedRemarks} }
+      // leadCategory
+    );
+    
 
     onClose();  
 
@@ -46,8 +52,22 @@ const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
     const selectedId = e.target.value;
     let tempReason = leadStatusReason.find(s => s.id == selectedId) || null;
     setSelectedReason(selectedId);
-    console.log("Category Changed...", selectedReason);
+    console.log ("Category Changed...", selectedReason);
+    // const selectedRemarks = e.target.value;
+    // setSelectedRemarks(selectedRemarks);
+    // console.log("Category Changed...", selectedRemarks);
+
+
   };
+
+  // handlchange for notes in lead model 
+  const handleRemarkChange = (e) => {
+    const selectedRemarks = e.target.value;
+    setSelectedRemarks(selectedRemarks);
+    console.log("Category Changed...", selectedRemarks);
+
+  };
+  
 
 
   if (!isOpen) return null; // don’t render if not open
@@ -62,7 +82,7 @@ const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
 
         <select name="leadStatusReason" 
          
-         value={selectedReason}
+          value={selectedReason}
           
           onChange={reasonCHange}
 
@@ -76,6 +96,16 @@ const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange }) => {
             </option>
           ))}
         </select>
+
+        <label className="label-style">Remark</label>
+                <input
+                    type="text"
+                    name="notes"
+                    value={selectedRemarks}
+                    placeholder="Remark "
+                    className="border-2 border-gray-300 rounded-lg w-full px-3 py-2 focus:ring-2 focus:ring-yellow-400 focus:outline-none mb-4"
+                    onChange={handleRemarkChange}
+                />
 
         <div className="flex justify-end gap-2">
           <button

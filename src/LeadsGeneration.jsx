@@ -185,7 +185,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     newVisa.quoteGiven = incomingVisa.quoteGiven?.trim() || '';
     newVisa.notes = incomingVisa.notes || '';
     newVisa.visaCode = incomingVisa.visaCode || null;
-    // debugger;
+    debugger;
     newVisa.assigneeTo_UserID = incomingVisa.assigneeTo_UserID || currentUser?.user?.userId;
     newVisa.createdBy_UserID = incomingVisa.createdBy_UserID || currentUser?.user?.userId;
     newVisa.createdAt = incomingVisa.createdAt || new Date().toISOString();
@@ -193,7 +193,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     newVisa.status = incomingVisa.status || 'Open';
 
 
-    // debugger;
+    debugger;
     console.log("Mapped Visa Obj....:", newVisa);
     return newVisa;
   };
@@ -202,10 +202,11 @@ export default function LeadsGeneration({ lead, onClose }) {
   const mapIncomingAirTicketToModel = (incomingAirTicketing) => {
     const newAirTicketing = { ...getEmptyAirTicketObj() }; // start with default model
 
-    // debugger;
+    debugger;
     if (!incomingAirTicketing) return newAirTicketing;
 
 
+    debugger
     // Map main properties
     newAirTicketing.id = incomingAirTicketing.id || null;
     newAirTicketing.airTicketType = incomingAirTicketing.airTicketType?.trim() || '';
@@ -220,7 +221,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     newAirTicketing.quoteGiven = incomingAirTicketing.quoteGiven?.trim() || '';
     newAirTicketing.notes = incomingAirTicketing.notes || '';
     newAirTicketing.airTicketCode = incomingAirTicketing.airTicketCode || null;
-    // debugger;
+    debugger;
     newAirTicketing.assigneeTo_UserID = incomingAirTicketing.assigneeTo_UserID || currentUser?.user?.userId;
     newAirTicketing.createdBy_UserID = incomingAirTicketing.createdBy_UserID || currentUser?.user?.userId;
     newAirTicketing.createdAt = incomingAirTicketing.createdAt || new Date().toISOString();
@@ -290,7 +291,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   };
 
   const onMobileChangeFocus = async (value) => {
-    // debugger;
+    debugger;
     if (isUpdateMode) return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
     //CheckDuplicateMobile
@@ -327,7 +328,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   }
 
   const fetchEnquiryDetails = async () => {
-    // debugger;
+    debugger;
     const enqmodes = await axios.get(getEnquiryModesListEndPoint, {
       headers: {
         Authorization: `Bearer ${sessionUser.token}`,
@@ -403,7 +404,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   // Initialize leadObj on prop change
   useEffect(() => {
 
-    // debugger;
+    debugger;
 
     if (lead && Object.keys(lead).length > 0) {
 
@@ -465,13 +466,13 @@ export default function LeadsGeneration({ lead, onClose }) {
 
 
   const handleChangeForCategory = (e) => {
-    // debugger;
+    debugger;
     console.log("In handle change for category changed...", e.target.value);
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
 
     setSelectedLeadName(leadCategoryList[val] || "");
-    // debugger;
+    debugger;
 
     switch (leadCategoryList[val]) {
       case 'Visa':
@@ -492,9 +493,9 @@ export default function LeadsGeneration({ lead, onClose }) {
   };
   const handleChangeStatusReason = (e) => {
     const value = e.target.value;
-    // debugger;
+    debugger;
     handleChange(e);
-    // debugger;
+    debugger;
     console.log(" status value :", value)
     let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
     setStatusText(tempStatus);
@@ -513,7 +514,7 @@ export default function LeadsGeneration({ lead, onClose }) {
 
   React.useEffect(() => {
 
-    // debugger;
+    debugger;
 
 
   }, [selectedLeadName, visadObj]);
@@ -567,6 +568,35 @@ export default function LeadsGeneration({ lead, onClose }) {
 
 
   };
+
+  const handleLostPosteponedRemarkChange = (e) => {
+    const { value } = e.target;
+    debugger;
+    setLeadObj(prev => ({ ...prev, remark: value }));
+    
+    switch (selectedLeadName.toLowerCase()) {
+    case 'air ticketing':
+      debugger;
+      setAirTicketingLeadObj(prev => ({ ...prev, notes: value }));
+      break;
+
+    case 'visa':
+      debugger;
+      setVisaObj(prev => ({ ...prev, notes: value }));
+      break;
+
+    case 'car rentals':
+      debugger;
+      setCarLeadObj(prev => ({ ...prev, notes: value }));
+      break;
+
+    default:
+        return null
+  }
+
+  };
+
+
 
   const handleSpecialRequirementsChange = (e) => {
     const { value, checked } = e.target;
@@ -705,7 +735,7 @@ export default function LeadsGeneration({ lead, onClose }) {
 
   const handleSubmit = async (e) => {
 
-    // debugger;
+    debugger;
 
     e.preventDefault();
 
@@ -792,7 +822,7 @@ export default function LeadsGeneration({ lead, onClose }) {
             if (!visadObj.assigneeTo_UserID) {
               visadObj.assigneeTo_UserID = currentUser?.user?.userId;
             }
-            // debugger;
+            debugger;
             const deepVisaCopy = cloneDeep(visadObj);
             deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
             break;
@@ -812,7 +842,7 @@ export default function LeadsGeneration({ lead, onClose }) {
             break;
 
           case "car rentals":
-            // debugger;
+            debugger;
             if (!carLeaddObj.createdBy_UserID) {
               carLeaddObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -826,7 +856,7 @@ export default function LeadsGeneration({ lead, onClose }) {
             break;
 
           default:
-            // debugger;
+            debugger;
             deepLeadCopy.category = { ...getEmptyLeadObj() };
             console.warn("Unknown lead type:", selectedLeadName);
             break;
@@ -837,7 +867,7 @@ export default function LeadsGeneration({ lead, onClose }) {
         console.log("Final Lead Obj to Update:", deepLeadCopy);
         console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 
-        // debugger;
+        debugger;
         const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
 
 
@@ -907,7 +937,7 @@ export default function LeadsGeneration({ lead, onClose }) {
 
       } else {
 
-        // debugger;
+        debugger;
 
 
 
@@ -945,7 +975,7 @@ export default function LeadsGeneration({ lead, onClose }) {
             break;
 
           default:
-            // debugger;
+            debugger;
             deepCopy.category = { ...getEmptyLeadObj() };
             console.warn("Unknown lead type:", selectedLeadName);
             break;
@@ -955,7 +985,7 @@ export default function LeadsGeneration({ lead, onClose }) {
         console.log("New Lead Obj...", deepCopy);
         console.log("Payload being sent:", JSON.stringify(deepCopy, null, 2));
 
-        // debugger;
+        debugger;
         await axios.post(generateLEadAPI, deepCopy, {
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
@@ -1012,6 +1042,8 @@ export default function LeadsGeneration({ lead, onClose }) {
             onClose={() => setStatusReason(false)}
             onSave={handleSaveReason}
             handleChange={handleChange}
+            handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
+            leadCategory={selectedLeadName} 
           />
         </div>
         <div className='flex gap-4 mb-4'>
