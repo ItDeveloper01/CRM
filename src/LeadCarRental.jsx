@@ -309,7 +309,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                                 placeholder="Enter Telephone No"
                                 // className="border-highlight"
                                 className={`border-highlight ${errors.telephoneNo ? "border-red-500" : ""}`} 
-                                maxLength={10}
+                                maxLength={11}
                             />
                                 {errors.telephoneNo && (<p className="text-red-500 text-sm mt-1">{errors.telephoneNo}</p>)}
                         </div>
