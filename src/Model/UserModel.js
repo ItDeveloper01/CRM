@@ -1,12 +1,15 @@
 export const UserObject = {
   userId: null,          // Unique user ID
-  empId: null,           // Employee ID
+  empId: "",           // Employee ID
   firstName: "",         
   middleName: "",        
   lastName: "",
   birthDate: null,       // ISO date string "YYYY-MM-DD"
   mobileNo: "",
   emailId: "",
+  personalMobileNo: "",
+  personalEmailId: "",
+  address: "",
   gender: "",            // "Male"/"Female"/"Other"
   
   role: 0 ,              // e.g., "Admin", "User"

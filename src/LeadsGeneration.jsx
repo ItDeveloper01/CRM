@@ -28,11 +28,12 @@ import LeadsTableForExistingPhone from './LeadsTableForExistingPhone';
 import { useNavigate } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import { constant, set } from 'lodash';
-import { id } from 'intl-tel-input/i18n';
+import { da, id } from 'intl-tel-input/i18n';
+import HistoryCollapse from './HIstoryHover';
 
 
 
-export default function LeadsGeneration({ lead, onClose }) {
+export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
 
@@ -49,7 +50,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   const [enquirySource, setEnquirySource] = useState([]);
   const [enquiryMode, setEnquiryMode] = useState([]);
   const [customerType, setCustomerType] = useState([]);
-  const [leadStatusMasterList , setleadStatusMasterList] = useState([]);
+  const [leadStatusMasterList, setleadStatusMasterList] = useState([]);
   const [formData, setFormData] = useState({});
   const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
   const [formHeader, setFormHeader] = useState('Lead Generation Form');
@@ -118,22 +119,57 @@ export default function LeadsGeneration({ lead, onClose }) {
     }
 
     // Example API that provides Indian cities
-    fetch("https://countriesnow.space/api/v0.1/countries/cities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ country: "India" }),
+
+    // *****************************old Country code 25.11.2025*************************
+    // fetch("https://countriesnow.space/api/v0.1/countries/cities", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ country: "India" }),
+    // })
+   
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     if (data?.data) {
+    //       setCities(data.data);
+    //       console.log("countries: ", data.data);
+    //     }
+    //     setLoading(false);
+    //   })
+    //   .catch((err) => {
+    //     console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
+    //     setLoading(false);
+    //   });
+      // *****************************old Country code 25.11.2025*************************
+
+    //   fetch("https://api.first.org/data/v1/countries")
+    // .then(res => res.json())
+    // .then(data => {
+    //   const formatted = Object.entries(data.data).map(([code, item]) => ({
+    //     name: item.country,
+    //     value: code
+    //   }));
+    //   console.log("countries are :", data);
+    //   console.log("formatted countries are :", formatted);
+    //   setCountryCode(formatted);
+    // })
+    // .catch(err => console.error("Error fetching country codes:", err));
+
+  
+  //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
+  fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
+    .then((res) => res.json())
+    .then((data) => {
+      const formattedCountries = data
+        .map((country) => ({
+          name: country.name.common,
+          value: country.cca2 || country.name.common,
+          flag: country.flags?.png
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      setCountries(formattedCountries);
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.data) {
-          setCities(data.data);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
-        setLoading(false);
-      });
+    .catch((err) => console.error("Error fetching countries:", err));
 
     // Fetch Special Requirements for Car Rental
     // const fetchSpecialRequirements = async () => {
@@ -157,6 +193,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     Aurangabad: ["Cidco", "Nirala Bazar", "Garkheda", "Waluj"],
     Kolhapur: ["Shahupuri", "Laxmipuri", "Rajaram Puri"],
     Ahemdabad: ["Maninagar", "Navrangpura", "Satellite", "Bopal"],
+    Other: ["Other"]
   };
 
   const mapIncomingVisaToModel = (incomingVisa) => {
@@ -379,7 +416,7 @@ export default function LeadsGeneration({ lead, onClose }) {
   }
 
 
-//  for Lead Status API
+  //  for Lead Status API
   const fetchLeadStatus = async () => {
     try {
       const leadStatus = await axios.get(getLeadStatusListMasterEndPoint, {
@@ -393,8 +430,7 @@ export default function LeadsGeneration({ lead, onClose }) {
       console.error("Error fetching Lead Status:", err);
       throw err;
     }
-    finally
-    {
+    finally {
 
     }
   };
@@ -451,17 +487,17 @@ export default function LeadsGeneration({ lead, onClose }) {
     }
   }, [leadObj.fK_LeadCategoryID, leadCategoryList]);
 
-  // Fetch countries and country codes
+  // Fetch countries and country codes This is original commented on 25.11.2025 use effect 
   useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all")
-      .then(res => res.json())
-      .then(data => setCountryCode(data || []))
-      .catch(err => console.error(err));
+    // fetch("https://restcountries.com/v3.1/all")
+    //   .then(res => res.json())
+    //   .then(data => setCountryCode(data || []))
+    //   .catch(err => console.error(err));
 
-    fetch("https://countriesnow.space/api/v0.1/countries/positions")
-      .then(res => res.json())
-      .then(data => setCountries(data.data || []))
-      .catch(err => console.error(err));
+    // fetch("https://countriesnow.space/api/v0.1/countries/positions")
+    //   .then(res => res.json())
+    //   .then(data => setCountries(data.data || []))
+    //   .catch(err => console.error(err));
   }, []);
 
 
@@ -499,7 +535,7 @@ export default function LeadsGeneration({ lead, onClose }) {
     console.log(" status value :", value)
     let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
     setStatusText(tempStatus);
-    console.log("lead status master list:", leadStatusMasterList  );
+    console.log("lead status master list:", leadStatusMasterList);
     console.log("status text : ", tempStatus);
     if (tempStatus === "Lost" || tempStatus === "Postponed") {
 
@@ -573,26 +609,26 @@ export default function LeadsGeneration({ lead, onClose }) {
     const { value } = e.target;
     debugger;
     setLeadObj(prev => ({ ...prev, remark: value }));
-    
+
     switch (selectedLeadName.toLowerCase()) {
-    case 'air ticketing':
-      debugger;
-      setAirTicketingLeadObj(prev => ({ ...prev, notes: value }));
-      break;
+      case 'air ticketing':
+        debugger;
+        setAirTicketingLeadObj(prev => ({ ...prev, notes: value }));
+        break;
 
-    case 'visa':
-      debugger;
-      setVisaObj(prev => ({ ...prev, notes: value }));
-      break;
+      case 'visa':
+        debugger;
+        setVisaObj(prev => ({ ...prev, notes: value }));
+        break;
 
-    case 'car rentals':
-      debugger;
-      setCarLeadObj(prev => ({ ...prev, notes: value }));
-      break;
+      case 'car rentals':
+        debugger;
+        setCarLeadObj(prev => ({ ...prev, notes: value }));
+        break;
 
-    default:
+      default:
         return null
-  }
+    }
 
   };
 
@@ -664,14 +700,19 @@ export default function LeadsGeneration({ lead, onClose }) {
           <>
             {(
               console.log("History to pass to HistoryHover:", LeadObj.histories),
+
               <LeadCarRental
+
                 carLeaddObj={carLeaddObj}
                 setCarLeadObj={setCarLeadObj}
                 cities={cities}
                 handleChange={handleChange}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
+                readOnly={readOnly}
+
               />
+
 
             )}
           </>
@@ -1009,162 +1050,167 @@ export default function LeadsGeneration({ lead, onClose }) {
     }
   };
   return (
+
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
+      {/* <fieldset disabled={readOnly}> */}
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
       {/* Customer Details */}
-      <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
-        <div className="flex items-center justify-between mb-4 border-b pb-2">
-          <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
-          <div className="flex items-center gap-2">
-            <label className="font-medium text-gray-700">Status:</label>
-            <select
-              name="leadStatus"
-              value={leadObj.leadStatus || 1}   // default = open
-              // onChange={handleChange}
-              onChange={handleChangeStatusReason}
-              disabled={!isUpdateMode}                   // disabled while creating new
-              className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+      <fieldset disabled={readOnly}>
+        <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
+          <div className="flex items-center justify-between mb-4 border-b pb-2">
+            <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
+            <div className="flex items-center gap-2">
+              <label className="font-medium text-gray-700">Status:</label>
+              <select
+                name="leadStatus"
+                value={leadObj.leadStatus || 1}   // default = open
+                // onChange={handleChange}
+                onChange={handleChangeStatusReason}
+                disabled={!isUpdateMode}                   // disabled while creating new
+                className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
                   ${border} ${ring} ${bg}
                 
                 ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""}
               `}
-            >
-            {leadStatusMasterList &&
-                leadStatusMasterList.map((lStatus) => (
-                  <option key={lStatus.id} value={(lStatus.id)}>
-                    {lStatus.statusName}
-                  </option>
-                ))}
-            </select>
-          </div>
-          <LeadStatusReason
-            isOpen={statusReason}
-            onClose={() => setStatusReason(false)}
-            onSave={handleSaveReason}
-            handleChange={handleChange}
-            handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
-            leadCategory={selectedLeadName} 
-          />
-        </div>
-        <div className='flex gap-4 mb-4'>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Mobile Number</label>
-            <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
-              className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
-            />
-            {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Email</label>
-            <input name='emailId' placeholder='Email Address' type='email' onChange={handleChange} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
-            {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
-          </div>
-        </div>
-        <div className='flex gap-4 mb-4'>
-          <div className='flex flex-col w-28'>
-            <label className='label-style'>Title</label>
-            <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className={`border-highlight ${errors.title ? "border-red-500" : ""}`}>
-              <option value=''>Title</option>
-              <option value='Mr.'>Mr.</option>
-              <option value='Mrs.'>Mrs.</option>
-              <option value='Ms.'>Ms.</option>
-              <option value='Dr.'>Dr.</option>
-              <option value='Prof.'>Prof.</option>
-            </select>
-            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>First Name</label>
-            <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
-            {errors.fName && <p className="text-red-500 text-sm">{errors.fName}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Middle Name</label>
-            <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`} />
-            {errors.mName && <p className="text-red-500 text-sm">{errors.mName}</p>}
-          </div>
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Last Name</label>
-            <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} maxLength={30}
-              className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`} />
-            {errors.lName && <p className="text-red-500 text-sm">{errors.lName}</p>}
-          </div>
-        </div>
-
-        {/* Birthdate + Gender + City + Area */}
-        <div className='flex gap-4 mb-4'>
-          {/* Birthdate */}
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Birthdate</label>
-            <input
-              type='date'
-              className={`border-highlight`}
-              name='birthDate'
-              onChange={handleChange}
-              value={leadObj.birthDate}
+              >
+                {leadStatusMasterList &&
+                  leadStatusMasterList.map((lStatus) => (
+                    <option key={lStatus.id} value={(lStatus.id)}>
+                      {lStatus.statusName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <LeadStatusReason
+              isOpen={statusReason}
+              onClose={() => setStatusReason(false)}
+              onSave={handleSaveReason}
+              handleChange={handleChange}
+              handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
+              leadCategory={selectedLeadName}
             />
           </div>
-
-          {/* Gender */}
-          <div className='flex flex-col flex-1'>
-            <label className='label-style'>Gender</label>
-            <select
-              value={leadObj.gender?.trim() || ""}
-              className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
-              name='gender'
-              onChange={handleChange}
-            >
-              <option value=''>Select Gender</option>
-              <option value='Male'>Male</option>
-              <option value='Female'>Female</option>
-
-
-            </select>
-            {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+          <div className='flex gap-4 mb-4'>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Mobile Number<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
+                className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
+              />
+              {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Email<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <input name='emailId' placeholder='Email Address' type='email' onChange={handleChange} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
+              {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
+            </div>
           </div>
-          {/* City */}
-          <div className="flex flex-col flex-1">
-            <label className="label-style">City</label>
-            <select
-              className={`border-highlight`}
-              // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              name="city"
-              value={leadObj.city?.trim() || ""}
-              onChange={handleChange}
-            >
-              <option value="">Select City</option>
-              {Object.keys(cityAreas).map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+          <div className='flex gap-4 mb-4'>
+            <div className='flex flex-col w-28'>
+              <label className='label-style'>Title<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className={`border-highlight ${errors.title ? "border-red-500" : ""}`}>
+                <option value=''>Title</option>
+                <option value='Mr.'>Mr.</option>
+                <option value='Mrs.'>Mrs.</option>
+                <option value='Ms.'>Ms.</option>
+                <option value='Dr.'>Dr.</option>
+                <option value='Prof.'>Prof.</option>
+              </select>
+              {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>First Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
+                className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
+              {errors.fName && <p className="text-red-500 text-sm">{errors.fName}</p>}
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Middle Name</label>
+              <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} maxLength={30}
+                className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`} />
+              {errors.mName && <p className="text-red-500 text-sm">{errors.mName}</p>}
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Last Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} maxLength={30}
+                className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`} />
+              {errors.lName && <p className="text-red-500 text-sm">{errors.lName}</p>}
+            </div>
           </div>
 
-          {/* Area */}
-          <div className="flex flex-col flex-1">
-            <label className="label-style">Area</label>
-            <select
-              className={`border-highlight`}
-              // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              name="area"
-              value={leadObj.area?.trim() || ""}
-              onChange={handleChange}
-              disabled={!leadObj.city} // disable until city selected
-            >
-              <option value="">Select Area</option>
-              {leadObj.city &&
-                cityAreas[leadObj.city || []].map((area) => (
-                  <option key={area} value={area}>
-                    {area}
+          {/* Birthdate + Gender + City + Area */}
+          <div className='flex gap-4 mb-4'>
+            {/* Birthdate */}
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Birthdate</label>
+              <input
+                type='date'
+                className={`border-highlight`}
+                name='birthDate'
+                onChange={handleChange}
+                value={leadObj.birthDate}
+              />
+            </div>
+
+            {/* Gender */}
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Gender<span className="text-red-500 text-lg  leading-none"> *</span></label>
+              <select
+                value={leadObj.gender?.trim() || ""}
+                className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
+                name='gender'
+                onChange={handleChange}
+              >
+                <option value=''>Select Gender</option>
+                <option value='Male'>Male</option>
+                <option value='Female'>Female</option>
+
+
+              </select>
+              {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+            </div>
+            {/* City */}
+            <div className="flex flex-col flex-1">
+              <label className="label-style">City</label>
+              <select
+                className={`border-highlight`}
+                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                name="city"
+                value={leadObj.city?.trim() || ""}
+                onChange={handleChange}
+              >
+                <option value="">Select City</option>
+                {Object.keys(cityAreas).map((city) => (
+                  <option key={city} value={city}>
+                    {city}
                   </option>
                 ))}
-            </select>
+              </select>
+            </div>
+
+            {/* Area */}
+            <div className="flex flex-col flex-1">
+              <label className="label-style">Area</label>
+              <select
+                className={`border-highlight`}
+                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                name="area"
+                value={leadObj.area?.trim() || ""}
+                onChange={handleChange}
+                disabled={!leadObj.city} // disable until city selected
+              >
+                <option value="">Select Area</option>
+                {leadObj.city &&
+                  cityAreas[leadObj.city || []].map((area) => (
+                    <option key={area} value={area}>
+                      {area}
+                    </option>
+                  ))}
+              </select>
+            </div>
           </div>
+
         </div>
-      </div>
+      </fieldset>
       {/* Render Table for exisitng leads with the matching phone no. */}
       {isLeadsForPhoneVisible && (
         <div>
@@ -1186,98 +1232,122 @@ export default function LeadsGeneration({ lead, onClose }) {
       {/* Lead Details */}
       {!isLeadsForPhoneVisible && (
         <div>
+
           <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-          <div className='flex gap-4'>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Enquiry Mode</label>
-              <select name="enquiryMode" value={leadObj.enquiryMode || ""}
-                onChange={handleChangeforDropdown}
-                className='border-highlight'>
-                <option value="">Select Mode</option>
-                {/* {enquiryModes.map(boy => <option key={boy} value={boy}>
+          <fieldset disabled={readOnly}>
+            <div className='flex gap-4'>
+              <div className='flex flex-col flex-1'>
+                <label className='label-style'>Enquiry Mode</label>
+                <select name="enquiryMode" value={leadObj.enquiryMode || ""}
+                  onChange={handleChangeforDropdown}
+                  className='border-highlight'>
+                  <option value="">Select Mode</option>
+                  {/* {enquiryModes.map(boy => <option key={boy} value={boy}>
 
                   {boy}
 
 
                 </option>)} */}
-                {enquiryMode.map((enqmodes) => (
-                  <option key={enqmodes.id} value={(enqmodes.id)}>
-                    {enqmodes.enquiryMode}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Enquiry Source</label>
-              <select name="enquirySource" value={leadObj.enquirySource} onChange={handleChangeforDropdown} className='border-highlight'>
-                <option value="">Select Source</option>
-                {/* {enquirySources.map(cat => <option key={cat} value={cat}>
+                  {enquiryMode.map((enqmodes) => (
+                    <option key={enqmodes.id} value={(enqmodes.id)}>
+                      {enqmodes.enquiryMode}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className='flex flex-col flex-1'>
+                <label className='label-style'>Enquiry Source</label>
+                <select name="enquirySource" value={leadObj.enquirySource} onChange={handleChangeforDropdown} className='border-highlight'>
+                  <option value="">Select Source</option>
+                  {/* {enquirySources.map(cat => <option key={cat} value={cat}>
 
 
                 {cat}
 
               </option>)} */}
-                {enquirySource.map((enqSource) => (
-                  <option key={enqSource.id} value={(enqSource.id)}>
-                    {enqSource.enquirySource}
-                  </option>
-                ))}
+                  {enquirySource.map((enqSource) => (
+                    <option key={enqSource.id} value={(enqSource.id)}>
+                      {enqSource.enquirySource}
+                    </option>
+                  ))}
 
-              </select>
+                </select>
+              </div>
+              {/* Customer Type */}
+              <div className='flex flex-col flex-1'>
+                <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
+                <select
+                  // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  name="customerType"
+                  value={leadObj.customerType}
+                  onChange={handleChangeforDropdown}
+                  className={`border-highlight`}
+                >
+                  <option value="">Select Type</option>
+                  {customerType.map((custType) => (
+                    <option key={custType.id} value={(custType.id)}>
+                      {custType.customerType}
+                    </option>
+                  ))}
+
+                </select>
+              </div>
             </div>
-            {/* Customer Type */}
-            <div className='flex flex-col flex-1'>
-              <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
-              <select
-                // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                name="customerType"
-                value={leadObj.customerType}
-                onChange={handleChangeforDropdown}
-                className={`border-highlight`}
-              >
-                <option value="">Select Type</option>
-                {customerType.map((custType) => (
-                  <option key={custType.id} value={(custType.id)}>
-                    {custType.customerType}
-                  </option>
-                ))}
-
-              </select>
-            </div>
-          </div>
-
+          </fieldset>
           <div className='flex gap-4 mt-4'>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Category</label>
-              <select
-                name="category"
-                value={leadObj.fK_LeadCategoryID || ''}
-                onChange={handleChangeForCategory}
-                className='border-highlight'>
-                <option value=''>Select Category</option>
-                {Object.entries(leadCategoryList).map(([key, val]) => (
-                  <option key={key} value={Number(key)}>{val}</option>
-                ))}
-              </select>
+              <fieldset disabled={readOnly}>
+                <select
+                  name="category"
+                  value={leadObj.fK_LeadCategoryID || ''}
+                  onChange={handleChangeForCategory}
+                  className='border-highlight'>
+                  <option value=''>Select Category</option>
+                  {Object.entries(leadCategoryList).map(([key, val]) => (
+                    <option key={key} value={Number(key)}>{val}</option>
+                  ))}
+                </select>
+              </fieldset>
             </div>
           </div>
 
           {/* Render dynamic fields */}
           <div className='mt-4'>{renderCategoryFields()}</div>
+          <fieldset disabled={readOnly}>
+            <div className="flex justify-between items-center mt-6 gap-4">
+              <button
+                onClick={handleSubmit}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                {submitBtnTxt}
+              </button>
 
-          <div className="flex justify-between items-center mt-6 gap-4">
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-              {submitBtnTxt}
-            </button>
+              <div className="flex items-center gap-2">
+                <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap"><span className="text-red-500 text-lg leading-none">* </span>
+                  Follow Up Date :
+                </label>
+                <div className="flex flex-col  justify-start leading-none">
+                  <input
+                    type="date"
+                    id="followUpDate"
+                    name="followUpDate"
+                    value={leadObj.followUpDate || ""}
+                    onChange={handleChange}
+                    onBlur={() => {
+                      const selectedDate = new Date(leadObj.followUpDate);
+                      const tomorrow = new Date();
+                      tomorrow.setDate(tomorrow.getDate());
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap">
-                Follow Up Date :
-              </label>
-              <div className="flex flex-col  justify-start leading-none">
-                <input
+                      if (selectedDate < tomorrow) {
+                        setLeadObj(prev => ({ ...prev, followUpDate: "" }));
+                        setErrors(prev => ({ ...prev, followUpDate: "Invalid — Date must be tomorrow or later" }));
+                      }
+                    }}
+                    min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
+                    className={`border-highlight ${errors.followUpDate ? "border-red-500" : ""}`}
+                    required
+                  />
+                  {/* <input
                   type="date"
                   id="followUpDate"
                   name="followUpDate"
@@ -1287,10 +1357,11 @@ export default function LeadsGeneration({ lead, onClose }) {
                   // min={new Date().toISOString().split("T")[0]} //  disables past dates
                   className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
                   required
-                />
+                /> */}
+                </div>
               </div>
             </div>
-          </div>
+          </fieldset>
           <div className='text-right'>
 
             {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
@@ -1327,7 +1398,12 @@ export default function LeadsGeneration({ lead, onClose }) {
           } */}
         </div >
       )}
+
+      {/* </fieldset> */}
+
     </div>
+
+
 
   );
 }

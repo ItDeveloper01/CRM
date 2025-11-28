@@ -80,6 +80,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                                 {country.name}
                             </option>
                         ))}
+                       
+                        
                     </select>
                 </div>
 
@@ -296,7 +298,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
             </div>
 
             {/* Overseas Insurance & Passport Validity date  */}
-        
+
             < PassportDetails
                 passportDetailsObj={passportDetailsObj}
                 setPassportDetailsObj={setPassportDetails}

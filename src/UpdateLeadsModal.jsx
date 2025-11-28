@@ -2,7 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import Leadgeneration from "./LeadsGeneration"; // your existing form component
 
-export default function UpdateLeadsModal({ isOpen, onClose, lead }) {
+export default function UpdateLeadsModal({ isOpen, onClose, lead, readOnly }) {
   if (!isOpen || !lead) return null;
 
   return (
@@ -20,7 +20,7 @@ export default function UpdateLeadsModal({ isOpen, onClose, lead }) {
 
         {/* Body (Lead Generation Form) */}
         <div className="p-4 overflow-y-auto flex-1 max-h-[calc(90vh-60px)]">
-          <Leadgeneration lead={lead}  onClose={onClose} />
+          <Leadgeneration lead={lead}  onClose={onClose} readOnly={readOnly}   />
         </div>
       </div>
     </div>

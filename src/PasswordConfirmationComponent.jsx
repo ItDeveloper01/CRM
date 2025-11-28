@@ -90,7 +90,9 @@ import { UserObject } from "./Model/UserModel";
         <div className='flex space-x-4 w-full h-full'>
           {/* Password */}
           <div className="flex-1 flex flex-col relative h-full">
-            <label className='text-sm font-medium text-gray-700 mb-1'>Password</label>
+            <label className='text-sm font-medium text-gray-700 mb-1'>Password
+              <span className="text-red-500 text-lg leading-none"> *</span>
+            </label>
             <div className='relative w-full h-full'>
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -98,7 +100,8 @@ import { UserObject } from "./Model/UserModel";
                 value={password}
                 onChange={handleChange}
                 placeholder='Password'
-                className={`border p-2 rounded w-full h-full ${errors.password ? 'border-red-500' : ''}`}
+                // className={`border p-2 rounded w-full h-full ${errors.password ? 'border-red-500' : ''}`}
+                className={`border-highlight ${errors.password ? 'border-red-500' : ''}`}
               />
               <button
                 type='button'
@@ -113,14 +116,17 @@ import { UserObject } from "./Model/UserModel";
 
           {/* Confirm Password */}
           <div className="flex-1 flex flex-col h-full">
-            <label className='text-sm font-medium text-gray-700 mb-1'>Confirm Password</label>
+            <label className='text-sm font-medium text-gray-700 mb-1'>Confirm Password
+              <span className="text-red-500 text-lg leading-none"> *</span>
+            </label>
             <input
               type='password'
               name='confirmPassword'
               value={confirmPassword}
               onChange={handleChange}
               placeholder='Confirm Password'
-              className={`border p-2 rounded w-full h-full ${errors.confirmPassword ? 'border-red-500' : ''}`}
+              // className={`border p-2 rounded w-full h-full ${errors.confirmPassword ? 'border-red-500' : ''}`}
+              className={`border-highlight ${errors.confirmPassword ? 'border-red-500' : ''}`}
             />
             {errors.confirmPassword && <p className='text-red-500 text-sm mt-1'>{errors.confirmPassword}</p>}
           </div>
