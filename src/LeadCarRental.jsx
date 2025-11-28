@@ -12,7 +12,7 @@ import { useMessageBox } from "./Notification";
 
 
 
-const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate }) => {
+const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate,readOnly }) => {
     // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
 
     // Memoize the histories array so reference doesn't change unnecessarily
@@ -120,6 +120,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     return (
 
         <div>
+            <fieldset disabled={readOnly}>
             <div className="flex gap-3 flex-wrap">
                 <div className="flex-1">
                     <label className="label-style">No of Travelers</label>
@@ -373,12 +374,15 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     onChange={handleChange}
                 />
 
-                {/* History hover component */}
+                
+            </div>
+            </fieldset>
+            {/* History hover component */}
                 {memoIsUpdate && (
                     <HistoryHover histories={memoHistories} />)
                 }
-            </div>
         </div>
+    
     );
 };
 

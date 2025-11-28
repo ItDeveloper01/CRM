@@ -35,7 +35,8 @@ export default function MultiSelectDropdown({ departmentList = [], selectedDepar
   return (
     <div className="relative w-full text-sm" ref={dropdownRef}>
       <div
-        className={`border ${errors?.department ? 'border-red-500' : 'border-gray-300'} rounded w-full cursor-pointer bg-white flex justify-between items-center px-2 py-2 shadow-sm hover:border-blue-400`}
+        // className={`border ${errors?.department ? 'border-red-500' : 'border-gray-300'} rounded w-full cursor-pointer bg-white flex justify-between items-center px-2 py-2 shadow-sm hover:border-blue-400`}
+        className={`w-full rounded-lg p-2 h-10 focus:outline-none focus:ring-2 bg-white border ${errors?.department ? 'border-red-500' : 'border-gray-300'} cursor-pointer flex justify-between items-center shadow-sm hover:border-blue-500`}
         onClick={() => setOpen(!open)}
       >
         <span className="text-gray-700 text-sm truncate">

@@ -12,6 +12,7 @@
 
 }
 
+
 /* It highlight box after selecting value*/
 .border-highlight.selected {
   @apply bg-blue-100 border-blue-500;  /*for more details check country selection dropdown or travel date from visa*/

@@ -69,9 +69,10 @@ debugger;
     if (location.state?.user) {
       // --- EDIT MODE ---
       setIsUpdate(true);
+    
       let tempuser = mapObject(location.state.user, getEmptyUserObj())
       const userToEdit = { ...tempuser }; // Create a copy to avoid direct mutation
-
+      console.log("Selected User:",userToEdit);
       // ✅ Safely initialize array properties to prevent crashes
       if (!Array.isArray(userToEdit.selectedDepartmentList)) {
         userToEdit.selectedDepartmentList = [];
@@ -123,8 +124,14 @@ debugger;
   };
 
 const handleEmpIDValidation=async ()=> {
-if (!userObjects.userId) return; // skip if empty
+  if (!userObjects.empId || userObjects.empId.trim() === "") {
+    // avoid API call
+    return;
+  }
+// if (!userObjects.userId) return; // skip if empty
+// debugger;
     if (isUpdate) return; // skip if updating existing user (no change allowed)
+    debugger;
     try {
       // const res = await axios.get(`${checkUserIdEndpoint}/${userObjects.userId}`, {
       //   headers: { Authorization: `Bearer ${sessionUser.token}` }
@@ -513,6 +520,7 @@ debugger;
                 htmlFor='firstName'
                 className='text-sm font-medium text-gray-700 whitespace-nowrap'>
                 First Name
+                <span className="text-red-500 text-lg leading-none"> *</span>
               </label>
               <input
                 id='firstName'
@@ -520,8 +528,11 @@ debugger;
                 value={userObjects.firstName}
                 onChange={handleChange}
                 placeholder='First Name'
-                className={`border p-2 rounded w-full ${errors.firstName ? 'border-red-500' : ''}`}
+                // className={`border-highlight ${errors.firstName ? "border-red-500" : ""}`}
+                className={`border-highlight`}
+                // className={`border-highlight ${errors.firstName ? 'border-red-500' : ''}`}
               />
+               
               {errors.firstName && <p className='text-red-500 text-sm'>{errors.firstName}</p>}
             </div>
 
@@ -533,20 +544,22 @@ debugger;
                 value={userObjects.middleName}
                 onChange={handleChange}
                 placeholder='Middle Name'
-                className={`border p-2 rounded w-full ${errors.middleName ? 'border-red-500' : ''}`}
+                className={`border-highlight ${errors.middleName ? 'border-red-500' : ''}`}
               />
               {errors.middleName && <p className='text-red-500 text-sm'>{errors.middleName}</p>}
             </div>
 
             {/* Last Name */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Last Name</label>
+              <label className='text-sm font-medium text-gray-700'>Last Name
+              <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <input
                 name='lastName'
                 value={userObjects.lastName}
                 onChange={handleChange}
                 placeholder='Last Name'
-                className={`border p-2 rounded w-full ${errors.lastName ? 'border-red-500' : ''}`}
+                className={`border-highlight`}
               />
               {errors.lastName && <p className='text-red-500 text-sm'>{errors.lastName}</p>}
             </div>
@@ -557,6 +570,7 @@ debugger;
                 htmlFor='userId'
                 className='text-sm font-medium text-gray-700 whitespace-nowrap'>
                 User ID
+                <span className="text-red-500 text-lg leading-none"> *</span>
               </label>
               <input
                 id='userId'
@@ -565,7 +579,7 @@ debugger;
                 onChange={handleChange}
                 onBlur={handleUserIDValidation}
                 placeholder='User ID'
-                className={`border p-2 rounded w-full ${errors.userId ? 'border-red-500' : ''}`}
+                className={`border-highlight`}
               />
               {errors.userId && <p className='text-red-500 text-sm'>{errors.userId}</p>}
             </div>
@@ -575,45 +589,54 @@ debugger;
             </div>
             {/* Birth Date */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Birth Date</label>
+              <label className='text-sm font-medium text-gray-700'>Birth Date
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <input
                 type='date'
                 name='birthDate'
                 value={userObjects.birthDate ? userObjects.birthDate.split('T')[0] : ''}
                 onChange={handleChange}
-                className='border p-2 rounded w-full'
+                className='border-highlight'
+                // className='border p-2 rounded w-full'
               />
             </div>
 
             {/* Mobile */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Mobile No</label>
+              <label className='text-sm font-medium text-gray-700'>Mobile No
+              <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <input
                 name='mobileNo'
                 value={userObjects.mobileNo}
                 onChange={handleChange}
                 placeholder='Mobile No'
-                className={`border p-2 rounded w-full ${errors.mobileNo ? 'border-red-500' : ''}`}
+                className={`border-highlight`}
               />
               {errors.mobileNo && <p className='text-red-500 text-sm'>{errors.mobileNo}</p>}
             </div>
 
             {/* Email */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Email ID</label>
+              <label className='text-sm font-medium text-gray-700'>Email ID
+              <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <input
                 type='email'
                 name='emailId'
                 value={userObjects.emailId}
                 onChange={handleChange}
                 placeholder='Email ID'
-                className={`border p-2 rounded w-full ${errors.emailId ? 'border-red-500' : ''}`}
+                className={`border-highlight`}
               />
               {errors.emailId && <p className='text-red-500 text-sm'>{errors.emailId}</p>}
             </div>
             {/* Gender */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Gender</label>
+              <label className='text-sm font-medium text-gray-700'>Gender
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <div className='flex items-center gap-4 mt-1'>
                 <label>
                   <input
@@ -638,15 +661,56 @@ debugger;
               </div>
             </div>
 
+              {/* Personal Mobile No*/}
+             <div>
+              <label className='text-sm font-medium text-gray-700'>Personal Mobile No</label>
+              <input
+                name='personalMobileNo'
+                value={userObjects.personalMobileNo}
+                onChange={handleChange}
+                placeholder='Personal Mobile No'
+                className='border-highlight'
+              />
+            </div>
 
+            {/* Personal Email */}
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Personal Email ID</label>
+              <input
+                type='personalEmail'
+                name='personalEmailId'
+                value={userObjects.personalEmailId}
+                onChange={handleChange}
+                placeholder='Personal Email ID'
+                className='border-highlight'
+              />
+            </div>
+                
+             {/* Date of Joining */}
+            <div>
+              <label className='text-sm font-medium text-gray-700'>Date of Joining
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
+              <input
+                type='date'
+                name='joiningDate'
+                value={userObjects.joiningDate ? userObjects.joiningDate.split('T')[0] : ''}
+                onChange={handleChange}
+                className='border-highlight'
+              />
+            </div>
+
+           
             {/* Role */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Role</label>
+              <label className='text-sm font-medium text-gray-700'>Role
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <select
                 name='role'
                 value={userObjects.role}
                 onChange={handleChange}
-                className={`border p-2 rounded w-full ${errors.role ? 'border-red-500' : ''}`}>
+                className={`border-highlight`}>
                 <option value=''>Select Role</option>
                 {userRoles.map((rol) => (
                   <option key={rol.id} value={(rol.id)}>
@@ -661,7 +725,9 @@ debugger;
 
             {/* Department */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Select  Department</label>
+              <label className='text-sm font-medium text-gray-700'>Select  Department
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               {/* Passing props to the DepartmentMultiSelectDropdown component */}
               {/* <MultiSelectDropdown
               departments={dummyDepartments}
@@ -715,7 +781,9 @@ debugger;
             </div>
             {/* Reporting Manager */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Reporting Manager</label>
+              <label className='text-sm font-medium text-gray-700'>Reporting Manager
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <select
                 name='reportingManager'
                 value={userObjects.reportingManager}
@@ -725,8 +793,7 @@ debugger;
                 disabled={
                   !userObjects.role || userObjects.selectedDepartmentList.length === 0
                 }
-                className={`border p-2 rounded w-full ${errors.reportingManager ? 'border-red-500' : ''
-                  }`}>
+                className={`border-highlight`}>
                 <option value="">Select Manager</option>
                 {userObjects.reportingManagerList.map((mgr) => (
                   <option key={mgr.userId} value={(mgr.userId)}>
@@ -739,7 +806,7 @@ debugger;
                 <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
               )}
             </div>
-
+             
             {/* Designation */}
             <div>
               <label className='text-sm font-medium text-gray-700'>Designation</label>
@@ -748,30 +815,21 @@ debugger;
                 value={userObjects.designation}
                 onChange={handleChange}
                 placeholder='Designation'
-                className='border p-2 rounded w-full'
+                className='border-highlight'
               />
-            </div>
+            </div>    
 
-            {/* Date of Joining */}
-            <div>
-              <label className='text-sm font-medium text-gray-700'>Date of Joining</label>
-              <input
-                type='date'
-                name='joiningDate'
-                value={userObjects.joiningDate ? userObjects.joiningDate.split('T')[0] : ''}
-                onChange={handleChange}
-                className='border p-2 rounded w-full'
-              />
-            </div>
-
+           
             {/* Branch */}
             <div>
-              <label className='text-sm font-medium text-gray-700'>Branch</label>
+              <label className='text-sm font-medium text-gray-700'>Branch
+                <span className="text-red-500 text-lg leading-none"> *</span>
+              </label>
               <select
                 name='branch'
                 value={userObjects.branch}
                 onChange={handleChange}
-                className={`border p-2 rounded w-full ${errors.branch ? 'border-red-500' : ''}`}>
+                className={`border-highlight ${errors.branch ? 'border-red-500' : ''}`}>
                 <option value=''>Select Branch</option>
                 {branch.map((brch) => (
                   <option key={brch.id} value={(brch.id)}>
@@ -788,6 +846,7 @@ debugger;
                 htmlFor='empId'
                 className='text-sm font-medium text-gray-700 whitespace-nowrap'>
                 Employee ID
+                <span className="text-red-500 text-lg leading-none"> *</span>
               </label>
               <input
                 id='empId'
@@ -796,7 +855,8 @@ debugger;
                 onChange={handleChange}
                 onBlur={handleEmpIDValidation}
                 placeholder='Employee ID'
-                className={`border p-2 rounded w-full ${errors.empId ? 'border-red-500' : ''}`}
+                className={`border-highlight `}
+                // className={`border-highlight ${errors.empId ? 'border-red-500' : ''}`}
               />
               {errors.empId && <p className='text-red-500 text-sm'>{errors.empId}</p>}
             </div>
