@@ -18,6 +18,9 @@ import { NotificationProvider } from "./Notification";
 import { useEffect } from 'react';
 import { GlobalDebug } from './Remove-Console';
 import AppreciationBannerAdmin from './AppreciationBannerAdmin';
+import ManagerAnalytics from './ManagerAnalytics';
+import ManagerTeamAnalytics from './ManagerTeamAnalytics';
+import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 
 
 export default function App() {
@@ -74,7 +77,18 @@ export default function App() {
                 path='/appreciation'
                 element={<AppreciationBannerAdmin />}
               />
-
+              <Route
+                path ='/teamStatistics/managerAnalytics'
+                element={<ManagerAnalytics />}
+              />
+                <Route
+                  path ='/teamStatistics/managerIndividualAnalytics'
+                  element={<ManagerTeamAnalytics/>}
+                 />
+                 <Route
+                  path='/teamStatistics/managerAnalyticBoard'
+                  element={<ManagerAnalyticBoard/>}
+                 />
 
               {/* ✅ Users List */}
               <Route

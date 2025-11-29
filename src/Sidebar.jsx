@@ -1,7 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, LayoutDashboard, UserPlus, BarChart, Users, Settings , Megaphone } from 'lucide-react';
+import {
+  Menu,
+  LayoutDashboard,
+  UserPlus,
+  BarChart,
+  Users,
+  Settings,
+  Megaphone,
+  CheckSquare2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useGetSessionUser } from './SessionContext'; // ✅ import
+import { useGetSessionUser } from './SessionContext';
+import { ChevronRight, ChevronDown } from 'lucide-react';
+
+ 
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -12,20 +24,102 @@ const iconMap = {
   broadcastmessage: Megaphone,
 };
 
-export default function Sidebar({ auth, setAuth}) {
+// Helper: build nested tree from flat menu
+function buildMenuTree(items, parentId = null) {
+  debugger;
+  return items
+    .filter((item) => item.parent_MenuID === parentId)
+    .map((item) => ({
+      ...item,
+      children: buildMenuTree(items, item.id),
+    }));
+}
+
+export default function Sidebar({ auth }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const location = useLocation(); // for active route highlighting
-  const { menu, setMenu } = useGetSessionUser(); // ✅ get menu from context
+  const [openMenus, setOpenMenus] = useState({}); // store open state keyed by menu ID
+  const location = useLocation();
+  const { menu } = useGetSessionUser();
+  const [menuTree,setmenuTree]=useState([]);
 
-useEffect(() => {
-  console.log('Menu items:', menu);
-  debugger;
-}, [menu]);
+  const toggleMenu = (id) => {
+    setOpenMenus((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
-  debugger;
+  useEffect(()=>{
+
+    debugger;
+    console.log("Menu From session:" ,menu);
+  let tempmenuTree = menu ? buildMenuTree(menu) : [];
+  setmenuTree(tempmenuTree);
+
+  },[] );
+  
+  
+  useEffect (()=>
+  {
+debugger;
+console.log("Contructed Menu Tree: ", menuTree);
+
+  },[menuTree]);
+  
+  
+  const renderMenuItems = (items) =>
+  items.map((item) => {
+    const Icon = iconMap[item.icon];
+    const isActive = location.pathname === item.route;
+    const isOpen = openMenus[item.id];
+    const hasChildren = item.children?.length > 0;
+
+    return (
+      <div key={item.id}>
+        {/* Parent Menu (only if has children) */}
+        {hasChildren ? (
+          <div
+            className={`flex items-center gap-3 p-2 rounded hover:bg-blue-100 cursor-pointer ${
+              isActive ? 'bg-blue-200 font-bold' : ''
+            }`}
+            onClick={() => toggleMenu(item.id)}
+          >
+            {Icon && <Icon size={20} />}
+            {sidebarOpen && item.menuName}
+           
+          <span className="ml-auto">
+            {isOpen ? (
+              <ChevronDown  size={20} strokeWidth={2} />
+            ) : (
+              <ChevronRight size={20} strokeWidth={2} />
+            )}
+          </span>
+          </div>
+        ) : (
+          /* Leaf Link (only if NO children) */
+          <Link
+            to={item.route}
+            className={`flex items-center gap-3 p-2 rounded hover:bg-blue-100 ${
+              isActive ? 'bg-blue-200 font-bold' : ''
+            }`}
+          >
+            {Icon && <Icon size={20} />}
+            {sidebarOpen && item.menuName}
+          </Link>
+        )}
+
+        {/* Render submenu when open */}
+        {hasChildren && isOpen && (
+          <div className="pl-6">{renderMenuItems(item.children)}</div>
+        )}
+      </div>
+    );
+  });
+
+
+  
 
   return (
-    <div className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}>
+    <div
+      className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white shadow-md transition-all duration-300`}
+    >
       <div className="flex items-center justify-between px-4 py-4 border-b">
         <h2 className={`text-xl font-bold ${!sidebarOpen && 'hidden'}`}>CRM Panel</h2>
         <button
@@ -42,28 +136,7 @@ useEffect(() => {
             No tasks assigned to the user. Contact admin.
           </p>
         ) : (
-          menu
-            .filter((item) => {
-              // Optional: filter by role if you have allowedRoles in backend
-              if (!auth || !auth.role) return false;
-              return true; // or add role-based filtering
-            })
-            .map((item) => {
-              const Icon = iconMap[item.icon]; // dynamically pick icon
-              const isActive = location.pathname === item.route;
-              return (
-                <Link
-                  key={item.route}
-                  to={item.route}
-                  className={`flex items-center gap-3 p-2 rounded hover:bg-blue-100 ${
-                    isActive ? 'bg-blue-200 font-bold' : ''
-                  }`}
-                >
-                  {Icon && <Icon size={20} />}
-                  {sidebarOpen && item.menuName}
-                </Link>
-              );
-            })
+          renderMenuItems(menuTree)
         )}
       </nav>
     </div>
