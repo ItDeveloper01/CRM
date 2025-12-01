@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import LeadListWithFilters from "./LeadsWithFilters";
 import { data } from "autoprefixer";
+import UserStatsCard from "./UserStatsCard";
+import UserMetricChart from "./Usermetric";
 
 // Dummy CustomComponents to avoid import errors
 const Card = ({ children, className }) => <div className={`border rounded-xl shadow p-3 bg-white mb-3 ${className || ''}`}>{children}</div>;
@@ -77,6 +79,7 @@ React.useEffect(() => {
       ...value.Userdata
     }));
     setUSers(usersArray);
+    console.log("Data is an object, converted to array of users:", usersArray);
   } else if (Array.isArray(newData)) {
     // fallback if dataProp.data is array of users
     setUSers(newData);
@@ -105,83 +108,23 @@ React.useEffect(() => {
 
         {/* -------------------- LEAD LIST -------------------- */}
          {activeTab === "Lead List" && (
-  <CardContent>
-    <LeadListWithFilters users={users} />
-  </CardContent>
-)
+          <CardContent>
+            <LeadListWithFilters users={users} />
+          </CardContent>
+        )
         }
 
         {/* -------------------- INDIVIDUAL STATISTICS -------------------- */}
         {activeTab === "Individual Statistics" && (
           <CardContent>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {users.map(user => {
-                const barsData = [
-                  { stage: "Open", value: user.openCount || 0, color: "#facc15" },
-                  { stage: "Confirmed", value: user.confirmedCount || 0, color: "#10b981" },
-                  { stage: "Lost", value: user.lostCount || 0, color: "#ef4444" },
-                  { stage: "Postponed", value: user.postponedCount || 0, color: "#f97316" },
-                ];
-                return (
-                  <Card key={user.key} className="hover:shadow-lg transition-shadow">
-                    <CardHeader className="text-indigo-600">{user.firstName || user.key}</CardHeader>
-                    <CardContent>
-                      <div style={{ width: '100%', height: 160 }}>
-                        <ResponsiveContainer>
-                          <BarChart layout="vertical" data={barsData} margin={{ top: 10, right: 20, left: 50, bottom: 10 }}>
-                            <XAxis type="number" />
-                            <YAxis type="category" dataKey="stage" width={100} />
-                            <Tooltip />
-                            <Bar dataKey="value">
-                              {barsData.map((b, idx) => <Cell key={idx} fill={b.color} />)}
-                            </Bar>
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+            <UserStatsCard users={users} />
           </CardContent>
         )}
 
         {/* -------------------- TEAM OVERVIEW -------------------- */}
         {activeTab === "Team Overview" && (
           <CardContent>
-            <div className="flex flex-wrap gap-3 mb-4">
-              {users.map(u => (
-                <Button key={u.key} active={selectedUsers.includes(u.key)} onClick={() => toggleUserSelection(u.key)}>
-                  {u.firstName}
-                </Button>
-              ))}
-            </div>
-            <div className="flex gap-3 mb-4 flex-wrap">
-              {['openCount','confirmedCount','lostCount','postponedCount'].map(metric => (
-                <Button 
-                  key={metric} 
-                  active={selectedMetric===metric} 
-                  onClick={() => setSelectedMetric(metric)}>
-                  {metric.replace('Count','')}
-                </Button>
-              ))}
-            </div>
-            <div style={{ width: '100%', height: 400 }}>
-              <ResponsiveContainer>
-                <BarChart data={filteredUsers} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-                  <XAxis dataKey="firstName" tick={{ fill: '#4b5563', fontWeight: 600 }} />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar 
-                    dataKey={selectedMetric} 
-                    fill={selectedMetric === 'openCount' ? '#facc15' :
-                          selectedMetric === 'confirmedCount' ? '#10b981' :
-                          selectedMetric === 'lostCount' ? '#ef4444' : '#f97316'} 
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <UserMetricChart users={users} />
           </CardContent>
         )}
 

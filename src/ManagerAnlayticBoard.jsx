@@ -187,33 +187,44 @@ const onDateChange=()=>{
 
 const handleUserClick = async (selectedIds) => {
   debugger;
+
   console.log("Selected User IDs:", selectedIds);
+  console.log("Previous Selected User IDs:", selectedUserIds);
   console.log("Current usersDict:", usersDict);
 
-  //selectedUserIds=selectedIds;
-  setSelectedUserIds(selectedIds);
-  // Use 'id in usersDict' to safely check existence
-  const idsToFetch = selectedIds.filter(id => !(id in usersDict));
+  // 1️⃣ Detect removed/deselected user IDs
+  const removedIds = selectedUserIds.filter(id => !selectedIds.includes(id));
+  console.log("Removed/Deselected IDs:", removedIds);
 
+  // 2️⃣ Update selectedUserIds state
+  setSelectedUserIds(selectedIds);
+
+  // 3️⃣ Find IDs that need fresh fetch
+  const idsToFetch = selectedIds.filter(id => !(id in usersDict));
   console.log("Need to fetch:", idsToFetch);
 
+  // If nothing new to fetch
   if (idsToFetch.length === 0) {
-    alert("All selected users are already fetched!");
-    return;
+    console.log("No new users to fetch.");
+  } else {
+    try {
+      await fetchUserData(idsToFetch);
+      debugger;
+     // alert("Fetched and added users: " + idsToFetch.join(", "));
+     console.log("Fetched and added users: ", idsToFetch);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    }
   }
 
- try {
-  
-   await fetchUserData(idsToFetch); //2. Fetch data for newly selected users
-          
-          debugger;
+  // 4️⃣ Optionally, remove old user data from dictionary
+  //    ONLY if you want to clean memory
+  removedIds.forEach(id => {
+    delete usersDict[id];
+  });
 
-    } catch (err) {
-            console.error("Error fetching users:", err);
-          }
-    alert("Fetched and added users: " + idsToFetch.join(", "));
+  console.log("Cleaned usersDict:", usersDict);
 };
-
 const fetchUserData = async (userIdList) => {
         debugger;
           if(selectedDateRange.from=="" || selectedDateRange.to=="" ){
@@ -230,7 +241,7 @@ const fetchUserData = async (userIdList) => {
           "/Reporting/GetRequestedAnalyticsForSubordinates",
           {
             requestedByUserId: sessionUser.user.id,     // string
-            listOfUserIds: selectedUserIds,       // List<string>
+            listOfUserIds: userIdList,       // List<string>
             dateTimeRange: {                      // DateRangeDTO
               from: selectedDateRange.from,
               to: selectedDateRange.to
@@ -261,7 +272,7 @@ const fetchUserData = async (userIdList) => {
         });
 
         console.log("Updated usersDict:", usersDict);
-}
+      }
 
 
 
@@ -346,15 +357,22 @@ return (
                 {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
               </button>
                 {/* Date Range Selector */}
-    <div className="flex-1 min-w-[200px]">
+    {/* <div className="flex-1 min-w-[200px]">
   {!isCollapsed && (
     <div style={{ padding: '10px' }}>
       <DateRangeSelector onRangeChange={handleDateRangeChange} />
     </div>
   )}
+</div> */}<div
+  style={{
+    padding: '10px',
+    display: isCollapsed ? 'none' : 'block', // hide instead of unmount
+  }}
+>
+  <DateRangeSelector onRangeChange={handleDateRangeChange} />
 </div>
             {/* Vertical Label placed immediately below button */}
-           {isCollapsed && (
+            {isCollapsed && (
   <div className="flex flex-col h-[calc(100%-40px)] items-center justify-center mt-2 relative">
     <span
       className="
@@ -365,14 +383,19 @@ return (
       MY HIERARCHY
     </span>
   </div>
-)}
+)} <div  
+  className="p-3 overflow-auto h-[calc(100vh-350px)]"
+  style={{ display: isCollapsed ? 'none' : 'block' }}
+>
+  <UserTree data={hierarchyData} onSelectionChange={handleUserClick} />
+</div>
 
               {/* Tree Container (scrollable) */}
-              {!isCollapsed && (
+              {/* {!isCollapsed && (
                 <div className="p-3 overflow-auto h-[calc(100vh-350px)]">
                   <UserTree data={hierarchyData} onSelectionChange={handleUserClick}   />
                 </div>
-              )}
+              )} */}
             </div>
 
             {/* ------- RIGHT ANALYTICS PANEL ------- */}
