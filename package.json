@@ -13,6 +13,8 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.13.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.18",
     "flowbite": "^3.1.2",
     "framer-motion": "^12.23.24",
@@ -29,6 +31,7 @@
     "react-select": "^5.10.2",
     "react-tooltip": "^5.30.0",
     "recharts": "^3.2.1",
+    "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4"
   },
