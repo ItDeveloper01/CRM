@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from "react";
+import CONSTANTS from "./Constants";
+import { COLORS } from "./Constants.js"; // <-- import your color constants
 import {
   BarChart,
   Bar,
@@ -8,104 +10,211 @@ import {
   Legend,
   ResponsiveContainer
 } from "recharts";
-import { Button } from "./components/ui/button"; // adjust path if needed
+import { Button } from "./components/ui/button";
+import { lightBlue } from "@mui/material/colors";
+
+// ------------------------------------
+// UNIFIED COLOR PALETTE
+// ------------------------------------
+// const THEME_CLR = {
+//   border: "#d3dce6",
+//   textPrimary: "#1a5fae",
+//   textHover: "#0d4b91",
+//   hoverBg: "#e7f3ff",
+//   selectedBg: "#329ce7ff",
+//   metric: {
+//     openCount: "#fbbf24",
+//     confirmedCount: "#3aed70ff",
+//     lostCount: "#eb7b7b",
+//     postponedCount: "#e69358",
+//   }
+// };
+
+// const THEME_CLR = {
+//   border: COLORS.grayborder,
+//   textPrimary: COLORS.bluetext,
+//   textHover: COLORS.primarylightblue,
+//   hoverBg: COLORS.bluebg,
+//   selectedBg: COLORS.primarylightblue,
+//   metric: {
+//     openCount: COLORS.yellowbg,
+//     confirmedCount: COLORS.greenBg,
+//     lostCount: COLORS.redbg,
+//     postponedCount: COLORS.purplebg,
+//   }
+// };
+
+const THEME_CLR = {
+  border: COLORS.grayborder,           // Button & panel borders
+  textPrimary: COLORS.bluetext,       // Default button text
+  textHover: COLORS.primarylightblue, // Button hover text
+  hoverBg: COLORS.bluebg,             // Button hover background
+  selectedBg: "#DBEAFE", // Selected button background
+  metric: {
+    openCount: COLORS.yellowborder,
+    confirmedCount: COLORS.greenborder,
+    lostCount: COLORS.redborder,
+    postponedCount: COLORS.purpleborder,
+  }
+};
+
+// Friendly labels
+const METRIC_LABELS = {
+  openCount: "Open",
+  confirmedCount: "Confirmed",
+  lostCount: "Lost",
+  postponedCount: "Postponed"
+};
 
 const UserMetricChart = ({ users }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
-  const [selectedMetrics, setSelectedMetrics] = useState([
-    "openCount",
-    "confirmedCount",
-    "lostCount",
-    "postponedCount"
-  ]); // default: all selected
+  const [selectedMetrics, setSelectedMetrics] = useState(Object.keys(METRIC_LABELS));
 
   const toggleUserSelection = (userId) => {
-    setSelectedUsers(prev =>
+    setSelectedUsers((prev) =>
       prev.includes(userId)
-        ? prev.filter(id => id !== userId)
+        ? prev.filter((id) => id !== userId)
         : [...prev, userId]
     );
   };
 
   const toggleMetricSelection = (metric) => {
-    setSelectedMetrics(prev =>
+    setSelectedMetrics((prev) =>
       prev.includes(metric)
-        ? prev.filter(m => m !== metric)
+        ? prev.filter((m) => m !== metric)
         : [...prev, metric]
     );
   };
 
-  // Compute filtered users for chart
+  const allSelected = selectedUsers.length === users.length;
+
+  // Only show selected users in chart
   const filteredUsers = useMemo(() => {
-    return selectedUsers.length === 0
-      ? users
-      : users.filter(u => selectedUsers.includes(u.key));
+    return users.filter(u => selectedUsers.includes(u.key));
   }, [users, selectedUsers]);
 
-  // Metric colors
-  const metricColor = {
-    openCount: "#eed779ff",
-    confirmedCount: "#5ce6b8ff",
-    lostCount: "#eb7b7bff",
-    postponedCount: "#e69358ff",
-  };
+  // Scrollable height for user panel if more than 22 users
+  const userPanelHeight = users.length > 22 ? 300 : "auto";
 
   return (
-    <div className="w-full">
+    <div className="w-full p-4">
 
-      {/* USER SELECTION BUTTONS */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        {users.map(u => (
+      {/* USERS SECTION */}
+      <div className="mb-4 p-3 border rounded-2xl" style={{ borderColor: THEME_CLR.border }}>
+        <div className="font-semibold mb-2 text-gray-700">Users</div>
+
+        <div
+          className="flex flex-wrap gap-2 overflow-y-auto"
+          style={{ maxHeight: userPanelHeight }}
+        >
+          {/* ALL BUTTON */}
           <Button
-            key={u.key}
-            variant={selectedUsers.includes(u.key) ? "default" : "outline"}
-            onClick={() => toggleUserSelection(u.key)}
+            variant="outline"
+            onClick={() =>
+              allSelected
+                ? setSelectedUsers([]) // Deselect all → empty chart
+                : setSelectedUsers(users.map((u) => u.key)) // Select all
+            }
+            className={`
+              px-4 py-1.5 text-sm rounded-full border transition-all
+              ${allSelected
+                ? "text-black"
+                : `text-[${THEME_CLR.textPrimary}] hover:bg-[${THEME_CLR.hoverBg}] hover:text-[${THEME_CLR.textHover}]`
+              }
+            `}
+            style={{
+              borderColor: THEME_CLR.border,
+              backgroundColor: allSelected ? THEME_CLR.selectedBg : "white",
+            }}
           >
-            {u.firstName}
+            All
           </Button>
-        ))}
+
+          {/* USER BUTTONS */}
+          {users.map((u) => {
+            const isSel = selectedUsers.includes(u.key);
+            return (
+              <Button
+                key={u.key}
+                variant="outline"
+                onClick={() => toggleUserSelection(u.key)}
+                className={`
+                  px-4 py-1.5 text-sm rounded-full border transition-all
+                  ${isSel
+                    ? "text-black"
+                    : `text-[${THEME_CLR.textPrimary}] hover:bg-[${THEME_CLR.hoverBg}] hover:text-[${THEME_CLR.textHover}]`
+                  }
+                `}
+                style={{
+                  borderColor: THEME_CLR.border,
+                  backgroundColor: isSel ? THEME_CLR.selectedBg : "white",
+                }}
+              >
+                {u.firstName}
+              </Button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* METRIC SELECTION BUTTONS */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        {["openCount", "confirmedCount", "lostCount", "postponedCount"].map(metric => (
-          <Button
-            key={metric}
-            variant={selectedMetrics.includes(metric) ? "default" : "outline"}
-            onClick={() => toggleMetricSelection(metric)}
-          >
-            {metric.replace("Count", "")}
-          </Button>
-        ))}
-      </div>
-
-      {/* BAR CHART */}
-      <div style={{ width: "100%", height: 400 }}>
-        <ResponsiveContainer>
+      {/* CHART SECTION */}
+      <div
+        className="border rounded-2xl p-4"
+        style={{ width: "100%", height: 420, borderColor: THEME_CLR.border }}
+      >
+        <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={filteredUsers}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
-            <XAxis
-              dataKey="firstName"
-              tick={{ fill: "#4b5563", fontWeight: 600 }}
-            />
+            <XAxis dataKey="firstName" tick={{ fill: "#4b5563", fontWeight: 600 }} />
             <YAxis />
             <Tooltip />
             <Legend />
 
-            {selectedMetrics.map(metric => (
+            {selectedMetrics.map((metric) => (
               <Bar
                 key={metric}
                 dataKey={metric}
-                fill={metricColor[metric]}
+                fill={THEME_CLR.metric[metric]}
+                name={METRIC_LABELS[metric]}
+                radius={[0, 0, 0, 0]}
               />
             ))}
-
           </BarChart>
         </ResponsiveContainer>
       </div>
 
+      {/* METRIC BUTTONS AT BOTTOM */}
+      <div className="mt-4 p-3 border rounded-2xl" style={{ borderColor: THEME_CLR.border }}>
+        <div className="font-semibold mb-2 text-gray-700">Metrics</div>
+
+        <div className="flex flex-wrap gap-2">
+          {Object.keys(METRIC_LABELS).map((metric) => {
+            const isSel = selectedMetrics.includes(metric);
+            return (
+              <Button
+                key={metric}
+                variant="outline"
+                onClick={() => toggleMetricSelection(metric)}
+                className={`
+                  px-4 py-1.5 text-sm rounded-full border transition-all
+                  ${isSel
+                    ? "text-black"
+                    : `text-[${THEME_CLR.textPrimary}] hover:bg-[${THEME_CLR.hoverBg}] hover:text-[${THEME_CLR.textHover}]`
+                  }
+                `}
+                style={{
+                  borderColor: THEME_CLR.border,
+                  backgroundColor: isSel ? THEME_CLR.selectedBg : "white",
+                }}
+              >
+                {METRIC_LABELS[metric]}
+              </Button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
