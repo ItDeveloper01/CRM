@@ -7,13 +7,17 @@ import {
   Users,
   Settings,
   Megaphone,
-  CheckSquare2,
+  PieChart,
+  ChartColumn
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useGetSessionUser } from './SessionContext';
 import { ChevronRight, ChevronDown } from 'lucide-react';
+import { Bar } from 'recharts';
 
- 
+const temaStaticIcons = "team statistics";
+const myDashBaordIcon = "my dashboard";
+const MyteamIcon = "my team";
 
 const iconMap = {
   dashboard: LayoutDashboard,
@@ -22,6 +26,9 @@ const iconMap = {
   newlead: UserPlus,
   leadanalytics: BarChart,
   broadcastmessage: Megaphone,
+  [temaStaticIcons]: BarChart,
+  [myDashBaordIcon]: PieChart,
+  [MyteamIcon]: ChartColumn  ,
 };
 
 // Helper: build nested tree from flat menu

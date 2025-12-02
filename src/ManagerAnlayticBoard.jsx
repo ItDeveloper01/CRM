@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import * as Icons from 'lucide-react';
 import { useGetSessionUser } from "./SessionContext";
 import config from './config';
@@ -12,6 +12,9 @@ import UserTreePane from './UserTreePane';
 import { ChevronLeft, ChevronRight } from "lucide-react";
 //import { de } from 'intl-tel-input/i18n';
 import LeadsAndStats from './LeadsAndStats';
+import { useRef } from 'react';
+import { useMessageBox } from "./Notification";
+import { MESSAGE_TYPES } from './Constants';
 
 
 
@@ -40,6 +43,7 @@ export default function ManagerAnalyticBoard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [usersDict, setUsersDict] = useState({}); // key: userID, value: Userdata object});
    const [selectedUserIds, setSelectedUserIds] = useState([]);
+    const { showMessage } = useMessageBox();
 
 
    const customStyles = {
@@ -69,6 +73,20 @@ export default function ManagerAnalyticBoard() {
         minHeight: "36px",
       }),
    };
+
+   const didMount = useRef(false);
+
+// useEffect(() => {
+//   debugger;
+//   if (didMount.current) {
+    
+//     //console.log("Selected Date Range Updated:", selectedDateRange);
+//     onDateChange(selectedDateRange);
+  
+//   } else {
+//     didMount.current = true; // skip the first run
+//   }
+// }, [selectedDateRange]);
 
 const [selectedDateRange, setSelectedDateRange] = useState({ from: "", to: "" });
 // ==========================
@@ -121,17 +139,26 @@ useEffect(() => {
 }, [isDragging]);
 
 
-
  const handleDateRangeChange = (range) => {
-    setSelectedDateRange(range);  // store the selected date range
-    console.log("Selected Range in Parent:", range);
-
-    onDateChange();
+  debugger;
+    const obj = { from: (range.from), to: (range.to) };
+    setSelectedDateRange(obj);  // store the selected date range
+    console.log("Selected Range in Parent:", selectedDateRange);
   };
+
+  useEffect(() => {
+    debugger;
+    console.log("Selected Date Range Updated:", selectedDateRange);
+    onDateChange();
+    //didMount.current =true;
+  }, [selectedDateRange]);
 
 useEffect(() => {
   debugger;
-  fetchUserHierarchy();
+   if (!didMount.current && sessionUser?.user?.id) {
+    didMount.current = true;
+    fetchUserHierarchy();
+  }
 }, []);
 
 
@@ -171,18 +198,23 @@ try {
 
 const onDateChange=()=>{
   debugger;
+  if (didMount.current==true){
   console.log("Filters Applied:");
   console.log("Selected Date Range:", selectedDateRange);
   if(selectedDateRange.from=="" || selectedDateRange.to=="" ){
-    alert("Please select date range before applying filters.");
+    //alert("Please select date range before applying filters.");
+   // showmessage("Please select date range before applying filters.");
+      showMessage("Please select date range before applying filters.", MESSAGE_TYPES.INFO);
     return;
   }
   else if(selectedUserIds.length==0)
   {
-    alert("Please select Users before applying filters.");
+    //alert("Please select Users before applying filters.");
+    showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
     return;
   }
    fetchUserData(selectedUserIds); //1. Fetch data for selected users with new date range
+}
 };
 
 const handleUserClick = async (selectedIds) => {
@@ -228,12 +260,14 @@ const handleUserClick = async (selectedIds) => {
 const fetchUserData = async (userIdList) => {
         debugger;
           if(selectedDateRange.from=="" || selectedDateRange.to=="" ){
-            alert("Please select date range before selecting user");
+            //alert("Please select date range.");
+            showMessage("Please select date range before applying filters.", MESSAGE_TYPES.INFO);
             return;
           }
           else if(userIdList.length==0)
           {
-            alert("Please select Role before selecting user");
+            //alert("Please select Role before selecting user");
+            showMessage("Please select Users to fetch data.", MESSAGE_TYPES.INFO);
             return;
           } 
           debugger;
