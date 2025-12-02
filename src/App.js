@@ -73,6 +73,10 @@ export default function App() {
                 path='/LeadsAnalytics'
                 element={<LeadAnalytics/>}
               />
+                <Route
+                path='/teamStatistics/LeadsAnalytics'
+                element={<LeadAnalytics/>}
+              />
               <Route
                 path='/appreciation'
                 element={<AppreciationBannerAdmin />}
