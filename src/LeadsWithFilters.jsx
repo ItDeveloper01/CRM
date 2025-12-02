@@ -125,21 +125,25 @@ export default function LeadListWithFilters({ users }) {
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-2">First Name</th>
+              <th className="p-2">Lead ID</th>
+              <th className="p-2">Lead Name</th>
               <th className="p-2">Category</th>
               <th className="p-2">Assigned To</th>
               <th className="p-2">Status</th>
-              <th className="p-2">Updated Date</th>
-              <th className="p-2">Lead ID</th>
+              <th className="p-2">Created Date</th>
+              <th className="p-2">Latest Update</th>
               <th className="p-2">Customer Type</th>
               <th className="p-2">Mobile No</th>
+              {/* <th className="p-2">View Details</th>
+              <th className="p-2">Transfer To</th> */}
             </tr>
           </thead>
 
           <tbody>
             {filteredLeads.map((lead, idx) => (
               <tr key={idx} className="border-b hover:bg-gray-50">
-                <td className="p-2 font-medium text-indigo-700">{lead.fName}</td>
+                <td className="p-2">{lead.leadID}</td>
+                <td className="p-2 font-medium text-indigo-700">{lead.fName} {lead.lName}</td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.assignedTo}</td>
 
@@ -155,8 +159,8 @@ export default function LeadListWithFilters({ users }) {
                   {lead.status}
                 </td>
 
-                <td className="p-2 text-gray-600">{lead.updatedAt}</td>
-                <td className="p-2">{lead.leadID}</td>
+                <td className="p-2">{new Date(lead.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
+                <td className="p-2"> {new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
               </tr>
