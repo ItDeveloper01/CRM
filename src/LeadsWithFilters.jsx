@@ -3,25 +3,26 @@ import { CardContent } from '@mui/material'; // Adjust if using different CardCo
 
 export default function LeadListWithFilters({ users }) {
   // Flatten all leads
- 
- const allLeads = useMemo(() => {
-  return users.flatMap((u) => {
-    // Combine all leads into one array
-    const combinedLeads = [
-      ...(u.openLeads || []),
-      ...(u.confirmedLeads || []),
-      ...(u.lostLeads || []),
-      ...(u.postponedLeads || [])
-    ];
 
-    // Map them with assignedTo and ensure status
-    return combinedLeads.map((lead) => ({
-      ...lead,
-      assignedTo: u.firstName,
-      status: lead.histories[0].statusDescription , // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
-    }));
-  });
-}, [users]);
+
+  const allLeads = useMemo(() => {
+    return users.flatMap((u) => {
+      // Combine all leads into one array
+      const combinedLeads = [
+        ...(u.openLeads || []),
+        ...(u.confirmedLeads || []),
+        ...(u.lostLeads || []),
+        ...(u.postponedLeads || [])
+      ];
+
+      // Map them with assignedTo and ensure status
+      return combinedLeads.map((lead) => ({
+        ...lead,
+        assignedTo: u.firstName,
+        status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
+      }));
+    });
+  }, [users]);
 
 
   React.useEffect(() => {
@@ -43,13 +44,25 @@ export default function LeadListWithFilters({ users }) {
   const filterOptions = useMemo(() => {
     const getUnique = (key) =>
       [...new Set(allLeads.map((l) => l[key]).filter(Boolean))];
+    const getUniqueDates = () =>
+      [
+        ...new Set(
+          allLeads
+            .map((l) => {
+              if (!l.updatedAt) return null;
+              const d = new Date(l.updatedAt);
+              return isNaN(d) ? null : d.toISOString().slice(0, 10); // ← DATE ONLY
+            })
+            .filter(Boolean)
+        ),
+      ];
 
     return {
-      status: getUnique("status"),
-      customerTypeDescription: getUnique("customerTypeDescription"),
       categoryName: getUnique("categoryName"),
       assignedTo: getUnique("assignedTo"),
-      updatedAt: getUnique("updatedAt"),
+      status: getUnique("status"),
+      updatedAt: getUniqueDates(),
+      customerTypeDescription: getUnique("customerTypeDescription"),
     };
   }, [allLeads]);
 
@@ -57,12 +70,17 @@ export default function LeadListWithFilters({ users }) {
   const filteredLeads = useMemo(() => {
     return allLeads.filter((lead) => {
       const matchesFilters =
+
         (filters.status ? lead.status === filters.status : true) &&
         (filters.customerTypeDescription ? lead.customerTypeDescription === filters.customerTypeDescription : true) &&
         (filters.categoryName ? lead.categoryName === filters.categoryName : true) &&
         (filters.assignedTo ? lead.assignedTo === filters.assignedTo : true) &&
-        (filters.updatedAt ? lead.updatedAt === filters.updatedAt : true);
-
+        // (filters.updatedAt ? lead.updatedAt === filters.updatedAt : true);
+        (filters.updatedAt
+          ? new Date(lead.updatedAt).toISOString().split('T')[0] ===
+          new Date(filters.updatedAt).toISOString().split('T')[0]
+          : true
+        )
       const matchesName = !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
 
       return matchesFilters && matchesName;
@@ -119,7 +137,7 @@ export default function LeadListWithFilters({ users }) {
           Clear Filters
         </button>
       </div>
-      
+
       {/* ---------------- TABLE ---------------- */}
       <div className="overflow-auto max-h-[500px] border rounded-lg mt-4">
         <table className="w-full text-left border-collapse">
@@ -147,15 +165,14 @@ export default function LeadListWithFilters({ users }) {
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.assignedTo}</td>
 
-                <td className={`p-2 font-semibold ${
-                  lead.status === "Lost"
-                    ? "text-red-600"
-                    : lead.status === "Confirmed"
+                <td className={`p-2 font-semibold ${lead.status === "Lost"
+                  ? "text-red-600"
+                  : lead.status === "Confirmed"
                     ? "text-green-600"
                     : lead.status === "Postponed"
-                    ? "text-orange-500"
-                    : "text-yellow-500"
-                }`}>
+                      ? "text-orange-500"
+                      : "text-yellow-500"
+                  }`}>
                   {lead.status}
                 </td>
 
