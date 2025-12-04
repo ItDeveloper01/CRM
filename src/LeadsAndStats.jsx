@@ -4,6 +4,8 @@ import LeadListWithFilters from "./LeadsWithFilters";
 import { data } from "autoprefixer";
 import UserStatsCard from "./UserStatsCard";
 import UserMetricChart from "./Usermetric";
+import LeadStatsTable from "./LeadsStatsTable";
+
 
 // Dummy CustomComponents to avoid import errors
 const Card = ({ children, className }) => <div className={`border rounded-xl shadow p-3 bg-white mb-3 ${className || ''}`}>{children}</div>;
@@ -88,7 +90,7 @@ React.useEffect(() => {
   }
 }, [dataProp]);
 
-  const tabs = ["Lead List", "Individual Statistics", "Team Overview"];
+  const tabs = ["Lead List", "Individual Statistics", "Team Overview","Stats Table"];
 
   React.useEffect(() => {
     console.log("Users data:", users);
@@ -125,6 +127,13 @@ React.useEffect(() => {
         {activeTab === "Team Overview" && (
           <CardContent>
             <UserMetricChart users={users} />
+          </CardContent>
+        )}
+
+          {/* -------------------- TEAM OVERVIEW -------------------- */}
+        {activeTab === "Stats Table" && (
+          <CardContent>
+            <LeadStatsTable leads={users} />
           </CardContent>
         )}
 
