@@ -21,4 +21,14 @@ const CardContent = ({ className, ...props }) => (
   <div className={cn("p-4 pt-0", className)} {...props} />
 );
 
-export { Card, CardHeader, CardContent };
+const CardTitle = ({ className, ...props }) => (
+  <h2
+    className={cn(
+      "text-xl font-semibold leading-none tracking-tight",
+      className
+    )}
+    {...props}
+  />
+);
+
+export { Card, CardHeader, CardContent, CardTitle };
