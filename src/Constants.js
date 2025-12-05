@@ -97,11 +97,17 @@ export const COLORS = {
   redbg : "#FEE2E2",
   greenbg : "#DCFCE7",
   purplebg : "#F3E8FF",
-  bluetext : "#1E40AF",
-  yellowtext : "#854D0E",
-  redtext: "#991B1B",
-  greentext: "#166534",
-  purpletext: "#6B21A8"
+  totalcounttextclr : "#1E40AF",
+  opentext : "#7b6c10a7",
+  losttext: "#991B1B",
+  confirmedtext: "#166534",
+  postponedtext: "#6B21A8",
+  chartopen: "#facc15",
+  chartlost:"#eb4242ff",
+  chartconfirmed:"#25f10acf",
+  chartpostponed:"#a871ebff"
+
+  
   // FEE2E2
  
 

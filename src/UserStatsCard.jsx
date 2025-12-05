@@ -9,6 +9,8 @@ import {
   Tooltip,
   Cell
 } from "recharts";
+import { COLORS } from "./Constants";
+
 
 const UserStatsCard = ({ users }) => {
   if (!users || users.length === 0) return null;
@@ -18,10 +20,10 @@ const UserStatsCard = ({ users }) => {
 
       {users.map((user) => {
         const barsData = [
-          { stage: "Open", value: user.openCount || 0, color: "#facc15" },
-          { stage: "Confirmed", value: user.confirmedCount || 0, color: "#10b981" },
-          { stage: "Lost", value: user.lostCount || 0, color: "#ef4444" },
-          { stage: "Postponed", value: user.postponedCount || 0, color: "#f97316" },
+          { stage: "Open", value: user.openCount || 0, color: COLORS.chartopen },    // Use color for style from constant file 
+          { stage: "Confirmed", value: user.confirmedCount || 0, color: COLORS.chartconfirmed },
+          { stage: "Lost", value: user.lostCount || 0, color: COLORS.chartlost},
+          { stage: "Postponed", value: user.postponedCount || 0, color: COLORS.chartpostponed },
         ];
 
         return (
