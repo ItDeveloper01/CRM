@@ -51,10 +51,10 @@ const THEME_CLR = {
   hoverBg: COLORS.bluebg,             // Button hover background
   selectedBg: "#DBEAFE", // Selected button background
   metric: {
-    openCount: COLORS.yellowborder,
-    confirmedCount: COLORS.greenborder,
-    lostCount: COLORS.redborder,
-    postponedCount: COLORS.purpleborder,
+    openCount: COLORS.chartopen,
+    confirmedCount: COLORS.chartconfirmed,
+    lostCount: COLORS.chartlost,
+    postponedCount: COLORS.chartpostponed,
   }
 };
 

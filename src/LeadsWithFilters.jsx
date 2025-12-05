@@ -19,10 +19,21 @@ export default function LeadListWithFilters({ users }) {
       return combinedLeads.map((lead) => ({
         ...lead,
         assignedTo: u.firstName,
-        status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
+        // status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
+        // status: lead?.histories?.[0]?.statusDescription || "Unknown",
+        status: lead?.histories?.length > 0
+    ? lead.histories[0].statusDescription
+    : lead.statusDescription,
       }));
     });
   }, [users]);
+
+  
+
+  
+    
+
+  
 
 
   React.useEffect(() => {
@@ -161,14 +172,14 @@ export default function LeadListWithFilters({ users }) {
             {filteredLeads.map((lead, idx) => (
               <tr key={idx} className="border-b hover:bg-gray-50">
                 <td className="p-2">{lead.leadID}</td>
-                <td className="p-2 font-medium text-indigo-700">{lead.fName} {lead.lName}</td>
+                <td className="p-2">{lead.fName} {lead.lName}</td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.assignedTo}</td>
 
                 <td className={`p-2 font-semibold ${lead.status === "Lost"
-                  ? "text-red-600"
+                  ? "text-redText"
                   : lead.status === "Confirmed"
-                    ? "text-green-600"
+                    ? "text-yellowText"
                     : lead.status === "Postponed"
                       ? "text-orange-500"
                       : "text-yellow-500"
@@ -177,7 +188,11 @@ export default function LeadListWithFilters({ users }) {
                 </td>
 
                 <td className="p-2">{new Date(lead.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
-                <td className="p-2"> {new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
+                {/* <td className="p-2"> {new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td> */}
+                 <td className="p-2">
+{lead.histories?.[0]?.createdAt? new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")
+    : "—"}
+</td>
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
               </tr>
@@ -194,4 +209,4 @@ export default function LeadListWithFilters({ users }) {
 //   <CardContent>
 //     <LeadListWithFilters users={users} />
 //   </CardContent>
-// )
+// )  

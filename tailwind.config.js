@@ -14,15 +14,15 @@ module.exports = {
       purpleBorder: COLORS.purpleborder,
       grayBorder: COLORS.grayborder,
       blueBg: COLORS.bluebg,
-      yellowBg: COLORS.yellowbg,
+      yellowBg: COLORS.yellowbg,  
       redBg: COLORS.redbg,
       greenBg: COLORS.greenbg,
       purpleBg: COLORS.purplebg,
-      blueText: COLORS.bluetext,
-      yellowText: COLORS.yellowtext,
-      redText: COLORS.redtext,
-      greenText: COLORS.greentext,
-      purpleText: COLORS.purpletext,
+      totalcountTextClr: COLORS.totalcounttextclr,
+      openText: COLORS.opentext,
+      lostText: COLORS.losttext,
+      confirmedText: COLORS.confirmedtext,
+      postponedText: COLORS.postponedtext,
 
 
 

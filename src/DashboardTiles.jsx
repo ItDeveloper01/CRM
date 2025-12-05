@@ -4,11 +4,11 @@ export default function LeadTiles({ tileCounts }) {
   const navigate = useNavigate()
 
   const tiles = [
-    { label: "Total Leads", value: tileCounts.TotalCount, bg: "bg-blueBg", text: "text-blueText", border: "border-blueBorder", link: "/leads/total" },
-    { label: "Open Leads", value: tileCounts.OpenCount, bg: "bg-yellowBg", text: "text-yellowText", border: "border-yellowBorder", link: "/leads/open" },
-    { label: "Lost", value: tileCounts.LostCount, bg: "bg-redBg", text: "text-redText", border: "border-redBorder", link: "/leads/lost" },
-    { label: "Confirmed", value: tileCounts.ConfirmedCount, bg: "bg-greenBg", text: "text-greenText", border: "border-greenBorder", link: "/leads/confirmed" },
-    { label: "Postponed Leads", value: tileCounts.PostponedCount, bg: "bg-purpleBg", text: "text-purpleText", border: "border-purpleBorder", link: "/leads/postponed" },
+    { label: "Total Leads", value: tileCounts.TotalCount, bg: "bg-blueBg", text: "text-totalcountTextClr", border: "border-blueBorder", link: "/leads/total" },
+    { label: "Open Leads", value: tileCounts.OpenCount, bg: "bg-yellowBg", text: "text-openText", border: "border-yellowBorder", link: "/leads/open" },
+    { label: "Lost", value: tileCounts.LostCount, bg: "bg-redBg", text: "text-lostText", border: "border-redBorder", link: "/leads/lost" },
+    { label: "Confirmed", value: tileCounts.ConfirmedCount, bg: "bg-greenBg", text: "text-confirmedText", border: "border-greenBorder", link: "/leads/confirmed" },
+    { label: "Postponed Leads", value: tileCounts.PostponedCount, bg: "bg-purpleBg", text: "text-postponedText", border: "border-purpleBorder", link: "/leads/postponed" },
   ]
 
   return (
