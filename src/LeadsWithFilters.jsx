@@ -21,9 +21,7 @@ export default function LeadListWithFilters({ users }) {
         assignedTo: u.firstName,
         // status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
         // status: lead?.histories?.[0]?.statusDescription || "Unknown",
-        status: lead?.histories?.length > 0
-    ? lead.histories[0].statusDescription
-    : lead.statusDescription,
+        status: lead?.histories?.length > 0 ? lead.histories[0].statusDescription : lead.statusDescription,
       }));
     });
   }, [users]);
@@ -113,7 +111,8 @@ export default function LeadListWithFilters({ users }) {
             placeholder="Search by Name"
             value={nameSearch}
             onChange={(e) => setNameSearch(e.target.value)}
-            className="border rounded px-2 py-1 text-sm w-40"
+            // className="border rounded px-2 py-1 text-sm w-40"
+            className='rounded px-2 py-1.5 focus:outline-none focus:ring-2 bg-white border border-gray-300'
           />
 
           {Object.keys(filterOptions).map((key) => (
@@ -133,7 +132,8 @@ export default function LeadListWithFilters({ users }) {
 
         {/* CLEAR FILTER BUTTON */}
         <button
-          className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+          //className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+         className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
           onClick={() => {
             setFilters({
               status: "",
@@ -151,50 +151,61 @@ export default function LeadListWithFilters({ users }) {
 
       {/* ---------------- TABLE ---------------- */}
       <div className="overflow-auto max-h-[500px] border rounded-lg mt-4">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-xs border-collapse">
+          {/* <table className="w-full table-fixed border-collapses"> */}
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-2">Lead ID</th>
-              <th className="p-2">Lead Name</th>
-              <th className="p-2">Category</th>
-              <th className="p-2">Assigned To</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Created Date</th>
-              <th className="p-2">Latest Update</th>
-              <th className="p-2">Customer Type</th>
-              <th className="p-2">Mobile No</th>
-              {/* <th className="p-2">View Details</th>
-              <th className="p-2">Transfer To</th> */}
+              <th className="p-2 text-left">Sr. No.</th>
+              <th className="p-2 text-left">Lead Name</th>
+              <th className="p-2 text-left">Category</th>
+              <th className="p-2 text-left">Assigned To</th>
+              <th className="p-2 text-left">Lead ID</th>
+              <th className="p-2 text-left">Status</th>
+              <th className="p-2 text-left">Created Date</th>
+              <th className="p-2 text-left">Latest Update</th>
+              <th className="p-2 text-left">Customer Type</th>
+              <th className="p-2 text-left">Mobile No</th>
+              <th className="p-2 text-left">Details</th>
             </tr>
           </thead>
+
 
           <tbody>
             {filteredLeads.map((lead, idx) => (
               <tr key={idx} className="border-b hover:bg-gray-50">
-                <td className="p-2">{lead.leadID}</td>
+                <td className="p-2">{idx + 1}</td>
                 <td className="p-2">{lead.fName} {lead.lName}</td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.assignedTo}</td>
+                <td className="p-2 text-center">{lead.leadID}</td>
 
                 <td className={`p-2 font-semibold ${lead.status === "Lost"
-                  ? "text-redText"
+                  ? "text-lostText"
                   : lead.status === "Confirmed"
-                    ? "text-yellowText"
+                    ? "text-confirmedText"
                     : lead.status === "Postponed"
-                      ? "text-orange-500"
-                      : "text-yellow-500"
+                      ? "text-postponedText"
+                      // : "text-yellow-500"
+                      : "text-openText"
                   }`}>
                   {lead.status}
                 </td>
 
                 <td className="p-2">{new Date(lead.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
                 {/* <td className="p-2"> {new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td> */}
-                 <td className="p-2">
-{lead.histories?.[0]?.createdAt? new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")
-    : "—"}
-</td>
+                {/* <td className="p-2">{lead.histories?.[0]?.createdAt? new Date(lead.histories[0].createdAt).toLocaleDateString("en-GB").replace(/\//g, "-"): "—"}</td> */}
+
+                <td className="p-2">{lead.histories?.[0]?.createdAt || lead.updatedAt ? new Date(lead.histories?.[0]?.createdAt || lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-") : "—"}</td>
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
+                <td className="p-2">
+                  <button
+                    className="text-500 underline"
+                  // onClick={() => handleViewClick(lead)}
+                  >
+                    View Details (WIP)
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

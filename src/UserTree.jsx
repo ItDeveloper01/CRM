@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { UsersRound, Check ,Users ,ClipboardCheck,ClipboardCheckIcon} from "lucide-react";
+import { COLORS } from "./Constants";
+
 
 const ROLE_BADGE = {
-  1: { text: "Super Admin", color: "bg-red-400" },
-  2: { text: "Admin", color: "bg-orange-400" },
-  3: { text: "HOD", color: "bg-purple-400" },
-  4: { text: "Manager", color: "bg-blue-400" },
-  5: { text: "User", color: "bg-green-400" },
+  1: { text: "Super Admin", color: "bg-superAdmin" },
+  2: { text: "Admin", color: "bg-admin" },
+  3: { text: "HOD", color: "bg-hod" },
+  4: { text: "Manager", color: "bg-manager" },
+  5: { text: "User", color: "bg-user" },
 };
 
 export default function UserTree({ data, onSelectionChange }) {
@@ -81,6 +83,9 @@ export default function UserTree({ data, onSelectionChange }) {
   const filteredTree = filterActiveNodes(data);
 
   return (
+
+    
+    
     <div className="p-2 relative">
 
       {/* === CONTROLS (TOOLTIP + ACTIVE ONLY) === */}
@@ -154,7 +159,8 @@ function TreeNode({
 }) {
   const roleMeta = ROLE_BADGE[node.roleId] || {
     text: "Unknown",
-    color: "bg-gray-400",
+    // color: "bg-gray-400",
+    color: COLORS.unknown,
   };
 
   const [hover, setHover] = useState(false);

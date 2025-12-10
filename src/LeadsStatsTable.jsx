@@ -42,7 +42,10 @@ export default function LeadStatsTable({ leads }) {
       ];
 
      allLeads.forEach((lead) => {
-  const cat = lead.categoryName || "Unknown";
+  const cat = lead.categoryName || "Orphan";
+  // const cat = lead.categoryName && lead.categoryName.trim() !== "" 
+  //   ? lead.categoryName 
+  //   : "Uncategorized";
 
   if (!travelMap[cat]) {
     travelMap[cat] = { open: 0, confirmed: 0, lost: 0, postponed: 0, orphan: 0, total: 0 };
@@ -51,9 +54,15 @@ export default function LeadStatsTable({ leads }) {
   // If no histories → orphan lead
   if (!lead.histories || lead.histories.length === 0) {
     travelMap[cat].orphan++;
+    const status = lead.statusDescription?.toString().toLowerCase() || "";
+    if (status === "0" || status === "open") travelMap[cat].open++;
+    else if (status === "1" || status === "confirmed") travelMap[cat].confirmed++;
+    else if (status === "2" || status === "lost") travelMap[cat].lost++;
+    else if (status === "3" || status === "postponed") travelMap[cat].postponed++;
+    
   } else {
     const status = lead.histories[0].statusDescription?.toString().toLowerCase() || "";
-
+  
     if (status === "0" || status === "open") travelMap[cat].open++;
     else if (status === "1" || status === "confirmed") travelMap[cat].confirmed++;
     else if (status === "2" || status === "lost") travelMap[cat].lost++;
@@ -64,8 +73,8 @@ export default function LeadStatsTable({ leads }) {
     travelMap[cat].open +
     travelMap[cat].confirmed +
     travelMap[cat].lost +
-    travelMap[cat].postponed +
-    travelMap[cat].orphan;
+    travelMap[cat].postponed 
+    // +travelMap[cat].orphan;
 });
     });
 
@@ -134,35 +143,41 @@ export default function LeadStatsTable({ leads }) {
       {/* Travel Category + Overall Status */}
       <SectionCard title="Travel Category & Overall Status Summary">
         <div printBody="">
-          <table className="min-w-full border rounded-lg text-sm">
+          {/* <table className="min-w-full border rounded-lg text-sm"> */}
+          {/* <table className="min-w-full table-auto border border-gray-300 border-collapse text-sm"> */}
+          <table className="w-full min-w-full table-auto border border-gray-300 border-collapse text-sm">
+
             <thead>
               <tr className="bg-gray-100 text-center">
-                <th className="p-2 border">Category</th>
-                <th className="p-2 border">Open</th>
-                <th className="p-2 border">Confirmed</th>
-                <th className="p-2 border">Lost</th>
-                <th className="p-2 border">Postponed</th>
-                <th className="p-2 border">Total</th>
+                <th className="p-2 border border-gray-300 w-[10%]">Sr.No.</th>
+                <th className="p-2 border border-gray-300 w-[30%]">Category</th>
+                <th className="p-2 border border-gray-300">Open</th>
+                <th className="p-2 border border-gray-300">Confirmed</th>
+                <th className="p-2 border border-gray-300">Lost</th>
+                <th className="p-2 border border-gray-300">Postponed</th>
+                <th className="p-2 border border-gray-300">Total</th>
               </tr>
             </thead>
             <tbody>
               {travelCategoryRows.map((r, i) => (
-                <tr key={i} className="text-center border">
-                  <td className="p-2 font-medium">{r.category}</td>
-                  <td className="p-2">{r.open}</td>
-                  <td className="p-2">{r.confirmed}</td>
-                  <td className="p-2">{r.lost}</td>
-                  <td className="p-2">{r.postponed}</td>
-                  <td className="p-2 font-bold">{r.total}</td>
+                <tr key={i} className="text-center border border-gray-300">
+                  <td className="p-2 border border-gray-300">{i + 1}</td>  
+                  <td className="p-2 ps-4 font-medium text-left border border-gray-300">{r.category}</td>
+                  <td className="p-2 border border-gray-300">{r.open}</td>
+                  <td className="p-2 border border-gray-300">{r.confirmed}</td>
+                  <td className="p-2 border border-gray-300">{r.lost}</td>
+                  <td className="p-2 border border-gray-300">{r.postponed}</td>
+                  <td className="p-2 font-bold border border-gray-300">{r.total}</td>
                 </tr>
               ))}
-              <tr className="text-center border font-bold bg-gray-50">
-                <td className="p-2">TOTAL</td>
-                <td className={`p-2 ${LeadStatusColors["Open"]}`}>{travelTotals.open}</td>
-                <td className={`p-2 ${LeadStatusColors["Confirmed"]}`}>{travelTotals.confirmed}</td>
-                <td className={`p-2 ${LeadStatusColors["Lost"]}`}>{travelTotals.lost}</td>
-                <td className={`p-2 ${LeadStatusColors["Postponed"]}`}>{travelTotals.postponed}</td>
-                <td className="p-2">{travelTotals.total}</td>
+              <tr className="text-center border border-gray-300 font-bold bg-gray-50">
+                <td></td>
+                <td className="p-2 border border-gray-300">TOTAL</td>
+                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Open"]}`}>{travelTotals.open}</td>
+                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Confirmed"]}`}>{travelTotals.confirmed}</td>
+                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Lost"]}`}>{travelTotals.lost}</td>
+                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Postponed"]}`}>{travelTotals.postponed}</td>
+                <td className="p-2 border border-gray-300">{travelTotals.total}</td>
               </tr>
             </tbody>
           </table>
@@ -172,28 +187,30 @@ export default function LeadStatsTable({ leads }) {
       {/* User-wise Summary */}
       <SectionCard title="User-wise Summary">
         <div printBody="">
-          <table className="min-w-full border rounded-lg text-sm">
+          {/* <table className="min-w-full border rounded-lg text-sm border-gray-300 border-collapse"> */}
+          <table className="w-full min-w-full table-auto border border-gray-300 border-collapse text-sm">
+
             <thead>
               <tr className="bg-gray-100 text-center">
-                <th className="p-2 border">S.No</th>
-                <th className="p-2 border">User</th>
-                <th className="p-2 border">Open</th>
-                <th className="p-2 border">Confirmed</th>
-                <th className="p-2 border">Lost</th>
-                <th className="p-2 border">Postponed</th>
-                <th className="p-2 border">Total</th>
+                <th className="p-2 border border-gray-300 w-[10%]">Sr.No</th>
+                <th className="p-2 border border-gray-300 w-[30%]">User</th>
+                <th className="p-2 border border-gray-300">Open</th>
+                <th className="p-2 border border-gray-300">Confirmed</th>
+                <th className="p-2 border border-gray-300">Lost</th>
+                <th className="p-2 border border-gray-300">Postponed</th>
+                <th className="p-2 border border-gray-300">Total</th>
               </tr>
             </thead>
             <tbody>
               {userRows.map((r, i) => (
-                <tr key={i} className="text-center border">
-                  <td className="p-2">{i + 1}</td>
-                  <td className="p-2 font-medium">{r.user}</td>
-                  <td className="p-2">{r.open}</td>
-                  <td className="p-2">{r.confirmed}</td>
-                  <td className="p-2">{r.lost}</td>
-                  <td className="p-2">{r.postponed}</td>
-                  <td className="p-2 font-bold">{r.total}</td>
+                <tr key={i} className="text-center border border-gray-300">
+                  <td className="p-2  border border-gray-300">{i + 1}</td>
+                  <td className="p-2 ps-4 font-medium text-left border border-gray-300">{r.user}</td>
+                  <td className="p-2 border border-gray-300">{r.open}</td>
+                  <td className="p-2 border border-gray-300">{r.confirmed}</td>
+                  <td className="p-2 border border-gray-300">{r.lost}</td>
+                  <td className="p-2 boreder border-gray-300">{r.postponed}</td>
+                  <td className="p-2 font-bold border border-gray-300">{r.total}</td>
                 </tr>
               ))}
             </tbody>

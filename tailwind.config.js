@@ -23,6 +23,11 @@ module.exports = {
       lostText: COLORS.losttext,
       confirmedText: COLORS.confirmedtext,
       postponedText: COLORS.postponedtext,
+      superAdmin: COLORS.superadmin,
+      admin: COLORS.admin,
+      hod: COLORS.hod,
+      manager: COLORS.manager,
+      user: COLORS.user
 
 
 

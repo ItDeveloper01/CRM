@@ -9,7 +9,7 @@ import LeadStatsTable from "./LeadsStatsTable";
 
 // Dummy CustomComponents to avoid import errors
 const Card = ({ children, className }) => <div className={`border rounded-xl shadow p-3 bg-white mb-3 ${className || ''}`}>{children}</div>;
-const CardHeader = ({ children, className }) => <div className={`text-lg font-semibold mb-2 text-indigo-700 ${className || ''}`}>{children}</div>;
+const CardHeader = ({ children, className }) => <div className={`text-lg font-semibold mb-2 text-grey-700 ${className || ''}`}>{children}</div>;
 const CardContent = ({ children }) => <div className="mt-2">{children}</div>;
 const Button = ({ children, onClick, active }) => (
   <button 
@@ -24,7 +24,7 @@ const Tabs = ({ tabs = [], active, onChange }) => (
     {tabs.map(t => (
       <button 
         key={t} 
-        className={`px-3 py-1 rounded-t font-semibold ${active === t ? 'bg-indigo-500 text-white shadow-md' : 'bg-gray-200 text-gray-700'}`} 
+        className={`px-3 py-1 rounded-t font-semibold ${active === t ? 'bg-blue-500 text-white shadow-md' : 'bg-gray-200 text-gray-700'}`} 
         onClick={() => onChange(t)}>
         {t}
       </button>
@@ -119,7 +119,7 @@ React.useEffect(() => {
         {/* -------------------- INDIVIDUAL STATISTICS -------------------- */}
         {activeTab === "Individual Statistics" && (
           <CardContent>
-            <UserStatsCard users={users} />
+            <UserStatsCard  users={users} />
           </CardContent>
         )}
 
