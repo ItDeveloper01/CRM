@@ -98,14 +98,22 @@ export const COLORS = {
   greenbg : "#DCFCE7",
   purplebg : "#F3E8FF",
   totalcounttextclr : "#1E40AF",
-  opentext : "#7b6c10a7",
+  // opentext : "#7b6c10a7",
+  opentext : "#eab308",
   losttext: "#991B1B",
   confirmedtext: "#166534",
   postponedtext: "#6B21A8",
   chartopen: "#facc15",
   chartlost:"#eb4242ff",
   chartconfirmed:"#25f10acf",
-  chartpostponed:"#a871ebff"
+  chartpostponed:"#a871ebff",
+  superadmin:  "#a871ebff",
+  admin: "#4185f2ff",
+  hod:  "#f59e0bff",
+  manager: "#ea85d8ff",
+  user: "#55d244d0",
+  
+
 
   
   // FEE2E2

@@ -417,7 +417,8 @@ return (
       MY HIERARCHY
     </span>
   </div>
-)} <div  
+)} 
+<div  
   className="p-3 overflow-auto h-[calc(100vh-350px)]"
   style={{ display: isCollapsed ? 'none' : 'block' }}
 >

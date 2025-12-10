@@ -28,7 +28,7 @@ const UserStatsCard = ({ users }) => {
 
         return (
           <Card key={user.key || user.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader className="text-indigo-600">
+            <CardHeader className="text-blue-600">
               {user.firstName || user.key}
             </CardHeader>
 
@@ -36,12 +36,12 @@ const UserStatsCard = ({ users }) => {
               <div style={{ width: "100%", height: 160 }}>
                 <ResponsiveContainer>
                   <BarChart
-                    layout="vertical"
+                    // layout="vertical"
                     data={barsData}
-                    margin={{ top: 10, right: 20, left: 50, bottom: 10 }}
+                    margin={{ top: 10, right: 30, left: 20, bottom: 10 }}
                   >
-                    <XAxis type="number" />
-                    <YAxis type="category" dataKey="stage" width={100} />
+                    <XAxis type="category" dataKey="stage" width={100} />
+                    <YAxis type="number" />
                     <Tooltip />
                     <Bar dataKey="value">
                       {barsData.map((item, index) => (

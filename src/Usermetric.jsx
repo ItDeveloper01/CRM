@@ -47,15 +47,36 @@ import { lightBlue } from "@mui/material/colors";
 const THEME_CLR = {
   border: COLORS.grayborder,           // Button & panel borders
   textPrimary: COLORS.bluetext,       // Default button text
-  textHover: COLORS.primarylightblue, // Button hover text
+  // textHover: COLORS.primarylightblue, // Button hover text
   hoverBg: COLORS.bluebg,             // Button hover background
   selectedBg: "#DBEAFE", // Selected button background
+
   metric: {
     openCount: COLORS.chartopen,
     confirmedCount: COLORS.chartconfirmed,
     lostCount: COLORS.chartlost,
     postponedCount: COLORS.chartpostponed,
+  
+  bg: {
+    openCount: COLORS.yellowbg,
+    confirmedCount: COLORS.greenbg,
+    lostCount: COLORS.redbg,
+    postponedCount: COLORS.purplebg,
+  },
+  text: {
+    openCount: COLORS.opentext,
+    confirmedCount: COLORS.confirmedtext,
+    lostCount: COLORS.losttext,
+    postponedCount: COLORS.postponedtext,
+  },
+  statusborder: {
+    openCount: COLORS.yellowborder,
+    confirmedCount: COLORS.greenborder,
+    lostCount: COLORS.redborder,
+    postponedCount: COLORS.purpleborder,
   }
+  }
+
 };
 
 // Friendly labels
@@ -167,7 +188,7 @@ const UserMetricChart = ({ users }) => {
             data={filteredUsers}
             margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
           >
-            <XAxis dataKey="firstName" tick={{ fill: "#4b5563", fontWeight: 600 }} />
+            <XAxis dataKey="firstName" tick={{ fill: "#4b5563", fontWeight: 600, fontSize: 12 }} />
             <YAxis />
             <Tooltip />
             <Legend />
@@ -205,8 +226,11 @@ const UserMetricChart = ({ users }) => {
                   }
                 `}
                 style={{
-                  borderColor: THEME_CLR.border,
-                  backgroundColor: isSel ? THEME_CLR.selectedBg : "white",
+                  // borderColor: THEME_CLR.border,
+                  // backgroundColor: isSel ? THEME_CLR.selectedBg : "white",
+                  borderColor: isSel? THEME_CLR.metric.statusborder[metric]: THEME_CLR.border,
+                  backgroundColor: isSel ? THEME_CLR.metric.bg[metric] : "white",
+                  color: isSel ? THEME_CLR.metric.text[metric] : THEME_CLR.textPrimary,
                 }}
               >
                 {METRIC_LABELS[metric]}
