@@ -20,6 +20,7 @@ const UserStatsCard = ({ users }) => {
 
       {users.map((user) => {
         const barsData = [
+          { stage: "Created", value: user.createdCount || 0, color: COLORS.chartCreated },    // Use color for style from constant file 
           { stage: "Open", value: user.openCount || 0, color: COLORS.chartopen },    // Use color for style from constant file 
           { stage: "Confirmed", value: user.confirmedCount || 0, color: COLORS.chartconfirmed },
           { stage: "Lost", value: user.lostCount || 0, color: COLORS.chartlost},
