@@ -103,6 +103,7 @@ export const COLORS = {
   losttext: "#991B1B",
   confirmedtext: "#166534",
   postponedtext: "#6B21A8",
+  chartCreated:"#67aceeff",
   chartopen: "#facc15",
   chartlost:"#eb4242ff",
   chartconfirmed:"#25f10acf",
