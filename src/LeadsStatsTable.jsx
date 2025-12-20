@@ -255,7 +255,7 @@ const {
   };
 
   const SectionCard = ({ title, children }) => (
-    <Card className="shadow-md border rounded-xl p-3">
+    <Card className="shadow-md border rounded-xl p-3">      
       <CardHeader className="flex justify-between items-center">
         <CardTitle className="text-lg font-bold">{title}</CardTitle>
         <Button
