@@ -125,27 +125,30 @@ const UserMetricChart = ({ users }) => {
     return users.filter(u => selectedUsers.includes(u.key));
   }, [users, selectedUsers]);
 
+  // To show message before user selection 
+  const hasSelectedUsers = selectedUsers.length > 0;
+
   // show total of leads of selected users in chart
   const cumulativeUsers = useMemo(() => {
-  if (!filteredUsers?.length) return [];
+    if (!filteredUsers?.length) return [];
 
-  const total = {};
+    const total = {};
 
-  selectedMetrics.forEach((m) => (total[m] = 0));
+    selectedMetrics.forEach((m) => (total[m] = 0));
 
-  filteredUsers.forEach((u) => {
-    selectedMetrics.forEach((m) => {
-      total[m] += Number(u[m] || 0);
+    filteredUsers.forEach((u) => {
+      selectedMetrics.forEach((m) => {
+        total[m] += Number(u[m] || 0);
+      });
     });
-  });
 
-  return [
-    {
-      firstName: "Total",
-      ...total,
-    },
-  ];
-}, [filteredUsers, selectedMetrics]);
+    return [
+      {
+        firstName: "Total",
+        ...total,
+      },
+    ];
+  }, [filteredUsers, selectedMetrics]);
 
 
   // Scrollable height for user panel if more than 22 users
@@ -213,24 +216,24 @@ const UserMetricChart = ({ users }) => {
       </div>
 
       {/* CHART SECTION */}
-      
+
       <div
         className="border rounded-2xl p-4"
         style={{ width: "100%", height: 420, borderColor: THEME_CLR.border }}
       >
         <div className="flex justify-end">
-        <select
-          className="border border-gray-300 rounded-md text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
-          value={viewMode}
-          onChange={(e) => setViewMode(e.target.value)}
-        >
-          <option value="individual">Individual</option>
-          <option value="cumulative">Cumulative</option>
-        </select>
+          <select
+            className="border border-gray-300 rounded-md text-sm px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value)}
+          >
+            <option value="individual">Individual</option>
+            <option value="cumulative">Cumulative</option>
+          </select>
         </div>
 
         <div className="h-[calc(100%-2rem)]">
-                    {loading ? (
+          {/* {loading ? (
                       <div className="flex justify-center items-center h-full">
                         <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
                       </div>
@@ -282,7 +285,71 @@ const UserMetricChart = ({ users }) => {
       ))}
     </BarChart>
   </ResponsiveContainer>
-        )}
+        )} */}
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+            </div>
+          ) : !hasSelectedUsers ? (
+            // EMPTY STATE
+            <div className="flex justify-center items-center h-full">
+              <span className="text-gray-400 text-2xl font-bold">
+                Please Select Users
+              </span>
+            </div>
+          ) : viewMode === "individual" ? (
+            // INDIVIDUAL CHART
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={filteredUsers}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                {/* <XAxis dataKey="firstName" tick={{ fill: "#4b5563", fontWeight: 600, fontSize: 12 }} /> */}
+                <XAxis dataKey="firstName" angle={-25} textAnchor="end" height={60}          o
+                  tick={{
+                    fill: "#4b5563",
+                    fontWeight: 600,
+                    fontSize: 12,
+                  }}
+                />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+
+                {selectedMetrics.map((metric) => (
+                  <Bar
+                    key={metric}
+                    dataKey={metric}
+                    fill={THEME_CLR.metric[metric]}
+                    name={METRIC_LABELS[metric]}
+                    radius={[0, 0, 0, 0]}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            // CUMULATIVE CHART
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={cumulativeUsers}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              >
+                <XAxis dataKey="firstName" tick={{ fill: "#4b5563", fontWeight: 600, fontSize: 12 }} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                {selectedMetrics.map((metric) => (
+                  <Bar
+                    key={metric}
+                    dataKey={metric}
+                    fill={THEME_CLR.metric[metric]}
+                    name={METRIC_LABELS[metric]}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+
         </div>
       </div>
 
