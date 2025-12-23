@@ -94,6 +94,8 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const getEnquirySourceListEndPoint = config.apiUrl + '/MasterData/GetEnquirySourceList';
   const getCustomerTypeListEndPoint = config.apiUrl + '/MasterData/GetCustomerTypeList';
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
+  const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
+
 
 
 
@@ -185,7 +187,38 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     //   }
     // };
     // fetchSpecialRequirements();
+
+
+    fetchCityList();     // for City API
+
   }, []);
+  
+  // Fetch List of City from API(Self made)
+  const fetchCityList = async () => {
+    debugger;
+    const cityList = await axios.get(getCityListMasterEndPoint, {
+      headers: {
+        Authorization: `Bearer ${sessionUser.token}`,
+      },
+    })
+    .then((res) => {
+      console.log('Fetching City List in Lead Generate Page ...', res.data);
+      setCities(res.data || []);
+    }
+    ).catch((err) => {
+      debugger;
+      console.error("Failed to fetch City List :", err);
+      console.error("Failed ......... :", err.response.data);
+
+    })
+    .finally(() => {
+      // Always executed, regardless of success or error)
+      console.log('City List Fetch function finished.')
+      // alert("City List Fetch function finished.");
+    })
+
+  }
+
 
   const cityAreas = {
     Pune: ["Kothrud", "Karvenagar", "Nigdi", "Bhosari", "Deccan"],
