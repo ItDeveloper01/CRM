@@ -5,6 +5,7 @@ import { data } from "autoprefixer";
 import UserStatsCard from "./UserStatsCard";
 import UserMetricChart from "./Usermetric";
 import LeadStatsTable from "./LeadsStatsTable";
+import ReasonStatsCard from "./ReasonStatsCard";
 
 
 // Dummy CustomComponents to avoid import errors
@@ -90,7 +91,7 @@ React.useEffect(() => {
   }
 }, [dataProp]);
 
-  const tabs = ["Lead List", "Individual Statistics", "Team Overview","Stats Table"];
+  const tabs = ["Lead List", "Individual Statistics", "Team Overview","Stats Table","Reason Stats"];
 
   React.useEffect(() => {
     console.log("Users data:", users);
@@ -136,6 +137,15 @@ React.useEffect(() => {
             <LeadStatsTable leads={users} />
           </CardContent>
         )}
+
+        {activeTab==="Reason Stats" && (
+          <CardContent>
+           <ReasonStatsCard data={users} />
+          </CardContent>
+        )
+
+
+        }
 
       </Card>
     </div>
