@@ -199,7 +199,14 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     <select
                         name="servingCity"
                         value={carLeaddObj.servingCity}
-                        onChange={handleChange}
+                       // onChange={handleChange}
+                       onChange={(e) => {
+                            const value = e.target.value === "" ? null : Number(e.target.value);
+                            setCarLeadObj((prev) => ({
+                                ...prev,
+                                [e.target.name]: value,
+                            }));
+                        }}
                         className="border-highlight"
                     >
                         {/* debugger;
@@ -210,8 +217,8 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         <option value="">Select City</option>
                         {/* {carLeaddObj.cities.map((city, index) => ( ...........to set in car lead but not working check latwer */}
                         {cities.map((city) => (
-                            <option key={city} value={city}>
-                                {city}
+                            <option key={city.id} value={city.id}>
+                                {city.cityName}
                             </option>
                         ))}
 

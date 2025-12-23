@@ -7,7 +7,7 @@ export const CarLeadObject= {
     vehicleType: null,
     dutyType: "",
     tripDescription: "",
-    servingCity: "",
+    servingCity: null,
     travelDate: null,
     noOfDays: 0,
     requirementType: "",
