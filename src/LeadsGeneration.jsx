@@ -30,6 +30,7 @@ import { Navigate } from 'react-router-dom';
 import { constant, set } from 'lodash';
 import { da, id } from 'intl-tel-input/i18n';
 import HistoryCollapse from './HIstoryHover';
+import { User } from 'lucide-react';
 
 
 
@@ -45,7 +46,8 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
   const [statusReason, setStatusReason] = useState(false);     // for status popup
   const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [leadCategoryList, setLeadCategoryList] = useState({});
+  // const [leadCategoryList, setLeadCategoryList] = useState({});
+  const [leadCategoriesByUserIdList, setLeadCategoriesByUserIdList] = useState({});
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState([]);
   const [enquiryMode, setEnquiryMode] = useState([]);
@@ -69,6 +71,8 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const [popupType, setPopupType] = useState("INFO");
   //Requirment for car rental
   const [requirementType, setRequirementType] = useState("");
+  const isUncategorised = lead?.categoryName === "UNCATEGORIZED";  // To disable status if category is not selected
+  console.log("Category Name: ", lead?.categoryName);
 
 
   //for Indian City Dropdown through API
@@ -95,7 +99,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const getCustomerTypeListEndPoint = config.apiUrl + '/MasterData/GetCustomerTypeList';
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
-
+  const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
 
 
 
@@ -468,8 +472,26 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     }
   };
 
-
-
+  const fetchLeadCategoriesByUserId = async () => {
+    try {
+      const leadCategoriesByUserId = await axios.get(getLeadCategoriesByUserId, {
+          params: {
+          userId: sessionUser.user.userId,     
+        },
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      });
+      setLeadCategoriesByUserIdList(leadCategoriesByUserId.data || []);
+      console.log("Lead Categories fetch Successfully", leadCategoriesByUserId.data);
+    }catch(err) {
+      console.error("Error fetching Lead Categories:", err);
+      throw err;
+    }
+  };
+   console.log("sessionUser object:", sessionUser);
+   console.log("useId : " , sessionUser.user.userId);
+  
   // Initialize leadObj on prop change
   useEffect(() => {
 
@@ -499,26 +521,36 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
 
   // Fetch Lead Categories
   useEffect(() => {
-    const fetchLeadCategories = async () => {
-      try {
-        const res = await axios.get(LeadCategoryAPI);
-        if (res.data) setLeadCategoryList(res.data);
-      } catch (err) {
-        console.error("Error fetching Lead Categories:", err);
-      }
-    };
-    fetchLeadCategories();
+    // const fetchLeadCategories = async () => {
+    //   try {
+    //     const res = await axios.get(LeadCategoryAPI);
+    //     if (res.data) setLeadCategoryList(res.data);
+    //   } catch (err) {
+    //     console.error("Error fetching Lead Categories:", err);
+    //   }
+    // };
+    // fetchLeadCategories();
+    fetchLeadCategoriesByUserId();
     fetchEnquiryDetails();
     fetchLeadStatus();
   }, []);
 
   // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
   useEffect(() => {
-    if (leadObj.fK_LeadCategoryID && leadCategoryList) {
-      const name = leadCategoryList[leadObj.fK_LeadCategoryID];
+  //   // Comment its old code for category list which fetch all categories 
+  // //   if (leadObj.fK_LeadCategoryID && leadCategoryList) {
+  // //     const name = leadCategoryList[leadObj.fK_LeadCategoryID];
+  // //     setSelectedLeadName(name || "");
+  // //   }
+  // // }, [leadObj.fK_LeadCategoryID, leadCategoryList]);  
+   if (leadObj.fK_LeadCategoryID && leadCategoriesByUserIdList) {
+      const name = leadCategoriesByUserIdList[leadObj.fK_LeadCategoryID];
       setSelectedLeadName(name || "");
     }
-  }, [leadObj.fK_LeadCategoryID, leadCategoryList]);
+  }, [leadObj.fK_LeadCategoryID, leadCategoriesByUserIdList]);         
+//********************Above code commented by pri on 29.12.2025***************//
+
+
 
   // Fetch countries and country codes This is original commented on 25.11.2025 use effect 
   useEffect(() => {
@@ -533,6 +565,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     //   .catch(err => console.error(err));
   }, []);
 
+ 
 
   const handleChangeForCategory = (e) => {
     debugger;
@@ -540,10 +573,11 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     const val = Number(e.target.value);
     setLeadObj(prev => ({ ...prev, fK_LeadCategoryID: val }));
 
-    setSelectedLeadName(leadCategoryList[val] || "");
+    //setSelectedLeadName(leadCategoryList[val] || "");
+    setSelectedLeadName(leadCategoriesByUserIdList[val] || "");
     debugger;
 
-    switch (leadCategoryList[val]) {
+    switch (leadCategoriesByUserIdList[val]) {
       case 'Visa':
         debugger;
         setLeadObj(prev => ({ ...prev, category: getEmptyVisaObj() }));
@@ -819,7 +853,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
     const mobileNoError = validateBeforeSubmit(leadObj.mobileNo, "Mobile Number");
-    const emailIdError = validateBeforeSubmit(leadObj.emailId, "Email Address");
+    // const emailIdError = validateBeforeSubmit(leadObj.emailId, "Email Address");           .........comment because email not cumpulsory while generating new lead 
     const titleError = validateBeforeSubmit(leadObj.title, "Title");
     const genderError = validateBeforeSubmit(leadObj.gender, "Gender");
     const followUpDateError = validateBeforeSubmit(leadObj.followUpDate, "Follow up Date");
@@ -839,7 +873,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
     if (fNameError) errs.fName = fNameError;
     if (lNameError) errs.lName = lNameError;
     if (mobileNoError) errs.mobileNo = mobileNoError;
-    if (emailIdError) errs.emailId = emailIdError;
+    // if (emailIdError) errs.emailId = emailIdError;      .........comment because email not cumpulsory while generating new lead 
     if (titleError) errs.title = titleError;
     if (genderError) errs.gender = genderError;
     if (followUpDateError) errs.followUpDate = followUpDateError;
@@ -1099,11 +1133,11 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 value={leadObj.leadStatus || 1}   // default = open
                 // onChange={handleChange}
                 onChange={handleChangeStatusReason}
-                disabled={!isUpdateMode}                   // disabled while creating new
+                disabled={!isUpdateMode || isUncategorised}                   // disabled while creating new
                 className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
                   ${border} ${ring} ${bg}
                 
-                ${!isUpdateMode ? "bg-gray-100 cursor-not-allowed" : ""}
+                ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
               `}
               >
                 {leadStatusMasterList &&
@@ -1132,7 +1166,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
               {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
             </div>
             <div className='flex flex-col flex-1'>
-              <label className='label-style'>Email<span className="text-red-500 text-lg leading-none"> *</span></label>
+              <label className='label-style'>Email</label>
               <input name='emailId' placeholder='Email Address' type='email' onChange={handleChange} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
               {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
             </div>
@@ -1337,7 +1371,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                   onChange={handleChangeForCategory}
                   className='border-highlight'>
                   <option value=''>Select Category</option>
-                  {Object.entries(leadCategoryList).map(([key, val]) => (
+                  {Object.entries(leadCategoriesByUserIdList).map(([key, val]) => (
                     <option key={key} value={Number(key)}>{val}</option>
                   ))}
                 </select>

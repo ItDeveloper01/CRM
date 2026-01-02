@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 import { MESSAGE_TYPES } from "./Constants";
 import { useMessageBox } from "./Notification"; 
-
+import { validateFromDate } from "./validations";       
 
 
 
@@ -116,6 +116,26 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
         console.log("isUpdate flag....", memoIsUpdate);
     }, [memoIsUpdate]);
 
+
+    const handleFromDateBlur = (travelDate) => {
+    const errorMsg = validateFromDate(carLeaddObj.travelDate);
+
+    //  const value = carLeaddObj.travelDate; // or airTicketObj
+
+    // const errorMsg = validateFromDate(value);
+
+    if (errorMsg) {
+        setCarLeadObj(prev => ({
+            ...prev,
+            travelDate: ""   // clear the date field 
+        }));
+    }
+
+    setErrors(prev => ({
+        ...prev,
+        travelDate: errorMsg
+    }));
+};
 
     return (
 
@@ -241,9 +261,16 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         type="date"
                         name="travelDate"
                         value={carLeaddObj.travelDate || ""}
+                        min={new Date().toISOString().split("T")[0]} // onward >= today
                         onChange={handleChange}
+                        onBlur={handleFromDateBlur}
                         className="border-highlight"
                     />
+                        {errors.travelDate && (
+            <p className="text-red-500 text-sm mt-1">
+                {errors.travelDate}
+            </p>
+        )}
                 </div>
 
                 {/* No of Days */}
