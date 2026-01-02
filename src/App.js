@@ -21,6 +21,7 @@ import AppreciationBannerAdmin from './AppreciationBannerAdmin';
 import ManagerAnalytics from './ManagerAnalytics';
 import ManagerTeamAnalytics from './ManagerTeamAnalytics';
 import ManagerAnalyticBoard from './ManagerAnlayticBoard';
+import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
 
 
 export default function App() {
@@ -92,6 +93,10 @@ export default function App() {
                  <Route
                   path='/teamStatistics/managerAnalyticBoard'
                   element={<ManagerAnalyticBoard/>}
+                 />
+                  <Route
+                  path='/businessAnalysis'
+                  element={<OLAPDashboardTabs />}
                  />
 
               {/* ✅ Users List */}
