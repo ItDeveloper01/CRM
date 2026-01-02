@@ -90,3 +90,15 @@ export const validateBeforeSubmit = (value = "", fieldLabel = "Name") => {
   }
   };
 
+
+
+export const validateFromDate = (dateValue) => {
+    const today = new Date().toISOString().split("T")[0];
+
+    if (dateValue && dateValue < today) {
+        return "Date must be today or later";
+    }
+
+    return "";
+};
+

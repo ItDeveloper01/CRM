@@ -8,7 +8,7 @@ export const LeadObj = {
   mName: "",
   lName: "",
   mobileNo: "",
-  emailId: "",
+  emailId: null,
   pax: 1,
   gender: "",           // Male/Female
   // leadStatus: "Open",
