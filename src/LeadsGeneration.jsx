@@ -73,6 +73,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const [requirementType, setRequirementType] = useState("");
   const isUncategorised = lead?.categoryName === "UNCATEGORIZED";  // To disable status if category is not selected
   console.log("Category Name: ", lead?.categoryName);
+  const [selectedStatusId, setSelectedStatusId] = useState(null);  //06.01.2026
 
 
   //for Indian City Dropdown through API
@@ -596,8 +597,11 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   };
   const handleChangeStatusReason = (e) => {
     const value = e.target.value;
+    //  const value = Number(e.target.value);  // I am not used it but saved for future prospective  
+
     debugger;
-    handleChange(e);
+    handleChange(e);   // updates LeadObj
+    setSelectedStatusId(value); // store immediately  added newly on 06.01.2026 store status value 
     debugger;
     console.log(" status value :", value)
     let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
@@ -1155,6 +1159,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
               handleChange={handleChange}
               handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
               leadCategory={selectedLeadName}
+              statusId ={selectedStatusId}   // Pass updated status state for reason list 
             />
           </div>
           <div className='flex gap-4 mb-4'>
@@ -1167,8 +1172,9 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Email</label>
-              <input name='emailId' placeholder='Email Address' type='email' onChange={handleChange} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
+              <input name='emailId' placeholder='Email Address' type='email' onChange={handleChangeforDropdown} value={leadObj.emailId || ''}  className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} /> 
               {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
+              {/* change onChange from handleChange  to handleChangeforDropdown to update it in null conditon  */}
             </div>
           </div>
           <div className='flex gap-4 mb-4'>

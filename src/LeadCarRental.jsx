@@ -262,16 +262,19 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         name="travelDate"
                         value={carLeaddObj.travelDate || ""}
                         min={new Date().toISOString().split("T")[0]} // onward >= today
-                        onChange={handleChange}
+                        // onChange={handleChange}
+                        onChange={(e) =>
+                        setCarLeadObj({
+                        ...carLeaddObj,
+                        travelDate: e.target.value || null
+                        
+                        })}
                         onBlur={handleFromDateBlur}
                         className="border-highlight"
                     />
-                        {errors.travelDate && (
-            <p className="text-red-500 text-sm mt-1">
-                {errors.travelDate}
-            </p>
-        )}
+                        {errors.travelDate && (<p className="text-red-500 text-sm mt-1">{errors.travelDate}</p>)}
                 </div>
+                
 
                 {/* No of Days */}
                 <div className="flex-1 min-w-[250px]">

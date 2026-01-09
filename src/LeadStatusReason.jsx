@@ -5,19 +5,25 @@ import config from "./config";
 import axios from "axios";
 import { LeadObj } from "./Model/LeadModel";
 import { useGetSessionUser } from "./SessionContext";
+import { ChartNoAxesColumnDecreasing } from "lucide-react";
 
 
-const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange,handleLostPosteponedRemarkChange,leadCategory, }) => {
+const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange,handleLostPosteponedRemarkChange,leadCategory,statusId }) => {
   const [leadStatusReason, setLeadStatusReason] = useState([]);
-  const[selectedReason,setSelectedReason] = useState([]);
+  // const[selectedReason,setSelectedReason] = useState([]);
+  const[selectedReason,setSelectedReason] = useState("");
   const[selectedRemarks,setSelectedRemarks] = useState("");
   const { user: sessionUser } = useGetSessionUser();
   const getReasonListEndPoint = config.apiUrl + '/MasterData/GetReasonList';
 
   useEffect(() => {
+    if (!isOpen || !statusId) return;
     const fetchReasonList = async () => {
       try {
         const reason = await axios.get(getReasonListEndPoint, {
+          params: {
+          StatusType: statusId , //  pass status id 3 or 4
+        },
           headers: {
             Authorization: `Bearer ${sessionUser.token}`,
           },
@@ -29,10 +35,13 @@ const LeadStatusReason = ({ isOpen, onClose, onSave,handleChange,handleLostPoste
       } catch (error) {
         console.error("Error fetching special requirements:", error);
       }
+      console.log(" status type ",LeadObj.leadStatus);
     };
 
     fetchReasonList();
-  }, []);
+  }, [isOpen, statusId]);
+
+   console.log("STATUS ID RECEIVED:", statusId);
 
   const handleSave = () => {
     debugger;

@@ -6,6 +6,7 @@ import HistoryHover from "./HIstoryHover";
 import PassportDetails from "./PassportDetails"
 import { PassportDetailsObject } from "./Model/PassportDetailsModel";
 import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
+import { validateFromDate } from "./validations";
 
 
 
@@ -33,10 +34,35 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     debugger;
     const { name, value } = e.target;
     console.log("printing name and value : ", name, value);
-    setAirTicketingLeadObj(prev => ({
+    // setAirTicketingLeadObj(prev => ({
+    //   ...prev,
+    //   [name]: value,
+
+    // }));
+     setAirTicketingLeadObj(prev => {
+    let updatedState = {
       ...prev,
       [name]: value
-    }));
+    };
+
+    // when ticket type changes to INTERNATIONAL
+    if (
+      name === "airTicketType" &&
+      value === "International" &&
+      prev.onwardDate &&
+      prev.returnDate
+    ) {
+      const onwardTime = new Date(prev.onwardDate).getTime();
+      const returnTime = new Date(prev.returnDate).getTime();
+
+      // invalid date for international → clear return date
+      if (returnTime <= onwardTime) {
+        updatedState.returnDate = "";
+      }
+    }
+
+    return updatedState;
+  });
 
     console.log("Air Ticketing Obj.....:", airTicketingdObj);
   };
@@ -64,7 +90,37 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     console.log("isUpdate flag....", memoIsUpdate);
   }, [memoIsUpdate]);
 
+  const handleFromDateBlur = (FieldName) => {
+    const dateValue = airTicketingdObj[FieldName];   //............. we pass feild name here so we can reuse it just passing the name of element inside this component 
+    let errorMsg = validateFromDate(dateValue);
 
+     //  Extra rule ONLY for return date
+      if (
+        FieldName === "returnDate" &&
+        airTicketingdObj.airTicketType === "International" &&
+        airTicketingdObj.onwardDate &&
+        dateValue
+      ) {
+        const returnTime = new Date(dateValue).getTime();
+    const onwardTime = new Date(airTicketingdObj.onwardDate).getTime();
+
+    if (returnTime <= onwardTime) {
+      errorMsg = "Return date must be after onward date";
+    }
+    }
+
+    if (errorMsg) {
+      setAirTicketingLeadObj(prev => ({
+        ...prev,
+        [FieldName]: ""   // clear the date field 
+      }));
+    }
+    setErrors(prev => ({
+      ...prev,
+      [FieldName]: errorMsg
+    }));
+    console.log("Ticket type : "+ airTicketingdObj.airTicketType);
+  }
 
   // const [airTicketType, setAirTicketType] = useState([]);
   return (
@@ -105,9 +161,11 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             min={new Date().toISOString().split("T")[0]} // onward >= today
             value={airTicketingdObj.onwardDate || ""}
             onChange={handleChange}
+            onBlur={()=> handleFromDateBlur("onwardDate")}
             className={`border-highlight`}
-
           />
+
+          {errors.onwardDate && (<p className="text-red-500 text-sm mt-1">{errors.onwardDate}</p>)}
 
           {/* Return Date */}
         </div>
@@ -116,21 +174,22 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           <input
             type="date"
             name="returnDate"
-            min={airTicketingdObj.onwardDate ? new Date(
-              new Date(airTicketingdObj.onwardDate).setDate(
-                new Date(airTicketingdObj.onwardDate).getDate() + 1
-              ))
-              .toISOString()
-              .split("T")[0]
-              : new Date().toISOString().split("T")[0]
+            min={
+              airTicketingdObj.airTicketType === "International" && airTicketingdObj.onwardDate
+             ? new Date(
+             new Date(airTicketingdObj.onwardDate).setDate(
+             new Date(airTicketingdObj.onwardDate).getDate() + 1
+            )
+              ).toISOString().split("T")[0]
+              :new Date().toISOString().split("T")[0]
             }
             value={airTicketingdObj.returnDate || ""}
             onChange={handleChange}
+            onBlur={()=> handleFromDateBlur("returnDate")}
+            disabled={!airTicketingdObj.onwardDate}
             className={`border-highlight`}
-          // className={`border-highlight ${errors?.returnDate ? "border-red-500" : ""}`}
           />
-          {/* Show error below input ======work is Remaining of validation */}
-          {/* {errors?.returnDate && <p className="text-red-500 text-sm mt-1">{errors.returnDate}</p>}       */}
+          {errors.returnDate && (<p className="text-red-500 text-sm mt-1">{errors.returnDate}</p>)}
         </div>
       </div>
 
