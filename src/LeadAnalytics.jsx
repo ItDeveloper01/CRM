@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Loader2, Users, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Loader2, Users, CheckCircle, XCircle, Clock, Eye } from "lucide-react";
 import config from "./config";
 import axios from "axios";
 import { useGetSessionUser } from "./SessionContext"; // ✅ import
@@ -93,9 +93,12 @@ const LeadAnalytics = () => {
   const [multiplePieData, setMultiplePieData] = useState([]);
 
   // to view details of lead 
-  const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
-  const [modalOpen, setModalOpen] = useState(false);
+  // const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+  // const [modalOpen, setModalOpen] = useState(false);
   const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [mode, setMode] = useState("create"); //  ADD THIS
 
 
   const [periodOptions, setPeriodOptions] = useState({
@@ -700,16 +703,16 @@ const LeadAnalytics = () => {
       lead.leadID.toString().includes(searchText)
   );
   const filteredpostponedLeads = data.PostponedLeads.filter(
-    
+
     (lead) =>
       lead.fName.toLowerCase().includes(searchText.toLowerCase()) ||
       lead.leadID.toString().includes(searchText)
-      
+
   );
   console.log("Postponed Leads: ", filteredpostponedLeads);
   console.log("Lost Leads: ", filteredLostLeads);
   console.log("Confirmed Leads: ", filteredConfirmedLeads);
-  
+
 
   const customStyles = {
     container: (base) => ({
@@ -739,22 +742,35 @@ const LeadAnalytics = () => {
     }),
   };
 
-   const handleViewClick = async (lead) => {
-      console.log("Viewing lead.....:", lead);
-      //API call  to lead details. 
-  
-      debugger;
-      try {
-  
-        let  templead = await fetchLeadDetails(lead);
-        setSelectedLead(templead);
-        setModalOpen(true);
-      } catch {
-        showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
-      }
-    };
+  //  const handleViewClick = async (lead) => {
+  //     console.log("Viewing lead.....:", lead);
+  //     //API call  to lead details. 
 
-    async function fetchLeadDetails(lead) {
+  //     debugger;
+  //     try {
+
+  //       let  templead = await fetchLeadDetails(lead);
+  //       setSelectedLead(templead);
+  //       setModalOpen(true);
+  //     } catch {
+  //       showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
+  //     }
+  //   };
+
+  const handleViewClick = async (lead) => {
+    try {
+      const templead = await fetchLeadDetails(lead);
+
+      setSelectedLead(templead);
+      setMode("view");            //  IMPORTANT here for mode 
+      setModalOpen(true);
+
+    } catch {
+      showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
+    }
+  };
+
+  async function fetchLeadDetails(lead) {
     let res = null;
     try {
       debugger;
@@ -762,7 +778,7 @@ const LeadAnalytics = () => {
       console.log("LEad data to be passed to API", lead);
       res = await axios.post(GetLeadsForEditAPI, lead, {
         headers: {
-          Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
+          Authorization: `Bearer ${sessionUser.token}`,//  JWT token
           "Content-Type": "application/json"
 
         },
@@ -772,7 +788,7 @@ const LeadAnalytics = () => {
       });
       debugger;
       if (res && res.data) {
-        console.log("Leads details fetched:"+ res.data);
+        console.log("Leads details fetched:" + res.data);
         return res.data;
       } else {
         showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
@@ -965,7 +981,7 @@ const LeadAnalytics = () => {
                   ? "Confirmed Leads"
                   // : tab === "postponed"
                   //   ? "Postponed Leads"
-                : "Postponed Leads"}
+                  : "Postponed Leads"}
           </button>
         ))}
       </div>
@@ -1346,7 +1362,7 @@ const LeadAnalytics = () => {
                     <th className="p-2 text-left">Reason</th>
                     <th className="p-2 text-left">Customer Type</th>
                     <th className="p-2 text-left">Updated Date</th>
-                    {/* <th className="p-3 text-left">Actions</th> */}
+                    <th className="p-3 text-left">Actions</th>
 
                   </tr>
                 </thead>
@@ -1359,17 +1375,18 @@ const LeadAnalytics = () => {
                       <td className="p-2">{lead.mobileNo}</td>
                       <td className="p-2">{lead.emailId}</td>
                       <td className="p-2">{lead.categoryName}</td>
-                      <td className="p-2">{lead.histories?.[lead.histories.length-1]?.reasonDescription ?? ""}</td>
+                      <td className="p-2">{lead.histories?.[lead.histories.length - 1]?.reasonDescription ?? ""}</td>
                       <td className="p-2">{lead.customerTypeDescription ?? ""}</td>
                       <td className="p-2"> {new Date(lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
-                      {/* <td className="p-2">
-                        <button 
+                      <td className="text-center align-middle">
+                        <button
                           className="text-blue-500 underline"
                           onClick={() => handleViewClick(lead)}
                         >
                           View Details
+
                         </button>
-                      </td> */}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1398,6 +1415,7 @@ const LeadAnalytics = () => {
                     <th className="p-2 text-left">Category</th>
                     <th className="p-2 text-left">Customer Type</th>
                     <th className="p-2 text-left"> Updated Date</th>
+                    <th className="p-2 text-left">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
@@ -1411,6 +1429,14 @@ const LeadAnalytics = () => {
                       <td className="p-2">{lead.categoryName}</td>
                       <td className="p-2">{lead.customerTypeDescription ?? ""}</td>
                       <td className="p-2">{new Date(lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
+                      <td className="text-center align-middle">
+                        <button
+                          className="text-blue-500 underline"
+                          onClick={() => handleViewClick(lead)}
+                        >
+                          View Details
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1423,52 +1449,60 @@ const LeadAnalytics = () => {
         {activeTab === "postponed" && (
           <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 overflow-x-auto">
             <h2 className="text-md font-semibold mb-2">Postponed Leads</h2>
-            {loading ?(
+            {loading ? (
               <div className="flex justify-center items-center h-40">
                 <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
               </div>
-            ):(
+            ) : (
               <table className="min-w-full text-sm divide-y divide-gray-200">
                 <thead className="bg-gray-50">
-                <tr>
-                  <th className="p-2 text-left">ID</th>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Place</th>
-                  <th className="p-2 text-left">Mobile No</th>
-                  <th className="p-2 text-left">Email</th>
-                  <th className="p-2 text-left">Category</th>
-                  <th className="p-2 text-left">Reason</th>  
-                  <th className="p-2 text-left">Customer Type</th>
-                  <th className="p-2 text-left">Updated Date</th>
-                </tr>
+                  <tr>
+                    <th className="p-2 text-left">ID</th>
+                    <th className="p-2 text-left">Name</th>
+                    <th className="p-2 text-left">Place</th>
+                    <th className="p-2 text-left">Mobile No</th>
+                    <th className="p-2 text-left">Email</th>
+                    <th className="p-2 text-left">Category</th>
+                    <th className="p-2 text-left">Reason</th>
+                    <th className="p-2 text-left">Customer Type</th>
+                    <th className="p-2 text-left">Updated Date</th>
+                    <th className="p-2 text-left">Actions</th>
+                  </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                {filteredpostponedLeads.map((lead) => (
-                  <tr key={lead.leadID}>
-                    <td className="p-2">{lead.leadID}</td>
-                    <td className="p-2">{lead.fName} {lead.lName}</td>
-                    <td className="p-2">{lead.city}</td>
-                    <td className="p-2">{lead.mobileNo}</td>
-                    <td className="p-2">{lead.emailId}</td>
-                    <td className="p-2">{lead.categoryName}</td>
-                    <td className="p-2">{lead.histories?.[lead.histories.length-1]?.reasonDescription ?? ""}</td>
-                    <td className="p-2">{lead.customerTypeDescription ?? ""}</td>
-                    <td className="p-2">{new Date(lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
-                </tr>
-                ))}
+                  {filteredpostponedLeads.map((lead) => (
+                    <tr key={lead.leadID}>
+                      <td className="p-2">{lead.leadID}</td>
+                      <td className="p-2">{lead.fName} {lead.lName}</td>
+                      <td className="p-2">{lead.city}</td>
+                      <td className="p-2">{lead.mobileNo}</td>
+                      <td className="p-2">{lead.emailId}</td>
+                      <td className="p-2">{lead.categoryName}</td>
+                      <td className="p-2">{lead.histories?.[lead.histories.length - 1]?.reasonDescription ?? ""}</td>
+                      <td className="p-2">{lead.customerTypeDescription ?? ""}</td>
+                      <td className="p-2">{new Date(lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
+                      <button
+                        className="text-blue-500 underline"
+                        onClick={() => handleViewClick(lead)}
+                      >
+                        View Details
+                      </button>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             )}
-            </div>
-          )} 
+          </div>
+        )}
       </div>
-     {/* Modal  This is use for view details of lead */}
-          {/* <UpdateLeadsModal
-            isOpen={modalOpen}
-            onClose={() => setModalOpen(false)}
-            lead={selectedLead}
-            readOnly={true}
-          /> */}
+      {/* Modal  This is use for view details of lead */}
+      <UpdateLeadsModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        lead={selectedLead}
+        // readOnly={true}
+        mode={mode}
+      />
     </div>
   );
 };

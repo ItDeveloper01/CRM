@@ -31,12 +31,19 @@ import { constant, set } from 'lodash';
 import { da, id } from 'intl-tel-input/i18n';
 import HistoryCollapse from './HIstoryHover';
 import { User } from 'lucide-react';
+import { ViewField, ViewSelect, DateViewField} from './ConstantComponent/ViewComponents';
 
 
 
-export default function LeadsGeneration({ lead, onClose, readOnly }) {
+export default function LeadsGeneration({ lead, onClose, mode  }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
+
+  const isCreateMode = mode === "create";
+  const isEditMode   = mode === "edit";
+  const isViewMode   = mode === "view";
+  
+console.log("mode value ", mode);
 
   const [airTicketingdObj, setAirTicketingLeadObj] = useState({
     ...getEmptyAirTicketObj(),
@@ -48,14 +55,25 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   // const [leadCategoryList, setLeadCategoryList] = useState({});
   const [leadCategoriesByUserIdList, setLeadCategoriesByUserIdList] = useState({});
+  const selectedCategory = leadCategoriesByUserIdList?.[leadObj.fK_LeadCategoryID] || "-";
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState([]);
+  const selectedEnquirySource =
+  enquirySource?.find(s => s.id === leadObj.enquirySource)?.enquirySource || "";
   const [enquiryMode, setEnquiryMode] = useState([]);
+  const selectedEnquiryMode =
+  enquiryMode?.find(e => e.id === leadObj.enquiryMode)?.enquiryMode || "";
+
   const [customerType, setCustomerType] = useState([]);
+  const selectedCustomerType =customerType?.find(c => c.id === leadObj.customerType)?.customerType || "";
   const [leadStatusMasterList, setleadStatusMasterList] = useState([]);
+  const selectedStatus = leadStatusMasterList?.find(
+  s => s.id === leadObj.leadStatus);
   const [formData, setFormData] = useState({});
-  const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
-  const [formHeader, setFormHeader] = useState('Lead Generation Form');
+  // const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
+  // const [formHeader, setFormHeader] = useState('Lead Generation Form');
+  const [formHeader, setFormHeader] = useState('');
+  
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -506,14 +524,14 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
 
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
-      setSubmitBtnTxt("Update Lead");
-      setFormHeader("Update Lead Form");
+      // setSubmitBtnTxt("Update Lead");
+      // setFormHeader("Update Lead Form");
     } else {
       //***************************************    New Lead Generation    **********************************************///
       setLeadObj(getEmptyLeadObj());
       setLeadObj(prev => ({ ...prev, category: null })); // reset category data
       setIsUpdateMode(false);
-      setSubmitBtnTxt("Generate Lead");
+      // setSubmitBtnTxt("Generate Lead");
       setFormHeader("Lead Generation Form");
 
       /****************************************************************************************************************** */
@@ -741,6 +759,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 setVisaLeadObj={setVisaObj}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
+                mode={mode}  // PASS MODE
               />
 
             )}
@@ -759,6 +778,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 setAirTicketingLeadObj={setAirTicketingLeadObj}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
+                mode={mode}
               />
             )}
           </>
@@ -779,8 +799,10 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 cities={cities}
                 handleChange={handleChange}
                 histories={leadObj.histories || []}
+                mode={mode}   // PASS MODE
+
                 isUpdate={isUpdateMode} // fallback to empty array
-                readOnly={readOnly}
+                // readOnly={readOnly}
 
               />
 
@@ -1124,14 +1146,19 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
 
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
       {/* <fieldset disabled={readOnly}> */}
+      
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
+      
       {/* Customer Details */}
-      <fieldset disabled={readOnly}>
+      {/* <fieldset disabled={readOnly}> */}
         <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
           <div className="flex items-center justify-between mb-4 border-b pb-2">
             <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
             <div className="flex items-center gap-2">
               <label className="font-medium text-gray-700">Status:</label>
+              {isViewMode ? (
+  <ViewSelect value={selectedStatus?.statusName || ""} />
+) : (
               <select
                 name="leadStatus"
                 value={leadObj.leadStatus || 1}   // default = open
@@ -1144,13 +1171,14 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
               `}
               >
-                {leadStatusMasterList &&
-                  leadStatusMasterList.map((lStatus) => (
+                {/* {leadStatusMasterList && */}
+                 { leadStatusMasterList?.map((lStatus) => (
                     <option key={lStatus.id} value={(lStatus.id)}>
                       {lStatus.statusName}
                     </option>
                   ))}
               </select>
+              )}
             </div>
             <LeadStatusReason
               isOpen={statusReason}
@@ -1164,22 +1192,34 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
           </div>
           <div className='flex gap-4 mb-4'>
             <div className='flex flex-col flex-1'>
+              
               <label className='label-style'>Mobile Number<span className="text-red-500 text-lg leading-none"> *</span></label>
+              {isViewMode ? (
+              <ViewField value={leadObj.mobileNo} />
+              ) : (
               <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
                 className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
               />
-              {errors.mobileNo && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
+                )}
+              {errors.mobileNo && !isViewMode &&<p className="text-red-500 text-sm">{errors.mobileNo}</p>}
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Email</label>
+              {isViewMode ? (
+              <ViewField value={leadObj.emailId} />
+              ) : (
               <input name='emailId' placeholder='Email Address' type='email' onChange={handleChangeforDropdown} value={leadObj.emailId || ''}  className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} /> 
-              {errors.emailId && <p className="text-red-500 text-sm">{errors.emailId}</p>}
+               )}
+              {errors.emailId && !isViewMode &&<p className="text-red-500 text-sm">{errors.emailId}</p>}
               {/* change onChange from handleChange  to handleChangeforDropdown to update it in null conditon  */}
             </div>
           </div>
           <div className='flex gap-4 mb-4'>
             <div className='flex flex-col w-28'>
               <label className='label-style'>Title<span className="text-red-500 text-lg leading-none"> *</span></label>
+              {isViewMode ? (
+    <ViewSelect value={leadObj.title} />
+  ) : (
               <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className={`border-highlight ${errors.title ? "border-red-500" : ""}`}>
                 <option value=''>Title</option>
                 <option value='Mr.'>Mr.</option>
@@ -1188,25 +1228,38 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 <option value='Dr.'>Dr.</option>
                 <option value='Prof.'>Prof.</option>
               </select>
-              {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+  )}
+              {errors.title && !isViewMode && <p className="text-red-500 text-sm">{errors.title}</p>}
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>First Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+              {isViewMode ? (
+    <ViewField value={leadObj.fName} />
+  ) : (
               <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
-              {errors.fName && <p className="text-red-500 text-sm">{errors.fName}</p>}
+                 )}
+              {errors.fName && !isViewMode && <p className="text-red-500 text-sm">{errors.fName}</p>}
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Middle Name</label>
+{isViewMode ? (
+    <ViewField value={leadObj.mName} />
+  ) : (
               <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`} />
-              {errors.mName && <p className="text-red-500 text-sm">{errors.mName}</p>}
+                )}
+              {errors.mName && !isViewMode && <p className="text-red-500 text-sm">{errors.mName}</p>}
             </div>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Last Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+              {isViewMode ? (
+    <ViewField value={leadObj.lName} />
+  ) : (
               <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`} />
-              {errors.lName && <p className="text-red-500 text-sm">{errors.lName}</p>}
+  )}
+              {errors.lName && !isViewMode && <p className="text-red-500 text-sm">{errors.lName}</p>}
             </div>
           </div>
 
@@ -1215,6 +1268,9 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
             {/* Birthdate */}
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Birthdate</label>
+              {isViewMode ? (
+    <DateViewField value={leadObj.birthDate} />
+  ) : (
               <input
                 type='date'
                 className={`border-highlight`}
@@ -1222,11 +1278,15 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 onChange={handleChange}
                 value={leadObj.birthDate}
               />
+                )}
             </div>
 
             {/* Gender */}
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Gender<span className="text-red-500 text-lg  leading-none"> *</span></label>
+              {isViewMode ? (
+    <ViewSelect value={leadObj.gender} />
+  ) : (
               <select
                 value={leadObj.gender?.trim() || ""}
                 className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
@@ -1239,11 +1299,15 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
 
 
               </select>
-              {errors.gender && <p className="text-red-500 text-sm">{errors.gender}</p>}
+              )}
+              {errors.gender && !isViewMode && <p className="text-red-500 text-sm">{errors.gender}</p>}
             </div>
             {/* City */}
             <div className="flex flex-col flex-1">
               <label className="label-style">City</label>
+              {isViewMode ? (
+    <ViewSelect value={leadObj.city} />
+  ) : (
               <select
                 className={`border-highlight`}
                 // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1258,11 +1322,15 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                   </option>
                 ))}
               </select>
+  )}
             </div>
 
             {/* Area */}
             <div className="flex flex-col flex-1">
               <label className="label-style">Area</label>
+               {isViewMode ? (
+    <ViewSelect value={leadObj.city} />
+  ) : (
               <select
                 className={`border-highlight`}
                 // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1279,11 +1347,12 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                     </option>
                   ))}
               </select>
+  )}
             </div>
           </div>
 
         </div>
-      </fieldset>
+    {/* </fieldset> */}
       {/* Render Table for exisitng leads with the matching phone no. */}
       {isLeadsForPhoneVisible && (
         <div>
@@ -1307,10 +1376,14 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
         <div>
 
           <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
-          <fieldset disabled={readOnly}>
+          {/* <fieldset disabled={readOnly}> */}
             <div className='flex gap-4'>
               <div className='flex flex-col flex-1'>
                 <label className='label-style'>Enquiry Mode</label>
+                {isViewMode ? (
+    <ViewSelect value={selectedEnquiryMode} />
+  ) : (
+              
                 <select name="enquiryMode" value={leadObj.enquiryMode || ""}
                   onChange={handleChangeforDropdown}
                   className='border-highlight'>
@@ -1327,9 +1400,15 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                     </option>
                   ))}
                 </select>
+              )}
               </div>
               <div className='flex flex-col flex-1'>
                 <label className='label-style'>Enquiry Source</label>
+                {isViewMode ? (
+    <ViewSelect value={selectedEnquirySource} />
+  ) : (
+              
+                
                 <select name="enquirySource" value={leadObj.enquirySource} onChange={handleChangeforDropdown} className='border-highlight'>
                   <option value="">Select Source</option>
                   {/* {enquirySources.map(cat => <option key={cat} value={cat}>
@@ -1345,10 +1424,14 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                   ))}
 
                 </select>
+                )}
               </div>
               {/* Customer Type */}
               <div className='flex flex-col flex-1'>
                 <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
+                {isViewMode ? (
+    <ViewSelect value={selectedCustomerType} />
+  ) : (
                 <select
                   // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   name="customerType"
@@ -1364,13 +1447,17 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                   ))}
 
                 </select>
+                )}
               </div>
             </div>
-          </fieldset>
+          {/* </fieldset> */}
           <div className='flex gap-4 mt-4'>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Category</label>
-              <fieldset disabled={readOnly}>
+              {isViewMode ? (
+    <ViewSelect value={selectedCategory} />
+  ) : (
+              // {/* <fieldset disabled={readOnly}> */}
                 <select
                   name="category"
                   value={leadObj.fK_LeadCategoryID || ''}
@@ -1381,25 +1468,33 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                     <option key={key} value={Number(key)}>{val}</option>
                   ))}
                 </select>
-              </fieldset>
+              // {/* </fieldset> */}
+                )}
             </div>
           </div>
 
           {/* Render dynamic fields */}
           <div className='mt-4'>{renderCategoryFields()}</div>
-          <fieldset disabled={readOnly}>
+          {/* <fieldset disabled={readOnly}> */}
             <div className="flex justify-between items-center mt-6 gap-4">
+              {!isViewMode && (
               <button
                 onClick={handleSubmit}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                {submitBtnTxt}
+                   {isEditMode ? "Update Lead" : "Generate Lead"}
+                {/* {submitBtnTxt} */}
               </button>
+              )}
 
               <div className="flex items-center gap-2">
                 <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap"><span className="text-red-500 text-lg leading-none">* </span>
                   Follow Up Date :
                 </label>
                 <div className="flex flex-col  justify-start leading-none">
+                  {isViewMode ? (
+    <DateViewField value={leadObj.followUpDate} />
+  ) : (
+                
                   <input
                     type="date"
                     id="followUpDate"
@@ -1420,6 +1515,7 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                     className={`border-highlight ${errors.followUpDate ? "border-red-500" : ""}`}
                     required
                   />
+                  )}
                   {/* <input
                   type="date"
                   id="followUpDate"
@@ -1434,12 +1530,12 @@ export default function LeadsGeneration({ lead, onClose, readOnly }) {
                 </div>
               </div>
             </div>
-          </fieldset>
+          {/* </fieldset> */}
           <div className='text-right'>
 
-            {errors.followUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
+            {errors.followUpDate && !isViewMode && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
 
-            {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)}
+            {/* {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)} */}
 
           </div>
 

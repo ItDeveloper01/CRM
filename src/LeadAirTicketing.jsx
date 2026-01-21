@@ -7,11 +7,17 @@ import PassportDetails from "./PassportDetails"
 import { PassportDetailsObject } from "./Model/PassportDetailsModel";
 import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 import { validateFromDate } from "./validations";
+import { getLabelById, getRadioValue } from "./utils/selectUtils";
+import { DateViewField, ViewField } from "./ConstantComponent/ViewComponents";
 
 
 
 
-const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories, isUpdate }) => {
+const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories, isUpdate, mode }) => {
+
+  const isViewMode = mode === "view";
+  const isEditMode = mode === "edit";
+  const isCreateMode = mode === "create";
 
 
   // Memoize the histories array so reference doesn't change unnecessarily
@@ -19,6 +25,19 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
   const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
   const [errors, setErrors] = useState({});
   const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+
+
+  const travelClassOptions = [
+    { value: "economy", label: "Economy" },
+    { value: "premium-economy", label: "Premium Economy" },
+    { value: "business class", label: "Business Class" },
+    { value: "first class", label: "First Class" },
+  ];
+
+  const ticketTypeOptions = [
+    { value: "individual", label: "Individual" },
+    { value: "group", label: "Group" },
+  ];
 
 
 
@@ -39,30 +58,30 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     //   [name]: value,
 
     // }));
-     setAirTicketingLeadObj(prev => {
-    let updatedState = {
-      ...prev,
-      [name]: value
-    };
+    setAirTicketingLeadObj(prev => {
+      let updatedState = {
+        ...prev,
+        [name]: value
+      };
 
-    // when ticket type changes to INTERNATIONAL
-    if (
-      name === "airTicketType" &&
-      value === "International" &&
-      prev.onwardDate &&
-      prev.returnDate
-    ) {
-      const onwardTime = new Date(prev.onwardDate).getTime();
-      const returnTime = new Date(prev.returnDate).getTime();
+      // when ticket type changes to INTERNATIONAL
+      if (
+        name === "airTicketType" &&
+        value === "International" &&
+        prev.onwardDate &&
+        prev.returnDate
+      ) {
+        const onwardTime = new Date(prev.onwardDate).getTime();
+        const returnTime = new Date(prev.returnDate).getTime();
 
-      // invalid date for international → clear return date
-      if (returnTime <= onwardTime) {
-        updatedState.returnDate = "";
+        // invalid date for international → clear return date
+        if (returnTime <= onwardTime) {
+          updatedState.returnDate = "";
+        }
       }
-    }
 
-    return updatedState;
-  });
+      return updatedState;
+    });
 
     console.log("Air Ticketing Obj.....:", airTicketingdObj);
   };
@@ -94,19 +113,19 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     const dateValue = airTicketingdObj[FieldName];   //............. we pass feild name here so we can reuse it just passing the name of element inside this component 
     let errorMsg = validateFromDate(dateValue);
 
-     //  Extra rule ONLY for return date
-      if (
-        FieldName === "returnDate" &&
-        airTicketingdObj.airTicketType === "International" &&
-        airTicketingdObj.onwardDate &&
-        dateValue
-      ) {
-        const returnTime = new Date(dateValue).getTime();
-    const onwardTime = new Date(airTicketingdObj.onwardDate).getTime();
+    //  Extra rule ONLY for return date
+    if (
+      FieldName === "returnDate" &&
+      airTicketingdObj.airTicketType === "International" &&
+      airTicketingdObj.onwardDate &&
+      dateValue
+    ) {
+      const returnTime = new Date(dateValue).getTime();
+      const onwardTime = new Date(airTicketingdObj.onwardDate).getTime();
 
-    if (returnTime <= onwardTime) {
-      errorMsg = "Return date must be after onward date";
-    }
+      if (returnTime <= onwardTime) {
+        errorMsg = "Return date must be after onward date";
+      }
     }
 
     if (errorMsg) {
@@ -119,7 +138,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
       ...prev,
       [FieldName]: errorMsg
     }));
-    console.log("Ticket type : "+ airTicketingdObj.airTicketType);
+    console.log("Ticket type : " + airTicketingdObj.airTicketType);
   }
 
   // const [airTicketType, setAirTicketType] = useState([]);
@@ -127,13 +146,55 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     <div>
       <label className="label-style">Air Ticket Type</label>
       <div className="rounded-lg flex justify-between gap-3">
-        {["Domestic", "International"].map((airstatus) => (
+
+        {["Domestic", "International"].map((airstatus) => {
+          const isChecked =
+            airTicketingdObj?.airTicketType?.trim()?.toLowerCase() ===
+            airstatus.toLowerCase();
+
+          return (
+            <label
+              key={airstatus}
+              className={`flex items-center gap-2 flex-1 rounded-md px-0.5 py-2 border
+          ${isChecked
+                  ? isViewMode
+                    ? "bg-gray-100 border"   // selected + view mode
+                    : "bg-blue-100 border-blue-500"  // selected + edit mode
+                  : "bg-white border-transparent"
+                }
+          ${isViewMode ? "cursor-not-allowed " : "cursor-pointer "}
+        `}
+            >
+              <input
+                type="radio"
+                name="airTicketType"
+                value={airstatus}
+                checked={isChecked}
+                onChange={handleChange}
+                disabled={isViewMode}
+                className={`accent-blue-600 ${isViewMode ? "cursor-not-allowed " : "cursor-pointer "
+                  }`}
+              />
+              <span className="text-black">
+                {airstatus}
+              </span>
+            </label>
+          );
+        })}
+        {/* {["Domestic", "International"].map((airstatus) => (
           <label
             key={airstatus}
             className={`flex items-center gap-2 flex-1 cursor-pointer rounded-md px-0.5 py-2 
-            ${airTicketingdObj?.airTicketType?.trim()?.toLowerCase() === airstatus.toLowerCase()
-                ? "bg-blue-100 border border-blue-500"
-                : "bg-white border border-transparent"}`}
+              ${getRadioValue({
+              selectedValue: airTicketingdObj?.airTicketType?.trim()?.toLowerCase(),
+              optionValue: airstatus.toLowerCase,
+              isViewMode,
+            })}
+          ${isViewMode ? "cursor-not-allowed" : "cursor-pointer"}
+        `}
+          // ${airTicketingdObj?.airTicketType?.trim()?.toLowerCase() === airstatus.toLowerCase()
+          //     ? "bg-blue-100 border border-blue-500"
+          //     : "bg-white border border-transparent"}`}
           >
             <input
               type="radio"
@@ -141,12 +202,14 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
               value={airstatus}
               checked={airTicketingdObj?.airTicketType?.trim()?.toLowerCase() === airstatus.toLowerCase()}
               onChange={handleChange}
+              disabled={isViewMode}
               // onChange={(e) => setAirTicketingLeadObj("domestic")}
-              className="accent-blue-600 cursor-pointer"
+              // className="accent-blue-600 cursor-pointer"
+              className={`accent-blue-600 ${isViewMode ? "cursor-not-allowed" : "cursor-pointer"}`}
             />
             {airstatus}
           </label>
-        ))}
+        ))} */}
       </div>
 
 
@@ -155,15 +218,19 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
       <div className="flex gap-3 flex-wrap">
         <div className="flex-1">
           <label className="label-style">Onward Date</label>
-          <input
-            type="date"
-            name="onwardDate"
-            min={new Date().toISOString().split("T")[0]} // onward >= today
-            value={airTicketingdObj.onwardDate || ""}
-            onChange={handleChange}
-            onBlur={()=> handleFromDateBlur("onwardDate")}
-            className={`border-highlight`}
-          />
+          {isViewMode ? (
+            <DateViewField value={airTicketingdObj.onwardDate} />
+          ) : (
+            <input
+              type="date"
+              name="onwardDate"
+              min={new Date().toISOString().split("T")[0]} // onward >= today
+              value={airTicketingdObj.onwardDate || ""}
+              onChange={handleChange}
+              onBlur={() => handleFromDateBlur("onwardDate")}
+              className={`border-highlight`}
+            />
+          )}
 
           {errors.onwardDate && (<p className="text-red-500 text-sm mt-1">{errors.onwardDate}</p>)}
 
@@ -171,24 +238,28 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
         </div>
         <div className="flex-1">
           <label className="label-style">Return Date</label>
-          <input
-            type="date"
-            name="returnDate"
-            min={
-              airTicketingdObj.airTicketType === "International" && airTicketingdObj.onwardDate
-             ? new Date(
-             new Date(airTicketingdObj.onwardDate).setDate(
-             new Date(airTicketingdObj.onwardDate).getDate() + 1
-            )
-              ).toISOString().split("T")[0]
-              :new Date().toISOString().split("T")[0]
-            }
-            value={airTicketingdObj.returnDate || ""}
-            onChange={handleChange}
-            onBlur={()=> handleFromDateBlur("returnDate")}
-            disabled={!airTicketingdObj.onwardDate}
-            className={`border-highlight`}
-          />
+          {isViewMode ? (
+            <DateViewField value={airTicketingdObj.returnDate} />
+          ) : (
+            <input
+              type="date"
+              name="returnDate"
+              min={
+                airTicketingdObj.airTicketType === "International" && airTicketingdObj.onwardDate
+                  ? new Date(
+                    new Date(airTicketingdObj.onwardDate).setDate(
+                      new Date(airTicketingdObj.onwardDate).getDate() + 1
+                    )
+                  ).toISOString().split("T")[0]
+                  : new Date().toISOString().split("T")[0]
+              }
+              value={airTicketingdObj.returnDate || ""}
+              onChange={handleChange}
+              onBlur={() => handleFromDateBlur("returnDate")}
+              disabled={!airTicketingdObj.onwardDate}
+              className={`border-highlight`}
+            />
+          )}
           {errors.returnDate && (<p className="text-red-500 text-sm mt-1">{errors.returnDate}</p>)}
         </div>
       </div>
@@ -197,66 +268,108 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
 
       <div className="flex-1">
         <label className="label-style">Sector</label>
-        <input
-          type="text"
-          name="sector"
-          placeholder="Sector"
-          value={airTicketingdObj.sector || ""}
-          onChange={handleChange}
-          className={`border-highlight`}
-        />
+        {isViewMode ? (
+          <ViewField value={airTicketingdObj.sector} />
+        ) : (
+          <input
+            type="text"
+            name="sector"
+            placeholder="Sector"
+            value={airTicketingdObj.sector || ""}
+            onChange={handleChange}
+            className={`border-highlight`}
+          />
+        )}
       </div>
       {/* No of travelers and travel class */}
       <div className="flex gap-3 flex-wrap">
         <div className="flex-1">
           <label className="label-style">No of Travelers</label>
-          <input
-            name="noOfTravelers"
-            type="number"
-            value={Number(airTicketingdObj.noOfTravelers) || ""}
-            min="1"
-            onChange={(e) => {
-              const value = e.target.value;
-              // Update as number if not empty, else empty string
-              setAirTicketingLeadObj(prev => ({
-                ...prev,
-                noOfTravelers: value === "" ? "" : Number(value)
-              }));
-            }}
-            className={`border-highlight`}
-          />
+          {isViewMode ? (
+            <ViewField value={airTicketingdObj.noOfTravelers} />
+          ) : (
+            <input
+              name="noOfTravelers"
+              type="number"
+              value={Number(airTicketingdObj.noOfTravelers) || ""}
+              min="1"
+              onChange={(e) => {
+                const value = e.target.value;
+                // Update as number if not empty, else empty string
+                setAirTicketingLeadObj(prev => ({
+                  ...prev,
+                  noOfTravelers: value === "" ? "" : Number(value)
+                }));
+              }}
+              className={`border-highlight`}
+            />
+          )}
         </div>
         {/* Travel Class Dropdown */}
         <div className="flex-1">
           <label className="label-style">Travel Class</label>
-          <select
-            name="travelClass"
-            value={airTicketingdObj.travelClass || ""}
-            onChange={handleChange}
-            className={`border-highlight`}
-          >
-            <option value="">Select Class</option>
+          {isViewMode ? (
+            <ViewField
+              value={getLabelById(
+                travelClassOptions,
+                airTicketingdObj.travelClass,
+                "value",
+                "label"
+              )}
+            />
+          ) : (
+            <select
+              name="travelClass"
+              value={airTicketingdObj.travelClass || ""}
+              onChange={handleChange}
+              className={`border-highlight`}
+            >
+              {/* <option value="">Select Class</option>
             <option value="economy">Economy</option>
             <option value="premium-economy">Premium Economy</option>
             <option value="business class">Business Class</option>
-            <option value="first class">First Class</option>
-          </select>
+            <option value="first class">First Class</option> */}
+              <option value="">Select Class</option>
+              {travelClassOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
       </div>
       <div>
         {/* Ticket Type Dropdown */}
         <div className="flex-1">
           <label className="label-style">Ticket Type</label>
-          <select
-            name="ticketType"
-            value={airTicketingdObj.ticketType || ""}
-            onChange={handleChange}
-            className={`border-highlight`}
-          >
-            <option value="">Select Ticket Type</option>
-            <option value="individual">Individual</option>
-            <option value="group">Group</option>
-          </select>
+          {isViewMode ? (
+            <ViewField
+              value={getLabelById(
+                ticketTypeOptions,
+                airTicketingdObj.ticketType,
+                "value",
+                "label"
+              )}
+            />
+          ) : (
+            <select
+              name="ticketType"
+              value={airTicketingdObj.ticketType || ""}
+              onChange={handleChange}
+              className={`border-highlight`}
+            >
+              {/* <option value="">Select Ticket Type</option>
+              <option value="individual">Individual</option>
+              <option value="group">Group</option> */}
+              <option value="">Select Ticket Type</option>
+              {ticketTypeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Show extra fields depending on trip type */}
@@ -269,9 +382,10 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             setPassportDetailsObj={setPassportDetails}
             setParentObject={setAirTicketingLeadObj}
             showVisaStatus={true}
-            showPassportValidity = {false}
+            showPassportValidity={false}
             showPassportValidityDate={true}
             showInsurance={true}   //  hide insurance here change condition according to requirement 
+            isViewMode={isViewMode}
           />
         )}
 
@@ -282,11 +396,22 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
             {["Self Arrange", "Not Decided", "Book Through Girikand"].map((airTransport) => (
               <label
                 key={airTransport}
+                // className={`option-highlight
+                //       ${airTicketingdObj.airportTransport === airTransport
+                //     ? "option-highlight-active"
+                //     : "option-highlight-inactive"
+                //   }`}
                 className={`option-highlight
-                      ${airTicketingdObj.airportTransport === airTransport
-                    ? "option-highlight-active"
-                    : "option-highlight-inactive"
-                  }`}
+          ${getRadioValue({
+                  selectedValue: airTicketingdObj.airportTransport,
+                  optionValue: airTransport,
+                  isViewMode,
+                  activeClass: "option-highlight-active",
+                  inactiveClass: "option-highlight-inactive",
+                  viewActiveClass: "bg-gray-100 text-gray-800 border",
+                })}
+          ${isViewMode ? "cursor-not-allowed" : "cursor-pointer"}
+        `}
               >
                 <input
                   type="radio"
@@ -294,8 +419,11 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
                   value={airTransport}
                   checked={airTicketingdObj.airportTransport === airTransport}
                   onChange={handleChange}
+                  disabled={isViewMode}
                 />
+                 <span className="text-black">
                 {airTransport}
+                </span>
               </label>
             ))}
 
@@ -304,6 +432,9 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
 
         {/* Quote Given */}
         <label className="label-style">Quote Given</label>
+        {isViewMode ? (
+          <ViewField value={airTicketingdObj.quoteGiven} />
+        ) : (
         <input
           type="text"
           name="quoteGiven"
@@ -312,10 +443,14 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           className={`border-highlight`}
           onChange={handleChange}
         />
+        )}
       </div>
       {/* Remark */}
       <div>
         <label className="label-style">Remark</label>
+        {isViewMode ? (
+          <ViewField value={airTicketingdObj.notes} />
+        ) : (
         <input
           type="text"
           name="notes"
@@ -324,6 +459,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           className={`border-highlight`}
           onChange={handleChange}
         />
+        )}
         {/* History hover component */}
         {memoIsUpdate && (
           <HistoryHover histories={memoHistories} />)

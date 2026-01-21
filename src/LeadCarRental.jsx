@@ -6,24 +6,37 @@ import { CarLeadObject } from "./Model/CarLeadModel";
 import { useMemo } from "react";
 import HistoryHover from "./HIstoryHover";
 import { MESSAGE_TYPES } from "./Constants";
-import { useMessageBox } from "./Notification"; 
-import { validateFromDate } from "./validations";       
+import { useMessageBox } from "./Notification";
+import { validateFromDate } from "./validations";
+import { ViewField, ViewSelect, DateViewField } from "./ConstantComponent/ViewComponents";
+import { getLabelById } from "./utils/selectUtils";
 
 
 
 
-const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate,readOnly }) => {
+// const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate,readOnly }) => {
+const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate, mode }) => {
     // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
 
     // Memoize the histories array so reference doesn't change unnecessarily
+    const isViewMode = mode === "view";
+    const isEditMode = mode === "edit";
+    const isCreateMode = mode === "create";
+
+
+
     const memoHistories = useMemo(() => histories || [], [histories]);
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
     const [errors, setErrors] = useState({});
     //Requirment for car rental
     const [requirementType, setRequirementType] = useState("");
     const [specialRequirement, setSpecialRequirements] = useState([]);
+    const selectedSpecialRequirement =
+        specialRequirement?.find(r => r.id === carLeaddObj.specialRequirement)?.specialRequirements || "-";
     const [vehicleType, setVehicleType] = useState([]);
-     const { showMessage } = useMessageBox();
+    // const selectedVehicleType = vehicleType?.find(
+    // v => v.vehicleTypeID === carLeaddObj.vehicleType);
+    const { showMessage } = useMessageBox();
 
 
     const getSpecialRequirementsListEndPoint = config.apiUrl + '/MasterData/GetSpecialRequirementsList';
@@ -76,10 +89,10 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 setSpecialRequirements(specialReq.data || []);
             } catch (error) {
                 console.error("Error fetching special requirements:", error);
-                 showMessage({
-        type: MESSAGE_TYPES.ERROR,
-        message: "Error fetching special requirements data.",
-      });
+                showMessage({
+                    type: MESSAGE_TYPES.ERROR,
+                    message: "Error fetching special requirements data.",
+                });
             }
         };
         fetchSpecialRequirements();
@@ -95,10 +108,10 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 setVehicleType(vehType.data || []);
             } catch (error) {
                 console.error("Error fetching vehicle types:", error);
-                 showMessage({
-                                type: MESSAGE_TYPES.ERROR,
-                                message: "Error fetching vehicle types data.",
-                            });
+                showMessage({
+                    type: MESSAGE_TYPES.ERROR,
+                    message: "Error fetching vehicle types data.",
+                });
             }
         };
         fetchVehicleTypes();
@@ -118,85 +131,107 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
 
 
     const handleFromDateBlur = (travelDate) => {
-    const errorMsg = validateFromDate(carLeaddObj.travelDate);
+        const errorMsg = validateFromDate(carLeaddObj.travelDate);
 
-    //  const value = carLeaddObj.travelDate; // or airTicketObj
+        //  const value = carLeaddObj.travelDate; // or airTicketObj
 
-    // const errorMsg = validateFromDate(value);
+        // const errorMsg = validateFromDate(value);
 
-    if (errorMsg) {
-        setCarLeadObj(prev => ({
+        if (errorMsg) {
+            setCarLeadObj(prev => ({
+                ...prev,
+                travelDate: ""   // clear the date field 
+            }));
+        }
+
+        setErrors(prev => ({
             ...prev,
-            travelDate: ""   // clear the date field 
+            travelDate: errorMsg
         }));
-    }
-
-    setErrors(prev => ({
-        ...prev,
-        travelDate: errorMsg
-    }));
-};
+    };
 
     return (
 
         <div>
-            <fieldset disabled={readOnly}>
+            {/* <fieldset disabled={readOnly}> */}
             <div className="flex gap-3 flex-wrap">
                 <div className="flex-1">
                     <label className="label-style">No of Travelers</label>
-                    <input
-                        type="number"
-                        value={Number(carLeaddObj.noOfTravelers) || ""}
-                        name="noOfTravelers"
-                        min="1"
-                        // onChange={handleChange}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            // Update as number if not empty, else empty string
-                            setCarLeadObj(prev => ({
-                                ...prev,
-                                noOfTravelers: value === "" ? "" : Number(value)
-                            }));
-                        }}
-                        className={`border-highlight`}
-                    />
+                    {isViewMode ? (
+                        <ViewField value={carLeaddObj.noOfTravelers} />
+                    ) : (
+
+                        <input
+                            type="number"
+                            value={Number(carLeaddObj.noOfTravelers) || ""}
+                            name="noOfTravelers"
+                            min="1"
+                            // onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Update as number if not empty, else empty string
+                                setCarLeadObj(prev => ({
+                                    ...prev,
+                                    noOfTravelers: value === "" ? "" : Number(value)
+                                }));
+                            }}
+                            className={`border-highlight`}
+                        />
+                    )}
                 </div>
                 <div className="flex-1 flex-col">
                     <label className="label-style">Type of Vehicle</label>
-                    <select
-                        name="vehicleType"
-                        value={carLeaddObj.vehicleType || ""}
-                        onChange={(e) => {
-                            const value = e.target.value === "" ? null : Number(e.target.value);
-                            setCarLeadObj((prev) => ({
-                                ...prev,
-                                [e.target.name]: value,
-                            }));
-                        }}
-                        className={`border-highlight`}
-                    >
-                        <option value="">Select Vehicle Type</option>
-                        {vehicleType.map((vehType) => (
-                            <option key={vehType.vehicleTypeID} value={(vehType.vehicleTypeID)}>
-                                {vehType.vehicleType}
-                            </option>
-                        ))}
-                    </select>
+                    {/* {isViewMode ? (
+    <ViewSelect value={selectedVehicleType?.vehicleType || ""} />
+  ) : ( */}
+                    {isViewMode ? (
+                        <ViewSelect
+                            value={getLabelById(
+                                vehicleType,
+                                carLeaddObj.vehicleType,
+                                "vehicleTypeID",
+                                "vehicleType"
+                            )}
+                        />) : (
+                        <select
+                            name="vehicleType"
+                            value={carLeaddObj.vehicleType || ""}
+                            onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setCarLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
+                            className={`border-highlight`}
+                        >
+                            <option value="">Select Vehicle Type</option>
+                            {vehicleType.map((vehType) => (
+                                <option key={vehType.vehicleTypeID} value={(vehType.vehicleTypeID)}>
+                                    {vehType.vehicleType}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
                 <div className="flex-1 flex-col">
                     <label className="label-style">Type of Duty</label>
                     <div>
-                        <select
-                            name="dutyType"
-                            value={carLeaddObj.dutyType || ""}
-                            className={`border-highlight`}
-                            onChange={handleChange}
-                        >
-                            <option value="">Select Duty Type</option>
-                            <option value="Transfer">Transfer</option>
-                            <option value="Local">Local</option>
-                            <option value="Outstation">Outstation</option>
-                        </select>
+                        {isViewMode ? (
+                            <ViewSelect value={carLeaddObj.dutyType || ""} />
+                        ) : (
+                            <select
+                                name="dutyType"
+                                value={carLeaddObj.dutyType || ""}
+                                className={`border-highlight`}
+                                onChange={handleChange}
+                            >
+                                <option value="">Select Duty Type</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Local">Local</option>
+                                <option value="Outstation">Outstation</option>
+                            </select>
+                        )}
                     </div>
                 </div>
             </div>
@@ -204,52 +239,60 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 {/* Trip Description */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Trip Description</label>
-                    <input
-                        name="tripDescription"
-                        value={carLeaddObj.tripDescription || ""}
-                        placeholder="Trip Description"
-                        onChange={handleChange}
-                        className="border-highlight"
-                    />
+                    {isViewMode ? (
+                        <ViewField value={carLeaddObj.tripDescription} />
+                    ) : (
+                        <input
+                            name="tripDescription"
+                            value={carLeaddObj.tripDescription || ""}
+                            placeholder="Trip Description"
+                            onChange={handleChange}
+                            className="border-highlight"
+                        />
+                    )}
                 </div>
 
                 {/* Serving City */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Serving City</label>
-                    <select
-                        name="servingCity"
-                        value={carLeaddObj.servingCity}
-                       // onChange={handleChange}
-                       onChange={(e) => {
-                            const value = e.target.value === "" ? null : Number(e.target.value);
-                            setCarLeadObj((prev) => ({
-                                ...prev,
-                                [e.target.name]: value,
-                            }));
-                        }}
-                        className="border-highlight"
-                    >
-                        {/* debugger;
+                    {isViewMode ? (
+                        <ViewField value={carLeaddObj.servingCity} />            //.....value is same as inside select or input
+                    ) : (
+                        <select
+                            name="servingCity"
+                            value={carLeaddObj.servingCity}
+                            // onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setCarLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
+                            className="border-highlight"
+                        >
+                            {/* debugger;
                         {loading ? (
                             <option>Loading...</option>
                         ) : (
                             <> */}
-                        <option value="">Select City</option>
-                        {/* {carLeaddObj.cities.map((city, index) => ( ...........to set in car lead but not working check latwer */}
-                        {cities.map((city) => (
-                            <option key={city.id} value={city.id}>
-                                {city.cityName}
-                            </option>
-                        ))}
+                            <option value="">Select City</option>
+                            {/* {carLeaddObj.cities.map((city, index) => ( ...........to set in car lead but not working check latwer */}
+                            {cities.map((city) => (
+                                <option key={city.id} value={city.id}>
+                                    {city.cityName}
+                                </option>
+                            ))}
 
-                        {/* Old formate  */}
-                        {/* {cities.map((city, index) => (
+                            {/* Old formate  */}
+                            {/* {cities.map((city, index) => (
                             <option key={index} value={city}>
                                 {city}
                             </option>
                         ))} */}
 
-                    </select>
+                        </select>
+                    )}
                 </div>
             </div>
 
@@ -257,44 +300,53 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 {/* Travel Date */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Travel Date</label>
-                    <input
-                        type="date"
-                        name="travelDate"
-                        value={carLeaddObj.travelDate || ""}
-                        min={new Date().toISOString().split("T")[0]} // onward >= today
-                        // onChange={handleChange}
-                        onChange={(e) =>
-                        setCarLeadObj({
-                        ...carLeaddObj,
-                        travelDate: e.target.value || null
-                        
-                        })}
-                        onBlur={handleFromDateBlur}
-                        className="border-highlight"
-                    />
-                        {errors.travelDate && (<p className="text-red-500 text-sm mt-1">{errors.travelDate}</p>)}
+                    {isViewMode ? (
+                        <DateViewField value={carLeaddObj.travelDate} />
+                    ) : (
+                        <input
+                            type="date"
+                            name="travelDate"
+                            value={carLeaddObj.travelDate || ""}
+                            min={new Date().toISOString().split("T")[0]} // onward >= today
+                            // onChange={handleChange}
+                            onChange={(e) =>
+                                setCarLeadObj({
+                                    ...carLeaddObj,
+                                    travelDate: e.target.value || null
+
+                                })}
+                            onBlur={handleFromDateBlur}
+                            className="border-highlight"
+                        />
+                    )}
+                    {errors.travelDate && !isViewMode && (<p className="text-red-500 text-sm mt-1">{errors.travelDate}</p>)}
                 </div>
-                
+
 
                 {/* No of Days */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">No of Days</label>
-                    <input
-                        type="number"
-                        name="noOfDays"
-                        value={Number(carLeaddObj.noOfDays) || ""}
-                        min="1"
-                        // onChange={handleChange}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            // Update as number if not empty, else empty string
-                            setCarLeadObj(prev => ({
-                                ...prev,
-                                noOfDays: value === "" ? "" : Number(value)
-                            }));
-                        }}
-                        className="border-highlight"
-                    />
+                    {isViewMode ? (
+                        <ViewField value={carLeaddObj.noOfDays} />
+                    ) : (
+
+                        <input
+                            type="number"
+                            name="noOfDays"
+                            value={Number(carLeaddObj.noOfDays) || ""}
+                            min="1"
+                            // onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Update as number if not empty, else empty string
+                                setCarLeadObj(prev => ({
+                                    ...prev,
+                                    noOfDays: value === "" ? "" : Number(value)
+                                }));
+                            }}
+                            className="border-highlight"
+                        />
+                    )}
                 </div>
             </div>
 
@@ -303,20 +355,24 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 {/* Requirement Type Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Requirement Type</label>
-                    <select
-                        name="requirementType"
-                        value={carLeaddObj.requirementType}
-                        onChange={handleChange}
-                        className="border-highlight"
-                    >
-                        <option value="">Select Requirement</option>
-                        {["Individual", "Corporate", "Event", "Inbound"].map((type) => (
-                            <option key={type} value={type}>
-                                {/* {type.charAt(0).toUpperCase() + type.slice(1)} Requirement     */}
-                                {type} Requirement
-                            </option>
-                        ))}
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={carLeaddObj.requirementType ? `${carLeaddObj.requirementType} Requirement` : "-"} />
+                    ) : (
+                        <select
+                            name="requirementType"
+                            value={carLeaddObj.requirementType}
+                            onChange={handleChange}
+                            className="border-highlight"
+                        >
+                            <option value="">Select Requirement</option>
+                            {["Individual", "Corporate", "Event", "Inbound"].map((type) => (
+                                <option key={type} value={type}>
+                                    {/* {type.charAt(0).toUpperCase() + type.slice(1)} Requirement     */}
+                                    {type} Requirement
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
 
 
@@ -326,30 +382,39 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                         {/* Company Name */}
                         <div className="flex-1 min-w-[200px]">
                             <label className="label-style">Company Name</label>
-                            <input
-                                type="text"
-                                name="companyName"
-                                value={carLeaddObj.companyName || ""}
-                                onChange={handleChange}
-                                placeholder="Enter Company Name"
-                                className="border-highlight"
-                            />
+                            {isViewMode ? (
+                                <ViewField value={carLeaddObj.companyName} />
+                            ) : (
+                                <input
+                                    type="text"
+                                    name="companyName"
+                                    value={carLeaddObj.companyName || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter Company Name"
+                                    className="border-highlight"
+                                />
+                            )}
                         </div>
 
                         {/* Telephone No */}
                         <div className="flex-1 min-w-[200px]">
                             <label className="label-style">Telephone No</label>
-                            <input
-                                type="tel"
-                                name="telephoneNo"
-                                value={carLeaddObj.telephoneNo || ""}
-                                onChange={handleChange}
-                                placeholder="Enter Telephone No"
-                                // className="border-highlight"
-                                className={`border-highlight ${errors.telephoneNo ? "border-red-500" : ""}`} 
-                                maxLength={11}
-                            />
-                                {errors.telephoneNo && (<p className="text-red-500 text-sm mt-1">{errors.telephoneNo}</p>)}
+                            {isViewMode ? (
+                                <ViewField value={carLeaddObj.telephoneNo} />
+                            ) : (
+
+                                <input
+                                    type="tel"
+                                    name="telephoneNo"
+                                    value={carLeaddObj.telephoneNo || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter Telephone No"
+                                    // className="border-highlight"
+                                    className={`border-highlight ${errors.telephoneNo ? "border-red-500" : ""}`}
+                                    maxLength={11}
+                                />
+                            )}
+                            {errors.telephoneNo && !isViewMode && (<p className="text-red-500 text-sm mt-1">{errors.telephoneNo}</p>)}
                         </div>
                     </div>
 
@@ -359,67 +424,86 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
             <div>
                 {/* Special Requirements Dropdown */}
                 <label className="label-style">Special Requirements</label>
-                <select name="specialRequirement" value={carLeaddObj.specialRequirement || ""}
-                    // onChange={(e) =>
-                    //     setCarLeadObj((prev) => ({
-                    //         ...prev,
-                    //         [e.target.name]: e.target.value === "" ? null : e.target.value,
-                    //     }))
-                    // }
+                {/* {isViewMode ? (
+                    <ViewField value={selectedSpecialRequirement} />
+                ) : ( */}
+                {isViewMode ? (
+                    <ViewSelect value={getLabelById(
+                        specialRequirement,
+                        carLeaddObj.specialRequirement,
+                        "id",
+                        "specialRequirements"
+                    )}/>
+                ) : (
+                    <select name="specialRequirement" value={carLeaddObj.specialRequirement || ""}
+                        // onChange={(e) =>
+                        //     setCarLeadObj((prev) => ({
+                        //         ...prev,
+                        //         [e.target.name]: e.target.value === "" ? null : e.target.value,
+                        //     }))
+                        // }
 
-                    onChange={(e) => {
-                        const value = e.target.value === "" ? null : Number(e.target.value);
-                        setCarLeadObj((prev) => ({
-                            ...prev,
-                            [e.target.name]: value,
-                        }));
-                    }}
+                        onChange={(e) => {
+                            const value = e.target.value === "" ? null : Number(e.target.value);
+                            setCarLeadObj((prev) => ({
+                                ...prev,
+                                [e.target.name]: value,
+                            }));
+                        }}
 
-                    className='border-highlight'>
-                    <option value="">Select Requirement</option>
-                    {specialRequirement.map((specialReq) => (
-                        <option key={specialReq.id} value={(specialReq.id)}>
-                            {specialReq.specialRequirements}
-                        </option>
-                    ))}
-                </select>
+                        className='border-highlight'>
+                        <option value="">Select Requirement</option>
+                        {specialRequirement.map((specialReq) => (
+                            <option key={specialReq.id} value={(specialReq.id)}>
+                                {specialReq.specialRequirements}
+                            </option>
+                        ))}
+                    </select>
+                 )} 
             </div>
 
 
             <div>
                 {/* Quote Given */}
                 <label className="label-style">Quote Given</label>
-                <input
-                    type="text"
-                    placeholder="Enter quote"
-                    name="quoteGiven"
-                    value={carLeaddObj.quoteGiven || ""}
-                    className={`border-highlight`}
-                    onChange={handleChange}
-                />
+                {isViewMode ? (
+                    <ViewField value={carLeaddObj.quoteGiven} />
+                ) : (
+                    <input
+                        type="text"
+                        placeholder="Enter quote"
+                        name="quoteGiven"
+                        value={carLeaddObj.quoteGiven || ""}
+                        className={`border-highlight`}
+                        onChange={handleChange}
+                    />
+                )}
             </div>
 
             {/* Remark */}
             <div>
                 <label className="label-style">Remark</label>
-                <input
-                    type="text"
-                    name="notes"
-                    value={carLeaddObj.notes || ""}
-                    placeholder="Remark "
-                    className={`border-highlight`}
-                    onChange={handleChange}
-                />
+                {isViewMode ? (
+                    <ViewField value={carLeaddObj.notes} />
+                ) : (
+                    <input
+                        type="text"
+                        name="notes"
+                        value={carLeaddObj.notes || ""}
+                        placeholder="Remark "
+                        className={`border-highlight`}
+                        onChange={handleChange}
+                    />
+                )}
 
-                
             </div>
-            </fieldset>
+            {/* </fieldset> */}
             {/* History hover component */}
-                {memoIsUpdate && (
-                    <HistoryHover histories={memoHistories} />)
-                }
+            {memoIsUpdate && (
+                <HistoryHover histories={memoHistories} />)
+            }
         </div>
-    
+
     );
 };
 

@@ -353,6 +353,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}
+        mode={"edit"}
       />
     </>
   );

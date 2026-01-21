@@ -5,6 +5,8 @@
 
 // }
 import React from "react";
+import { getRadioValue } from "./utils/selectUtils";
+import { DateViewField } from "./ConstantComponent/ViewComponents";
 
 
 // const LeadPassportDetails = ({ passportDetailsObj, setObject }) => {
@@ -118,6 +120,7 @@ const PassportDetails = ({
   showPassportValidityDate = true,
   showInsurance = true,
   showPassportValidity = true,
+  isViewMode = false, // for View mode 
 }) => {
   const handleChange = (e) => {
 
@@ -152,7 +155,7 @@ const PassportDetails = ({
         {showVisaStatus && (
           <div className="flex-1 min-w-[200px] flex flex-col">
             <label className="label-style mb-1">Visa Status</label>
-            <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
+            {/* <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
               {["Valid", "In Process", "Not Applied"].map((visastatus) => (
                 <label
                   key={visastatus}
@@ -172,6 +175,38 @@ const PassportDetails = ({
                   {visastatus}
                 </label>
               ))}
+            </div> */}
+            <div className="border border-gray-300 rounded-lg p-2 flex justify-between flex-1 h-full">
+              {["Valid", "In Process", "Not Applied"].map((visastatus) => {
+                const isChecked = passportDetailsObj.visaStatus === visastatus;
+
+                return (
+                  <label
+                    key={visastatus}
+                    className={`flex items-center gap-2 flex-1 rounded-md px-1
+                ${isChecked
+                        ? isViewMode
+                          ? "bg-gray-100 border border-gray-300"
+                          : "bg-blue-100 border border-blue-500"
+                        : "bg-white border border-transparent"
+                      }
+               ${isViewMode ? "cursor-not-allowed" : "cursor-pointer"}
+                `}
+                  >
+                    <input
+                      type="radio"
+                      name="visaStatus"
+                      value={visastatus}
+                      checked={isChecked}
+                      onChange={handleChange}
+                      disabled={isViewMode}
+                    />
+
+                    {/* force readable text */}
+                    <span className="text-black">{visastatus}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
         )}
@@ -183,16 +218,24 @@ const PassportDetails = ({
               {["Checked", "Not Checked", "Not Sure"].map((pValidity) => (
                 <label key={pValidity}
                   className={`option-highlight
-                                        ${passportDetailsObj.passportValidity === pValidity
-                      ? "option-highlight-active"
-                      : "option-highlight-inactive"
-                    }`}
+                    ${getRadioValue({
+                    selectedValue: passportDetailsObj.passportValidity,
+                    optionValue: pValidity,
+                    isViewMode,
+                  })}`}
+
+                //                     ${passportDetailsObj.passportValidity === pValidity
+                //   ? "option-highlight-active"
+                //   : "option-highlight-inactive"
+                // }`}
                 >
                   <input type="radio"
                     name="passportValidity"
                     value={pValidity}
                     checked={passportDetailsObj.passportValidity === pValidity}
-                    onChange={handleChange} />
+                    onChange={handleChange}
+                    disabled={isViewMode}
+                  />
                   {pValidity}
                 </label>
               ))}
@@ -202,8 +245,8 @@ const PassportDetails = ({
 
       </div>
 
-     
-    {/* div for Overseas Insurance and Passport Validity date  */}
+
+      {/* div for Overseas Insurance and Passport Validity date  */}
       <div className="flex gap-3 flex-wrap items-stretch">
         {/* Overseas Insurance */}
         {showInsurance && (
@@ -214,10 +257,16 @@ const PassportDetails = ({
                 <label
                   key={insuranceStatus}
                   className={`option-highlight
-              ${passportDetailsObj.overseasInsurance === insuranceStatus
-                      ? "option-highlight-active"
-                      : "option-highlight-inactive"
-                    }`}
+                  ${getRadioValue({
+                    selectedValue: passportDetailsObj.overseasInsurance,
+                    optionValue: insuranceStatus,
+                    isViewMode,
+                  })}`}
+
+                // ${passportDetailsObj.overseasInsurance === insuranceStatus
+                //         ? "option-highlight-active"
+                //         : "option-highlight-inactive"
+                //       }`}
                 >
                   <input
                     type="radio"
@@ -225,6 +274,7 @@ const PassportDetails = ({
                     value={insuranceStatus}
                     checked={passportDetailsObj.overseasInsurance === insuranceStatus}
                     onChange={handleChange}
+                    disabled={isViewMode}
                   />
                   {insuranceStatus}
                 </label>
@@ -237,15 +287,24 @@ const PassportDetails = ({
         {showPassportValidityDate && (
           <div className="flex-1 min-w-[200px] flex flex-col">
             <label className="label-style mb-1">Passport Validity Date</label>
+             {isViewMode ? (
+              // <div className="border border-gray-300 rounded-lg flex items-center px-2 flex-1 h-full min-h-[40px]">
+                <DateViewField value={passportDetailsObj.passportValidityDate} />
+                // </div>
+              ) : (
             <div className="border border-gray-300 rounded-lg flex items-center px-2 flex-1 h-full">
-              <input
-                type="date"
-                name="passportValidityDate"
-                value={passportDetailsObj.passportValidityDate || ""}
-                onChange={handleChange}
-                className="w-full h-full outline-none bg-white "
-              />
+             
+                <input
+                  type="date"
+                  name="passportValidityDate"
+                  value={passportDetailsObj.passportValidityDate || ""}
+                  onChange={handleChange}
+                  className="w-full h-full outline-none bg-white "
+                />
+             
             </div>
+             )}
+
           </div>
         )}
       </div>
