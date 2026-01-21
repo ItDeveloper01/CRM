@@ -1,8 +1,26 @@
 import React, { useMemo, useState } from "react";
 import { CardContent } from '@mui/material'; // Adjust if using different CardContent
+import { MESSAGE_TYPES } from "./Constants";
+import axios from "axios";
+import UpdateLeadsModal from "./UpdateLeadsModal";
+import { getEmptyLeadObj } from "./Model/LeadModel";
+import config from "./config";
+import { useMessageBox } from "./Notification";
+import { useGetSessionUser } from "./SessionContext";
 
 export default function LeadListWithFilters({ users }) {
   // Flatten all leads
+
+  //  const [modalOpen, setModalOpen ] = useState(false);
+  // const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+  const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
+  const { user: sessionUser } = useGetSessionUser();
+  const { showMessage } = useMessageBox();
+  // const [readOnly, setReadOnly] = useState(true);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [selectedLead, setSelectedLead] = useState(null);
+  const [mode, setMode] = useState("create"); //  ADD THIS
+
 
 
   const allLeads = useMemo(() => {
@@ -26,12 +44,113 @@ export default function LeadListWithFilters({ users }) {
     });
   }, [users]);
 
-  
+  const handleViewClick = async (lead) => {
+    console.log("Viewing lead.....:", lead);
+    //API call  to lead details. 
 
-  
-    
+    debugger;
+    try {
 
-  
+      let templead = await fetchLeadDetails(lead);
+      setSelectedLead(templead);
+      setMode("view");
+      setModalOpen(true);
+    } catch {
+      showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
+    }
+  };
+
+  // async function fetchLeadDetails(lead) {
+  //   let res = null;
+  //   try {
+  //   //   const payload = {
+  //   //   leadID: lead.leadID,
+  //   //   categoryName: lead.categoryName,
+  //   //   categoryId: lead.categoryId, // make sure this exists in table data
+  //   // };
+  //     debugger;
+  //     console.log("GetLeadsForEditAPI:", GetLeadsForEditAPI);
+  //     console.log("LEad data to be passed to API", lead);
+  //     res = await axios.post(GetLeadsForEditAPI, lead, {
+  //       headers: {
+  //         Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
+  //         "Content-Type": "application/json"
+
+  //       },
+  //       // params: {
+  //       //   lead: lead,
+  //       // }
+  //     });
+  //     debugger;
+  //     if (res && res.data) {
+  //       console.log("Leads details fetched:"+ res.data);
+  //       return res.data;
+  //     } else {
+  //       showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
+  //       return null;
+  //     }
+
+  //   } catch (error) {
+  //     debugger;
+  //     console.log("Error fetching Lead for edit...", error);
+
+  //     const message =
+  //       error.response?.data ||
+  //       error.response?.statusText ||
+  //       error.message ||
+  //       "Unknown error";
+
+  //     showMessage("Error fetching Lead for edit." + JSON.stringify(message), MESSAGE_TYPES.ERROR);
+  //     return null;
+
+  //   }
+
+  // }
+  async function fetchLeadDetails(lead) {
+    let res = null;
+    try {
+      debugger;
+      console.log("GetLeadsForEditAPI:", GetLeadsForEditAPI);
+      console.log("LEad data to be passed to API", lead);
+      res = await axios.post(GetLeadsForEditAPI, lead, {
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
+          "Content-Type": "application/json"
+
+        },
+        // params: {
+        //   lead: lead,
+        // }
+      });
+      debugger;
+      if (res && res.data) {
+        console.log("Leads details fetched:" + res.data);
+        return res.data;
+      } else {
+        showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
+        return null;
+      }
+
+    } catch (error) {
+      debugger;
+      console.log("Error fetching Lead for edit...", error);
+
+      const message =
+        error.response?.data ||
+        error.response?.statusText ||
+        error.message ||
+        "Unknown error";
+
+      showMessage("Error fetching Lead for edit." + JSON.stringify(message), MESSAGE_TYPES.ERROR);
+      return null;
+
+    }
+
+  }
+
+
+
+
 
 
   React.useEffect(() => {
@@ -133,7 +252,7 @@ export default function LeadListWithFilters({ users }) {
         {/* CLEAR FILTER BUTTON */}
         <button
           //className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-         className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
+          className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
           onClick={() => {
             setFilters({
               status: "",
@@ -200,10 +319,10 @@ export default function LeadListWithFilters({ users }) {
                 <td className="p-2">{lead.mobileNo}</td>
                 <td className="p-2">
                   <button
-                    className="text-500 underline"
-                  // onClick={() => handleViewClick(lead)}
+                    className="text-blue-700 text-500 underline"
+                    onClick={() => handleViewClick(lead)}
                   >
-                    View Details (WIP)
+                    View Details
                   </button>
                 </td>
               </tr>
@@ -211,7 +330,16 @@ export default function LeadListWithFilters({ users }) {
           </tbody>
         </table>
       </div>
+      {/* Modal */}
+      <UpdateLeadsModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        lead={selectedLead}
+        // readOnly={readOnly}
+        mode={"view"}              // you can write {mode} alson at view place 
+      />
     </div>
+
   );
 }
 

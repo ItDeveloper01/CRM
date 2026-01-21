@@ -8,9 +8,15 @@ import { set } from "lodash";
 import { useMemo } from "react";
 import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 import PassportDetails from "./PassportDetails";
+import { DateViewField, ViewField, ViewSelect } from "./ConstantComponent/ViewComponents";
+import { getLabelById, getRadioValue } from "./utils/selectUtils";
 
 
-const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) => {
+const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mode }) => {
+
+    const isViewMode = mode === "view";
+    const isEditMode = mode === "edit";
+    const isCreateMode = mode === "create";
 
 
     // Memoize the histories array so reference doesn't change unnecessarily
@@ -68,58 +74,85 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 {/* Country1 Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 1</label>
-                    <select
-                        className={`border-highlight ${visadObj.country1 ? "selected" : ""}`}
-                        name="country1"
-                        value={visadObj?.country1 || ""}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
-                            <option key={country.name} value={country.name}>
-                                {country.name}
-                            </option>
-                        ))}
-                       
-                        
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={getLabelById(
+                            countries,
+                            visadObj.country1,
+                            "name",
+                            "name"
+                        )} />
+                    ) : (
+                        <select
+                            className={`border-highlight ${visadObj.country1 ? "selected" : ""}`}
+                            name="country1"
+                            value={visadObj?.country1 || ""}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select Country</option>
+                            {countries.map((country) => (
+                                <option key={country.name} value={country.name}>
+                                    {country.name}
+                                </option>
+                            ))}
+
+
+                        </select>
+                    )}
                 </div>
 
 
                 {/* Country2 Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 2</label>
-                    <select
-                        className={`border-highlight ${visadObj.country2 ? "selected" : ""}`}
-                        name="country2"
-                        value={visadObj?.country2 || ""}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
-                            <option key={country.name} value={country.name}>
-                                {country.name}
-                            </option>
-                        ))}
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={getLabelById(
+                            countries,
+                            visadObj.country2,
+                            "name",
+                            "name"
+                        )} />
+                    ) : (
+                        <select
+                            className={`border-highlight ${visadObj.country2 ? "selected" : ""}`}
+                            name="country2"
+                            value={visadObj?.country2 || ""}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select Country</option>
+                            {countries.map((country) => (
+                                <option key={country.name} value={country.name}>
+                                    {country.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
 
                 {/* Country3 Dropdown */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Country 3</label>
-                    <select
-                        className={`border-highlight ${visadObj.country3 ? "selected" : ""}`}
-                        name="country3"
-                        value={visadObj?.country3 || ""}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select Country</option>
-                        {countries.map((country) => (
-                            <option key={country.name} value={country.name}>
-                                {country.name}
-                            </option>
-                        ))}
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={getLabelById(
+                            countries,
+                            visadObj.country3,
+                            "name",
+                            "name"
+                        )} />
+                    ) : (
+                        <select
+                            className={`border-highlight ${visadObj.country3 ? "selected" : ""}`}
+                            name="country3"
+                            value={visadObj?.country3 || ""}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select Country</option>
+                            {countries.map((country) => (
+                                <option key={country.name} value={country.name}>
+                                    {country.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
                 </div>
             </div>
 
@@ -128,19 +161,25 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
 
                 <div className="flex-1">
                     <label className="label-style">Travel Date</label>
-                    <input
-                        type="date"
-                        name="travelDate"
-                        value={visadObj.travelDate || ""}
-                        onChange={handleChange}
-                        className={`border-highlight ${visadObj.travelDate ? "selected" : ""}`}
-                    //  This code is for more information of highlight concept
-                    //  className={`w-full rounded-lg p-2 focus:outline-none focus:ring-2 
-                    //         ${visadObj.travelDates
-                    //         ? "bg-blue-100 border border-blue-500"   // highlight when date is selected
-                    //         : "bg-white border border-gray-300"      // default gray border
-                    //     }`}
-                    />
+                    {isViewMode ? (
+                        // <div className="w-full rounded-lg p-2 h-10 focus:outline-none focus:ring-2 bg-white border border-gray-300 ">
+                        <DateViewField value={visadObj.travelDate} />
+                        // </div>
+                    ) : (
+                        <input
+                            type="date"
+                            name="travelDate"
+                            value={visadObj.travelDate || ""}
+                            onChange={handleChange}
+                            className={`border-highlight ${visadObj.travelDate ? "selected" : ""}`}
+                        //  This code is for more information of highlight concept
+                        //  className={`w-full rounded-lg p-2 focus:outline-none focus:ring-2 
+                        //         ${visadObj.travelDates
+                        //         ? "bg-blue-100 border border-blue-500"   // highlight when date is selected
+                        //         : "bg-white border border-gray-300"      // default gray border
+                        //     }`}
+                        />
+                    )}
                 </div>
                 {/* <div className="flex-1">
                     <label className="label-style">Travel Date</label>
@@ -160,39 +199,47 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
 
                 <div className="flex-1">
                     <label className="label-style">No. of Applicants</label>
-                    <input
-                        className={`border-highlight`}
-                        name="noOfApplicants"
-                        value={Number(visadObj.noOfApplicants) || ""}
-                        type="number"
-                        min="1"
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            // Update as number if not empty, else empty string
-                            setVisaLeadObj(prev => ({
-                                ...prev,
-                                noOfApplicants: value === "" ? "" : Number(value)
-                            }));
-                        }}
-                    />
+                    {isViewMode ? (
+                        <ViewField value={visadObj.noOfApplicants} />
+                    ) : (
+                        <input
+                            className={`border-highlight`}
+                            name="noOfApplicants"
+                            value={Number(visadObj.noOfApplicants) || ""}
+                            type="number"
+                            min="1"
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Update as number if not empty, else empty string
+                                setVisaLeadObj(prev => ({
+                                    ...prev,
+                                    noOfApplicants: value === "" ? "" : Number(value)
+                                }));
+                            }}
+                        />
+                    )}
                 </div>
 
                 <div className="flex-1">
                     <label className="label-style">Purpose of Travel</label>
-                    <select
-                        className={`border-highlight`}
-                        name="purposeOfTravel"
-                        value={visadObj.purposeOfTravel}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select</option>
-                        <option value="Business">Business</option>
-                        <option value="Tourism">Tourism</option>
-                        <option value="Attending an Exhibition">Attending an Exhibition</option>
-                        <option value="Event-Conference">Event-Conference</option>
-                        <option value="Visiting Friends and Relatives">Visiting Friends and Relatives</option>
-                        <option value="Transit">Transit</option>
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={visadObj.purposeOfTravel || "-"} />
+                    ) : (
+                        <select
+                            className={`border-highlight`}
+                            name="purposeOfTravel"
+                            value={visadObj.purposeOfTravel}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select</option>
+                            <option value="Business">Business</option>
+                            <option value="Tourism">Tourism</option>
+                            <option value="Attending an Exhibition">Attending an Exhibition</option>
+                            <option value="Event-Conference">Event-Conference</option>
+                            <option value="Visiting Friends and Relatives">Visiting Friends and Relatives</option>
+                            <option value="Transit">Transit</option>
+                        </select>
+                    )}
                 </div>
             </div>
 
@@ -200,34 +247,42 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
             <div className="flex gap-3 flex-wrap"> {/* reduced gap */}
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Visa Type</label>
-                    <select
-                        className={`border-highlight`}
-                        name="visaType"
-                        value={visadObj.visaType}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select</option>
-                        <option value="Business">Business</option>
-                        <option value="Tourist">Tourist</option>
-                        <option value="Transit">Transit</option>
-                        <option value="Dependent">Dependent</option>
-                        <option value="Student">Student</option>
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={visadObj.visaType || "-"} />
+                    ) : (
+                        <select
+                            className={`border-highlight`}
+                            name="visaType"
+                            value={visadObj.visaType}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select</option>
+                            <option value="Business">Business</option>
+                            <option value="Tourist">Tourist</option>
+                            <option value="Transit">Transit</option>
+                            <option value="Dependent">Dependent</option>
+                            <option value="Student">Student</option>
+                        </select>
+                    )}
                 </div>
 
                 <div className="flex-1">
                     <label className="label-style">No Of Entries</label>
-                    <select
-                        className={`border-highlight`}
-                        name="noOfEntries"
-                        value={visadObj.noOfEntries}
-                        onChange={handleChange}
-                    >
-                        <option value="">Select</option>
-                        <option value="Single">Single</option>
-                        <option value="Double">Double</option>
-                        <option value="Multiple">Multiple</option>
-                    </select>
+                    {isViewMode ? (
+                        <ViewSelect value={visadObj.noOfEntries || "-"} />
+                    ) : (
+                        <select
+                            className={`border-highlight`}
+                            name="noOfEntries"
+                            value={visadObj.noOfEntries}
+                            onChange={handleChange}
+                        >
+                            <option value="">Select</option>
+                            <option value="Single">Single</option>
+                            <option value="Double">Double</option>
+                            <option value="Multiple">Multiple</option>
+                        </select>
+                    )}
                 </div>
             </div>
 
@@ -241,10 +296,16 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                             <label
                                 key={status1}
                                 className={`option-highlight
-                                ${visadObj.travelPlanStatus === status1
-                                        ? "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
+                                ${getRadioValue({
+                                    selectedValue: visadObj.travelPlanStatus,
+                                    optionValue: status1,
+                                    isViewMode,
+                                })}`}
+
+                            // ${visadObj.travelPlanStatus === status1
+                            //         ? "option-highlight-active"
+                            //         : "option-highlight-inactive"
+                            //     }`}
                             >
                                 <input
                                     type="radio"
@@ -252,6 +313,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                                     value={status1}
                                     checked={visadObj.travelPlanStatus === status1}
                                     onChange={handleChange}
+                                    disabled={isViewMode}
                                 />
                                 {status1}
                             </label>
@@ -278,10 +340,16 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                         {["Booked", "Not Booked", "Girikand to Book"].map((status) => (
                             <label key={status}
                                 className={`option-highlight
-                                        ${visadObj.hotelBooking === status
-                                        ? "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
+                                        ${getRadioValue({
+                                    selectedValue: visadObj.hotelBooking,
+                                    optionValue: status,
+                                    isViewMode,
+                                })}`}
+
+                            //     ${visadObj.hotelBooking === status
+                            //     ? "option-highlight-active"
+                            //     : "option-highlight-inactive"
+                            // }`}
                             >
                                 <input
                                     type="radio"
@@ -289,6 +357,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                                     value={status}
                                     checked={visadObj.hotelBooking === status}
                                     onChange={handleChange}
+                                    disabled={isViewMode}
                                 />
                                 {status}
                             </label>
@@ -307,6 +376,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                 showPassportValidity={false}
                 showVisaStatus={false}
                 showPassportValidityDate={true}
+                isViewMode={isViewMode}
             />
 
             {/*Passport Validity staus & passport pages */}
@@ -321,6 +391,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                         showPassportValidity={true}
                         showVisaStatus={false}
                         showPassportValidityDate={false}
+                        isViewMode={isViewMode}
                     />
                 </div>
 
@@ -330,17 +401,25 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                         {["Yes", "No", "Not Sure"].map((passPages) => (
                             <label key={passPages}
                                 className={`option-highlight
-                                        ${visadObj.passportPages === passPages
-                                        ? "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
+                                ${getRadioValue({
+                                    selectedValue: visadObj.passportPages,
+                                    optionValue: passPages,
+                                    isViewMode,
+                                })}`}
+
+                            //                 ${
+                            //     visadObj.passportPages === passPages
+                            //         ? "option-highlight-active"
+                            //         : "option-highlight-inactive"
+                            // }`}
                             >
                                 <input
                                     type="radio"
                                     name="passportPages"
                                     value={passPages}
                                     checked={visadObj.passportPages === passPages}
-                                    onChange={handleChange} />
+                                    onChange={handleChange}
+                                    disabled={isViewMode} />
                                 {passPages}
                             </label>
                         ))}
@@ -353,31 +432,43 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
 
             <div className="flex gap-3 flex-wrap">
                 <div className="flex-1">
+                    {/*  This feild is Updated on 20-01-2026 */}
                     <label className="label-style">Passport Duration</label>
                     <div className="border border-gray-300 rounded-lg p-2 flex flex-col gap-1">
-                        {["10 Years", "Less Than 10 Years", "Not Sure"].map((passDue) => (
-                            <label key={passDue}
-                                className={`option-highlight
-                                    ${visadObj.passportDuration === passDue
-                                        ? passDue === "Less Than 10 Years"
-                                            ? "bg-red-100 text-red-700 border border-red-300" // light red highlight
-                                            : "option-highlight-active"
-                                        : "option-highlight-inactive"
-                                    }`}
-                            >
-                                <input
-                                    type="radio"
-                                    name="passportDuration"
-                                    value={passDue}
-                                    checked={visadObj.passportDuration === passDue}
-                                    onChange={handleChange}
-                                    className={`mr-2
-                                ${passDue === "Less Than 10 Years" ? "accent-red-500" : "accent-blue-500"}`}
-                                />
-                                {passDue}
-                            </label>
-                        ))}
-
+                        {["10 Years", "Less Than 10 Years", "Not Sure"].map((passDue) => {
+                            const isSelected = visadObj.passportDuration === passDue;
+                            const isDanger = passDue === "Less Than 10 Years";
+                            return (
+                                <label
+                                    key={passDue}
+                                    className={`option-highlight
+                            ${isSelected
+                                            ? isViewMode
+                                                ? "bg-gray-100 text-gray-800 border border"
+                                                : isDanger
+                                                    ? "bg-red-100 text-red-700 border border-red-300"
+                                                    : "option-highlight-active"
+                                            : "option-highlight-inactive"
+                                        }
+                            ${isViewMode ? "cursor-not-allowed" : "cursor-pointer"}
+                            `}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="passportDuration"
+                                        value={passDue}
+                                        checked={isSelected}
+                                        onChange={handleChange}
+                                        disabled={isViewMode}
+                                        className={`mr-2 ${!isViewMode && isDanger
+                                            ? "accent-red-500"
+                                            : "accent-blue-500"
+                                            }`}
+                                    />
+                                    {passDue}
+                                </label>
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -390,10 +481,16 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                                 <label
                                     key={airTckIssuedBy}
                                     className={`option-highlight flex items-center gap-2 cursor-pointer
-                                            ${visadObj.airTicketIssuedBy === airTckIssuedBy
-                                            ? "option-highlight-active"
-                                            : "option-highlight-inactive"
-                                        }`}
+                                        ${getRadioValue({
+                                        selectedValue: visadObj.airTicketIssuedBy,
+                                        optionValue: airTckIssuedBy,
+                                        isViewMode,
+                                    })}`}
+
+                                //     ${visadObj.airTicketIssuedBy === airTckIssuedBy
+                                //     ? "option-highlight-active"
+                                //     : "option-highlight-inactive"
+                                // }`}
                                 >
                                     <input
                                         type="radio"
@@ -402,6 +499,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                                         checked={visadObj.airTicketIssuedBy === airTckIssuedBy}
                                         onChange={handleChange}
                                         className="accent-blue-500"
+                                        disabled={isViewMode}
                                     />
                                     {airTckIssuedBy}
                                 </label>
@@ -413,6 +511,9 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
             {/* Quote Given */}
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Quote Given</label>
+                {isViewMode ? (
+                    <ViewSelect value={visadObj.quoteGiven || "-"} />
+                ):(
                 <input
                     type="text"
                     className={`border-highlight`}
@@ -421,11 +522,15 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                     placeholder="Enter quote"
                     onChange={handleChange}
                 />
+                )}
             </div>
 
             {/* Remark */}
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Remark</label>
+                { isViewMode ? (
+                    <ViewSelect value={visadObj.notes || "-"} />
+                ):(
                 <textarea
                     className={`border-highlight`}
                     name="notes"
@@ -433,12 +538,13 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate }) 
                     placeholder="Remark"
                     onChange={handleChange}
                 />
+                )}
                 {/* History hover component */}
                 {memoIsUpdate && (
                     <HistoryHover histories={memoHistories} />)
                 }
             </div>
-        </div>
+        </div >
     );
 };
 
