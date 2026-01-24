@@ -1002,7 +1002,7 @@ console.log("mode value ", mode);
         console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
 
         debugger;
-        const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
+        const response = await axios.post(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
 
 
         console.log("Updated lead:", response.data);
