@@ -10,9 +10,9 @@
 
 
 const config = {
-  apiUrl: 'http://192.168.1.141:5001/api',
-  socketUrl: 'http://192.168.1.141:5001/appreciationHub',
-  olapUrl: 'http://192.168.1.141:5264/olap',
+  apiUrl: 'http://192.168.1.141:5015/oltp',
+  socketUrl: 'http://192.168.1.141:5015/appreciationHub',
+  olapUrl: 'http://192.168.1.141:5015/olap',
 };
 
 
