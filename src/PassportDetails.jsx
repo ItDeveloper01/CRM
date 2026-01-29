@@ -288,9 +288,9 @@ const PassportDetails = ({
           <div className="flex-1 min-w-[200px] flex flex-col">
             <label className="label-style mb-1">Passport Validity Date</label>
              {isViewMode ? (
-              // <div className="border border-gray-300 rounded-lg flex items-center px-2 flex-1 h-full min-h-[40px]">
+              // <div className="border border-gray-300 rounded-lg flex items-center px-2 flex-1 h-full ">
                 <DateViewField value={passportDetailsObj.passportValidityDate} />
-                // </div>
+                //  </div>
               ) : (
             <div className="border border-gray-300 rounded-lg flex items-center px-2 flex-1 h-full">
              

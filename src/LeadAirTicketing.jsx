@@ -216,22 +216,22 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
       {/* Common fields in Air Ticketing*/}
       {/* Onword Date */}
       <div className="flex gap-3 flex-wrap">
-        <div className="flex-1">
+                <div className="flex-1">
           <label className="label-style">Onward Date</label>
           {isViewMode ? (
             <DateViewField value={airTicketingdObj.onwardDate} />
           ) : (
-            <input
-              type="date"
-              name="onwardDate"
-              min={new Date().toISOString().split("T")[0]} // onward >= today
-              value={airTicketingdObj.onwardDate || ""}
-              onChange={handleChange}
-              onBlur={() => handleFromDateBlur("onwardDate")}
-              className={`border-highlight`}
-            />
-          )}
+          <input
+            type="date"
+            name="onwardDate"
+            min={new Date().toISOString().split("T")[0]} // onward >= today
+            value={airTicketingdObj.onwardDate || ""}
+            onChange={handleChange}
+            onBlur={()=> handleFromDateBlur("onwardDate")}
+            className={`border-highlight`}
 
+          />
+             )}
           {errors.onwardDate && (<p className="text-red-500 text-sm mt-1">{errors.onwardDate}</p>)}
 
           {/* Return Date */}

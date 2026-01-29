@@ -256,7 +256,8 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Serving City</label>
                     {isViewMode ? (
-                        <ViewField value={carLeaddObj.servingCity} />            //.....value is same as inside select or input
+                        // <ViewField value={carLeaddObj.servingCity} />            //.....value is same as inside select or input
+                        <ViewField value={getLabelById(cities, carLeaddObj.servingCity, "id", "cityName")}/>
                     ) : (
                         <select
                             name="servingCity"
