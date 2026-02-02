@@ -273,7 +273,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                 <td className="px-3 py-2">{lead.mobileNo}</td>
                 <td className="px-3 py-2">{lead.categoryName}</td>
                 <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
-                <td className="px-3 py-2">{lead.categoryStatus}</td>
+                <td className="px-3 py-2">{lead.statusDescription}</td>
                 <td className="px-3 py-2">  {formatDate(lead.enquiryDate)} </td>
                 <td className="px-3 py-2">
                   <button
@@ -330,7 +330,20 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
                   <td className="px-3 py-2">{lead.mobileNo}</td>
                   <td className="px-3 py-2">{lead.categoryName}</td>
                   <td className="px-3 py-2">{formatDate(lead.followUpDate)}</td>
-                  <td className="px-3 py-2">{lead.categoryStatus}</td>
+                  <td className="px-3 py-2">{lead.statusDescription}</td>
+                  {/* <td className="px-3 py-2">{lead.categoryStatus}</td> */}
+                  {/* <td className={`p-2 font-semibold ${lead.StatusDescription === "Lost"
+                  ? "text-lostText"
+                  : lead.status === "Confirmed"
+                    ? "text-confirmedText"
+                    : lead.status === "Postponed"
+                      ? "text-postponedText"
+                      // : "text-yellow-500"
+                      : "text-openText"
+                  }`}>
+                  {lead.status}
+                </td> */}
+
                   <td className="px-3 py-2">{formatDate(lead.enquiryDate)}</td>
                   <td className="px-3 py-2">
                     <button
