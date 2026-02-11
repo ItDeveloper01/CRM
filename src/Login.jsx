@@ -81,7 +81,8 @@ export default function Login() {
       } else {
         setError('Invalid credentials');
         setErrorMsg('Invalid credentials');
-        console.log("Error:", err.message);
+        console.log("Error:", err);
+
         alert("Server unreachable");
       }
     }

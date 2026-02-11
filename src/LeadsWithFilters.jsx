@@ -7,6 +7,9 @@ import { getEmptyLeadObj } from "./Model/LeadModel";
 import config from "./config";
 import { useMessageBox } from "./Notification";
 import { useGetSessionUser } from "./SessionContext";
+import LeadTransferModal from "./LeadTransferModal";
+
+
 
 export default function LeadListWithFilters({ users }) {
   // Flatten all leads
@@ -20,6 +23,86 @@ export default function LeadListWithFilters({ users }) {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [mode, setMode] = useState("create"); //  ADD THIS
+
+
+
+ const fetchSubordinateRoleListAPI = config.apiUrl + "/Reporting/GetSubordinateranksByUserId"
+ const fetchDataWithFiltersAPI = config.apiUrl + "/Reporting/GetManagerAnalyticsDataWithFilters"
+ const [hierarchyData, setHierarchyData] = useState({}); // State to hold the hierarchy data
+ const [transferUsers, setTransferUsers] = useState([]);
+const [loadingUsers, setLoadingUsers] = useState(false);
+const [leads, setLeads] = useState([]);
+const [showTransferModal, setShowTransferModal] = useState(false);
+const [selectedUser, setSelectedUser] = useState("");
+
+
+
+
+const openTransferModal = (lead) => {
+  debugger;
+  setSelectedLead(lead);
+  setShowTransferModal(true);
+  loadTransferUsers(); // existing API call
+};
+const handleTransfer = async (toUserId, leadId) => {
+  if (!toUserId) return;
+
+  try {
+    await fetch( fetchDataWithFiltersAPI, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        leadId,
+        toUserId,
+      }),
+    });
+
+    // optional: update UI immediately
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === leadId
+          ? { ...lead, transferTo: toUserId }
+          : lead
+      )
+    );
+  } catch (error) {
+    console.error("Lead transfer failed", error);
+    alert("Unable to transfer lead. Please try again.");
+  }
+};
+
+// const fetchHierarchyData = async () => {
+
+//  try {
+//     debugger;
+//     const response = await axios.post(
+//         fetchDataWithFiltersAPI,
+//         {
+//           userID: sessionUser.user.id,
+//           selectedVerticles: [],   // can be List<DTO> or List<int>
+//           selectedRoles: [] ,           // can be List<DTO> or List<int>
+//           //dateRange : {from: selectedDateRange.from , to:selectedDateRange.to
+//           //}
+//         },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${sessionUser.token}`,
+//             "Content-Type": "application/json"
+//           }
+//         }
+//       );
+
+//     //setListOfVerticles(response.data);
+//     setHierarchyData(response.data);
+//     debugger;
+//     console.log(response.data);
+//     // setSubordinates(response.data);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 
 
@@ -194,6 +277,16 @@ export default function LeadListWithFilters({ users }) {
     };
   }, [allLeads]);
 
+  const loadTransferUsers = async () => {
+  if (transferUsers.length > 0) return;
+
+  // setLoadingUsers(true);
+  // const res = await fetch("/api/analytics/user-ids");
+  // const data = await res.json();
+
+  // setTransferUsers(data);
+  // setLoadingUsers(false);
+};
   // ---------------- APPLY FILTERS ----------------
   const filteredLeads = useMemo(() => {
     return allLeads.filter((lead) => {
@@ -284,6 +377,7 @@ export default function LeadListWithFilters({ users }) {
               <th className="p-2 text-left">Latest Update</th>
               <th className="p-2 text-left">Customer Type</th>
               <th className="p-2 text-left">Mobile No</th>
+              <th className="p-2 text-left">TransferTo</th>
               <th className="p-2 text-left">Details</th>
             </tr>
           </thead>
@@ -318,6 +412,14 @@ export default function LeadListWithFilters({ users }) {
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
                 <td className="p-2">
+  <button
+    className="px-3 py-1 bg-blue-600 text-white rounded"
+    onClick={() => openTransferModal(lead)}
+  >
+    Transfer To
+  </button>
+</td>
+                <td className="p-2">
                   <button
                     className="text-blue-700 text-500 underline"
                     onClick={() => handleViewClick(lead)}
@@ -338,6 +440,14 @@ export default function LeadListWithFilters({ users }) {
         // readOnly={readOnly}
         mode={"view"}              // you can write {mode} alson at view place 
       />
+    <LeadTransferModal
+  isOpen={showTransferModal}
+  onClose={() => setShowTransferModal(false)}
+  users={transferUsers}
+  onTransfer={handleTransfer}
+  loadingUsers={loadingUsers}
+  selectedLead={selectedLead}
+/>
     </div>
 
   );
