@@ -24,8 +24,20 @@ export default function DateRangeSelector({ onRangeChange }) {
   const last7 = new Date(today.getTime() - 86400000 * 7);
   const last30 = new Date(today.getTime() - 86400000 * 30);
   const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const tillDate = {from: new Date(2025, 6, 1), // example start date
+                    to: today
+                    };
+  
+  // Comment by Priyanka on 03-02-2026 for till date 
+  // const format = (d) => d.toISOString().slice(0, 10);
+  
+  const format = (d) => {
+  const offset = d.getTimezoneOffset();
+  const localDate = new Date(d.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 10);
+};
 
-  const format = (d) => d.toISOString().slice(0, 10);
+
 
   const applyQuick = (from, to) => {
     const obj = { from: format(from), to: format(to) };
@@ -66,6 +78,7 @@ export default function DateRangeSelector({ onRangeChange }) {
             <button onClick={() => applyQuick(last7, today)} className="dropdown-item">Last 7 Days</button>
             <button onClick={() => applyQuick(last30, today)} className="dropdown-item">Last 30 Days</button>
             <button onClick={() => applyQuick(firstOfMonth, today)} className="dropdown-item">This Month</button>
+            <button onClick={() => applyQuick(tillDate.from, tillDate.to)} className="dropdown-item">Till Date</button>
           </div>
 
           {/* Divider */}

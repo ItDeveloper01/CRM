@@ -228,7 +228,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-2">
           <h3 className="text-xl font-semibold">Today's Leads</h3>
-          <button
+          {/* <button
             className="p-2 rounded bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 relative group"
             onClick={() => exportToCSV(activeLeads, "ActiveLeads.csv")}
           >
@@ -236,7 +236,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
             <span className="absolute bottom-full mb-1 hidden group-hover:block text-xs bg-gray-800 text-white px-2 py-1 rounded">
               Export data to Excel
             </span>
-          </button>
+          </button> */}
         </div>
         <table className="w-full border-4 border-blue-300 rounded-xl overflow-hidden border-separate border-spacing-0">
           <thead className="bg-blue-100 border-b-4">
@@ -295,7 +295,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
         <div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xl font-semibold">Follow Up Leads</h3>
-            <button
+            {/* <button
               className="p-2 rounded bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 relative group"
               onClick={() => exportToCSV(followLeads, "FollowUpLeads.csv")}
             >
@@ -303,7 +303,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
               <span className="absolute bottom-full mb-1 hidden group-hover:block text-xs bg-gray-800 text-white px-2 py-1 rounded">
                 Export data to Excel
               </span>
-            </button>
+            </button> */}
           </div>
           <table className="w-full border-4 border-blue-300 rounded-xl overflow-hidden border-separate border-spacing-0">
             <thead className="bg-blue-100 border-b-4">
