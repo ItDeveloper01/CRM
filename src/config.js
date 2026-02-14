@@ -12,6 +12,7 @@
 const config = {
   apiUrl: 'http://192.168.1.141:5015/oltp',
   socketUrl: 'http://192.168.1.141:5015/appreciationHub',
+  notificationUrl: 'http://192.168.1.141:5015/notificationHub',
   olapUrl: 'http://192.168.1.141:5015/olap',
 };
 
