@@ -224,6 +224,7 @@ import {
 } from "@mui/material";
 import { useGetSessionUser } from "./SessionContext";
 import config from "./config";
+import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export default function LeadTransferModal({
   isOpen,
@@ -287,7 +288,7 @@ const fetchBranchesandDesignations = async () => {
           }
           );
 
-          console.log("API RESPONSE → fetchBranches and Designations", response.data);
+          console.log("API RESPONSE → fetchBranches and Designations.", response.data);
           setBranchesList(response.data.branches);
           setDesignationList(response.data.roles);
 
@@ -384,11 +385,13 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
                     "Content-Type": "application/json"
             }
           }
-          );
-
-          console.log("API RESPONSE → fTrasnfer LEad to selected user", response.data);
+        );
+          console.log("API RESPONSE → Lead  transferred to selected user completed. ", response.data);
           setBranchesList(response.data.branches);
           setDesignationList(response.data.roles);
+
+      
+
 
         }catch(error){
           console.error("Error transferring lead to selected user:", error);

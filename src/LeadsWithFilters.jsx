@@ -412,13 +412,17 @@ const handleTransfer = async (toUserId, leadId) => {
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
                 <td className="p-2">
-  <button
-    className="px-3 py-1 bg-blue-600 text-white rounded"
-    onClick={() => openTransferModal(lead)}
-  >
-    Transfer To
-  </button>
-</td>
+                                  <button
+                                    className={`px-3 py-1 rounded ${
+                                      lead.statusDescription?.trim().toLowerCase() === "lost"
+                                        ? 'bg-gray-400 cursor-not-allowed text-white'
+                                        : 'bg-blue-600 text-white'
+                                    }`}
+                                    onClick={() => openTransferModal(lead)}
+                                      disabled={lead.statusDescription?.trim().toLowerCase() === "lost"}>
+                                    Transfer To
+                                  </button>
+                </td>
                 <td className="p-2">
                   <button
                     className="text-blue-700 text-500 underline"
