@@ -145,6 +145,20 @@ export const STATUS_STYLES = {
   },
  
 };
+
+
+export const NOTIFICATION_COLORS = {
+  unreadBackground: "bg-blue-100",
+  unreadBorder: "border-blue-500",
+  readBackground: "bg-gray-50",
+  readText: "text-gray-500",
+  tickColor: "text-gray-400",
+  hover: "hover:bg-gray-100",
+  badgeBackground: "bg-red-500",
+  badgeText: "text-white"
+};
+
+
 // export const STATUS_STYLES = {
 //   Open: {
 //     border: "border-[#ecd57fff]",

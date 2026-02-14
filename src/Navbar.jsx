@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import logo from "./logo.svg";
-import { LogOut, Settings, User, Bell } from "lucide-react";
+import { LogOut, Settings, User, Bell, Check } from "lucide-react";
 import { useGetSessionUser } from "./SessionContext";
 import { ErrorMessages } from "./Constants";
 import { useNavigate } from "react-router-dom";
-import * as signalR from "@microsoft/signalr";
 import axios from "axios";
 import config from "./config";
+import { NOTIFICATION_COLORS } from "./Constants";
+import UpdateLeadsModal from "./UpdateLeadsModal";
+import { getEmptyLeadObj } from "./Model/LeadModel";
 
 export default function Navbar({ auth, setAuth }) {
 
@@ -14,6 +16,8 @@ export default function Navbar({ auth, setAuth }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+   const [modalOpen, setModalOpen] = useState(false);
+   const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
 
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
@@ -23,64 +27,119 @@ export default function Navbar({ auth, setAuth }) {
 
   const storedUser = localStorage.getItem("loggedInUser");
   const loggedInUser = storedUser ? JSON.parse(storedUser) : null;
-  const getNotificationURL=   config.apiUrl + '/Notification/GetNotifications';
+
+  const getNotificationURL = config.apiUrl + "/Notification/GetNotifications";
+  const getLeadsForEditAsPerNotificationAPI = config.apiUrl + "/TempLead/GetLeadsAsPerNotification";
 
   const initialLetter =
     loggedInUser?.user?.userId?.charAt(0).toUpperCase() || "G";
 
-  // 🔹 Load Notifications + Start SignalR
+  // 🔹 Load Notifications
   useEffect(() => {
-
-    debugger;
-
     if (!loggedInUser?.user?.userId) return;
-    console.log("############Loading notifications for user:", loggedInUser.user.userId);
-    
-    
     loadNotifications();
-
-   // csignalRHubConnection();
-
   }, []);
 
+  const loadNotifications = async () => {
+    try {
+      const res = await axios.get(getNotificationURL, {
+        params: { userId: loggedInUser?.user.userId },
+        headers: {
+          Authorization: `Bearer ${loggedInUser.token}`
+        }
+      });
 
- const csignalRHubConnection = () => {
-  const connection = new signalR.HubConnectionBuilder()
-  .withUrl(config.notificationUrl, {
-    accessTokenFactory: () => loggedInUser.token
-  })
-  .withAutomaticReconnect()
-  .build();
+      const data = res.data;
 
-connection.on("ReceiveNotification", (notification) => {
-  console.log("##########Received notification:", notification);
-  setNotifications(prev => [notification, ...prev]);
-  setUnreadCount(prev => prev + 1);
-});
+      if (Array.isArray(data)) {
+        setNotifications(data);
+        setUnreadCount(data.filter(x => !x.isRead).length);
+      } else {
+        setNotifications([]);
+      }
+    } catch (err) {
+      console.error("Error loading notifications", err);
+    }
+  };
 
-connection.start()
-  .then(() => console.log("########Connected to NotificationHub"))
-  .catch(err => console.error("#################SignalR Connection Error:", err));
+const leadDeatilsClicked = (notification) => {
+  if (notification.leadID) {
+    markAsRead(notification);
+    fetchLeadForEdit(notification);
+  }
+};
 
-    return () => {
-      connection.stop();
-    };
-  }; 
+  // 🔹 Mark Single Notification As Read
+  const markAsRead = async (notification) => {
 
-  // 🔹 Close dropdown if clicked outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        setOpen(false);
+    if (notification.isRead) return;
+
+    try {
+      await axios.post(
+        config.apiUrl + "/Notification/MarkAsRead",
+        null,
+        {
+          params: { notificationId: notification.notificationId },
+          headers: {
+            Authorization: `Bearer ${loggedInUser.token}`
+          }
+        }
+      );
+
+      setNotifications(prev =>
+        prev.map(n =>
+          n.notificationId === notification.notificationId
+            ? { ...n, isRead: true }
+            : n
+        )
+      );
+
+      setUnreadCount(prev => prev > 0 ? prev - 1 : 0);
+
+      // Optional: Navigate to Lead
+      if (notification.leadID) {
+
+        fetchLeadForEdit(notification);
+       // navigate(`/LeadDetails/${notification.leadID}`);
+       
       }
 
-      if (
-        notifRef.current &&
-        !notifRef.current.contains(event.target)
-      ) {
+    } catch (err) {
+      console.error("Error marking notification as read", err);
+    }
+  };
+
+ const fetchLeadForEdit = async (notification) => {
+  try {
+    // Sending entire notification object
+    const res = await axios.post(
+      getLeadsForEditAsPerNotificationAPI,
+      notification, // send entire object in body
+      {
+        headers: {
+          Authorization: `Bearer ${loggedInUser.token}`
+        }
+      }
+    );
+
+    const leadData = res.data;
+    setSelectedLead(leadData);
+    setModalOpen(true);
+    // Open modal with lead data
+    UpdateLeadsModal.open(notification.leadID, leadData);
+
+  } catch (err) {
+    console.error("Error fetching lead for edit", err);
+  }
+};
+
+  // 🔹 Close dropdowns on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
         setNotifOpen(false);
       }
     };
@@ -91,7 +150,6 @@ connection.start()
     };
   }, []);
 
-  // 🔹 Profile
   const handleProfile = () => {
     navigate("/ProfileDisplay", {
       state: { user: loggedInUser.user }
@@ -99,48 +157,10 @@ connection.start()
     setOpen(false);
   };
 
-
-const loadNotifications = async () => {
-      try {
-
-        debugger;
-        console.log("##########API URL:", getNotificationURL);
-        const res = await axios.get( getNotificationURL ,
-          {
-            params: { userId: loggedInUser?.user.userId },
-            headers: {
-              Authorization: `Bearer ${loggedInUser.token}`
-            }
-          }
-        );
-        debugger;
-
-        console.log("***********Loaded notifications:", res);
-       const data = res.data;
-
-        if (Array.isArray(data)) {
-          setNotifications(data);
-          setUnreadCount(data.filter(x => !x.isRead).length);
-        } else {
-          console.error("********************Notifications response is not an array:", data);
-          setNotifications([]);
-        }
-        //setUnreadCount(res.data.filter(x => !x.isRead).length);
-      } catch (err) {
-        console.error("********Error loading notifications", err);
-      }
-    };
-
-
-  // 🔹 Logout
   const handleLogout = async () => {
     try {
       logout();
-
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      });
+      await fetch("/api/logout", { method: "POST" });
     } catch (error) {
       console.error(ErrorMessages.LOGOUT_API_FAILED, error);
     }
@@ -153,47 +173,57 @@ const loadNotifications = async () => {
   return (
     <header className="h-16 bg-white shadow flex items-center justify-between px-4 relative">
 
-      {/* Logo */}
       <img src={logo} alt="Logo" className="h-10 w-auto" />
 
-      {/* Right Section */}
       <div className="flex items-center gap-6 relative">
 
-        {/* 🔔 Notification Bell */}
+        {/* 🔔 Notifications */}
         <div className="relative" ref={notifRef}>
           <div
             className="cursor-pointer relative"
-            onClick={() => {
-              setNotifOpen(!notifOpen);
-              setUnreadCount(0);
-            }}
+            onClick={() => setNotifOpen(!notifOpen)}
           >
             <Bell size={22} />
 
             {unreadCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
+              <span
+                className={`absolute -top-2 -right-2 text-xs px-1 rounded-full ${NOTIFICATION_COLORS.badgeBackground} ${NOTIFICATION_COLORS.badgeText}`}
+              >
                 {unreadCount}
               </span>
             )}
           </div>
 
           {notifOpen && (
-            <div className="absolute right-0 mt-3 w-72 bg-white border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+            <div className="absolute right-0 mt-3 w-80 bg-white border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+
               {notifications.length === 0 ? (
                 <div className="p-3 text-sm text-gray-500">
                   No notifications
                 </div>
               ) : (
-                notifications.map((n, index) => (
+                notifications.map((n) => (
                   <div
-                    key={index}
-                    className="p-3 border-b hover:bg-gray-100">
-                    <div className="font-semibold text-sm">
-                      {n.title}
+                    key={n.notificationId}
+                    onClick={() => leadDeatilsClicked(n)}
+                    className={`p-3 border-b cursor-pointer flex justify-between items-start transition-all duration-200
+                      ${!n.isRead
+                        ? `${NOTIFICATION_COLORS.unreadBackground} border-l-4 ${NOTIFICATION_COLORS.unreadBorder} font-medium`
+                        : `${NOTIFICATION_COLORS.readBackground} ${NOTIFICATION_COLORS.readText}`}
+                      ${NOTIFICATION_COLORS.hover}`}
+                  >
+                    <div>
+                      <div className="text-sm">
+                        {n.title}
+                      </div>
+                      <div className="text-xs">
+                        {n.message}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-600">
-                      {n.message}
-                    </div>
+
+                    {n.isRead && (
+                      <Check size={14} className={`${NOTIFICATION_COLORS.tickColor} mt-1`} />
+                    )}
                   </div>
                 ))
               )}
@@ -202,10 +232,7 @@ const loadNotifications = async () => {
         </div>
 
         {/* 👤 Avatar */}
-        <div
-          className="flex items-center gap-4 relative"
-          ref={dropdownRef}
-        >
+        <div className="flex items-center gap-4 relative" ref={dropdownRef}>
           <span className="font-medium hidden sm:block">
             {loggedInUser?.user?.userObj.firstName || "Guest"}
           </span>
@@ -232,10 +259,12 @@ const loadNotifications = async () => {
             )}
           </div>
 
-          {/* Dropdown */}
           {open && (
             <div className="absolute right-0 top-14 w-48 bg-white border rounded-lg shadow-lg z-50">
-              <button className='flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100'   onClick={handleProfile}             >
+              <button
+                className="flex items-center gap-2 w-full px-4 py-2 hover:bg-gray-100"
+                onClick={handleProfile}
+              >
                 <User size={18} /> Profile
               </button>
 
@@ -253,6 +282,16 @@ const loadNotifications = async () => {
           )}
         </div>
       </div>
+
+      <UpdateLeadsModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        lead={selectedLead}
+        // readOnly={readOnly}
+        mode={"Edit"}              // you can write {mode} alson at view place
+      />
     </header>
+
+    
   );
 }
