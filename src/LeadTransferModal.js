@@ -224,6 +224,7 @@ import {
 } from "@mui/material";
 import { useGetSessionUser } from "./SessionContext";
 import config from "./config";
+import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
 
 export default function LeadTransferModal({
   isOpen,
@@ -364,17 +365,41 @@ export default function LeadTransferModal({
 
 
   const trasnferLedToSelectedUser = async () => {
-    // Simulate API calls to fetch branches and designations
-    try {
-      debugger;
+  // Simulate API calls to fetch branches and designations
+  try
+{
+  debugger;
 
-      console.log("API CALL → fTrasnfer LEad to selected user");
+  console.log("API CALL → fTrasnfer LEad to selected user");
+  
+const transferPayload = {
+  SelectedLead: selectedLeadObject,
+  NewAssignedUserId: selectedUser?.userId || null,
+  ReasonForTransfer: reason,
+  RequestedBy_UserID: sessionUser.user.id
+};
 
-      const transferPayload = {
-        SelectedLead: selectedLeadObject,
-        NewAssignedUserId: selectedUser?.userId || null,
-        ReasonForTransfer: reason,
-        RequestedBy_UserID: sessionUser.user.id
+console.log("Payload for transferring lead to selected user:", transferPayload);
+
+  const response = await axios.post(trasnferLeadApiUrl,
+          transferPayload,
+          {
+            headers: {
+              Authorization: `Bearer ${sessionUser.token}`,
+                    "Content-Type": "application/json"
+            }
+          }
+        );
+          console.log("API RESPONSE → Lead  transferred to selected user completed. ", response.data);
+          setBranchesList(response.data.branches);
+          setDesignationList(response.data.roles);
+
+      
+
+
+        }catch(error){
+          console.error("Error transferring lead to selected user:", error);
+        }
       };
 
       console.log("Payload for transferring lead to selected user:", transferPayload);
