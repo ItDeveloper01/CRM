@@ -16,7 +16,7 @@
 //   Alert,
 //   Snackbar,
 //   Autocomplete,
-//   IconButton
+//   IconButton 
 // } from "@mui/material";
 
 // export default function LeadTransferModal() {
@@ -239,7 +239,7 @@ export default function LeadTransferModal({
   const [selectedUser, setSelectedUser] = useState(null);
   const [reason, setReason] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedLeadObject, setSelectedLeadObject ] = useState(null);
+  const [selectedLeadObject, setSelectedLeadObject] = useState(null);
   const [branchesList, setBranchesList] = useState([]);
   const [designationList, setDesignationList] = useState([]);
   const [userList, setUserList] = useState([]);
@@ -270,85 +270,89 @@ export default function LeadTransferModal({
 
   const isSubmitDisabled = !selectedBranch || !selectedDesignation || !selectedUser;
 
-const fetchBranchesandDesignations = async () => {
-  // Simulate API calls to fetch branches and designations
-  try
-{
+  const fetchBranchesandDesignations = async () => {
+    // Simulate API calls to fetch branches and designations
+    try {
 
-  console.log("API CALL → fetchBranches and Designations");
+      console.log("API CALL → fetchBranches and Designations");
 
-  const response = await axios.post(fetchBranchDesignationApiURl,
-          {
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${sessionUser.token}`,
-                    "Content-Type": "application/json"
-            }
+      const response = await axios.post(fetchBranchDesignationApiURl,
+        {
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+            "Content-Type": "application/json"
           }
-          );
-
-          console.log("API RESPONSE → fetchBranches and Designations.", response.data);
-          setBranchesList(response.data.branches);
-          setDesignationList(response.data.roles);
-
-        }catch(error){
-          console.error("Error fetching branches and designations:", error);
         }
+      );
+
+      console.log("API RESPONSE → fetchBranches and Designations", response.data);
+      // setBranchesList(response.data.branches);
+      // setDesignationList(response.data.roles);
+      setBranchesList(response.data?.branches || []);
+      setDesignationList(response.data?.roles || []);
+
+      console.log("branch list", response.data.branches);
+
+
+    } catch (error) {
+      console.error("Error fetching branches and designations:", error);
+    }
+  };
+
+
+  const selectedBranchChanged = (e) => {
+    const value = e.target.value;
+    setSelectedBranch(value);
+    setSelectedUser(null);
+  }
+
+  const selectedDesignationChanged = (e) => {
+    const value = e.target.value;
+    setSelectedDesignation(value);
+    setSelectedUser(null);
+  }
+
+  const fetchUsersList = async (branchValue, designationValue) => {
+    try {
+      debugger;
+      const payload = {
+        branchId: selectedBranch,
+        roleId: selectedDesignation,
+        userId: sessionUser.user.Id,
+        verticleName: selectedLeadObject?.categoryName || null
       };
-
-
-      const selectedBranchChanged = (e) => {
-        const value = e.target.value;
-        setSelectedBranch(value);
-        setSelectedUser(null);
-      }
-
-      const selectedDesignationChanged = (e) => {
-        const value = e.target.value;
-        setSelectedDesignation(value);
-        setSelectedUser(null);
-      }
-
-const fetchUsersList = async (branchValue, designationValue) => {
-  try {
-    debugger;
-    const payload = {
-  branchId: selectedBranch,
-  roleId: selectedDesignation,
-  userId: sessionUser.user.Id,
-  verticleName: selectedLeadObject?.categoryName || null
-};
-    console.log("API CALL → fetchUsersList", branchValue, designationValue);
-    const response = await axios.post(config.apiUrl + "/Reporting/GetUsersForLeadTransfer",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`,
-          "Content-Type": "application/json"
+      console.log("API CALL → fetchUsersList", branchValue, designationValue);
+      const response = await axios.post(config.apiUrl + "/Reporting/GetUsersForLeadTransfer",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+            "Content-Type": "application/json"
+          }
         }
-      }
-    );  
-    console.log("API RESPONSE → fetchUsersList", response.data);
-    setUserList(response.data);
-  } catch (error) {
-    console.error("Error fetching users list:", error);
-  }
-};
+      );
+      console.log("API RESPONSE → fetchUsersList", response.data);
+      setUserList(response.data);
+    } catch (error) {
+      console.error("Error fetching users list:", error);
+    }
+  };
 
-useEffect(() => {
-  if (selectedBranch && selectedDesignation) {
-    fetchUsersList(selectedBranch, selectedDesignation);
-  } else {
-    setUserList([]);
-  }
-}, [selectedBranch, selectedDesignation]);
+  useEffect(() => {
+    if (selectedBranch && selectedDesignation) {
+      fetchUsersList(selectedBranch, selectedDesignation);
+    } else {
+      setUserList([]);
+    }
+  }, [selectedBranch, selectedDesignation]);
 
 
   const handleSubmit = async () => {
     await onTransfer({
       SelectedLead: selectedLeadObject,
-      NewAssignedUserID:selectedUser?.userId || null,
+      NewAssignedUserID: selectedUser?.userId || null,
       ReasonForTransfer: reason,
       RequestedBy_UserID: sessionUser.user.Id
     });
@@ -398,6 +402,27 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
         }
       };
 
+      console.log("Payload for transferring lead to selected user:", transferPayload);
+
+      const response = await axios.post(trasnferLeadApiUrl,
+        transferPayload,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      console.log("API RESPONSE → fTrasnfer LEad to selected user", response.data);
+      setBranchesList(response.data.branches);
+      setDesignationList(response.data.roles);
+
+    } catch (error) {
+      console.error("Error transferring lead to selected user:", error);
+    }
+  };
+
   return (
     <>
       <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="md">
@@ -444,10 +469,14 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
                 fullWidth
                 size="small"
                 label="Branch"
-                value={selectedBranch.id}
+                // value={selectedBranch.id}
+                value={selectedBranch || ""}
                 onChange={selectedBranchChanged}
               >
-                {branchesList.map((b) => (
+                <MenuItem value="">
+                  <em>Select Branch</em>
+                </MenuItem>
+                {branchesList?.map((b) => (
                   <MenuItem key={b.id} value={b.id}>
                     {b.branchName}
                   </MenuItem>
@@ -465,7 +494,7 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
                 value={selectedDesignation}
                 onChange={selectedDesignationChanged}
               >
-                {designationList.map((d) => (
+                {designationList?.map((d) => (
                   <MenuItem key={d.id} value={d.id}>
                     {d.roleName}
                   </MenuItem>
@@ -490,23 +519,23 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
               />
             </Grid> */}
             <Grid item xs={12}>
-  <Autocomplete
-    loading={loadingUsers}
-    disabled={!selectedBranch || !selectedDesignation}
-    options={userList}
-    getOptionLabel={(option) => `${option.firstName} ${option.lastName}`} // display full name
-    value={selectedUser}
-    onChange={(e, val) => setSelectedUser(val)}
-    isOptionEqualToValue={(option, value) => option.userId === value.userId} // important for selection
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Assign To User"
-        size="small"
-      />
-    )}
-  />
-</Grid>
+              <Autocomplete
+                loading={loadingUsers}
+                disabled={!selectedBranch || !selectedDesignation}
+                options={userList}
+                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`} // display full name
+                value={selectedUser}
+                onChange={(e, val) => setSelectedUser(val)}
+                isOptionEqualToValue={(option, value) => option.userId === value.userId} // important for selection
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Assign To User"
+                    size="small"
+                  />
+                )}
+              />
+            </Grid>
 
             <Grid item xs={12}>
               <TextField

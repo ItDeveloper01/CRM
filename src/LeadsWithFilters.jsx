@@ -308,6 +308,8 @@ const handleTransfer = async (toUserId, leadId) => {
     });
   }, [allLeads, filters, nameSearch]);
 
+  console.log("Filtered leads:", filteredLeads);
+
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
