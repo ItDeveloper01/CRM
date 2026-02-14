@@ -402,26 +402,6 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
         }
       };
 
-      console.log("Payload for transferring lead to selected user:", transferPayload);
-
-      const response = await axios.post(trasnferLeadApiUrl,
-        transferPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${sessionUser.token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      console.log("API RESPONSE → fTrasnfer LEad to selected user", response.data);
-      setBranchesList(response.data.branches);
-      setDesignationList(response.data.roles);
-
-    } catch (error) {
-      console.error("Error transferring lead to selected user:", error);
-    }
-  };
 
   return (
     <>
