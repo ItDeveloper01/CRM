@@ -18,6 +18,7 @@ export default function Navbar({ auth, setAuth }) {
   const [unreadCount, setUnreadCount] = useState(0);
    const [modalOpen, setModalOpen] = useState(false);
    const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+   const [viewMode, setViewMode] = useState("view"); // "view" or "edit"
 
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
@@ -65,7 +66,18 @@ export default function Navbar({ auth, setAuth }) {
 const leadDeatilsClicked = (notification) => {
   if (notification.leadID) {
     markAsRead(notification);
-    fetchLeadForEdit(notification);
+    
+    switch(notification.notificationType) {
+    
+      case "LeadTransfer":
+    
+      fetchLeadForEdit(notification);
+    
+      break;
+    
+      default:
+        //navigate(`/LeadDetails/${notification.leadID}`);
+    }
   }
 };
 
@@ -124,9 +136,19 @@ const leadDeatilsClicked = (notification) => {
 
     const leadData = res.data;
     setSelectedLead(leadData);
+
+     console.log("Lead data fetched for edit:", leadData);
+
+     if(leadData.categoryStatus==1)
+      setViewMode("edit");
+    else
+      setViewMode("view");
+             
     setModalOpen(true);
+
+    console.log("View mode set to:", viewMode);
     // Open modal with lead data
-    UpdateLeadsModal.open(notification.leadID, leadData);
+    //UpdateLeadsModal.open(notification.leadID, leadData);
 
   } catch (err) {
     console.error("Error fetching lead for edit", err);
@@ -288,7 +310,7 @@ const leadDeatilsClicked = (notification) => {
         onClose={() => setModalOpen(false)}
         lead={selectedLead}
         // readOnly={readOnly}
-        mode={"Edit"}              // you can write {mode} alson at view place
+        mode={viewMode}              // you can write {mode} alson at view place
       />
     </header>
 
