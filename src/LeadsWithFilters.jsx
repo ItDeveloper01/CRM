@@ -116,13 +116,17 @@ const handleTransfer = async (toUserId, leadId) => {
         ...(u.postponedLeads || [])
       ];
 
+
+
       // Map them with assignedTo and ensure status
       return combinedLeads.map((lead) => ({
         ...lead,
         assignedTo: u.firstName,
+        
         // status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
         // status: lead?.histories?.[0]?.statusDescription || "Unknown",
         status: lead?.histories?.length > 0 ? lead.histories[0].statusDescription : lead.statusDescription,
+        leadAssignedTo:u.userID, // to get the assignedTo from histories if available, else fallback to lead.assignedTo
       }));
     });
   }, [users]);
