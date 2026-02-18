@@ -321,8 +321,11 @@ export default function LeadTransferModal({
         branchId: selectedBranch,
         roleId: selectedDesignation,
         userId: sessionUser.user.Id,
-        verticleName: selectedLeadObject?.categoryName || null
+        verticleName: selectedLeadObject?.categoryName || null,
+        currentLeadOwnerUserId: selectedLeadObject?.leadAssignedTo || null
       };
+
+      debugger;
       console.log("API CALL → fetchUsersList", branchValue, designationValue);
       const response = await axios.post(config.apiUrl + "/Reporting/GetUsersForLeadTransfer",
         payload,
