@@ -1234,8 +1234,8 @@ console.log("mode value ", mode);
             <div className='flex flex-col flex-1'>
               <label className='label-style'>First Name<span className="text-red-500 text-lg leading-none"> *</span></label>
               {isViewMode ? (
-    <ViewField value={leadObj.fName} />
-  ) : (
+              <ViewField value={leadObj.fName} />
+               ) : (
               <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
                  )}

@@ -79,6 +79,8 @@ export const validateBeforeSubmit = (value = "", fieldLabel = "Name") => {
         return "Please select a title";
       } if (fieldLabel === "Gender") {
         return "Please select a Gender";
+      }if(fieldLabel){
+        return `Please select a ${fieldLabel}`;
       }
       return `${fieldLabel} is required`;
     }
