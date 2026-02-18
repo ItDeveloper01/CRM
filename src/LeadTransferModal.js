@@ -268,7 +268,7 @@ export default function LeadTransferModal({
     }
   }, [isOpen]);
 
-  const isSubmitDisabled = !selectedBranch || !selectedDesignation || !selectedUser;
+  const isSubmitDisabled = !selectedBranch || !selectedDesignation || !selectedUser || !reason;
 
   const fetchBranchesandDesignations = async () => {
     // Simulate API calls to fetch branches and designations
@@ -526,6 +526,7 @@ console.log("Payload for transferring lead to selected user:", transferPayload);
                 multiline
                 minRows={3}
                 fullWidth
+                disabled={!selectedBranch || !selectedDesignation || !selectedUser}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
               />
