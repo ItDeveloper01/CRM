@@ -10,7 +10,15 @@ import { useMessageBox } from "./Notification";
 import { validateFromDate } from "./validations";
 import { ViewField, ViewSelect, DateViewField } from "./ConstantComponent/ViewComponents";
 import { getLabelById } from "./utils/selectUtils";
-
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
+  OutlinedInput
+} from "@mui/material";
 
 
 
@@ -422,47 +430,92 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 )}
             </div>
 
-            <div>
-                {/* Special Requirements Dropdown */}
-                <label className="label-style">Special Requirements</label>
-                {/* {isViewMode ? (
-                    <ViewField value={selectedSpecialRequirement} />
-                ) : ( */}
-                {isViewMode ? (
-                    <ViewSelect value={getLabelById(
-                        specialRequirement,
-                        carLeaddObj.specialRequirement,
-                        "id",
-                        "specialRequirements"
-                    )}/>
-                ) : (
-                    <select name="specialRequirement" value={carLeaddObj.specialRequirement || ""}
-                        // onChange={(e) =>
-                        //     setCarLeadObj((prev) => ({
-                        //         ...prev,
-                        //         [e.target.name]: e.target.value === "" ? null : e.target.value,
-                        //     }))
-                        // }
+        {/* <div>
+    <label className="label-style">Special Requirements</label>
 
-                        onChange={(e) => {
-                            const value = e.target.value === "" ? null : Number(e.target.value);
-                            setCarLeadObj((prev) => ({
-                                ...prev,
-                                [e.target.name]: value,
-                            }));
-                        }}
+    {isViewMode ? (
+        <div className="view-field">
+            {specialRequirement
+                .filter(sr => carLeaddObj.specialRequirement?.includes(sr.id))
+                .map(sr => sr.specialRequirements)
+                .join(", ") || "-"}
+        </div>
+    ) : (
+        <select
+            name="specialRequirement"
+            multiple
+            value={carLeaddObj.specialRequirement || []}
+            onChange={(e) => {
+                const values = Array.from(
+                    e.target.selectedOptions,
+                    option => Number(option.value)
+                );
 
-                        className='border-highlight'>
-                        <option value="">Select Requirement</option>
-                        {specialRequirement.map((specialReq) => (
-                            <option key={specialReq.id} value={(specialReq.id)}>
-                                {specialReq.specialRequirements}
-                            </option>
-                        ))}
-                    </select>
-                 )} 
-            </div>
+                setCarLeadObj(prev => ({
+                    ...prev,
+                    specialRequirement: values
+                }));
+            }}
+            className="border-highlight multi-select-box"
+        >
+            {specialRequirement.map((item) => (
+                <option key={item.id} value={item.id}>
+                    {item.specialRequirements}
+                </option>
+            ))}
+        </select>
+    )}
+</div> */}
+ <div>
+  <label className="label-style">Special Requirements</label>
 
+  {isViewMode ? (
+    <div className="view-field">
+      {specialRequirement
+        .filter(sr => carLeaddObj.specialRequirement?.includes(sr.id))
+        .map(sr => sr.specialRequirements)
+        .join(", ") || "-"}
+    </div>
+  ) : (
+   <FormControl fullWidth size="small">
+  <Select
+    multiple
+    displayEmpty
+    className="border-highlight"
+    value={carLeaddObj.specialRequirement || []}
+    onChange={(e) => {
+      const value = e.target.value;
+      setCarLeadObj(prev => ({
+        ...prev,
+        // ensure selected IDs are numbers
+        specialRequirement: Array.isArray(value) ? value.map(v => Number(v)) : []
+      }));
+    }}
+    renderValue={(selected) => {
+      if (!selected || selected.length === 0) {
+        return <span style={{ color: "#999" }}>Select Requirement</span>;
+      }
+      return specialRequirement
+        .filter(sr => selected.includes(sr.id))
+        .map(sr => sr.specialRequirements) // plural property
+        .join(", ");
+    }}
+    MenuProps={{
+      PaperProps: {
+        style: { maxHeight: 200 }
+      }
+    }}
+  >
+    {specialRequirement.map(item => (
+      <MenuItem key={item.id} value={item.id}>
+        <Checkbox checked={carLeaddObj.specialRequirement?.includes(item.id) || false} />
+        <ListItemText primary={item.specialRequirements} />
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
+  )}
+</div>
 
             <div>
                 {/* Quote Given */}
