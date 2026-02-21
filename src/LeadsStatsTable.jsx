@@ -1,385 +1,318 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "./components/ui/card";
-import { Button } from "./components/ui/button";
-import { Printer } from "lucide-react";
-
-const LeadStatusColors = {
-  Open: "text-yellow-600",
-  Confirmed: "text-green-600",
-  Lost: "text-red-600",
-  Postponed: "text-purple-600",
-};
 
 export default function LeadStatsTable({ leads }) {
-  const printRef = useRef();
+  const fullPrintRef = useRef(null);
+  const travelPrintRef = useRef(null);
+  const userPrintRef = useRef(null);
 
-//   const { userRows, travelCategoryRows, travelTotals } = useMemo(() => {
-//     const travelMap = {};
-//     const userRows = [];
+  const [selectedUsers, setSelectedUsers] = useState([]);
 
-//     leads.forEach((u) => {
-//       const open = u.openLeads?.length || 0;
-//       const confirmed = u.confirmedLeads?.length || 0;
-//       const lost = u.lostLeads?.length || 0;
-//       const postponed = u.postponedLeads?.length || 0;
-//       const created = u.createdLeads?.length || 0;
-     
-//       debugger;
+  /* ---------------- GET ALL USER NAMES ---------------- */
+  const allUsers = useMemo(() => {
+    return leads.map((u) => `${u.firstName} ${u.lastName}`);
+  }, [leads]);
 
-//       userRows.push({
-//         user: `${u.firstName} ${u.lastName}`,
-//         open,
-//         confirmed,
-//         lost,
-//         postponed,
-//         created,
-//         // total: open + confirmed + lost + postponed 
-//       });
+  /* ---------------- PRINT FUNCTION ---------------- */
+  const handlePrint = (ref) => {
+    const printContents = ref.current.innerHTML;
+    const printWindow = window.open("", "", "width=1200,height=800");
 
-//       const allLeads = [
-//         ...(u.openLeads || []),
-//         ...(u.confirmedLeads || []),
-//         ...(u.lostLeads || []),
-//         ...(u.postponedLeads || []),
-//       ];
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            body { font-family: Arial; padding:20px; }
+            table { width:100%; border-collapse: collapse; }
+            th, td { border:1px solid #ccc; padding:6px; text-align:center; }
+            th { background:#f3f4f6; }
+          </style>
+        </head>
+        <body>${printContents}</body>
+      </html>
+    `);
 
-//      allLeads.forEach((lead) => {
-//       debugger;
-//   const cat = lead.categoryName || "Orphan";
-//   // const cat = lead.categoryName && lead.categoryName.trim() !== "" 
-//   //   ? lead.categoryName 
-//   //   : "Uncategorized";
-
-//   if (!travelMap[cat]) {
-//     travelMap[cat] = { open: 0, confirmed: 0, lost: 0, postponed: 0, orphan: 0,created:0, total: 0 };
-//   }
-
-//  // travelMap[cat].created++;
-//   // If no histories → orphan lead
-//   if (!lead.histories || lead.histories.length === 0) {
-//     travelMap[cat].orphan++;
-//     const status = lead.statusDescription?.toString().toLowerCase() || "";
-//     if (status === "0" || status === "open") travelMap[cat].open++;
-//     else if (status === "1" || status === "confirmed") travelMap[cat].confirmed++;
-//     else if (status === "2" || status === "lost") travelMap[cat].lost++;
-//     else if (status === "3" || status === "postponed") travelMap[cat].postponed++;
-    
-//   } else {
-//     const status = lead.histories[0].statusDescription?.toString().toLowerCase() || "";
-  
-//     if (status === "0" || status === "open") travelMap[cat].open++;
-//     else if (status === "1" || status === "confirmed") travelMap[cat].confirmed++;
-//     else if (status === "2" || status === "lost") travelMap[cat].lost++;
-//     else if (status === "3" || status === "postponed") travelMap[cat].postponed++;
-//   }
-
-//   travelMap[cat].total =
-//     travelMap[cat].open +
-//     travelMap[cat].confirmed +
-//     travelMap[cat].lost +
-//     travelMap[cat].postponed ;
-   
-
-//     // +travelMap[cat].orphan;
-// });
-//     });
-
-//     const travelCategoryRows = Object.keys(travelMap).map((cat) => ({
-//   category: cat,
-//   ...travelMap[cat],
-// }));
-
-//    const travelTotals = {
-    
-//   category: "TOTAL",
-//   open: travelCategoryRows.reduce((sum, r) => sum + r.open, 0),
-//   confirmed: travelCategoryRows.reduce((sum, r) => sum + r.confirmed, 0),
-//   lost: travelCategoryRows.reduce((sum, r) => sum + r.lost, 0),
-//   postponed: travelCategoryRows.reduce((sum, r) => sum + r.postponed, 0),
-//   orphan: travelCategoryRows.reduce((sum, r) => sum + r.orphan, 0),
-//   created: travelCategoryRows.reduce((sum, r) => sum + r.created, 0),
-//   total: travelCategoryRows.reduce((sum, r) => sum + r.total, 0),
-// };
-
-//     console.log("User Rows:", userRows);
-//     console.log("Travel Category Rows:", travelCategoryRows);
-//     console.log("Travel Totals:", travelTotals);
-
-//     return { userRows, travelCategoryRows, travelTotals };
-//   }, [leads]);
-
-const {
-  userRows,
-  userTotals,
-  travelCategoryRows,
-  travelTotals
-} = useMemo(() => {
-  const travelMap = {};
-  const userRows = [];
-
-  leads.forEach((u) => {
-    // ---------- USER LEVEL COUNTS ----------
-    const open = u.openLeads?.length || 0;
-    const confirmed = u.confirmedLeads?.length || 0;
-    const lost = u.lostLeads?.length || 0;
-    const postponed = u.postponedLeads?.length || 0;
-    const created = u.createdLeads?.length || 0;
-
-    userRows.push({
-      user: `${u.firstName} ${u.lastName}`,
-      open,
-      confirmed,
-      lost,
-      postponed,
-      created,
-    });
-
-    // ---------- STATUS LEADS ----------
-    const allLeads = [
-      ...(u.openLeads || []),
-      ...(u.confirmedLeads || []),
-      ...(u.lostLeads || []),
-      ...(u.postponedLeads || []),
-    ];
-
-    allLeads.forEach((lead) => {
-      const cat =
-        lead.categoryName?.trim().toLowerCase() || "uncategorized";
-
-      if (!travelMap[cat]) {
-        travelMap[cat] = {
-          open: 0,
-          confirmed: 0,
-          lost: 0,
-          postponed: 0,
-          orphan: 0,
-          created: 0,
-          total: 0,
-        };
-      }
-
-      if (!lead.histories || lead.histories.length === 0) {
-        travelMap[cat].orphan++;
-      }
-
-      const status =
-        lead.histories?.[0]?.statusDescription ??
-        lead.statusDescription;
-
-      const normalizedStatus = status?.toString().toLowerCase() || "";
-
-      if (normalizedStatus === "0" || normalizedStatus === "open")
-        travelMap[cat].open++;
-      else if (normalizedStatus === "1" || normalizedStatus === "confirmed")
-        travelMap[cat].confirmed++;
-      else if (normalizedStatus === "2" || normalizedStatus === "lost")
-        travelMap[cat].lost++;
-      else if (normalizedStatus === "3" || normalizedStatus === "postponed")
-        travelMap[cat].postponed++;
-
-      travelMap[cat].total =
-        travelMap[cat].open +
-        travelMap[cat].confirmed +
-        travelMap[cat].lost +
-        travelMap[cat].postponed;
-    });
-
-    // ---------- CREATED LEADS ----------
-    (u.createdLeads || []).forEach((lead) => {
-      const cat =
-        lead.categoryName?.trim().toLowerCase() || "uncategorized";
-
-      if (!travelMap[cat]) {
-        travelMap[cat] = {
-          open: 0,
-          confirmed: 0,
-          lost: 0,
-          postponed: 0,
-          orphan: 0,
-          created: 0,
-          total: 0,
-        };
-      }
-
-      travelMap[cat].created++;
-    });
-  });
-
-  // ---------- CATEGORY ROWS ----------
-  const travelCategoryRows = Object.keys(travelMap).map((cat) => ({
-    category: cat.charAt(0).toUpperCase() + cat.slice(1),
-    ...travelMap[cat],
-  }));
-
-  // ---------- CATEGORY TOTAL ----------
-  const travelTotals = {
-    category: "TOTAL",
-    open: travelCategoryRows.reduce((s, r) => s + r.open, 0),
-    confirmed: travelCategoryRows.reduce((s, r) => s + r.confirmed, 0),
-    lost: travelCategoryRows.reduce((s, r) => s + r.lost, 0),
-    postponed: travelCategoryRows.reduce((s, r) => s + r.postponed, 0),
-    orphan: travelCategoryRows.reduce((s, r) => s + r.orphan, 0),
-    created: travelCategoryRows.reduce((s, r) => s + r.created, 0),
-    total: travelCategoryRows.reduce((s, r) => s + r.total, 0),
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   };
 
-  // ---------- USER TOTAL ----------
-  const userTotals = {
-    user: "TOTAL",
-    open: userRows.reduce((s, r) => s + r.open, 0),
-    confirmed: userRows.reduce((s, r) => s + r.confirmed, 0),
-    lost: userRows.reduce((s, r) => s + r.lost, 0),
-    postponed: userRows.reduce((s, r) => s + r.postponed, 0),
-    created: userRows.reduce((s, r) => s + r.created, 0),
-  };
-
-  return {
+  /* ---------------- DATA CALCULATION ---------------- */
+  const {
     userRows,
     userTotals,
     travelCategoryRows,
-    travelTotals,
+    travelTotals
+  } = useMemo(() => {
+    const travelMap = {};
+    const allUserRows = [];
+
+    leads.forEach((u) => {
+      const open = u.openLeads?.length || 0;
+      const confirmed = u.confirmedLeads?.length || 0;
+      const lost = u.lostLeads?.length || 0;
+      const postponed = u.postponedLeads?.length || 0;
+      const created = u.createdLeads?.length || 0;
+
+      const fullName = `${u.firstName} ${u.lastName}`;
+
+      allUserRows.push({
+        user: fullName,
+        open,
+        confirmed,
+        lost,
+        postponed,
+        created,
+      });
+
+      const allLeads = [
+        ...(u.openLeads || []),
+        ...(u.confirmedLeads || []),
+        ...(u.lostLeads || []),
+        ...(u.postponedLeads || []),
+      ];
+
+      allLeads.forEach((lead) => {
+        const cat = lead.categoryName?.trim().toLowerCase() || "uncategorized";
+
+        if (!travelMap[cat]) {
+          travelMap[cat] = { open: 0, confirmed: 0, lost: 0, postponed: 0, created: 0 };
+        }
+
+        const status =
+          lead.histories?.[0]?.statusDescription ?? lead.statusDescription;
+
+        const normalizedStatus = status?.toString().toLowerCase() || "";
+
+        if (normalizedStatus === "0" || normalizedStatus === "open")
+          travelMap[cat].open++;
+        else if (normalizedStatus === "1" || normalizedStatus === "confirmed")
+          travelMap[cat].confirmed++;
+        else if (normalizedStatus === "2" || normalizedStatus === "lost")
+          travelMap[cat].lost++;
+        else if (normalizedStatus === "3" || normalizedStatus === "postponed")
+          travelMap[cat].postponed++;
+      });
+
+      (u.createdLeads || []).forEach((lead) => {
+        const cat = lead.categoryName?.trim().toLowerCase() || "uncategorized";
+
+        if (!travelMap[cat]) {
+          travelMap[cat] = { open: 0, confirmed: 0, lost: 0, postponed: 0, created: 0 };
+        }
+
+        travelMap[cat].created++;
+      });
+    });
+
+    const filteredUserRows =
+      selectedUsers.length === 0
+        ? allUserRows
+        : allUserRows.filter((u) => selectedUsers.includes(u.user));
+
+    const userTotals = {
+      open: filteredUserRows.reduce((s, r) => s + r.open, 0),
+      confirmed: filteredUserRows.reduce((s, r) => s + r.confirmed, 0),
+      lost: filteredUserRows.reduce((s, r) => s + r.lost, 0),
+      postponed: filteredUserRows.reduce((s, r) => s + r.postponed, 0),
+      created: filteredUserRows.reduce((s, r) => s + r.created, 0),
+    };
+
+    const travelCategoryRows = Object.keys(travelMap).map((cat) => ({
+      category: cat.charAt(0).toUpperCase() + cat.slice(1),
+      ...travelMap[cat],
+    }));
+
+    const travelTotals = {
+      open: travelCategoryRows.reduce((s, r) => s + r.open, 0),
+      confirmed: travelCategoryRows.reduce((s, r) => s + r.confirmed, 0),
+      lost: travelCategoryRows.reduce((s, r) => s + r.lost, 0),
+      postponed: travelCategoryRows.reduce((s, r) => s + r.postponed, 0),
+      created: travelCategoryRows.reduce((s, r) => s + r.created, 0),
+    };
+
+    return { userRows: filteredUserRows, userTotals, travelCategoryRows, travelTotals };
+  }, [leads, selectedUsers]);
+
+  const toggleUser = (user) => {
+    setSelectedUsers((prev) =>
+      prev.includes(user)
+        ? prev.filter((u) => u !== user)
+        : [...prev, user]
+    );
   };
-}, [leads]);
 
-
-
-  const printSection = (ref) => {
-    const content = ref.current;
-    const pri = window.open("", "PRINT", "height=800,width=1000");
-    pri.document.write("<html><head><title>Print</title></head><body>");
-    pri.document.write(content.innerHTML);
-    pri.document.write("</body></html>");
-    pri.document.close();
-    pri.focus();
-    pri.print();
+  const toggleAll = () => {
+    if (selectedUsers.length === allUsers.length) {
+      setSelectedUsers([]);
+    } else {
+      setSelectedUsers(allUsers);
+    }
   };
-
-  const SectionCard = ({ title, children }) => (
-    <Card className="shadow-md border rounded-xl p-3">      
-      <CardHeader className="flex justify-between items-center">
-        <CardTitle className="text-lg font-bold">{title}</CardTitle>
-        <Button
-          size="sm"
-          variant="outline"
-          className="p-2"
-          onClick={() => printSection({ current: { innerHTML: children.props.printBody } })}
-        >
-          <Printer className="w-4 h-4 text-blue-600" />
-        </Button>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
 
   return (
-    <div className="space-y-8 p-4" ref={printRef}>
-      <div className="flex justify-end items-center">
-        <Button
-          size="sm"
-          onClick={() => printSection(printRef)}
-          className="flex items-center gap-1"
+    <div className="space-y-8 p-4" ref={fullPrintRef}>
+
+      {/* PRINT ENTIRE */}
+      <div className="flex justify-end">
+        <button
+          onClick={() => handlePrint(fullPrintRef)}
+          className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
         >
-          <Printer className="w-4 h-4" /> Full Page
-        </Button>
+          🖨
+        </button>
       </div>
 
-      {/* Travel Category + Overall Status */}
-      <SectionCard title="Travel Category & Overall Status Summary">
-        <div printBody="">
-          {/* <table className="min-w-full border rounded-lg text-sm"> */}
-          {/* <table className="min-w-full table-auto border border-gray-300 border-collapse text-sm"> */}
-          <table className="w-full min-w-full table-auto border border-gray-300 border-collapse text-sm">
+      {/* ---------------- TRAVEL CATEGORY ---------------- */}
+      <Card className="rounded-xl shadow-md p-4" ref={travelPrintRef}>
+        <div className="flex justify-between items-center mb-4">
+          <CardTitle className="text-lg font-bold">
+            Travel Category & Overall Status Summary
+          </CardTitle>
+          <button
+            onClick={() => handlePrint(travelPrintRef)}
+            className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
+          >
+            🖨
+          </button>
+        </div>
 
-            <thead>
-              <tr className="bg-gray-100 text-center">
-                <th className="p-2 border border-gray-300 w-[10%]">Sr.No.</th>
-                <th className="p-2 border border-gray-300 w-[30%]">Category</th>
-                <th className="p-2 border border-gray-300">Open</th>
-                <th className="p-2 border border-gray-300">Confirmed</th>
-                <th className="p-2 border border-gray-300">Lost</th>
-                <th className="p-2 border border-gray-300">Postponed</th>
-                <th className="p-2 border border-gray-300">Created</th>
-                {/* <th className="p-2 border border-gray-300">Total</th> */}
+        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded">
+          <table className="w-full text-sm border-collapse">
+            <thead className="sticky top-0 bg-gray-100">
+              <tr>
+                <th className="border p-2">Sr.No</th>
+                <th className="border p-2">Category</th>
+                <th className="border p-2">Open</th>
+                <th className="border p-2">Confirmed</th>
+                <th className="border p-2">Lost</th>
+                <th className="border p-2">Postponed</th>
+                <th className="border p-2">Created</th>
               </tr>
             </thead>
             <tbody>
               {travelCategoryRows.map((r, i) => (
-                <tr key={i} className="text-center border border-gray-300">
-                  <td className="p-2 border border-gray-300">{i + 1}</td>  
-                  <td className="p-2 ps-4 font-medium text-left border border-gray-300">{r.category}</td>
-                  <td className="p-2 border border-gray-300">{r.open}</td>
-                  <td className="p-2 border border-gray-300">{r.confirmed}</td>
-                  <td className="p-2 border border-gray-300">{r.lost}</td>
-                  <td className="p-2 border border-gray-300">{r.postponed}</td>
-                  <td className="p-2 border border-gray-300">{r.created}</td>
-                  {/* <td className="p-2 font-bold border border-gray-300">{r.total}</td> */}
+                <tr key={i}>
+                  <td className="border p-2 text-center">{i + 1}</td>
+                  <td className="border p-2">{r.category}</td>
+                  <td className="border p-2 text-center">{r.open}</td>
+                  <td className="border p-2 text-center">{r.confirmed}</td>
+                  <td className="border p-2 text-center">{r.lost}</td>
+                  <td className="border p-2 text-center">{r.postponed}</td>
+                  <td className="border p-2 text-center">{r.created}</td>
                 </tr>
               ))}
-              <tr className="text-center border border-gray-300 font-bold bg-gray-50">
+              <tr className="font-bold bg-gray-100">
                 <td></td>
-                <td className="p-2 border border-gray-300">TOTAL</td>
-                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Open"]}`}>{travelTotals.open}</td>
-                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Confirmed"]}`}>{travelTotals.confirmed}</td>
-                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Lost"]}`}>{travelTotals.lost}</td>
-                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Postponed"]}`}>{travelTotals.postponed}</td>
-                <td className={`p-2 border border-gray-300 ${LeadStatusColors["Created"]}`}>{travelTotals.created}</td>
-                {/* <td className="p-2 border border-gray-300">{travelTotals.total}</td> */}
+                <td className="border p-2">TOTAL</td>
+                <td className="border p-2 text-center">{travelTotals.open}</td>
+                <td className="border p-2 text-center">{travelTotals.confirmed}</td>
+                <td className="border p-2 text-center">{travelTotals.lost}</td>
+                <td className="border p-2 text-center">{travelTotals.postponed}</td>
+                <td className="border p-2 text-center">{travelTotals.created}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </SectionCard>
+      </Card>
 
-      {/* User-wise Summary */}
-    <SectionCard title="User-wise Summary">
-  <div printBody="">
-    <div className="max-h-[360px] overflow-y-auto border border-gray-100 ">
-      <table className="w-full min-w-full table-auto border-collapse text-sm">
+      {/* ---------------- USER SUMMARY ---------------- */}
+      <Card className="rounded-xl shadow-md p-4" ref={userPrintRef}>
+        <div className="flex justify-between items-center mb-4">
+          <CardTitle className="text-lg font-bold">User-wise Summary</CardTitle>
+          <button
+            onClick={() => handlePrint(userPrintRef)}
+            className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
+          >
+            🖨
+          </button>
+        </div>
 
-        <thead className="sticky top-0 bg-gray-100 z-10">
-          <tr className="text-center">
-            <th className="p-2 border border-gray-300 w-[10%]">Sr.No</th>
-            <th className="p-2 border border-gray-300 w-[30%]">User</th>
-            <th className="p-2 border border-gray-300">Open</th>
-            <th className="p-2 border border-gray-300">Confirmed</th>
-            <th className="p-2 border border-gray-300">Lost</th>
-            <th className="p-2 border border-gray-300">Postponed</th>
-            <th className="p-2 border border-gray-300">Created</th>
-          </tr>
-        </thead>
+        {/* FILTER */}
+        <div className="mb-4 border rounded-xl p-3 bg-white shadow-sm">
+          <div
+            className="overflow-y-auto overflow-x-hidden"
+            style={{ height: "70px" }}
+          >
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={toggleAll}
+                className={`px-2 py-1 text-xs rounded-md border transition
+                  ${
+                    selectedUsers.length === allUsers.length &&
+                    allUsers.length > 0
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-500"
+                  }
+                `}
+              >
+                All
+              </button>
 
-        <tbody>
-          {userRows.map((r, i) => (
-            <tr key={i} className="text-center border border-gray-300">
-              <td className="p-2 border border-gray-300">{i + 1}</td>
-              <td className="p-2 ps-4 font-medium text-left border border-gray-300">
-                {r.user}
-              </td>
-              <td className="p-2 border border-gray-300">{r.open}</td>
-              <td className="p-2 border border-gray-300">{r.confirmed}</td>
-              <td className="p-2 border border-gray-300">{r.lost}</td>
-              <td className="p-2 border border-gray-300">{r.postponed}</td>
-              <td className="p-2 border border-gray-300">{r.created}</td>
-            </tr>
-          ))}
+              {allUsers.map((user, index) => {
+                const isSelected = selectedUsers.includes(user);
 
-          {/* TOTAL ROW */}
-          <tr className="text-center font-bold bg-gray-50 border border-gray-300">
-            <td></td>
-            <td className="p-2 border border-gray-300">TOTAL</td>
-            <td className="p-2 border border-gray-300">{userTotals.open}</td>
-            <td className="p-2 border border-gray-300">{userTotals.confirmed}</td>
-            <td className="p-2 border border-gray-300">{userTotals.lost}</td>
-            <td className="p-2 border border-gray-300">{userTotals.postponed}</td>
-            <td className="p-2 border border-gray-300">{userTotals.created}</td>
-          </tr>
-        </tbody>
+                return (
+                  <button
+                    key={index}
+                    onClick={() => toggleUser(user)}
+                    className={`px-2 py-1 text-xs rounded-md border transition
+                      ${
+                        isSelected
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-500"
+                      }
+                    `}
+                  >
+                    {user}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
 
-      </table>
-    </div>
-  </div>
-</SectionCard>
-
+        {/* USER TABLE */}
+        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded">
+          <table className="w-full text-sm border-collapse">
+            <thead className="sticky top-0 bg-gray-100">
+              <tr>
+                <th className="border p-2">Sr.No</th>
+                <th className="border p-2">User</th>
+                <th className="border p-2">Open</th>
+                <th className="border p-2">Confirmed</th>
+                <th className="border p-2">Lost</th>
+                <th className="border p-2">Postponed</th>
+                <th className="border p-2">Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userRows.map((r, i) => (
+                <tr key={i}>
+                  <td className="border p-2 text-center">{i + 1}</td>
+                  <td className="border p-2">{r.user}</td>
+                  <td className="border p-2 text-center">{r.open}</td>
+                  <td className="border p-2 text-center">{r.confirmed}</td>
+                  <td className="border p-2 text-center">{r.lost}</td>
+                  <td className="border p-2 text-center">{r.postponed}</td>
+                  <td className="border p-2 text-center">{r.created}</td>
+                </tr>
+              ))}
+              <tr className="font-bold bg-gray-100">
+                <td></td>
+                <td className="border p-2">TOTAL</td>
+                <td className="border p-2 text-center">{userTotals.open}</td>
+                <td className="border p-2 text-center">{userTotals.confirmed}</td>
+                <td className="border p-2 text-center">{userTotals.lost}</td>
+                <td className="border p-2 text-center">{userTotals.postponed}</td>
+                <td className="border p-2 text-center">{userTotals.created}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }

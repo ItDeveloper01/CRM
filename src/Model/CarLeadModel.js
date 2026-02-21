@@ -13,7 +13,7 @@ export const CarLeadObject= {
     requirementType: "",
     companyName:null,
     telephoneNo: null,
-    specialRequirement: null,
+    specialRequirement: [],
     createdBy_UserID: "", // default user
     createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"
     updatedAt: new Date().toISOString(),
