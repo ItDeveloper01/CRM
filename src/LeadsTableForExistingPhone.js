@@ -138,8 +138,8 @@ const LeadsTableForExistingPhone = ({ followLeads }) => {
 
   const handleViewClick = (lead) => {
   console.log("Viewing Exisiting lead for given phone number.....:", lead);    
-   setSelectedLead(lead);
-    setModalOpen(true);
+  setSelectedLead(lead);
+  setModalOpen(true);
   };
 
   return (
@@ -193,9 +193,12 @@ const LeadsTableForExistingPhone = ({ followLeads }) => {
         </div>
    {/* Modal */}
       <UpdateLeadsModal
+      parent={"Lead Table for existing Phone no"}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}
+         mode={"edit"}              // you can write {mode} alson at view place
+        viewAllLeads={false}
       />
     </>
   );
