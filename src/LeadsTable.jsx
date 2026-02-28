@@ -363,6 +363,7 @@ const LeadsTable = ({ activeLeads, followLeads, showFollowUp, toggleSort }) => {
 
       {/* Modal */}
       <UpdateLeadsModal
+      parent="Lead Table"
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}
