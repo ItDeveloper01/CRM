@@ -14,6 +14,7 @@ export const LeadObj = {
   // leadStatus: "Open",
   leadStatus: 1,
   leadStatusReason: null,
+  reasonDescription: null,
   
   city: "",
   area: "",
