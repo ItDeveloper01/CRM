@@ -95,7 +95,7 @@ const LeadStatusReason = ({ isOpen, onClose, onSave, handleChange, handleLostPos
   };
 
 
-
+  // console.log("Reason:", selectedReason);
   if (!isOpen) return null; // don’t render if not open
 
 

@@ -15,6 +15,19 @@ export const LeadStatusOptions = {
   CLOSED:"Closed",
 };
 
+export const LeadStatus = {
+  Open: 1,
+  Confirmed: 2,
+  Postponed: 3,
+  Lost: 4,
+}
+
+// statuses which require reason
+export const STATUS_WITH_REASON = [
+  LeadStatus.Lost,
+  LeadStatus.Postponed,
+];
+
 export const ErrorMessages={
 ERROR_FETCHING_CITIES : "Error fetching cities:",
 }

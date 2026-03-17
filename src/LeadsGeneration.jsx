@@ -71,20 +71,20 @@ const isViewMode   = mode === "view";
   const [selectedLeadName, setSelectedLeadName] = useState("");
   const [enquirySource, setEnquirySource] = useState([]);
   const selectedEnquirySource =
-  enquirySource?.find(s => s.id === leadObj.enquirySource)?.enquirySource || "";
+    enquirySource?.find(s => s.id === leadObj.enquirySource)?.enquirySource || "";
   const [enquiryMode, setEnquiryMode] = useState([]);
   const selectedEnquiryMode =
-  enquiryMode?.find(e => e.id === leadObj.enquiryMode)?.enquiryMode || "";
+    enquiryMode?.find(e => e.id === leadObj.enquiryMode)?.enquiryMode || "";
 
   const [customerType, setCustomerType] = useState([]);
-  const selectedCustomerType =customerType?.find(c => c.id === leadObj.customerType)?.customerType || "";
+  const selectedCustomerType = customerType?.find(c => c.id === leadObj.customerType)?.customerType || "";
   const [leadStatusMasterList, setleadStatusMasterList] = useState([]);
   const selectedStatus = leadStatusMasterList?.find(s => s.id === leadObj.leadStatus);
   const [formData, setFormData] = useState({});
   // const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
   // const [formHeader, setFormHeader] = useState('Lead Generation Form');
   const [formHeader, setFormHeader] = useState('');
-  
+
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -178,7 +178,7 @@ const isViewMode   = mode === "view";
     //   headers: { "Content-Type": "application/json" },
     //   body: JSON.stringify({ country: "India" }),
     // })
-   
+
     //   .then((res) => res.json())
     //   .then((data) => {
     //     if (data?.data) {
@@ -191,7 +191,7 @@ const isViewMode   = mode === "view";
     //     console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
     //     setLoading(false);
     //   });
-      // *****************************old Country code 25.11.2025*************************
+    // *****************************old Country code 25.11.2025*************************
 
     //   fetch("https://api.first.org/data/v1/countries")
     // .then(res => res.json())
@@ -206,22 +206,22 @@ const isViewMode   = mode === "view";
     // })
     // .catch(err => console.error("Error fetching country codes:", err));
 
-  
-  //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
-  fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
-    .then((res) => res.json())
-    .then((data) => {
-      const formattedCountries = data
-        .map((country) => ({
-          name: country.name.common,
-          value: country.cca2 || country.name.common,
-          flag: country.flags?.png
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
 
-      setCountries(formattedCountries);
-    })
-    .catch((err) => console.error("Error fetching countries:", err));
+    //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
+    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
+      .then((res) => res.json())
+      .then((data) => {
+        const formattedCountries = data
+          .map((country) => ({
+            name: country.name.common,
+            value: country.cca2 || country.name.common,
+            flag: country.flags?.png
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setCountries(formattedCountries);
+      })
+      .catch((err) => console.error("Error fetching countries:", err));
 
     // Fetch Special Requirements for Car Rental
     // const fetchSpecialRequirements = async () => {
@@ -242,7 +242,7 @@ const isViewMode   = mode === "view";
     fetchCityList();     // for City API
 
   }, []);
-  
+
   // Fetch List of City from API(Self made)
   const fetchCityList = async () => {
     debugger;
@@ -251,21 +251,21 @@ const isViewMode   = mode === "view";
         Authorization: `Bearer ${sessionUser.token}`,
       },
     })
-    .then((res) => {
-      console.log('Fetching City List in Lead Generate Page ...', res.data);
-      setCities(res.data || []);
-    }
-    ).catch((err) => {
-      debugger;
-      console.error("Failed to fetch City List :", err);
-      console.error("Failed ......... :", err.response.data);
+      .then((res) => {
+        console.log('Fetching City List in Lead Generate Page ...', res.data);
+        setCities(res.data || []);
+      }
+      ).catch((err) => {
+        debugger;
+        console.error("Failed to fetch City List :", err);
+        console.error("Failed ......... :", err.response.data);
 
-    })
-    .finally(() => {
-      // Always executed, regardless of success or error)
-      console.log('City List Fetch function finished.')
-      // alert("City List Fetch function finished.");
-    })
+      })
+      .finally(() => {
+        // Always executed, regardless of success or error)
+        console.log('City List Fetch function finished.')
+        // alert("City List Fetch function finished.");
+      })
 
   }
 
@@ -523,8 +523,8 @@ const isViewMode   = mode === "view";
   const fetchLeadCategoriesByUserId = async () => {
     try {
       const leadCategoriesByUserId = await axios.get(getLeadCategoriesByUserId, {
-          params: {
-          userId: sessionUser.user.userId,     
+        params: {
+          userId: sessionUser.user.userId,
         },
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,
@@ -532,14 +532,14 @@ const isViewMode   = mode === "view";
       });
       setLeadCategoriesByUserIdList(leadCategoriesByUserId.data || []);
       console.log("Lead Categories fetch Successfully", leadCategoriesByUserId.data);
-    }catch(err) {
+    } catch (err) {
       console.error("Error fetching Lead Categories:", err);
       throw err;
     }
   };
-   console.log("sessionUser object:", sessionUser);
-   console.log("useId : " , sessionUser.user.userId);
-  
+  console.log("sessionUser object:", sessionUser);
+  console.log("useId : ", sessionUser.user.userId);
+
   // Initialize leadObj on prop change
   useEffect(() => {
 
@@ -597,18 +597,23 @@ const isViewMode   = mode === "view";
 
   // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
   useEffect(() => {
-  //   // Comment its old code for category list which fetch all categories 
-  // //   if (leadObj.fK_LeadCategoryID && leadCategoryList) {
-  // //     const name = leadCategoryList[leadObj.fK_LeadCategoryID];
-  // //     setSelectedLeadName(name || "");
-  // //   }
-  // // }, [leadObj.fK_LeadCategoryID, leadCategoryList]);  
-   if (leadObj.fK_LeadCategoryID && leadCategoriesByUserIdList) {
+    //   // Comment its old code for category list which fetch all categories 
+    // //   if (leadObj.fK_LeadCategoryID && leadCategoryList) {
+    // //     const name = leadCategoryList[leadObj.fK_LeadCategoryID];
+    // //     setSelectedLeadName(name || "");
+    // //   }
+    // // }, [leadObj.fK_LeadCategoryID, leadCategoryList]);  
+    if (leadObj.fK_LeadCategoryID && leadCategoriesByUserIdList) {
       const name = leadCategoriesByUserIdList[leadObj.fK_LeadCategoryID];
       setSelectedLeadName(name || "");
     }
-  }, [leadObj.fK_LeadCategoryID, leadCategoriesByUserIdList]);         
-//********************Above code commented by pri on 29.12.2025***************//
+  }, [leadObj.fK_LeadCategoryID, leadCategoriesByUserIdList]);
+  //********************Above code commented by pri on 29.12.2025***************//
+  console.log("status:", leadObj.statusDescription);
+  console.log("Selected Status", selectedStatusId);
+  console.log("Lost:", Constants.LeadStatus.Lost);
+  console.log("Postponed:", Constants.LeadStatus.Postponed);
+
 
 
 
@@ -625,7 +630,7 @@ const isViewMode   = mode === "view";
     //   .catch(err => console.error(err));
   }, []);
 
- 
+
 
   const handleChangeForCategory = (e) => {
     debugger;
@@ -676,8 +681,9 @@ const isViewMode   = mode === "view";
   const handleSaveReason = (reason) => {
     handleChange({ target: { name: "leadReason", value: reason } });
     setStatusReason(false);
-  };
 
+  };
+  console.log("leadStatusReason:  ", leadObj.leadStatusReason);
   React.useEffect(() => {
 
     debugger;
@@ -782,6 +788,7 @@ const isViewMode   = mode === "view";
 
   const renderCategoryFields = () => {
     console.log("In renderCategoryFields Lead Object....:", leadObj);
+    console.log("In renderCategoryFields CarRentalsObj....:", carLeaddObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
     console.log("In renderCategoryFields AirTicketingObj....:", airTicketingdObj);
 
@@ -843,7 +850,7 @@ const isViewMode   = mode === "view";
                 mode={mode}   // PASS MODE
 
                 isUpdate={isUpdateMode} // fallback to empty array
-                // readOnly={readOnly}
+              // readOnly={readOnly}
 
               />
 
@@ -1187,80 +1194,154 @@ const isViewMode   = mode === "view";
 
     <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
       {/* <fieldset disabled={readOnly}> */}
-      
+
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
-      
+
       {/* Customer Details */}
       {/* <fieldset disabled={readOnly}> */}
-        <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
-          <div className="flex items-center justify-between mb-4 border-b pb-2">
-            <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
-            <div className="flex items-center gap-2">
+      <div className='border border-gray-300 bg-gray-50 rounded-lg p-4 mb-6'>
+        <div className="flex items-center justify-between mb-4 border-b pb-2">
+          <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
+          {/* <div className="flex flex-col items-start gap-1"> */}
+          <div className="flex flex-col gap-1">
+
+            {/* Status Row */}
+            {/* <div className="flex items-center gap-2">
               <label className="font-medium text-gray-700">Status:</label>
+
               {isViewMode ? (
-  <ViewSelect value={selectedStatus?.statusName || ""} />
-) : (
-              <select
-                name="leadStatus"
-                value={leadObj.leadStatus || 1}   // default = open
-                // onChange={handleChange}
-                onChange={handleChangeStatusReason}
-                disabled={!isUpdateMode || isUncategorised}                   // disabled while creating new
-                className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+                <ViewSelect value={selectedStatus?.statusName || ""} />
+              ) : (
+                <select
+                  name="leadStatus"
+                  value={leadObj.leadStatus || 1}
+                  onChange={handleChangeStatusReason}
+                  disabled={!isUpdateMode || isUncategorised}
+                  className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
                   ${border} ${ring} ${bg}
-                
-                ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
-              `}
-              >
-                {/* {leadStatusMasterList && */}
-                 { leadStatusMasterList?.map((lStatus) => (
-                    <option key={lStatus.id} value={(lStatus.id)}>
+                  ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
+                `}
+                >
+                  {leadStatusMasterList?.map((lStatus) => (
+                    <option key={lStatus.id} value={lStatus.id}>
                       {lStatus.statusName}
                     </option>
                   ))}
-              </select>
+                </select>
               )}
             </div>
-            <LeadStatusReason
-              isOpen={statusReason}
-              onClose={() => setStatusReason(false)}
-              onSave={handleSaveReason}
-              handleChange={handleChange}
-              handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
-              leadCategory={selectedLeadName}
-              statusId ={selectedStatusId}   // Pass updated status state for reason list 
-            />
+
+            
+            {isViewMode &&
+              (selectedStatus?.id === Constants.LeadStatus.Lost ||
+                selectedStatus?.id === Constants.LeadStatus.Postponed) && (
+                <div className="font-medium text-gray-700">
+                  Reason: <span className="font-medium">{lead?.reasonDescription}</span>
+                </div>
+              )} */}
+
+
+            <div className="grid grid-cols-[120px_1fr] gap-y-2 gap-x-2 items-center">
+  
+  {/* Status */}
+  <label className="text-right font-medium text-gray-700">
+    Status:
+  </label>
+
+  {isViewMode ? (
+    <ViewSelect value={selectedStatus?.statusName || ""} />
+  ) : (
+    <select
+      name="leadStatus"
+      value={leadObj.leadStatus || 1}
+      onChange={handleChangeStatusReason}
+      disabled={!isUpdateMode || isUncategorised}
+      className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+      ${border} ${ring} ${bg}
+      ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
+    `}
+    >
+      {leadStatusMasterList?.map((lStatus) => (
+        <option key={lStatus.id} value={lStatus.id}>
+          {lStatus.statusName}
+        </option>
+      ))}
+    </select>
+  )}
+
+  {/* Reason */}
+  {isViewMode &&
+    (selectedStatus?.id === Constants.LeadStatus.Lost ||
+      selectedStatus?.id === Constants.LeadStatus.Postponed) && (
+      <>
+        <label className="text-right font-medium text-gray-700">
+          Reason:
+        </label>
+
+        <span className="border border-gray-200 bg-gray-100 rounded-lg p-2 w-full">
+          {lead?.reasonDescription}
+        </span>
+      </>
+    )}
+</div>
+
+
           </div>
-          <div className='flex gap-4 mb-4'>
-            <div className='flex flex-col flex-1'>
-              
-              <label className='label-style'>Mobile Number<span className="text-red-500 text-lg leading-none"> *</span></label>
-              {isViewMode ? (
+          {/* {/* 👇 SHOW SELECTED REASON BELOW STATUS */}
+
+          {/* <div className="text-sm text-gray-600 ml-16">
+            Reason: <span className="font-medium">
+              {lead?.reasonDescription?.trim()
+                ? lead.reasonDescription
+                : "Not provided"}
+            </span>
+          </div> */}
+
+
+
+
+          <LeadStatusReason
+            isOpen={statusReason}
+            onClose={() => setStatusReason(false)}
+            onSave={handleSaveReason}
+            handleChange={handleChange}
+            handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}
+            leadCategory={selectedLeadName}
+            statusId={selectedStatusId}   // Pass updated status state for reason list 
+          />
+
+        </div>
+
+        <div className='flex gap-4 mb-4'>
+          <div className='flex flex-col flex-1'>
+
+            <label className='label-style'>Mobile Number<span className="text-red-500 text-lg leading-none"> *</span></label>
+            {isViewMode ? (
               <ViewField value={leadObj.mobileNo} />
-              ) : (
+            ) : (
               <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
                 className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
               />
-                )}
-              {errors.mobileNo && !isViewMode &&<p className="text-red-500 text-sm">{errors.mobileNo}</p>}
-            </div>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Email</label>
-              {isViewMode ? (
-              <ViewField value={leadObj.emailId} />
-              ) : (
-              <input name='emailId' placeholder='Email Address' type='email' onChange={handleChangeforDropdown} value={leadObj.emailId || ''}  className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} /> 
-               )}
-              {errors.emailId && !isViewMode &&<p className="text-red-500 text-sm">{errors.emailId}</p>}
-              {/* change onChange from handleChange  to handleChangeforDropdown to update it in null conditon  */}
-            </div>
+            )}
+            {errors.mobileNo && !isViewMode && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
           </div>
-          <div className='flex gap-4 mb-4'>
-            <div className='flex flex-col w-28'>
-              <label className='label-style'>Title<span className="text-red-500 text-lg leading-none"> *</span></label>
-              {isViewMode ? (
-    <ViewSelect value={leadObj.title} />
-  ) : (
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>Email</label>
+            {isViewMode ? (
+              <ViewField value={leadObj.emailId} />
+            ) : (
+              <input name='emailId' placeholder='Email Address' type='email' onChange={handleChangeforDropdown} value={leadObj.emailId || ''} className={`border-highlight ${errors.emailId ? "border-red-500" : ""}`} />
+            )}
+            {errors.emailId && !isViewMode && <p className="text-red-500 text-sm">{errors.emailId}</p>}
+            {/* change onChange from handleChange  to handleChangeforDropdown to update it in null conditon  */}
+          </div>
+        </div>
+        <div className='flex gap-4 mb-4'>
+          <div className='flex flex-col w-28'>
+            <label className='label-style'>Title<span className="text-red-500 text-lg leading-none"> *</span></label>
+            {isViewMode ? (
+              <ViewSelect value={leadObj.title} />
+            ) : (
               <select name='title' value={leadObj.title?.trim() || ""} onChange={handleChange} className={`border-highlight ${errors.title ? "border-red-500" : ""}`}>
                 <option value=''>Title</option>
                 <option value='Mr.'>Mr.</option>
@@ -1269,49 +1350,49 @@ const isViewMode   = mode === "view";
                 <option value='Dr.'>Dr.</option>
                 <option value='Prof.'>Prof.</option>
               </select>
-  )}
-              {errors.title && !isViewMode && <p className="text-red-500 text-sm">{errors.title}</p>}
-            </div>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>First Name<span className="text-red-500 text-lg leading-none"> *</span></label>
-              {isViewMode ? (
+            )}
+            {errors.title && !isViewMode && <p className="text-red-500 text-sm">{errors.title}</p>}
+          </div>
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>First Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+            {isViewMode ? (
               <ViewField value={leadObj.fName} />
-               ) : (
+            ) : (
               <input name='fName' placeholder='First Name' value={leadObj.fName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.fName ? 'border-red-500' : ''}`} />
-                 )}
-              {errors.fName && !isViewMode && <p className="text-red-500 text-sm">{errors.fName}</p>}
-            </div>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Middle Name</label>
-{isViewMode ? (
-    <ViewField value={leadObj.mName} />
-  ) : (
+            )}
+            {errors.fName && !isViewMode && <p className="text-red-500 text-sm">{errors.fName}</p>}
+          </div>
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>Middle Name</label>
+            {isViewMode ? (
+              <ViewField value={leadObj.mName} />
+            ) : (
               <input name='mName' placeholder='Middle Name' value={leadObj.mName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.mName ? 'border-red-500' : ''}`} />
-                )}
-              {errors.mName && !isViewMode && <p className="text-red-500 text-sm">{errors.mName}</p>}
-            </div>
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Last Name<span className="text-red-500 text-lg leading-none"> *</span></label>
-              {isViewMode ? (
-    <ViewField value={leadObj.lName} />
-  ) : (
+            )}
+            {errors.mName && !isViewMode && <p className="text-red-500 text-sm">{errors.mName}</p>}
+          </div>
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>Last Name<span className="text-red-500 text-lg leading-none"> *</span></label>
+            {isViewMode ? (
+              <ViewField value={leadObj.lName} />
+            ) : (
               <input name='lName' placeholder='Last Name' value={leadObj.lName || ''} onChange={handleChange} maxLength={30}
                 className={`border-highlight ${errors.lName ? 'border-red-500' : ''}`} />
-  )}
-              {errors.lName && !isViewMode && <p className="text-red-500 text-sm">{errors.lName}</p>}
-            </div>
+            )}
+            {errors.lName && !isViewMode && <p className="text-red-500 text-sm">{errors.lName}</p>}
           </div>
+        </div>
 
-          {/* Birthdate + Gender + City + Area */}
-          <div className='flex gap-4 mb-4'>
-            {/* Birthdate */}
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Birthdate</label>
-              {isViewMode ? (
-    <DateViewField value={leadObj.birthDate} />
-  ) : (
+        {/* Birthdate + Gender + City + Area */}
+        <div className='flex gap-4 mb-4'>
+          {/* Birthdate */}
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>Birthdate</label>
+            {isViewMode ? (
+              <DateViewField value={leadObj.birthDate} />
+            ) : (
               <input
                 type='date'
                 className={`border-highlight`}
@@ -1319,15 +1400,15 @@ const isViewMode   = mode === "view";
                 onChange={handleChange}
                 value={leadObj.birthDate}
               />
-                )}
-            </div>
+            )}
+          </div>
 
-            {/* Gender */}
-            <div className='flex flex-col flex-1'>
-              <label className='label-style'>Gender<span className="text-red-500 text-lg  leading-none"> *</span></label>
-              {isViewMode ? (
-    <ViewSelect value={leadObj.gender} />
-  ) : (
+          {/* Gender */}
+          <div className='flex flex-col flex-1'>
+            <label className='label-style'>Gender<span className="text-red-500 text-lg  leading-none"> *</span></label>
+            {isViewMode ? (
+              <ViewSelect value={leadObj.gender} />
+            ) : (
               <select
                 value={leadObj.gender?.trim() || ""}
                 className={`border-highlight ${errors.gender ? "border-red-500" : ""}`}
@@ -1340,15 +1421,15 @@ const isViewMode   = mode === "view";
 
 
               </select>
-              )}
-              {errors.gender && !isViewMode && <p className="text-red-500 text-sm">{errors.gender}</p>}
-            </div>
-            {/* City */}
-            <div className="flex flex-col flex-1">
-              <label className="label-style">City</label>
-              {isViewMode ? (
-    <ViewSelect value={leadObj.city} />
-  ) : (
+            )}
+            {errors.gender && !isViewMode && <p className="text-red-500 text-sm">{errors.gender}</p>}
+          </div>
+          {/* City */}
+          <div className="flex flex-col flex-1">
+            <label className="label-style">City</label>
+            {isViewMode ? (
+              <ViewSelect value={leadObj.city} />
+            ) : (
               <select
                 className={`border-highlight`}
                 // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1363,15 +1444,15 @@ const isViewMode   = mode === "view";
                   </option>
                 ))}
               </select>
-  )}
-            </div>
+            )}
+          </div>
 
-            {/* Area */}
-            <div className="flex flex-col flex-1">
-              <label className="label-style">Area</label>
-               {isViewMode ? (
-    <ViewSelect value={leadObj.city} />
-  ) : (
+          {/* Area */}
+          <div className="flex flex-col flex-1">
+            <label className="label-style">Area</label>
+            {isViewMode ? (
+              <ViewSelect value={leadObj.city} />
+            ) : (
               <select
                 className={`border-highlight`}
                 // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1388,12 +1469,12 @@ const isViewMode   = mode === "view";
                     </option>
                   ))}
               </select>
-  )}
-            </div>
+            )}
           </div>
-
         </div>
-    {/* </fieldset> */}
+
+      </div>
+      {/* </fieldset> */}
       {/* Render Table for exisitng leads with the matching phone no. */}
       {isLeadsForPhoneVisible && (
         <div>
@@ -1419,13 +1500,13 @@ const isViewMode   = mode === "view";
 
           <h3 className='text-lg font-semibold text-gray-800 mb-4 border-b pb-2'>Leads Details</h3>
           {/* <fieldset disabled={readOnly}> */}
-            <div className='flex gap-4'>
-              <div className='flex flex-col flex-1'>
-                <label className='label-style'>Enquiry Mode</label>
-                {isViewMode ? (
-    <ViewSelect value={selectedEnquiryMode} />
-  ) : (
-              
+          <div className='flex gap-4'>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Enquiry Mode</label>
+              {isViewMode ? (
+                <ViewSelect value={selectedEnquiryMode} />
+              ) : (
+
                 <select name="enquiryMode" value={leadObj.enquiryMode || ""}
                   onChange={handleChangeforDropdown}
                   className='border-highlight'>
@@ -1443,14 +1524,14 @@ const isViewMode   = mode === "view";
                   ))}
                 </select>
               )}
-              </div>
-              <div className='flex flex-col flex-1'>
-                <label className='label-style'>Enquiry Source</label>
-                {isViewMode ? (
-    <ViewSelect value={selectedEnquirySource} />
-  ) : (
-              
-                
+            </div>
+            <div className='flex flex-col flex-1'>
+              <label className='label-style'>Enquiry Source</label>
+              {isViewMode ? (
+                <ViewSelect value={selectedEnquirySource} />
+              ) : (
+
+
                 <select name="enquirySource" value={leadObj.enquirySource} onChange={handleChangeforDropdown} className='border-highlight'>
                   <option value="">Select Source</option>
                   {/* {enquirySources.map(cat => <option key={cat} value={cat}>
@@ -1466,14 +1547,14 @@ const isViewMode   = mode === "view";
                   ))}
 
                 </select>
-                )}
-              </div>
-              {/* Customer Type */}
-              <div className='flex flex-col flex-1'>
-                <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
-                {isViewMode ? (
-    <ViewSelect value={selectedCustomerType} />
-  ) : (
+              )}
+            </div>
+            {/* Customer Type */}
+            <div className='flex flex-col flex-1'>
+              <label className="font-medium text-gray-600 mb-1 block">Customer Type</label>
+              {isViewMode ? (
+                <ViewSelect value={selectedCustomerType} />
+              ) : (
                 <select
                   // className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   name="customerType"
@@ -1489,17 +1570,17 @@ const isViewMode   = mode === "view";
                   ))}
 
                 </select>
-                )}
-              </div>
+              )}
             </div>
+          </div>
           {/* </fieldset> */}
           <div className='flex gap-4 mt-4'>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Category</label>
               {isViewMode ? (
-    <ViewSelect value={selectedCategory} />
-  ) : (
-              // {/* <fieldset disabled={readOnly}> */}
+                <ViewSelect value={selectedCategory} />
+              ) : (
+                // {/* <fieldset disabled={readOnly}> */}
                 <select
                   name="category"
                   value={leadObj.fK_LeadCategoryID || ''}
@@ -1510,33 +1591,33 @@ const isViewMode   = mode === "view";
                     <option key={key} value={Number(key)}>{val}</option>
                   ))}
                 </select>
-              // {/* </fieldset> */}
-                )}
+                // {/* </fieldset> */}
+              )}
             </div>
           </div>
 
           {/* Render dynamic fields */}
           <div className='mt-4'>{renderCategoryFields()}</div>
           {/* <fieldset disabled={readOnly}> */}
-            <div className="flex justify-between items-center mt-6 gap-4">
-              {!isViewMode && (
+          <div className="flex justify-between items-center mt-6 gap-4">
+            {!isViewMode && (
               <button
                 onClick={handleSubmit}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                   {isEditMode ? "Update Lead" : "Generate Lead"}
+                {isEditMode ? "Update Lead" : "Generate Lead"}
                 {/* {submitBtnTxt} */}
               </button>
-              )}
+            )}
 
-              <div className="flex items-center gap-2">
-                <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap"><span className="text-red-500 text-lg leading-none">* </span>
-                  Follow Up Date :
-                </label>
-                <div className="flex flex-col  justify-start leading-none">
-                  {isViewMode ? (
-    <DateViewField value={leadObj.followUpDate} />
-  ) : (
-                
+            <div className="flex items-center gap-2">
+              <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap"><span className="text-red-500 text-lg leading-none">* </span>
+                Follow Up Date :
+              </label>
+              <div className="flex flex-col  justify-start leading-none">
+                {isViewMode ? (
+                  <DateViewField value={leadObj.followUpDate} />
+                ) : (
+
                   <input
                     type="date"
                     id="followUpDate"
@@ -1557,8 +1638,8 @@ const isViewMode   = mode === "view";
                     className={`border-highlight ${errors.followUpDate ? "border-red-500" : ""}`}
                     required
                   />
-                  )}
-                  {/* <input
+                )}
+                {/* <input
                   type="date"
                   id="followUpDate"
                   name="followUpDate"
@@ -1569,9 +1650,9 @@ const isViewMode   = mode === "view";
                   className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
                   required
                 /> */}
-                </div>
               </div>
             </div>
+          </div>
           {/* </fieldset> */}
           <div className='text-right'>
 
