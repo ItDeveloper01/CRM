@@ -444,6 +444,7 @@ const handleTransfer = async (toUserId, leadId) => {
       </div>
       {/* Modal */}
       <UpdateLeadsModal
+        parent={"Leads with filters"}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}

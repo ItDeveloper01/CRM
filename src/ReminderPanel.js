@@ -5,6 +5,10 @@ import axios from "axios";
 import { useGetSessionUser } from "./SessionContext";
 import { Eye } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import UpdateLeadsModal from "./UpdateLeadsModal";
+import { getEmptyLeadObj } from "./Model/LeadModel";
+
 
 // =========================
 // OLD CODE - KEEP FOR REFERENCE
@@ -128,12 +132,19 @@ import { useState } from "react";
 function ReminderPanel() {
   const [reminders, setReminders] = useState([]);
   const { user: sessionUser } = useGetSessionUser();
+  const navigate = useNavigate();
+
 
   const getRemindersAPI = config.apiUrl + "/Reminders/GetReminders";
   const snoozeReminderAPI = config.apiUrl + "/Reminders/Snooze";
   const acknowledgeReminderAPI = config.apiUrl + "/Reminders/Acknowledge";
-  
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState("edit"); // "view" or "edit"
+   const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
+   const [viewAllLeads, setViewAllLeads] = useState(false); // to check if coming from reminder panel or not
+   const [isGenerateNewLeadAllowed, setIsGenerateNewLeadAllowed] = useState(false); // to check if generate new lead button should be shown in modal or not
+  
   // =========================
   // FETCH REMINDERS
   // =========================
@@ -166,10 +177,61 @@ function ReminderPanel() {
   // =========================
   // ACTION PLACEHOLDERS
   // =========================
-  const onViewDetails = (dto) => {
+  const onViewDetails = async (dto) => {
+    debugger;
     console.log("VIEW DETAILS DTO →", dto);
+
+    
+
+    if(dto.vertical?.toLowerCase() === "personal") {
+      setViewAllLeads(true);
+      console.log("Rmeinder Vertical is Personal, setting viewAllLeads to true");
+    }
+    else
+    {
+      setViewAllLeads(false);
+       console.log("Rmeinder Vertical is not Personal, setting viewAllLeads to false");
+    }
+    var res= await  fetchLeadDetails(dto); // fetch lead details using entityId (assuming it's a lead reminder)
+
+
+    const leadData = res;
+    setSelectedLead(leadData);
+
+     console.log("Lead data fetched for edit:", leadData);
+
+     if(leadData.categoryStatus==1)
+      setViewMode("edit");
+     else
+       setViewMode("view");
+             
+    setModalOpen(true);
+
+    console.log("View mode set to:", viewMode);
    
+    //navigate('/LeadsGeneration', {state: {reminderDTO: res,mode: "edit",fromReminder: true  }});
+
     // Navigate using entityType + entityId
+  };
+
+
+  const fetchLeadDetails = async (ReminderDTO) => {
+    try {
+      const response = await axios.post(
+  config.apiUrl + '/TempLead/GetReminderLead',
+  ReminderDTO, // 👈 body only
+  {
+    headers: {
+      Authorization: `Bearer ${sessionUser.token}`
+    }
+  }
+);
+      console.log("Lead details fetched successfully", response.data);
+       return response.data; // return lead details to be used in the details page
+      // You can set this data in state if needed for the details page
+    } catch (error) {
+      console.error("Error fetching lead details:", error);
+    }
   };
 
   const onSnooze = async (dto) => {
@@ -256,7 +318,10 @@ function ReminderPanel() {
                     </div>
 
                     {/* MESSAGE */}
-                    <div className="message">{r.message}</div>
+                    <div>
+                      <div className="message">{r.message}</div>
+                      <div className="phoneNo">{r.mobileNo}</div>
+                     </div>
 
                     {/* ACTIONS */}
                     <div className="actions">
@@ -453,7 +518,20 @@ function ReminderPanel() {
           color: #166534;
         }
       `}</style>
+      <div>
+       <UpdateLeadsModal
+              parent={'Reminder Panel'}
+              isOpen={modalOpen}
+              onClose={() => setModalOpen(false)}
+              lead={selectedLead}
+              // readOnly={readOnly}
+              mode={viewMode}              // you can write {mode} alson at view place
+              viewAllLeads={viewAllLeads}
+              isGenerateNewLeadAllowed={isGenerateNewLeadAllowed}
+            />
+            </div>
     </div>
+    
   );
 }
 

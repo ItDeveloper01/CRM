@@ -22,7 +22,8 @@ import ManagerAnalytics from './ManagerAnalytics';
 import ManagerTeamAnalytics from './ManagerTeamAnalytics';
 import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
-
+import SignalRService from './SignalRService';
+import MasterSettings from './MasterSettingsBoard';
 
 export default function App() {
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
@@ -97,6 +98,10 @@ export default function App() {
                   <Route
                   path='/businessAnalysis'
                   element={<OLAPDashboardTabs />}
+                 />
+                 <Route
+                  path='/masterSettings'
+                  element={<MasterSettings />}
                  />
 
               {/* ✅ Users List */}

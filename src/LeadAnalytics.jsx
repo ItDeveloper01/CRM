@@ -1497,6 +1497,7 @@ const LeadAnalytics = () => {
       </div>
       {/* Modal  This is use for view details of lead */}
       <UpdateLeadsModal
+      parent={"Lead ANalytics"}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}

@@ -31,21 +31,31 @@ import { constant, set } from 'lodash';
 import { da, id } from 'intl-tel-input/i18n';
 import HistoryCollapse from './HIstoryHover';
 import { User } from 'lucide-react';
-import { ViewField, ViewSelect, DateViewField } from './ConstantComponent/ViewComponents';
+import { ViewField, ViewSelect, DateViewField} from './ConstantComponent/ViewComponents';
+import { useLocation } from 'react-router-dom';
+import { useRef } from 'react';
 
 
 
-export default function LeadsGeneration({ lead, onClose, mode }) {
+
+export default function LeadsGeneration({ lead, onClose, mode ,viewAllLeads=false,isGenerateNewLeadAllowed=true}) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
+  const location = useLocation();
+  const reminderState = location.state;
 
-  const isCreateMode = mode === "create";
-  const isEditMode = mode === "edit";
-  const isViewMode = mode === "view";
+const isCreateMode = mode === "create";
+const isEditMode   = mode === "edit";
+const isViewMode   = mode === "view";
+  
+   console.log("mode value ", mode);
 
-  console.log("mode value ", mode);
+    const renderCount = useRef(0);
+  renderCount.current += 1;
 
+  console.log("Render count:", renderCount.current);
 
+ // alert("mode value is : " + mode + " \n  render count is : " + renderCount.current+ " \n viewAllLeads value is : " + viewAllLeads + " \n isGenerateNewLeadAllowed value is : " + isGenerateNewLeadAllowed);
 
   const [airTicketingdObj, setAirTicketingLeadObj] = useState({
     ...getEmptyAirTicketObj(),
@@ -69,8 +79,7 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
   const [customerType, setCustomerType] = useState([]);
   const selectedCustomerType = customerType?.find(c => c.id === leadObj.customerType)?.customerType || "";
   const [leadStatusMasterList, setleadStatusMasterList] = useState([]);
-  const selectedStatus = leadStatusMasterList?.find(
-    s => s.id === leadObj.leadStatus);
+  const selectedStatus = leadStatusMasterList?.find(s => s.id === leadObj.leadStatus);
   const [formData, setFormData] = useState({});
   // const [submitBtnTxt, setSubmitBtnTxt] = useState('Generate Lead');
   // const [formHeader, setFormHeader] = useState('Lead Generation Form');
@@ -121,6 +130,7 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
+  const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
 
 
 
@@ -134,6 +144,21 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
   // };
 
 
+
+//useEffect(() => {
+  const checkDuplicateFromReminder = async () => {
+
+    debugger;
+    if (viewAllLeads === true) {
+        //setIsUpdateMode(false);
+        onMobileChangeFocus(null);
+    }
+
+  };
+
+//   checkDuplicateFromReminder();
+
+// }, [reminderState, viewAllLeads]); 
   //Indian city api 
   useEffect(() => {
 
@@ -387,7 +412,8 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
 
   const onMobileChangeFocus = async (value) => {
     debugger;
-    if (isUpdateMode) return; // if in update mode then return
+    if (isUpdateMode && value!=null)
+       return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
     //CheckDuplicateMobile
     const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
@@ -411,7 +437,8 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
 
       console.log("Duplicate mobile check response:", res.data);
 
-      if (res.data && res.data.length > 0) {
+      if (res.data && res.data.length > 0 ) {
+        if(value!=null)
         alert("Duplicate mobile number found. Please check the existing leads.");
         setISLeadsForPhoneVisible(true);
         setLeadsForPhoneNumber(res.data);
@@ -526,6 +553,8 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
 
       setLeadObj(mappedLead);
       setIsUpdateMode(true);
+
+      //checkDuplicateFromReminder();  // to check duplicate from reminder if coming from reminder panel
       // setSubmitBtnTxt("Update Lead");
       // setFormHeader("Update Lead Form");
     } else {
@@ -539,6 +568,16 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
       /****************************************************************************************************************** */
     }
   }, [lead]);
+
+  useEffect(() => {
+    debugger;
+
+  if (!leadObj?.mobileNo) return;
+  if (!viewAllLeads) return;
+
+  checkDuplicateFromReminder();
+
+}, [leadObj, viewAllLeads,isUpdateMode]); // Run when leadObj or viewAllLeads changes
 
   // Fetch Lead Categories
   useEffect(() => {
@@ -1444,14 +1483,15 @@ export default function LeadsGeneration({ lead, onClose, mode }) {
               followLeads={leadsForPhoneNumber}
             ></LeadsTableForExistingPhone>
           </div>
-          <div className='text-center my-4'>
-            <button
-              onClick={() => setISLeadsForPhoneVisible(false)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-            >
-              Continue with New Lead
-            </button>
-          </div>
+          {isGenerateNewLeadAllowed && (
+              <div className='text-center my-4'>
+                <button
+                  onClick={() => setISLeadsForPhoneVisible(false)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                  Continue with New Lead
+                </button>
+              </div>
+)}
         </div>
       )}
       {/* Lead Details */}
