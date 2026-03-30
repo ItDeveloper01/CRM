@@ -94,7 +94,11 @@ const isViewMode   = mode === "view";
   const navigate = useNavigate();
   const status = leadObj.leadStatus || 1;
   const [statusText, setStatusText] = useState("Open");
-  const { border, ring, bg } = STATUS_STYLES[statusText] || STATUS_STYLES.Open;
+  // const { border, ring, bg } = STATUS_STYLES[statusText] || STATUS_STYLES.Open;            //for status border selection
+  // Get current status 
+  const currentStatusText =leadStatusMasterList.find((s) => s.id == leadObj.leadStatus)?.statusName || "Open";
+  //Apply style for status state change 
+  const { border, ring, bg } =STATUS_STYLES[currentStatusText] || STATUS_STYLES.Open;
   // const { borderColor, ringColor } = STATUS_STYLES[status];
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("INFO");
@@ -103,6 +107,7 @@ const isViewMode   = mode === "view";
   const isUncategorised = lead?.categoryName === "UNCATEGORIZED";  // To disable status if category is not selected
   console.log("Category Name: ", lead?.categoryName);
   const [selectedStatusId, setSelectedStatusId] = useState(null);  //06.01.2026
+  const [pendingStatus, setPendingStatus] = useState(null);
 
 
   //for Indian City Dropdown through API
@@ -659,30 +664,78 @@ const isViewMode   = mode === "view";
         return null;
     }
   };
+  // const handleChangeStatusReason = (e) => {
+  //   const value = e.target.value;
+  //   //  const value = Number(e.target.value);  // I am not used it but saved for future prospective  
+
+  //   debugger;
+  //   handleChange(e);   // updates LeadObj
+  //   setSelectedStatusId(value); // store immediately  added newly on 06.01.2026 store status value 
+  //   debugger;
+  //   console.log(" status value :", value)
+  //   let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
+  //   setStatusText(tempStatus);
+  //   console.log("lead status master list:", leadStatusMasterList);
+  //   console.log("status text : ", tempStatus);
+  //   if (tempStatus === "Lost" || tempStatus === "Postponed") {
+
+  //     setStatusReason(true);
+  //   }
+  // };                // Commited on 18.03.2026
   const handleChangeStatusReason = (e) => {
-    const value = e.target.value;
-    //  const value = Number(e.target.value);  // I am not used it but saved for future prospective  
+  const value = e.target.value;
 
-    debugger;
-    handleChange(e);   // updates LeadObj
-    setSelectedStatusId(value); // store immediately  added newly on 06.01.2026 store status value 
-    debugger;
-    console.log(" status value :", value)
-    let tempStatus = leadStatusMasterList.find(s => s.id == value)?.statusName || 'Unknown';
-    setStatusText(tempStatus);
-    console.log("lead status master list:", leadStatusMasterList);
-    console.log("status text : ", tempStatus);
-    if (tempStatus === "Lost" || tempStatus === "Postponed") {
+  let tempStatus =
+    leadStatusMasterList.find((s) => s.id == value)?.statusName || "Unknown";
 
-      setStatusReason(true);
-    }
-  };
+  setStatusText(tempStatus);
+  setSelectedStatusId(value);
 
-  const handleSaveReason = (reason) => {
-    handleChange({ target: { name: "leadReason", value: reason } });
-    setStatusReason(false);
+  if (tempStatus === "Lost" || tempStatus === "Postponed") {
+    setPendingStatus(value);     // store only
+    setStatusReason(true);       // open modal
+  } else {
+    handleChange(e);             // normal case
+  }
+};
 
-  };
+
+  // const handleSaveReason = (reason) => {
+  //   handleChange({ target: { name: "leadReason", value: reason } });
+  //   setStatusReason(false);
+
+  // };    // Commited on 18.03.2026
+ const handleSaveReason = ({ reason, remark , followUpDate }) => {
+  // ✅ status update
+  handleChange({
+    target: { name: "leadStatus", value: pendingStatus },
+  });
+
+  // ✅ reason update
+  handleChange({
+    target: { name: "leadStatusReason", value: reason },
+  });
+
+  // ✅ remark update
+  handleLostPosteponedRemarkChange({
+    target: { name: "notes", value: remark },
+  });
+   // ONLY update follow-up for Postponed
+  if (pendingStatus == 3 && followUpDate) {
+    setLeadObj(prev => ({
+      ...prev,
+      followUpDate: followUpDate,
+    }));
+  }
+
+  setStatusReason(false);
+  setPendingStatus(null);
+};
+const handleCancelReason = () => {
+  setStatusReason(false);
+  setPendingStatus(null);
+};
+
   console.log("leadStatusReason:  ", leadObj.leadStatusReason);
   React.useEffect(() => {
 
@@ -1302,7 +1355,8 @@ const isViewMode   = mode === "view";
 
           <LeadStatusReason
             isOpen={statusReason}
-            onClose={() => setStatusReason(false)}
+            // onClose={() => setStatusReason(false)}
+            onClose={handleCancelReason}
             onSave={handleSaveReason}
             handleChange={handleChange}
             handleLostPosteponedRemarkChange={handleLostPosteponedRemarkChange}

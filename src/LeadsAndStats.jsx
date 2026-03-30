@@ -6,6 +6,7 @@ import UserStatsCard from "./UserStatsCard";
 import UserMetricChart from "./Usermetric";
 import LeadStatsTable from "./LeadsStatsTable";
 import ReasonStatsCard from "./ReasonStatsCard";
+import CreatedLeadsListWithFilters from "./CreatedLeadsListWithFilters";
 
 
 // Dummy CustomComponents to avoid import errors
@@ -91,7 +92,7 @@ React.useEffect(() => {
   }
 }, [dataProp]);
 
-  const tabs = ["Lead List", "Individual Statistics", "Team Overview","Stats Table","Reason Stats"];
+  const tabs = ["Lead List", "Individual Statistics", "Team Overview","Stats Table","Reason Stats","Created Leads",];
 
   React.useEffect(() => {
     console.log("Users data:", users);
@@ -142,10 +143,13 @@ React.useEffect(() => {
           <CardContent>
            <ReasonStatsCard data={users} />
           </CardContent>
-        )
+        )}
 
-
-        }
+        {/* {activeTab === "Created Leads" && (
+          <CardContent>
+            <CreatedLeadsListWithFilters users={users} />
+          </CardContent>
+        )} */}
 
       </Card>
     </div>

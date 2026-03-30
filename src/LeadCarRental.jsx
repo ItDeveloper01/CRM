@@ -470,34 +470,121 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
   <label className="label-style">Special Requirements</label>
 
   {isViewMode ? (
-    <div className="view-field">
+    <div
+    className="view-field"
+  style={{
+    minHeight: "10px",
+    border: "1px solid #dfe2e4f7",
+    borderRadius: "0.5rem",
+    backgroundColor: "#f3f4f6",
+    padding: "8px 10px",
+    display: "flex",
+    alignItems: "center",
+    fontSize: "16px",
+    fontWeight: "400",
+    color: carLeaddObj.specialRequirement?.length ? "#0a0a0a" : "#9ca3af"
+  }}
+>
       {specialRequirement
         .filter(sr => carLeaddObj.specialRequirement?.includes(sr.id))
         .map(sr => sr.specialRequirements)
         .join(", ") || "-"}
     </div>
   ) : (
-   <FormControl fullWidth size="small">
+    // comment on 21.03.2026 for styling
+//    <FormControl fullWidth size="small">
+//   <Select
+//     multiple
+//     displayEmpty
+//     className="border-highlight"
+//     value={carLeaddObj.specialRequirement || []}
+//     onChange={(e) => {
+//       const value = e.target.value;
+//       setCarLeadObj(prev => ({
+//         ...prev,
+//         // ensure selected IDs are numbers
+//         specialRequirement: Array.isArray(value) ? value.map(v => Number(v)) : []
+//       }));
+      
+//     }}
+//       sx={{
+//     "& .MuiSelect-select": {
+//       padding: "0 !important"   // 👈 padding remove
+//     }
+//    }}
+//     renderValue={(selected) => {
+//       if (!selected || selected.length === 0) {
+//         return <span style={{ color: "#999" }}>Select Requirement</span>;
+//       }
+//       return specialRequirement
+//         .filter(sr => selected.includes(sr.id))
+//         .map(sr => sr.specialRequirements) // plural property
+//         .join(", ");
+//     }}
+//     MenuProps={{
+//       PaperProps: {
+//         style: { maxHeight: 200 }
+//       }
+//     }}
+//   >
+//     {specialRequirement.map(item => (
+//       <MenuItem key={item.id} value={item.id}>
+//         <Checkbox checked={carLeaddObj.specialRequirement?.includes(item.id) || false} />
+//         <ListItemText primary={item.specialRequirements} />
+//       </MenuItem>
+//     ))}
+//   </Select>
+//  </FormControl>
+<FormControl fullWidth size="small">
   <Select
     multiple
     displayEmpty
+    variant="standard"   // 🔥 IMPORTANT (same as normal select)
+    disableUnderline          // 🔥 REMOVE default line
     className="border-highlight"
     value={carLeaddObj.specialRequirement || []}
     onChange={(e) => {
       const value = e.target.value;
       setCarLeadObj(prev => ({
         ...prev,
-        // ensure selected IDs are numbers
-        specialRequirement: Array.isArray(value) ? value.map(v => Number(v)) : []
+        specialRequirement: Array.isArray(value)
+          ? value.map(v => Number(v))
+          : []
       }));
+    }}
+    sx={{
+      height: "40px",
+
+      // inner content spacing
+      "& .MuiSelect-select": {
+        padding: "0px 0px 0px 5px",
+        display: "block",
+        // 🔥 FONT MATCH
+        fontSize: "16px",
+        fontWeight: "400",
+        fontFamily: "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        color: "#0a0a0a",   // gray-900 (same as normal text)
+      },
+
+       //  MAIN FIX — focus pe blue border
+        "&.Mui-focused": {
+            // border: "2px solid #afcaf5",
+            // boxShadow: "0 0 3px rgba(169, 195, 237, 0.5)",
+            border: "1px solid #d1d5db",  // normal gray border
+            boxShadow: "0 0 0 2px rgba(49, 123, 243, 0.36)"  ,// 🔥 blue ring
+            borderRadius: "0.5rem",
+        },
+       
+      
+     
     }}
     renderValue={(selected) => {
       if (!selected || selected.length === 0) {
-        return <span style={{ color: "#999" }}>Select Requirement</span>;
+        return <span className="text-black-700">Select Requirement</span>;
       }
       return specialRequirement
         .filter(sr => selected.includes(sr.id))
-        .map(sr => sr.specialRequirements) // plural property
+        .map(sr => sr.specialRequirements)
         .join(", ");
     }}
     MenuProps={{
@@ -508,7 +595,9 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
   >
     {specialRequirement.map(item => (
       <MenuItem key={item.id} value={item.id}>
-        <Checkbox checked={carLeaddObj.specialRequirement?.includes(item.id) || false} />
+        <Checkbox
+          checked={carLeaddObj.specialRequirement?.includes(item.id) || false}
+        />
         <ListItemText primary={item.specialRequirements} />
       </MenuItem>
     ))}
