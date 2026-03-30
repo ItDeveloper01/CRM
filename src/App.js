@@ -22,7 +22,7 @@ import ManagerAnalytics from './ManagerAnalytics';
 import ManagerTeamAnalytics from './ManagerTeamAnalytics';
 import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
-import SignalRService from './SignalRService';
+// import SignalRService from './SignalRService';
 import MasterSettings from './MasterSettingsBoard';
 
 export default function App() {
