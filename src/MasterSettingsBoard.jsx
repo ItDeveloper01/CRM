@@ -1,29 +1,62 @@
 import React, { useState } from "react";
 import CommonTablesBoard from "./MasterSettingsBoardScreens/CommonTablesBoard";
+import {
+  fetchTablesApi,
+  saveTableApi,
+  checkActiveRecordsApi
+} from "./api/tableApi";
+import {
+  fetchCarTablesApi,
+  saveCarTableApi
+} from "./api/carTableApi";
 
 export default function MasterSettings() {
-  const [activeTab, setActiveTab] = useState("visa");
+  const [activeTab, setActiveTab] = useState("common");
+
+  // 🔄 reload control
+  const [refreshKey, setRefreshKey] = useState({
+    common: 0,
+    car: 0
+  });
+
+  // 🔄 loading per tab (for spinner)
+  const [loadingTabs, setLoadingTabs] = useState({
+    common: false,
+    car: false
+  });
+
+  const handleReload = () => {
+    // start loading
+    setLoadingTabs((prev) => ({
+      ...prev,
+      [activeTab]: true
+    }));
+
+    // trigger reload
+    setRefreshKey((prev) => ({
+      ...prev,
+      [activeTab]: prev[activeTab] + 1
+    }));
+
+    // stop spinner after slight delay (UI sync)
+    setTimeout(() => {
+      setLoadingTabs((prev) => ({
+        ...prev,
+        [activeTab]: false
+      }));
+    }, 800);
+  };
 
   return (
     <div className="p-6">
-
       <h1 className="text-2xl font-semibold mb-4">Master Settings</h1>
 
-      {/* Tabs */}
-      <div className="flex border-b mb-6">
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "visa"
-              ? "border-b-2 border-blue-500 font-semibold"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("visa")}
-        >
-          Visa
-        </button>
+      {/* Tabs with Reload */}
+      <div className="flex border-b items-center">
 
+        {/* CAR TAB */}
         <button
-          className={`px-4 py-2 ${
+          className={`px-4 py-2 flex items-center gap-2 ${
             activeTab === "car"
               ? "border-b-2 border-blue-500 font-semibold"
               : "text-gray-500"
@@ -31,10 +64,26 @@ export default function MasterSettings() {
           onClick={() => setActiveTab("car")}
         >
           Car Rental
+
+          {activeTab === "car" && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation(); // 🚨 important
+                handleReload();
+              }}
+              className={`text-sm cursor-pointer ${
+                loadingTabs.car ? "animate-spin" : "hover:scale-110"
+              }`}
+              title="Reload"
+            >
+              🔄
+            </span>
+          )}
         </button>
 
-         <button
-          className={`px-4 py-2 ${
+        {/* COMMON TAB */}
+        <button
+          className={`px-4 py-2 flex items-center gap-2 ${
             activeTab === "common"
               ? "border-b-2 border-blue-500 font-semibold"
               : "text-gray-500"
@@ -42,92 +91,42 @@ export default function MasterSettings() {
           onClick={() => setActiveTab("common")}
         >
           Common Tables
+
+          {activeTab === "common" && (
+            <span
+              onClick={(e) => {
+                e.stopPropagation();
+                handleReload();
+              }}
+              className={`text-sm cursor-pointer ${
+                loadingTabs.common ? "animate-spin" : "hover:scale-110"
+              }`}
+              title="Reload"
+            >
+              🔄
+            </span>
+          )}
         </button>
       </div>
 
-{activeTab === "common" && (
-        <div>
-          {/* Common Tables */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-medium">Common Tables</h3>
-            </div>
-            <CommonTablesBoard />
-          </div>
-        </div>
-      )}
-      {/* Tab Content */}
-      {activeTab === "visa" && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Visa Masters</h2>
+      {/* Keep both mounted */}
+      <div style={{ display: activeTab === "common" ? "block" : "none" }}>
+        <CommonTablesBoard
+          fetchTablesApi={fetchTablesApi}
+          saveTableApi={saveTableApi}
+          checkActiveRecordsApi={checkActiveRecordsApi}
+          refreshKey={refreshKey.common}
+        />
+      </div>
 
-          {/* Visa Types */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-medium">Visa Types</h3>
-              <button className="text-blue-600">+ Add</button>
-            </div>
-
-            <table className="w-full border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="p-2">Tourist</td>
-                  <td className="p-2">Active</td>
-                  <td className="p-2">Edit</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-2">Business</td>
-                  <td className="p-2">Active</td>
-                  <td className="p-2">Edit</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {activeTab === "car" && (
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Car Rental Masters</h2>
-
-          {/* Car Types */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <h3 className="font-medium">Car Types</h3>
-              <button className="text-blue-600">+ Add</button>
-            </div>
-
-            <table className="w-full border">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">Name</th>
-                  <th className="p-2 text-left">Status</th>
-                  <th className="p-2 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="p-2">Sedan</td>
-                  <td className="p-2">Active</td>
-                  <td className="p-2">Edit</td>
-                </tr>
-                <tr className="border-t">
-                  <td className="p-2">SUV</td>
-                  <td className="p-2">Active</td>
-                  <td className="p-2">Edit</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+      <div style={{ display: activeTab === "car" ? "block" : "none" }}>
+        <CommonTablesBoard
+          fetchTablesApi={fetchCarTablesApi}
+          saveTableApi={saveCarTableApi}
+          checkActiveRecordsApi={checkActiveRecordsApi}
+          refreshKey={refreshKey.car}
+        />
+      </div>
     </div>
   );
 }

@@ -1,172 +1,270 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+// import { fetchTablesApi, saveTableApi,checkActiveRecordsApi, TABLE_API_MAP } from "../api/tableApi";
+import { useGetSessionUser } from "../../src/SessionContext";
+import { useMessageBox } from "../Notification"; 
+import { MESSAGE_TYPES } from "../Constants" ;
+import { Trash2, Undo2, XCircle } from "lucide-react";
 
-// ================= THEME / STYLE CONSTANTS =================
+
+
+// ================= THEME =================
 const THEME = {
   tableContainer: "border rounded-2xl p-4 shadow-sm bg-white",
   headerBg: "bg-gray-100",
   hoverRow: "hover:bg-gray-50",
+
   newRow: "bg-green-50",
   dirtyRow: "bg-yellow-50",
 
-  buttonPrimary: "px-3 py-1 rounded-lg bg-blue-600 text-white disabled:opacity-40",
+  buttonPrimary:
+    "px-3 py-1 rounded-lg bg-blue-600 text-white disabled:opacity-40",
   buttonAdd: "px-3 py-1 rounded-lg bg-green-600 text-white",
-  buttonDangerOutline: "px-3 py-1 rounded-lg border border-red-500 text-red-500",
+  buttonSecondary: "px-3 py-1 rounded-lg border text-gray-600",
 
-  editText: "text-blue-600 text-sm",
-  undoText: "text-gray-600 text-sm",
   deleteText: "text-red-600 text-sm",
 
+  activeBtn: "px-2 py-1 text-xs rounded bg-green-600 text-white",
+  inactiveBtn: "px-2 py-1 text-xs rounded bg-gray-400 text-white",
+
   input: "border rounded px-2 py-1 w-full",
+  inputError: "border-red-500",
   searchInput: "w-full border rounded-lg px-3 py-2 pr-10",
-  clearButton: "absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black"
 };
 
-const initialTables = [
-  {
-    id: 1,
-    title: "Table 1",
-    headers: ["Name", "Count", "Status"],
-    rows: [
-      { id: "1-1", Name: "Item A", Count: 3, Status: "OK" },
-      { id: "1-2", Name: "Item B", Count: 5, Status: "OK" },
-    ],
-  },
-  {
-    id: 2,
-    title: "Table 2",
-    headers: ["Product", "Qty", "Available"],
-    rows: [
-      { id: "2-1", Product: "Prod X", Qty: 10, Available: "Yes" },
-      { id: "2-2", Product: "Prod Y", Qty: 0, Available: "No" },
-      { id: "2-3", Product: "Prod Z", Qty: 7, Available: "Yes" },
-    ],
-  },
-  {
-    id: 3,
-    title: "Table 3",
-    headers: ["User", "Score", "Active"],
-    rows: [
-      { id: "3-1", User: "Alice", Score: 42, Active: true },
-      { id: "3-2", User: "Bob", Score: 37, Active: false },
-    ],
-  },
-];
+// ================= STATUS TOGGLE =================
+// function StatusToggle({ value, onToggle }) {
+//   debugger;
+//   const isActive = String(value).toLowerCase() === "active";
 
-export default function CommonTablesBoard() {
-  const [tableSearch, setTableSearch] = useState("");
-  const containerRefs = useRef({});
+//   return (
+//     <button
+//       onClick={() => {
+//         if (
+//           window.confirm(`Mark as ${isActive ? "Inactive" : "Active"}?`)
+//         ) {
+//           onToggle(isActive ? "Inactive" : "Active");
+//         }
+//       }}
+//       className={isActive ? THEME.activeBtn : THEME.inactiveBtn}
+//     >
+//       {isActive ? "Active" : "Inactive"}
+//     </button>
+//   );
+// }
 
-  const [tables, setTables] = useState(() =>
-    initialTables.map((t) => ({
-      ...t,
-      rows: t.rows.map((r) => ({ ...r, isDirty: false, isEditing: false }))
-    }))
+function StatusToggle({ value, onToggle }) {
+  const isActive = String(value).toLowerCase() === "active";
+
+  const handleToggle = () => {
+    const nextValue = isActive ? "Inactive" : "Active";
+
+    const confirmed = window.confirm(`Mark as ${nextValue}?`);
+    if (!confirmed) return;
+
+    onToggle(nextValue);
+  };
+ 
+  return (
+    <button
+      onClick={handleToggle}
+      className={`relative inline-flex items-center h-6 w-11 rounded-full transition-colors duration-300 ${
+        isActive ? "bg-green-500" : "bg-gray-300"
+      }`}
+    >
+      <span
+        className={`inline-block w-4 h-4 transform bg-white rounded-full shadow-md transition-transform duration-300 ${
+          isActive ? "translate-x-6" : "translate-x-1"
+        }`}
+      />
+    </button>
   );
+}
 
-  const [sortConfig, setSortConfig] = useState({});
+// ================= MAIN COMPONENT =================
+export default function CommonTablesBoard({
+ fetchTablesApi,
+  saveTableApi,
+ checkActiveRecordsApi, refreshKey 
+}) {
+  const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tableSearch, setTableSearch] = useState("");
+   const { showMessage } = useMessageBox();
 
-  const startEditRow = (tableId, rowId) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
+  const { user } = useGetSessionUser();
 
-        return {
-          ...t,
-          rows: t.rows.map(r => {
-            if (r.id !== rowId) return r;
+  const tableRefs = useRef({});
 
-            return {
-              ...r,
-              isEditing: true,
-              originalRow: { ...r }
-            };
-          })
-        };
-      })
-    );
+  // ================= FETCH =================
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await fetchTablesApi(user.token);
+
+        // const formatted = data.map((t) => ({
+        //   ...t,
+        //   rows: t.rows.map((r) => ({
+        //     ...r,
+        //     isDirty: false,
+        //     isNew: false,
+        //     isEditing: false,
+        //     errors: {},
+        //   })),
+        // }));
+
+        const formatted = data.map((t) => {
+  const rows = t.rows.map((r) => ({
+    ...r,
+    isDirty: false,
+    isNew: false,
+    isEditing: false,
+    isDeleted: false,   // ✅ ADD THIS
+    errors: {},
+  }));
+
+  return {
+    ...t,
+    rows,
+    originalRows: JSON.parse(JSON.stringify(rows)), // ✅ snapshot
+  };
+});
+
+        setTables(formatted);
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.token) load();
+  }, [user,refreshKey]);
+
+  // ================= HELPERS =================
+  const markDirty = (row, updates) => ({
+    ...row,
+    ...updates,
+    isDirty: !row.isNew,
+    errors: {},
+  });
+
+  const tableHasChanges = (table) =>
+    table.rows.some((r) => r.isNew || r.isDirty);
+
+  const tableHasValidChanges = (table) => {
+    return table.rows.some((r) => {
+      if (!(r.isNew || r.isDirty)) return false;
+
+      return table.columns.every((col) => {
+        if (!col.editable) return true;
+        const val = r[col.key];
+        return val !== "" && val !== null && val !== undefined;
+      });
+    });
   };
 
-  const cancelEditRow = (tableId, rowId) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
+  const validateTable = (table) => {
+    let isValid = true;
 
-        return {
-          ...t,
-          rows: t.rows.map(r => {
-            if (r.id !== rowId) return r;
+    const updatedRows = table.rows.map((row) => {
+      const errors = {};
 
-            if (r.originalRow) {
-              const { originalRow } = r;
-              return {
-                ...originalRow,
-                isEditing: false,
-                isDirty: false
-              };
-            }
+      table.columns.forEach((col) => {
+        if (!col.editable) return;
 
-            return r;
-          })
-        };
-      })
-    );
+        const value = row[col.key];
+
+        if (value === "" || value === null || value === undefined) {
+          errors[col.key] = "Required";
+          isValid = false;
+        }
+      });
+
+      return { ...row, errors };
+    });
+
+    return { isValid, updatedRows };
   };
 
-  const markDirty = (row, updates) => ({ ...row, ...updates, isDirty: !row.isNew });
-
-  const handleDropdownChange = (tableId, rowId, column, value) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
-
-        return {
-          ...t,
-          rows: t.rows.map(r => {
-            if (r.id !== rowId) return r;
-
-            if (column === "Active") return markDirty(r, { Active: value === "Yes" });
-
-            return markDirty(r, { [column]: value });
-          })
-        };
-      })
-    );
-  };
-
+  // ================= HANDLERS =================
   const handleInputChange = (tableId, rowId, column, value) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
-
-        return {
-          ...t,
-          rows: t.rows.map(r => {
-            if (r.id !== rowId) return r;
-            return markDirty(r, { [column]: value });
-          })
-        };
-      })
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id !== tableId
+          ? t
+          : {
+              ...t,
+              rows: t.rows.map((r) =>
+                r.id !== rowId ? r : markDirty(r, { [column]: value })
+              ),
+            }
+      )
     );
   };
+
+  const handleToggleStatus = (tableId, rowId, value , row) => {
+
+    debugger;
+    console.log("Toggling status for", { tableId, rowId, value, row });
+
+    //handleInputChange(tableId, rowId, "Active", value);
+
+    handleToggleStatusCHange(tableId, row);
+  };
+
+  const handleToggleStatusCHange = (tableId, row) => {
+  setTables((prev) =>
+    prev.map((t) =>
+      t.id !== tableId
+        ? t
+        : {
+            ...t,
+            rows: t.rows.map((r) => {
+              // ✅ match correct row using backend Id
+              if (r.Id !== row.Id) return r;
+
+              // ✅ toggle value
+              const isActive =
+                String(r.Active || "").toLowerCase() === "active";
+
+              const newValue = isActive ? "Inactive" : "Active";
+
+              return {
+                ...r,
+                Active: newValue,          // ✅ toggle
+                isDirty: !r.isNew,         // ✅ mark dirty (important for Save)
+                errors: {},                // ✅ clear errors
+              };
+            }),
+          }
+    )
+  );
+};
 
   const handleAddRow = (tableId) => {
-    let newRowId = null;
-
-    setTables(prev =>
-      prev.map(t => {
+    setTables((prev) =>
+      prev.map((t) => {
         if (t.id !== tableId) return t;
 
-        const newId = `${tableId}-${Date.now()}`;
-        newRowId = newId;
+        const existingIds = t.rows
+          .map((r) => Number(r.Id))
+          .filter((id) => !isNaN(id));
 
-        const newRow = { id: newId, isNew: true, isDirty: true, isEditing: true };
+        const nextId =
+          existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
 
-        t.headers.forEach(h => {
-          if (h === "Status") newRow[h] = "OK";
-          else if (h === "Available") newRow[h] = "Yes";
-          else if (h === "Active") newRow[h] = true;
-          else if (["Count", "Qty", "Score"].includes(h)) newRow[h] = 0;
-          else newRow[h] = "";
+        const newRow = {
+          id: `new-${Date.now()}`,
+          Id: nextId,
+          isNew: true,
+          isDirty: true,
+          isEditing: true,
+          Active: "Active",
+          errors: {},
+        };
+
+        t.columns.forEach((col) => {
+          if (!(col.key in newRow)) newRow[col.key] = "";
         });
 
         return { ...t, rows: [...t.rows, newRow] };
@@ -174,267 +272,809 @@ export default function CommonTablesBoard() {
     );
 
     setTimeout(() => {
-      const rowEl = document.getElementById(newRowId);
-      if (rowEl) rowEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }, 50);
+      const el = tableRefs.current[tableId];
+      if (el) {
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      }
+    }, 100);
   };
 
   const handleDeleteRow = (tableId, rowId) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
-        return { ...t, rows: t.rows.filter(r => r.id !== rowId) };
-      })
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id !== tableId
+          ? t
+          : { ...t, rows: t.rows.filter((r) => r.id !== rowId) }
+      )
     );
   };
 
-  const handleSort = (tableId, column) => {
-    setSortConfig(prev => {
-      const direction = prev[column] === "asc" ? "desc" : "asc";
+  const handleSoftDelete = async (tableId, row) => {
+  // ✅ New row → direct remove
+  if (row.isNew) {
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id !== tableId
+          ? t
+          : { ...t, rows: t.rows.filter((r) => r.id !== row.id) }
+      )
+    );
+    return;
+  }
 
-      setTables(tablesPrev =>
-        tablesPrev.map(t => {
-          if (t.id !== tableId) return t;
+  try {
 
-          const sorted = [...t.rows].sort((a, b) => {
-            if (a[column] > b[column]) return direction === "asc" ? 1 : -1;
-            if (a[column] < b[column]) return direction === "asc" ? -1 : 1;
-            return 0;
-          });
+    debugger;
+    // ✅ Backend validation
+    //const res = await fetch(`/api/master/${tableId}/can-delete/${row.Id}`);
+    //const data = await res.json();
 
-          return { ...t, rows: sorted };
-        })
+   
+    const res = await checkActiveRecordsApi(tableId, row, user.token);
+
+    debugger;
+    let data={};
+
+    console.log("API response for delete validation:", res.result);
+ if(res.result.recordCount>0)
+   {
+       data = { canDelete: res.result.canDelete, message: "This item is linked to "+res.result.recordCount+" active records." }; // Mocked response
+    }
+    else
+    {
+      data= { canDelete: res.result.canDelete, message: "No active records linked." }; // Mocked response
+    }
+
+ 
+debugger;
+let confirmed = false;
+
+if (!data.canDelete) {
+  // ❌ Only message, no confirmation
+  //alert(`⚠️ ${data.message}`);
+  showMessage(` ${data.message}.` + " Can't be deleted.", MESSAGE_TYPES.WARNING);
+  return;
+}
+
+// ✅ Only when canDelete = true
+confirmed = window.confirm("Are you sure you want to delete?");
+
+if (!confirmed) return;
+
+ 
+
+    // ✅ Mark as deleted
+    setTables((prev) =>
+      prev.map((t) =>
+        t.id !== tableId
+          ? t
+          : {
+              ...t,
+              rows: t.rows.map((r) =>
+                r.Id === row.Id
+                  ? {
+                      ...r,
+                      isDeleted: true,
+                      isDirty: true,
+                    }
+                  : r
+              ),
+            }
+      )
+    );
+  } catch (err) {
+    console.error("Delete validation failed", err);
+  }
+};
+
+const handleUndoDelete = (tableId, row) => {
+  setTables((prev) =>
+    prev.map((t) =>
+      t.id !== tableId
+        ? t
+        : {
+            ...t,
+            rows: t.rows.map((r) =>
+              r.Id === row.Id
+                ? {
+                    ...r,
+                    isDeleted: false,
+                    isDirty: false,
+                  }
+                : r
+            ),
+          }
+    )
+  );
+};
+  // const handleUndoAll = (tableId) => {
+  //   setTables((prev) =>
+  //     prev.map((t) => {
+  //       if (t.id !== tableId) return t;
+
+  //       return {
+  //         ...t,
+  //         rows: t.rows
+  //           .filter((r) => !r.isNew)
+  //           .map((r) => ({
+  //             ...r,
+  //             isDirty: false,
+  //             isEditing: false,
+  //             errors: {},
+  //           })),
+  //       };
+  //     })
+  //   );
+  // };
+
+const handleUndoAll = (tableId) => {
+  setTables((prev) =>
+    prev.map((t) => {
+      if (t.id !== tableId) return t;
+
+      return {
+        ...t,
+        rows: t.originalRows.map((r) => ({
+          ...r,
+          isDirty: false,
+          isNew: false,
+          isEditing: false,
+          errors: {},
+        })),
+      };
+    })
+  );
+};
+
+  const handleSave = async (tableId) => {
+    const table = tables.find((t) => t.id === tableId);
+
+    debugger;
+
+    
+    const { isValid, updatedRows } = validateTable(table);
+
+    if (!isValid) {
+      setTables((prev) =>
+        prev.map((t) =>
+          t.id !== tableId ? t : { ...t, rows: updatedRows }
+        )
       );
+      alert("Please fill all required fields ❗");
+      return;
+    }
 
-      return { ...prev, [column]: direction };
-    });
-  };
-
-  const handleClearAll = (tableId) => {
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
-
-        return {
-          ...t,
-          rows: t.rows.filter(r => !r.isNew)
-        };
-      })
-    );
-  };
-
-  const handleSaveTable = (tableId) => {
-    const table = tables.find(t => t.id === tableId);
-
-    const newRows = table.rows.filter(r => r.isNew);
-    const updatedRows = table.rows.filter(r => r.isDirty && !r.isNew);
+    // const payload = {
+    //   tableId,
+    //   newRows: table.rows.filter((r) => r.isNew),
+    //   updatedRows: table.rows.filter((r) => r.isDirty && !r.isNew),
+    //   currentUser: user,
+    // };
 
     const payload = {
-      tableId,
-      newRows,
-      updatedRows
-    };
+  tableId,
 
-    console.log("Batch Save Payload", payload);
+  newRows: table.rows.filter((r) => r.isNew && !r.isDeleted),
 
-    setTables(prev =>
-      prev.map(t => {
-        if (t.id !== tableId) return t;
+  updatedRows: table.rows.filter((r) => r.isDirty && !r.isNew && !r.isDeleted),
 
-        return {
-          ...t,
-          rows: t.rows.map(r => ({
-            ...r,
-            isNew: false,
-            isDirty: false,
-            isEditing: false
-          }))
-        };
-      })
-    );
+  deletedRows: table.rows.filter((r) => r.isDeleted),
 
-    alert(`Saved ${newRows.length} new and ${updatedRows.length} updated rows.`);
+  currentUser: user,
+};
+
+    try {
+      await saveTableApi(tableId, payload);
+
+      setTables((prev) =>
+        prev.map((t) =>
+          t.id !== tableId
+            ? t
+            : {
+                ...t,
+                rows: t.rows.map((r) => ({
+                  ...r,
+                  isDirty: false,
+                  isNew: false,
+                  isEditing: false,
+                  errors: {},
+                })),
+
+                originalRows: JSON.parse(JSON.stringify(t.rows)), // ✅ reset baseline
+              }
+        )
+      );
+
+      alert("Saved successfully ✅");
+    } catch (err) {
+      console.error("Save error:", err);
+    }
   };
+const handleUndoRow = (tableId, row) => {
+  setTables((prev) =>
+    prev.map((t) => {
+      if (t.id !== tableId) return t;
 
+      // 🔍 find original row from snapshot
+      const original = t.originalRows.find(
+        (r) => r.Id === row.Id
+      );
+
+      return {
+        ...t,
+        rows: t.rows.map((r) => {
+          if (r.Id !== row.Id) return r;
+
+          // ✅ revert to original values
+          return {
+            ...original,
+            isDirty: false,
+            isNew: false,
+            isEditing: false,
+            errors: {},
+          };
+        }),
+      };
+    })
+  );
+};
+  // ================= SEARCH =================
   const filteredTables = useMemo(() => {
     if (!tableSearch.trim()) return tables;
-
-    return tables.filter(t =>
+    return tables.filter((t) =>
       t.title.toLowerCase().includes(tableSearch.toLowerCase())
     );
   }, [tables, tableSearch]);
 
-  const tableHasChanges = (table) =>
-    table.rows.some(r => r.isNew || r.isDirty);
+  // ================= UI =================
+  if (loading) return <div className="p-6">Loading...</div>;
 
-  return (
-    <div className="p-6 font-sans">
-      <div className="mb-6 max-w-md relative">
-        <input
-          type="text"
-          placeholder="🔎 Search table name..."
-          value={tableSearch}
-          onChange={(e) => setTableSearch(e.target.value)}
-          className={THEME.searchInput}
-        />
+return (
+  <div className="p-6 font-sans">
+    <input
+      placeholder="🔎 Search table..."
+      value={tableSearch}
+      onChange={(e) => setTableSearch(e.target.value)}
+      className={THEME.searchInput + " mb-6 max-w-md"}
+    />
 
-        {tableSearch && (
-          <button
-            onClick={() => setTableSearch("")}
-            className={THEME.clearButton}
+    <div className="grid grid-cols-2 gap-6">
+      {filteredTables.map((table) => (
+        <div key={table.id} className={THEME.tableContainer}>
+          <h2 className="text-lg font-semibold mb-2">{table.title}</h2>
+
+          <div
+            ref={(el) => (tableRefs.current[table.id] = el)}
+            className="h-[300px] overflow-y-auto relative"
           >
-            ✕
-          </button>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        {filteredTables.map(table => (
-          <div key={table.id} className={THEME.tableContainer}>
-            <h2 className="text-lg font-semibold mb-3">{table.title}</h2>
-
-            <div
-              className="h-64 overflow-y-auto border rounded"
-              ref={el => (containerRefs.current[table.id] = el)}
-            >
-              <table className="w-full border-collapse">
-                <thead className={`sticky top-0 ${THEME.headerBg}`}>
-                  <tr>
-                    {table.headers.map(h => (
-                      <th
-                        key={h}
-                        onClick={() => handleSort(table.id, h)}
-                        className="text-left p-2 border-b font-medium cursor-pointer"
-                      >
-                        {h} ⬍
-                      </th>
-                    ))}
-                    <th className="p-2 border-b">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {table.rows.map(row => (
-                    <tr
-                      id={row.id}
-                      key={row.id}
-                      className={`${THEME.hoverRow} ${row.isNew ? "bg-green-50" : row.isDirty ? "bg-yellow-50" : ""}`}
-                    >
-                      {table.headers.map(col => {
-                        const val = row[col] ?? "";
-
-                        if (row.isEditing) {
-                          if (["Status", "Available"].includes(col)) {
-                            const options = col === "Status" ? ["OK", "Pending", "Failed"] : ["Yes", "No"];
-
-                            return (
-                              <td key={col} className="p-2 border-b">
-                                <select
-                                  value={val}
-                                  onChange={e => handleDropdownChange(table.id, row.id, col, e.target.value)}
-                                  className={THEME.input}
-                                >
-                                  {options.map(o => (
-                                    <option key={o}>{o}</option>
-                                  ))}
-                                </select>
-                              </td>
-                            );
-                          }
-
-                          if (col === "Active") {
-                            return (
-                              <td key={col} className="p-2 border-b">
-                                <select
-                                  value={val ? "Yes" : "No"}
-                                  onChange={e => handleDropdownChange(table.id, row.id, col, e.target.value)}
-                                  className={THEME.input}
-                                >
-                                  <option>Yes</option>
-                                  <option>No</option>
-                                </select>
-                              </td>
-                            );
-                          }
-
-                          return (
-                            <td key={col} className="p-2 border-b">
-                              <input
-                                value={val}
-                                onChange={e => handleInputChange(table.id, row.id, col, e.target.value)}
-                                className={THEME.input}
-                              />
-                            </td>
-                          );
-                        }
-
-                        return (
-                          <td key={col} className="p-2 border-b">
-                            {typeof val === "boolean" ? (val ? "Yes" : "No") : String(val)}
-                          </td>
-                        );
-                      })}
-
-                      <td className="p-2 border-b space-x-2">
-                        {!row.isEditing && !row.isNew && (
-                          <button
-                            onClick={() => startEditRow(table.id, row.id)}
-                            className={THEME.editText}
-                          >
-                            Edit
-                          </button>
-                        )}
-
-                        {row.isEditing && !row.isNew && (
-                          <button
-                            onClick={() => cancelEditRow(table.id, row.id)}
-                            className={THEME.undoText}
-                          >
-                            Undo
-                          </button>
-                        )}
-
-                        {row.isNew && (
-                          <button
-                            onClick={() => handleDeleteRow(table.id, row.id)}
-                            className={THEME.deleteText}
-                          >
-                            Delete
-                          </button>
-                        )}
-                      </td>
-                    </tr>
+            <table className="w-full border-collapse">
+              <thead className="sticky top-0 bg-gray-100 z-10 shadow-sm">
+                <tr>
+                  {table.columns.map((col) => (
+                    <th key={col.key} className="p-2 text-left">
+                      {col.label}
+                    </th>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                  <th className="p-2 text-center">Actions</th>
+                </tr>
+              </thead>
 
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={() => handleAddRow(table.id)}
-                className={THEME.buttonAdd}
-              >
-                Add Row
-              </button>
+              <tbody>
+                {table.rows.map((row) => (
+                  <tr
+                    key={row.id}
+                    className={
+                      row.isNew
+                        ? THEME.newRow
+                        : row.isDirty
+                        ? THEME.dirtyRow
+                        : ""
+                    }
+                  >
+                    {table.columns.map((col) => {
+                      const value = row[col.key];
 
-              <button
-                disabled={!tableHasChanges(table)}
-                onClick={() => handleSaveTable(table.id)}
-                className={THEME.buttonPrimary}
-              >
-                Save / Update Table
-              </button>
+                      return (
+                        <td
+                          key={col.key}
+                          className={`p-2 ${
+                            row.isDeleted
+                              ? "opacity-50 line-through"
+                              : ""
+                          }`}
+                        >
+                          {col.type === "toggle" ? (
+                            <StatusToggle
+                              value={value}
+                              onToggle={(val) =>
+                                handleToggleStatus(
+                                  table.id,
+                                  row.Id,
+                                  val,
+                                  row
+                                )
+                              }
+                            />
+                          ) : row.isEditing ? (
+                            <input
+                              value={value || ""}
+                              disabled={!col.editable}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  table.id,
+                                  row.id,
+                                  col.key,
+                                  e.target.value
+                                )
+                              }
+                              className={`${THEME.input} ${
+                                row.errors?.[col.key]
+                                  ? THEME.inputError
+                                  : ""
+                              }`}
+                            />
+                          ) : (
+                            value ?? "-"
+                          )}
+                        </td>
+                      );
+                    })}
 
-              <button
-                onClick={() => handleClearAll(table.id)}
-                className={THEME.buttonDangerOutline}
-              >
-                Clear Unsaved Rows
-              </button>
-            </div>
+                    {/* ✅ Actions Column */}
+    <td className="p-2 flex justify-center items-center gap-3">
+  {(() => {
+    const canDelete =
+      row.canBeDeleted === true ||
+      row.canBeDeleted === "true" ||
+      row.canBeDeleted === 1;
+
+    // 🆕 New Row → Trash
+    if (row.isNew) {
+      return (
+        <button
+          onClick={() => handleDeleteRow(table.id, row.id || row.Id)}
+          className="text-gray-600 hover:text-red-600 transition"
+          title="Remove Row"
+        >
+          <Trash2 size={18} />
+        </button>
+      );
+    }
+
+    // ❌ Deleted Row → Undo
+    if (row.isDeleted) {
+      return (
+        <button
+          onClick={() => handleUndoDelete(table.id, row)}
+          className="text-blue-600 hover:text-blue-800 transition"
+          title="Undo Delete"
+        >
+          <Undo2 size={18} />
+        </button>
+      );
+    }
+
+    // 🔄 Dirty Row → Undo
+    if (row.isDirty) {
+      return (
+        <button
+          onClick={() => handleUndoRow(table.id, row)}
+          className="text-blue-600 hover:text-blue-800 transition"
+          title="Undo Changes"   >
+          <Undo2 size={18} />
+        </button>
+      );
+    }
+
+    // ✅ Can Delete → Red Delete Icon
+    if (canDelete) {
+      return (
+        <button
+          onClick={() => handleSoftDelete(table.id, row)}
+          className="text-red-600 hover:text-red-800 transition"
+          title="Delete"
+        >
+          {/* <XCircle size={16} /> */}
+            <Trash2 size={18} />
+        </button>
+      );
+    }
+
+    // 🚫 Not Deletable → Badge
+    return (
+      <span className="text-green-700 bg-green-100 px-2 py-1 rounded text-xs font-semibold title=It is in use.">
+        Active
+      </span>
+    );
+  })()}
+</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        ))}
-      </div>
+
+          {/* FOOTER */}
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => handleAddRow(table.id)}
+              className={THEME.buttonAdd}
+            >
+              Add Row
+            </button>
+
+            <button
+              onClick={() => handleSave(table.id)}
+              disabled={!tableHasValidChanges(table)}
+              className={THEME.buttonPrimary}
+            >
+              Save Changes
+            </button>
+
+            {tableHasChanges(table) && (
+              <button
+                onClick={() => handleUndoAll(table.id)}
+                className={THEME.buttonSecondary}
+              >
+                Undo All
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
     </div>
-  );
+  </div>
+);
+
+// return (
+//   <div className="p-6 font-sans">
+//     <input
+//       placeholder="🔎 Search table..."
+//       value={tableSearch}
+//       onChange={(e) => setTableSearch(e.target.value)}
+//       className={THEME.searchInput + " mb-6 max-w-md"}
+//     />
+
+//     <div className="grid grid-cols-2 gap-6">
+//       {filteredTables.map((table) => (
+//         <div key={table.id} className={THEME.tableContainer}>
+//           <h2 className="text-lg font-semibold mb-2">{table.title}</h2>
+
+//           <div
+//             ref={(el) => (tableRefs.current[table.id] = el)}
+//             className="h-[300px] overflow-y-auto relative"
+//           >
+//             <table className="w-full border-collapse">
+//               <thead className="sticky top-0 bg-gray-100 z-10 shadow-sm">
+//                 <tr>
+//                   {table.columns.map((col) => (
+//                     <th key={col.key} className="p-2 text-left">
+//                       {col.label}
+//                     </th>
+//                   ))}
+//                   <th className="p-2">Actions</th>
+//                 </tr>
+//               </thead>
+
+//               <tbody>
+//                 {table.rows.map((row) => (
+//                   <tr
+//                     key={row.id}
+//                     className={
+//                       row.isNew
+//                         ? THEME.newRow
+//                         : row.isDirty
+//                         ? THEME.dirtyRow
+//                         : ""
+//                     }
+//                   >
+//                     {table.columns.map((col) => {
+//                       const value = row[col.key];
+
+//                       return (
+//                         <td
+//                           key={col.key}
+//                           className={`p-2 ${
+//                             row.isDeleted
+//                               ? "opacity-50 line-through"
+//                               : ""
+//                           }`}
+//                         >
+//                           {col.type === "toggle" ? (
+//                             <StatusToggle
+//                               value={value}
+//                               onToggle={(val) =>
+//                                 handleToggleStatus(
+//                                   table.id,
+//                                   row.Id,
+//                                   val,
+//                                   row
+//                                 )
+//                               }
+//                             />
+//                           ) : row.isEditing ? (
+//                             <input
+//                               value={value || ""}
+//                               disabled={!col.editable}
+//                               onChange={(e) =>
+//                                 handleInputChange(
+//                                   table.id,
+//                                   row.id,
+//                                   col.key,
+//                                   e.target.value
+//                                 )
+//                               }
+//                               className={`${THEME.input} ${
+//                                 row.errors?.[col.key]
+//                                   ? THEME.inputError
+//                                   : ""
+//                               }`}
+//                             />
+//                           ) : (
+//                             value ?? "-"
+//                           )}
+//                         </td>
+//                       );
+//                     })}
+
+//                     {/* ✅ Single Actions Column */}
+//                    <td className="p-2 flex justify-center items-center gap-2">
+//                       {row.isNew ? (
+//                         /* 🆕 New Row → Hard Delete */
+//                         <button
+//                           onClick={() =>
+//                             handleDeleteRow(
+//                               table.id,
+//                               row.id || row.Id
+//                             )
+//                           }
+//                           className={THEME.deleteText}
+//                           title="Remove Row"
+//                         >
+//                           🗑
+//                         </button>
+//                       ) : row.isDirty ? (
+//                         /* 🔄 Dirty Row → Undo Only */
+//                         <button
+//                           onClick={() =>
+//                             handleUndoRow(table.id, row)
+//                           }
+//                           className={THEME.buttonSecondary}
+//                           title="Undo Changes"
+//                         >
+//                           ↩
+//                         </button>
+//                       ) : row.isDeleted ? (
+//                         /* ↩ Deleted Row → Undo Delete */
+//                         <button
+//                           onClick={() =>
+//                             handleUndoDelete(table.id, row)
+//                           }
+//                           className="text-blue-600 text-xs"
+//                           title="Undo Delete"
+//                         >
+//                           Undo
+//                         </button>
+//                       ) : (
+//                         /* ❌ Normal Row → Soft Delete */
+//                         <button
+//                           onClick={() =>
+//                             handleSoftDelete(table.id, row)
+//                           }
+//                           className="text-red-600 font-bold"
+//                           title="Delete"
+//                         >
+//                           ❌
+//                         </button>
+//                       )}
+//                     </td>
+//                   </tr>
+//                 ))}
+//               </tbody>
+//             </table>
+//           </div>
+
+//           {/* FOOTER */}
+//           <div className="flex gap-2 mt-2">
+//             <button
+//               onClick={() => handleAddRow(table.id)}
+//               className={THEME.buttonAdd}
+//             >
+//               Add Row
+//             </button>
+
+//             <button
+//               onClick={() => handleSave(table.id)}
+//               disabled={!tableHasValidChanges(table)}
+//               className={THEME.buttonPrimary}
+//             >
+//               Save Changes
+//             </button>
+
+//             {tableHasChanges(table) && (
+//               <button
+//                 onClick={() => handleUndoAll(table.id)}
+//                 className={THEME.buttonSecondary}
+//               >
+//                 Undo All
+//               </button>
+//             )}
+//           </div>
+//         </div>
+//       ))}
+//     </div>
+//   </div>
+// );
+//   return (
+
+
+//     <div className="p-6 font-sans">
+//       <input
+//         placeholder="🔎 Search table..."
+//         value={tableSearch}
+//         onChange={(e) => setTableSearch(e.target.value)}
+//         className={THEME.searchInput + " mb-6 max-w-md"}
+//       />
+
+//       <div className="grid grid-cols-2 gap-6">
+//         {filteredTables.map((table) => (
+//           <div key={table.id} className={THEME.tableContainer}>
+//             <h2 className="text-lg font-semibold mb-2">{table.title}</h2>
+
+//             {/* <div
+//               ref={(el) => (tableRefs.current[table.id] = el)}
+//               className="h-[300px] overflow-y-auto"
+//             > */}<div
+//   ref={(el) => (tableRefs.current[table.id] = el)}
+//   className="h-[300px] overflow-y-auto relative"
+// >
+//               <table className="w-full border-collapse">
+//                 <thead className="sticky top-0 bg-gray-100 z-10 shadow-sm">
+//                   <tr>
+//                     {table.columns.map((col) => (
+//                       <th key={col.key} className="p-2 text-left">
+//                         {col.label}
+//                       </th>
+//                     ))}
+//                     <th>Delete</th>
+//                     <th>Actions</th>
+//                   </tr>
+//                 </thead>
+
+//                 <tbody>
+//                   {table.rows.map((row) => (
+//                     <tr
+//                       key={row.id}
+//                       className={
+//                         row.isNew
+//                           ? THEME.newRow
+//                           : row.isDirty
+//                           ? THEME.dirtyRow
+//                           : ""
+//                       }
+//                     >
+//                       {table.columns.map((col) => {
+//                         const value = row[col.key];
+
+//                         return (
+//                           <td key={col.key} className="p-2">
+//                             {col.type === "toggle" ? (
+//                               <StatusToggle
+//                                 value={value}
+//                                 onToggle={(val) =>
+//                                   handleToggleStatus(
+//                                     table.id,
+//                                     row.Id,
+//                                     val,
+//                                     row
+//                                   )
+//                                 }
+//                               />
+//                             ) : row.isEditing ? (
+//                               <input
+//                                 value={value || ""}
+//                                 disabled={!col.editable}
+//                                 onChange={(e) =>
+//                                   handleInputChange(
+//                                     table.id,
+//                                     row.id,
+//                                     col.key,
+//                                     e.target.value
+//                                   )
+//                                 }
+//                                 className={`${THEME.input} ${
+//                                   row.errors?.[col.key]
+//                                     ? THEME.inputError
+//                                     : ""
+//                                 }`}
+//                               />
+//                             ) : (
+//                               value ?? "-"
+//                             )}
+//                           </td>
+//                         );
+//                       })}
+
+                     
+
+//                       <td>
+
+//                         <td>
+//   {!row.isDeleted ? (
+//     <button
+//       onClick={() => handleSoftDelete(table.id, row)}
+//       className="text-red-600 font-bold"
+//     >
+//       ❌
+//     </button>
+//   ) : (
+//     <button
+//       onClick={() => handleUndoDelete(table.id, row)}
+//       className="text-blue-600 text-xs"
+//     >
+//       Undo
+//     </button>
+//   )}
+// </td>
+//   {/* ✅ New Row → Delete */}
+//   {row.isNew && (
+//     <button
+//       onClick={() =>
+//         handleDeleteRow(table.id, row.id || row.Id)
+//       }
+//       className={THEME.deleteText}
+//     >
+//       Delete
+//     </button>
+//   )}
+
+//   {/* ✅ Existing Dirty Row → Undo */}
+//   {!row.isNew && row.isDirty && (
+//     <button
+//       onClick={() =>
+//         handleUndoRow(table.id, row)
+//       }
+//       className={THEME.buttonSecondary}
+//     >
+//       Undo
+//     </button>
+//   )}
+// </td>
+//                     </tr>
+//                   ))}
+//                 </tbody>
+//               </table>
+//             </div>
+
+//             {/* FOOTER */}
+//             <div className="flex gap-2 mt-2">
+//               <button
+//                 onClick={() => handleAddRow(table.id)}
+//                 className={THEME.buttonAdd}
+//               >
+//                 Add Row
+//               </button>
+
+//               <button
+//                 onClick={() => handleSave(table.id)}
+//                 disabled={!tableHasValidChanges(table)}
+//                 className={THEME.buttonPrimary}
+//               >
+//                 Save Changes
+//               </button>
+
+//               {tableHasChanges(table) && (
+//                 <button
+//                   onClick={() => handleUndoAll(table.id)}
+//                   className={THEME.buttonSecondary}
+//                 >
+//                   Undo All
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
 }
