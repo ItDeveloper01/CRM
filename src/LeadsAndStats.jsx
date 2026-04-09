@@ -145,11 +145,11 @@ React.useEffect(() => {
           </CardContent>
         )}
 
-        {/* {activeTab === "Created Leads" && (
+        {activeTab === "Created Leads" && (
           <CardContent>
             <CreatedLeadsListWithFilters users={users} />
           </CardContent>
-        )} */}
+        )}
 
       </Card>
     </div>

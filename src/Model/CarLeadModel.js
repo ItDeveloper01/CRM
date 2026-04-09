@@ -24,7 +24,7 @@ export const CarLeadObject= {
     quoteGiven: "",
     notes: "",
     assigneeTo_UserID: "",
-
+    updatedBy_UserID: "",
 }
 
 export const getEmptyCarLeadObj = () => {

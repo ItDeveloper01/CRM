@@ -32,7 +32,8 @@ export const AirTicketingLeadObject = {
 
     quoteGiven: "",
     notes: "",
-    assigneeTo_UserID: ""
+    assigneeTo_UserID: "",
+    updatedBy_UserID: "",
 
 };
 

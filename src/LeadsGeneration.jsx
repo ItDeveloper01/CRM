@@ -31,31 +31,31 @@ import { constant, set } from 'lodash';
 import { da, id } from 'intl-tel-input/i18n';
 import HistoryCollapse from './HIstoryHover';
 import { User } from 'lucide-react';
-import { ViewField, ViewSelect, DateViewField} from './ConstantComponent/ViewComponents';
+import { ViewField, ViewSelect, DateViewField } from './ConstantComponent/ViewComponents';
 import { useLocation } from 'react-router-dom';
 import { useRef } from 'react';
 
 
 
 
-export default function LeadsGeneration({ lead, onClose, mode ,viewAllLeads=false,isGenerateNewLeadAllowed=true}) {
+export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
   const reminderState = location.state;
 
-const isCreateMode = mode === "create";
-const isEditMode   = mode === "edit";
-const isViewMode   = mode === "view";
-  
-   console.log("mode value ", mode);
+  const isCreateMode = mode === "create";
+  const isEditMode = mode === "edit";
+  const isViewMode = mode === "view";
 
-    const renderCount = useRef(0);
+  console.log("mode value ", mode);
+
+  const renderCount = useRef(0);
   renderCount.current += 1;
 
   console.log("Render count:", renderCount.current);
 
- // alert("mode value is : " + mode + " \n  render count is : " + renderCount.current+ " \n viewAllLeads value is : " + viewAllLeads + " \n isGenerateNewLeadAllowed value is : " + isGenerateNewLeadAllowed);
+  // alert("mode value is : " + mode + " \n  render count is : " + renderCount.current+ " \n viewAllLeads value is : " + viewAllLeads + " \n isGenerateNewLeadAllowed value is : " + isGenerateNewLeadAllowed);
 
   const [airTicketingdObj, setAirTicketingLeadObj] = useState({
     ...getEmptyAirTicketObj(),
@@ -96,9 +96,9 @@ const isViewMode   = mode === "view";
   const [statusText, setStatusText] = useState("Open");
   // const { border, ring, bg } = STATUS_STYLES[statusText] || STATUS_STYLES.Open;            //for status border selection
   // Get current status 
-  const currentStatusText =leadStatusMasterList.find((s) => s.id == leadObj.leadStatus)?.statusName || "Open";
+  const currentStatusText = leadStatusMasterList.find((s) => s.id == leadObj.leadStatus)?.statusName || "Open";
   //Apply style for status state change 
-  const { border, ring, bg } =STATUS_STYLES[currentStatusText] || STATUS_STYLES.Open;
+  const { border, ring, bg } = STATUS_STYLES[currentStatusText] || STATUS_STYLES.Open;
   // const { borderColor, ringColor } = STATUS_STYLES[status];
   const [showPopup, setShowPopup] = useState(false);
   const [popupType, setPopupType] = useState("INFO");
@@ -150,20 +150,20 @@ const isViewMode   = mode === "view";
 
 
 
-//useEffect(() => {
+  //useEffect(() => {
   const checkDuplicateFromReminder = async () => {
 
     debugger;
     if (viewAllLeads === true) {
-        //setIsUpdateMode(false);
-        onMobileChangeFocus(null);
+      //setIsUpdateMode(false);
+      onMobileChangeFocus(null);
     }
 
   };
 
-//   checkDuplicateFromReminder();
+  //   checkDuplicateFromReminder();
 
-// }, [reminderState, viewAllLeads]); 
+  // }, [reminderState, viewAllLeads]); 
   //Indian city api 
   useEffect(() => {
 
@@ -417,8 +417,8 @@ const isViewMode   = mode === "view";
 
   const onMobileChangeFocus = async (value) => {
     debugger;
-    if (isUpdateMode && value!=null)
-       return; // if in update mode then return
+    if (isUpdateMode && value != null)
+      return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
     //CheckDuplicateMobile
     const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
@@ -442,9 +442,9 @@ const isViewMode   = mode === "view";
 
       console.log("Duplicate mobile check response:", res.data);
 
-      if (res.data && res.data.length > 0 ) {
-        if(value!=null)
-        alert("Duplicate mobile number found. Please check the existing leads.");
+      if (res.data && res.data.length > 0) {
+        if (value != null)
+          alert("Duplicate mobile number found. Please check the existing leads.");
         setISLeadsForPhoneVisible(true);
         setLeadsForPhoneNumber(res.data);
       }
@@ -577,12 +577,12 @@ const isViewMode   = mode === "view";
   useEffect(() => {
     debugger;
 
-  if (!leadObj?.mobileNo) return;
-  if (!viewAllLeads) return;
+    if (!leadObj?.mobileNo) return;
+    if (!viewAllLeads) return;
 
-  checkDuplicateFromReminder();
+    checkDuplicateFromReminder();
 
-}, [leadObj, viewAllLeads,isUpdateMode]); // Run when leadObj or viewAllLeads changes
+  }, [leadObj, viewAllLeads, isUpdateMode]); // Run when leadObj or viewAllLeads changes
 
   // Fetch Lead Categories
   useEffect(() => {
@@ -683,21 +683,21 @@ const isViewMode   = mode === "view";
   //   }
   // };                // Commited on 18.03.2026
   const handleChangeStatusReason = (e) => {
-  const value = e.target.value;
+    const value = e.target.value;
 
-  let tempStatus =
-    leadStatusMasterList.find((s) => s.id == value)?.statusName || "Unknown";
+    let tempStatus =
+      leadStatusMasterList.find((s) => s.id == value)?.statusName || "Unknown";
 
-  setStatusText(tempStatus);
-  setSelectedStatusId(value);
+    setStatusText(tempStatus);
+    setSelectedStatusId(value);
 
-  if (tempStatus === "Lost" || tempStatus === "Postponed") {
-    setPendingStatus(value);     // store only
-    setStatusReason(true);       // open modal
-  } else {
-    handleChange(e);             // normal case
-  }
-};
+    if (tempStatus === "Lost" || tempStatus === "Postponed") {
+      setPendingStatus(value);     // store only
+      setStatusReason(true);       // open modal
+    } else {
+      handleChange(e);             // normal case
+    }
+  };
 
 
   // const handleSaveReason = (reason) => {
@@ -705,36 +705,36 @@ const isViewMode   = mode === "view";
   //   setStatusReason(false);
 
   // };    // Commited on 18.03.2026
- const handleSaveReason = ({ reason, remark , followUpDate }) => {
-  // ✅ status update
-  handleChange({
-    target: { name: "leadStatus", value: pendingStatus },
-  });
+  const handleSaveReason = ({ reason, remark, followUpDate }) => {
+    // ✅ status update
+    handleChange({
+      target: { name: "leadStatus", value: pendingStatus },
+    });
 
-  // ✅ reason update
-  handleChange({
-    target: { name: "leadStatusReason", value: reason },
-  });
+    // ✅ reason update
+    handleChange({
+      target: { name: "leadStatusReason", value: reason },
+    });
 
-  // ✅ remark update
-  handleLostPosteponedRemarkChange({
-    target: { name: "notes", value: remark },
-  });
-   // ONLY update follow-up for Postponed
-  if (pendingStatus == 3 && followUpDate) {
-    setLeadObj(prev => ({
-      ...prev,
-      followUpDate: followUpDate,
-    }));
-  }
+    // ✅ remark update
+    handleLostPosteponedRemarkChange({
+      target: { name: "notes", value: remark },
+    });
+    // ONLY update follow-up for Postponed
+    if (pendingStatus == 3 && followUpDate) {
+      setLeadObj(prev => ({
+        ...prev,
+        followUpDate: followUpDate,
+      }));
+    }
 
-  setStatusReason(false);
-  setPendingStatus(null);
-};
-const handleCancelReason = () => {
-  setStatusReason(false);
-  setPendingStatus(null);
-};
+    setStatusReason(false);
+    setPendingStatus(null);
+  };
+  const handleCancelReason = () => {
+    setStatusReason(false);
+    setPendingStatus(null);
+  };
 
   console.log("leadStatusReason:  ", leadObj.leadStatusReason);
   React.useEffect(() => {
@@ -1086,6 +1086,9 @@ const handleCancelReason = () => {
               carLeaddObj.assigneeTo_UserID = currentUser?.user?.userId;
             }
 
+            // if (!carLeaddObj.updatedBy_UserID) {
+            //   carLeaddObj.updatedBy_UserID = currentUser?.user?.userId;
+            // }
             const deepCarRentalsCopy = cloneDeep(carLeaddObj);
             deepLeadCopy.category = { ...deepCarRentalsCopy };;
             break;
@@ -1191,6 +1194,7 @@ const handleCancelReason = () => {
             // assign user IDs
             visadObj.createdBy_UserID ||= currentUser?.user?.userId;
             visadObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            // visadObj.updatedBy_UserID ||= currentUser?.user?.userId;
             const deepVisaCopy = cloneDeep(visadObj);
             deepCopy.category = { ...deepVisaCopy };
             break;
@@ -1198,6 +1202,7 @@ const handleCancelReason = () => {
           case "air ticketing": // lowercase because of .toLowerCase()
             airTicketingdObj.createdBy_UserID ||= currentUser?.user?.userId;
             airTicketingdObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            // airTicketingdObj.updatedBy_UserID ||= currentUser?.user?.userId;
             const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
             deepCopy.category = { ...deepAirTicketingCopy };
             break;
@@ -1205,6 +1210,7 @@ const handleCancelReason = () => {
           case "car rentals": // lowercase because of .toLowerCase()
             carLeaddObj.createdBy_UserID ||= currentUser?.user?.userId;
             carLeaddObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            // carLeaddObj.updatedBy_UserID ||= currentUser?.user?.userId;
             const deepCarRentalsCopy = cloneDeep(carLeaddObj);
             deepCopy.category = { ...deepCarRentalsCopy };
             break;
@@ -1295,48 +1301,48 @@ const handleCancelReason = () => {
 
 
             <div className="grid grid-cols-[120px_1fr] gap-y-2 gap-x-2 items-center">
-  
-  {/* Status */}
-  <label className="text-right font-medium text-gray-700">
-    Status:
-  </label>
 
-  {isViewMode ? (
-    <ViewSelect value={selectedStatus?.statusName || ""} />
-  ) : (
-    <select
-      name="leadStatus"
-      value={leadObj.leadStatus || 1}
-      onChange={handleChangeStatusReason}
-      disabled={!isUpdateMode || isUncategorised}
-      className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+              {/* Status */}
+              <label className="text-right font-medium text-gray-700">
+                Status:
+              </label>
+
+              {isViewMode ? (
+                <ViewSelect value={selectedStatus?.statusName || ""} />
+              ) : (
+                <select
+                  name="leadStatus"
+                  value={leadObj.leadStatus || 1}
+                  onChange={handleChangeStatusReason}
+                  disabled={!isUpdateMode || isUncategorised}
+                  className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
       ${border} ${ring} ${bg}
       ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
     `}
-    >
-      {leadStatusMasterList?.map((lStatus) => (
-        <option key={lStatus.id} value={lStatus.id}>
-          {lStatus.statusName}
-        </option>
-      ))}
-    </select>
-  )}
+                >
+                  {leadStatusMasterList?.map((lStatus) => (
+                    <option key={lStatus.id} value={lStatus.id}>
+                      {lStatus.statusName}
+                    </option>
+                  ))}
+                </select>
+              )}
 
-  {/* Reason */}
-  {isViewMode &&
-    (selectedStatus?.id === Constants.LeadStatus.Lost ||
-      selectedStatus?.id === Constants.LeadStatus.Postponed) && (
-      <>
-        <label className="text-right font-medium text-gray-700">
-          Reason:
-        </label>
+              {/* Reason */}
+              {isViewMode &&
+                (selectedStatus?.id === Constants.LeadStatus.Lost ||
+                  selectedStatus?.id === Constants.LeadStatus.Postponed) && (
+                  <>
+                    <label className="text-right font-medium text-gray-700">
+                      Reason:
+                    </label>
 
-        <span className="border border-gray-200 bg-gray-100 rounded-lg p-2 w-full">
-          {lead?.reasonDescription}
-        </span>
-      </>
-    )}
-</div>
+                    <span className="border border-gray-200 bg-gray-100 rounded-lg p-2 w-full">
+                      {lead?.reasonDescription}
+                    </span>
+                  </>
+                )}
+            </div>
 
 
           </div>
@@ -1538,14 +1544,14 @@ const handleCancelReason = () => {
             ></LeadsTableForExistingPhone>
           </div>
           {isGenerateNewLeadAllowed && (
-              <div className='text-center my-4'>
-                <button
-                  onClick={() => setISLeadsForPhoneVisible(false)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                  Continue with New Lead
-                </button>
-              </div>
-)}
+            <div className='text-center my-4'>
+              <button
+                onClick={() => setISLeadsForPhoneVisible(false)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                Continue with New Lead
+              </button>
+            </div>
+          )}
         </div>
       )}
       {/* Lead Details */}
@@ -1630,7 +1636,7 @@ const handleCancelReason = () => {
           {/* </fieldset> */}
           <div className='flex gap-4 mt-4'>
             <div className='flex flex-col flex-1'>
-              <label className='label-style'>Category</label>
+              <label className='label-style'>Category<span className="text-red-500 text-lg leading-none"> *</span></label>
               {isViewMode ? (
                 <ViewSelect value={selectedCategory} />
               ) : (
@@ -1657,7 +1663,13 @@ const handleCancelReason = () => {
             {!isViewMode && (
               <button
                 onClick={handleSubmit}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                disabled={!selectedLeadName}
+                // className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
+                className={`font-semibold py-2 px-4 rounded-lg transition ${!selectedLeadName
+                    ? "bg-gray-200 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                >
                 {isEditMode ? "Update Lead" : "Generate Lead"}
                 {/* {submitBtnTxt} */}
               </button>
