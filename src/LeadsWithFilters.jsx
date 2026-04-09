@@ -122,6 +122,7 @@ const handleTransfer = async (toUserId, leadId) => {
       return combinedLeads.map((lead) => ({
         ...lead,
         assignedTo: u.firstName,
+        //  assignedTo: lead.leadAssignedToName,
         
         // status: lead.histories[0].statusDescription, // or "Confirmed"/"Lost"/"Postponed" if you want to set manually
         // status: lead?.histories?.[0]?.statusDescription || "Unknown",
@@ -271,6 +272,7 @@ const handleTransfer = async (toUserId, leadId) => {
             .filter(Boolean)
         ),
       ];
+      
 
     return {
       categoryName: getUnique("categoryName"),
@@ -418,7 +420,7 @@ const handleTransfer = async (toUserId, leadId) => {
                 <td className="p-2">{lead.customerTypeDescription}</td>
                 <td className="p-2">{lead.mobileNo}</td>
                 <td className="p-2">
-                                  <button
+                                  {/* <button
                                     className={`px-3 py-1 rounded ${
                                       lead.statusDescription?.trim().toLowerCase() === "lost"
                                         ? 'bg-gray-400 cursor-not-allowed text-white'
@@ -426,6 +428,18 @@ const handleTransfer = async (toUserId, leadId) => {
                                     }`}
                                     onClick={() => openTransferModal(lead)}
                                       disabled={lead.statusDescription?.trim().toLowerCase() === "lost"}>
+                                    Transfer To
+                                  </button> */}
+                                  <button
+                                    className={`px-3 py-1 rounded ${
+                                      ["lost","confirmed"].includes(
+                                      lead.status?.trim().toLowerCase()
+                                    )? 'bg-gray-400 cursor-not-allowed text-white'
+                                        : 'bg-blue-600 text-white'
+                                    }`}
+                                    onClick={() => openTransferModal(lead)}
+                                      disabled={["lost","confirmed"].includes(
+                                      lead.status?.trim().toLowerCase() )}>
                                     Transfer To
                                   </button>
                 </td>

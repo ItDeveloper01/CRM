@@ -108,10 +108,13 @@ const handleTransfer = async (toUserId, leadId) => {
 
    // ✅ ONLY CREATED LEADS
   const allLeads = useMemo(() => {
+    debugger;
     return users.flatMap((u) => {
       return (u.createdLeads || []).map((lead) => ({
         ...lead,
-        assignedTo: u.firstName,
+        // leadCreatedByName: u.firstName,
+        // assignedTo:lead.leadCreatedByName,
+        // createdBy: u.firstName,// ✅ ADD THIS
         status: lead?.histories?.length > 0
           ? lead.histories[0].statusDescription
           : lead.statusDescription,
@@ -119,25 +122,23 @@ const handleTransfer = async (toUserId, leadId) => {
       }));
     });
   }, [users]);
-
+ console.log("all leads : ",allLeads);
     // ---------------- VIEW DETAILS ----------------
   const handleViewClick = async (lead) => {
-    try {
-      const res = await axios.post(GetLeadsForEditAPI, lead, {
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (res.data) {
-        setSelectedLead(res.data);
+      console.log("Viewing lead.....:", lead);
+      //API call  to lead details. 
+  
+      debugger;
+      try {
+  
+        let templead = await fetchLeadDetails(lead);
+        setSelectedLead(templead);
+        setMode("view");
         setModalOpen(true);
+      } catch {
+        showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
       }
-    } catch (error) {
-      showMessage("Error fetching Lead details", "error");
-    }
-  };
+    };
 
  
   async function fetchLeadDetails(lead) {
@@ -181,11 +182,50 @@ const handleTransfer = async (toUserId, leadId) => {
     }
 
   }
+//   async function fetchLeadDetails(lead) {
+//   try {
+//     debugger;
 
+//     const cleanedLead = {
+//       ...lead,
 
+//       // ✅ remove null createdAt from histories
+//       histories: (lead.histories || []).map(h => {
+//         const { createdAt, ...rest } = h;
+//         return {
+//           ...rest,
+//           createdAt: createdAt ?? new Date().toISOString()
+//         };
+//       })
+//     };
 
+//     const res = await axios.post(
+//       GetLeadsForEditAPI,
+//       cleanedLead,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${sessionUser.token}`,
+//           "Content-Type": "application/json"
+//         }
+//       }
+//     );
 
+//     return res.data;
 
+//   } catch (error) {
+//     const message =
+//       error.response?.data ||
+//       error.response?.statusText ||
+//       error.message;
+
+//     showMessage(
+//       "Error fetching Lead for edit: " + JSON.stringify(message),
+//       MESSAGE_TYPES.ERROR
+//     );
+
+//     return null;
+//   }
+// }
 
   React.useEffect(() => {
     console.log("All leads received in LeadsWithFilters.jsx:", allLeads);
@@ -197,7 +237,7 @@ const handleTransfer = async (toUserId, leadId) => {
     customerTypeDescription: "",
     categoryName: "",
     assignedTo: "",
-     createdAt: "", // ✅ CHANGED
+    createdAt: "", // ✅ CHANGED
   });
 
   const [nameSearch, setNameSearch] = useState("");
@@ -243,6 +283,8 @@ const handleTransfer = async (toUserId, leadId) => {
 };
    // ---------------- APPLY FILTERS ----------------
   const filteredLeads = useMemo(() => {
+
+    debugger;
     return allLeads.filter((lead) => {
 
       const matchesFilters =
@@ -266,7 +308,7 @@ const handleTransfer = async (toUserId, leadId) => {
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
-
+  
 
   return (
     <div className="w-full">
@@ -326,7 +368,8 @@ const handleTransfer = async (toUserId, leadId) => {
               <th className="p-2 text-left">Sr. No.</th>
               <th className="p-2 text-left">Lead Name</th>
               <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Assigned To</th>
+              <th className="p-2 text-left">Created By</th>
+              <th className="p-2 text-left">Current Assignee</th>
               <th className="p-2 text-left">Lead ID</th>
               <th className="p-2 text-left">Status</th>
               <th className="p-2 text-left">Created Date</th>
@@ -345,7 +388,8 @@ const handleTransfer = async (toUserId, leadId) => {
                 <td className="p-2">{idx + 1}</td>
                 <td className="p-2">{lead.fName} {lead.lName}</td>
                 <td className="p-2">{lead.categoryName}</td>
-                <td className="p-2 font-semibold">{lead.assignedTo}</td>
+                <td className="p-2 font-semibold">{lead.leadCreatedByName}</td>
+                <td className="p-2 font-semibold">{lead.leadAssignedToName}</td>
                 <td className="p-2 text-center">{lead.leadID}</td>
 
                 <td className={`p-2 font-semibold ${lead.status === "Lost"
@@ -367,12 +411,14 @@ const handleTransfer = async (toUserId, leadId) => {
                 <td className="p-2">
                                   <button
                                     className={`px-3 py-1 rounded ${
-                                      lead.statusDescription?.trim().toLowerCase() === "lost"
-                                        ? 'bg-gray-400 cursor-not-allowed text-white'
+                                      ["lost","confirmed"].includes(
+                                      lead.status?.trim().toLowerCase()
+                                    )? 'bg-gray-400 cursor-not-allowed text-white'
                                         : 'bg-blue-600 text-white'
                                     }`}
                                     onClick={() => openTransferModal(lead)}
-                                      disabled={lead.statusDescription?.trim().toLowerCase() === "lost"}>
+                                      disabled={["lost","confirmed"].includes(
+                                      lead.status?.trim().toLowerCase() )}>
                                     Transfer To
                                   </button>
                 </td>

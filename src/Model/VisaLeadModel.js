@@ -34,7 +34,8 @@ export const VISALeadObject = {
   // NotMapped properties (UI/API only)
   quoteGiven: "",
   notes: "",
-  assigneeTo_UserID: ""
+  assigneeTo_UserID: "",
+  updatedBy_UserID: "",
 };
 
 // Function to return a fresh empty lead object
