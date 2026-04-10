@@ -114,6 +114,7 @@ const handleTransfer = async (toUserId, leadId) => {
         ...lead,
         // leadCreatedByName: u.firstName,
         // assignedTo:lead.leadCreatedByName,
+        createdBy:lead.leadCreatedByName,
         // createdBy: u.firstName,// ✅ ADD THIS
         status: lead?.histories?.length > 0
           ? lead.histories[0].statusDescription
@@ -236,7 +237,7 @@ const handleTransfer = async (toUserId, leadId) => {
     status: "",
     customerTypeDescription: "",
     categoryName: "",
-    assignedTo: "",
+    createdBy: "",
     createdAt: "", // ✅ CHANGED
   });
 
@@ -263,7 +264,7 @@ const handleTransfer = async (toUserId, leadId) => {
 
     return {
       categoryName: getUnique("categoryName"),
-      assignedTo: getUnique("assignedTo"),
+      createdBy: getUnique("createdBy"),
       status: getUnique("status"),
       createdAt: getUniqueDates(), // ✅ CHANGED
       customerTypeDescription: getUnique("customerTypeDescription"),
@@ -291,7 +292,7 @@ const handleTransfer = async (toUserId, leadId) => {
         (filters.status ? lead.status === filters.status : true) &&
         (filters.customerTypeDescription ? lead.customerTypeDescription === filters.customerTypeDescription : true) &&
         (filters.categoryName ? lead.categoryName === filters.categoryName : true) &&
-        (filters.assignedTo ? lead.assignedTo === filters.assignedTo : true) &&
+        (filters.createdBy ? lead.createdBy === filters.createdBy : true) &&
         (filters.createdAt
           ? new Date(lead.createdAt).toISOString().split('T')[0] ===
             new Date(filters.createdAt).toISOString().split('T')[0]
@@ -349,7 +350,7 @@ const handleTransfer = async (toUserId, leadId) => {
               status: "",
               customerTypeDescription: "",
               categoryName: "",
-              assignedTo: "",
+              createdBy: "",
               createdAt: "",
             });
             setNameSearch("");
