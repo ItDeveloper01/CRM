@@ -37,7 +37,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
     const [errors, setErrors] = useState({});
     //Requirment for car rental
-    const [requirementType, setRequirementType] = useState("");
+    // const [requirementType, setRequirementType] = useState("");
     const [specialRequirement, setSpecialRequirements] = useState([]);
     const selectedSpecialRequirement =
         specialRequirement?.find(r => r.id === carLeaddObj.specialRequirement)?.specialRequirements || "-";
@@ -45,10 +45,19 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     // const selectedVehicleType = vehicleType?.find(
     // v => v.vehicleTypeID === carLeaddObj.vehicleType);
     const { showMessage } = useMessageBox();
+    const [dutyType, setDutyType] = useState([]);
+    const [requirementType,setRequirementType] = useState([]);
+    const selectedRequirementType = requirementType.find(rt => rt.id == carLeaddObj?.requirementType);
+
 
 
     const getSpecialRequirementsListEndPoint = config.apiUrl + '/MasterData/GetSpecialRequirementsList';
     const getVehicleTypeListEndPoint = config.apiUrl + '/MasterData/GetVehicleModelList';
+    const getDutyTypeListEndPoint = config.apiUrl + '/MasterData/GetDutyTypeList';
+    const getRequirementTypeListEndPoint = config.apiUrl + '/MasterData/GetRequirementTypeList';
+
+
+
     const handleChange = (e) => {
 
         console.log("**********************IN CAR LEAD OBJECT   /**************************");
@@ -123,6 +132,40 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
             }
         };
         fetchVehicleTypes();
+
+        const fetchDutyTypes = async () => {
+            try {
+                const dutyType = await axios.get(getDutyTypeListEndPoint, {
+                    
+                });
+                setDutyType(dutyType.data || []);
+            } catch (error) {
+                console.error("Error fetching duty types:", error);
+                showMessage({
+                    type: MESSAGE_TYPES.ERROR,
+                    message: "Error fetching duty types data.",
+                });
+            }
+        };
+        fetchDutyTypes();
+
+
+        const fetchRequirementTypes = async () => {
+            try {
+                const requirementType = await axios.get(getRequirementTypeListEndPoint, {
+                });
+                setRequirementType(requirementType.data || []);
+            } catch (error) {
+                console("Error fetching duty type.",error);
+                showMessage({
+                    type: MESSAGE_TYPES.ERROR,
+                    message: "Error fetching requirement types data.",
+                });
+            }
+        };
+        fetchRequirementTypes();
+    
+
     }, []);
 
     useEffect(() => {
@@ -226,18 +269,33 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     <label className="label-style">Type of Duty</label>
                     <div>
                         {isViewMode ? (
-                            <ViewSelect value={carLeaddObj.dutyType || ""} />
+                            <ViewSelect value={getLabelById(
+                                dutyType,
+                                carLeaddObj.dutyType,
+                                "id",
+                                "dutyTypeName"
+                            )}
+                        />
                         ) : (
                             <select
                                 name="dutyType"
                                 value={carLeaddObj.dutyType || ""}
                                 className={`border-highlight`}
-                                onChange={handleChange}
+                                // onChange={handleChange}
+                                onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setCarLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
                             >
                                 <option value="">Select Duty Type</option>
-                                <option value="Transfer">Transfer</option>
-                                <option value="Local">Local</option>
-                                <option value="Outstation">Outstation</option>
+                                {dutyType.map((dutyType)=> (
+                                    <option key={dutyType.id} value={dutyType.id}>
+                                        {dutyType.dutyTypeName}
+                                    </option>
+                                ))}
                             </select>
                         )}
                     </div>
@@ -365,28 +423,51 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Requirement Type</label>
                     {isViewMode ? (
-                        <ViewSelect value={carLeaddObj.requirementType ? `${carLeaddObj.requirementType} Requirement` : "-"} />
+                        <ViewSelect 
+                        // value={carLeaddObj.requirementType ? `${carLeaddObj.requirementType} Requirement` : "-"} 
+                        value={getLabelById(
+                                requirementType,
+                                carLeaddObj.requirementType,
+                                "id",
+                                "requirementTypeName"
+                            )}
+                        />
                     ) : (
                         <select
                             name="requirementType"
                             value={carLeaddObj.requirementType}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setCarLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
+                            // onChange={handleChange}
                             className="border-highlight"
                         >
                             <option value="">Select Requirement</option>
-                            {["Individual", "Corporate", "Event", "Inbound"].map((type) => (
-                                <option key={type} value={type}>
+                            {/* {["Individual", "Corporate", "Event", "Inbound"].map((type) => (
+                                <option key={type} value={type}> */}
                                     {/* {type.charAt(0).toUpperCase() + type.slice(1)} Requirement     */}
-                                    {type} Requirement
+                                    {/* {type} Requirement
+                                </option>
+                            ))} */}
+
+                            {requirementType.map((requirementType) =>(
+                                <option key={requirementType.id} value={requirementType.id}>
+                                    {requirementType.requirementTypeName}
                                 </option>
                             ))}
-                        </select>
+
+                             </select>
                     )}
                 </div>
 
 
                 {/* Show only if corporate selected */}
-                {carLeaddObj?.requirementType?.trim()?.toLowerCase() === "corporate" && (
+                {/* {carLeaddObj?.requirementType?.trim()?.toLowerCase() === "corporate" && ( */}
+                {selectedRequirementType?.requirementTypeName?.toLowerCase() === "corporate" && (
                     <div className="flex gap-3 flex-wrap">
                         {/* Company Name */}
                         <div className="flex-1 min-w-[200px]">
