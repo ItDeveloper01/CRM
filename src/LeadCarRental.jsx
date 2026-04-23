@@ -9,6 +9,7 @@ import { MESSAGE_TYPES } from "./Constants";
 import { useMessageBox } from "./Notification";
 import { validateFromDate } from "./validations";
 import { ViewField, ViewSelect, DateViewField } from "./ConstantComponent/ViewComponents";
+import QuoteCalculator from "./paymentComponents/QuoteComponent";
 import { getLabelById } from "./utils/selectUtils";
 import {
   FormControl,
@@ -199,6 +200,20 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
             ...prev,
             travelDate: errorMsg
         }));
+    };
+
+      const onBaseAmountChange = (value) => {
+        setCarLeadObj(prev => ({ ...prev, quoteAmount: value }));
+    };
+
+    const onFinalAmountChange = (value) => {
+        debugger;
+        setCarLeadObj(prev => ({ ...prev, finalAmount: value }));
+    };
+
+    const onDiscountAmountChange = (discPerc,discAmtValue) => {
+        debugger;
+        setCarLeadObj(prev => ({ ...prev, discountAmount: discAmtValue }));
     };
 
     return (
@@ -689,7 +704,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
 
             <div>
                 {/* Quote Given */}
-                <label className="label-style">Quote Given</label>
+                <label className="label-style">Quote Comments</label>
                 {isViewMode ? (
                     <ViewField value={carLeaddObj.quoteGiven} />
                 ) : (
@@ -703,6 +718,23 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
                     />
                 )}
             </div>
+              <div className="flex-1 min-w-[200px]">
+                            <label className="label-style">Quote Amount</label>
+                            {isViewMode ? (
+                                <ViewSelect value={carLeaddObj.finalAmount || "-"} />
+                            ):(
+                            <QuoteCalculator
+                                baseAmt={carLeaddObj.quoteAmount || 0}
+                                discountPct={carLeaddObj.discountPercent || 0}
+                                discountAmt={carLeaddObj.discountAmount || 0}
+                                finalAmt={carLeaddObj.finalAmount || 0}
+                                onBaseChange={onBaseAmountChange} // {(value) => setCarLeadObj(prev => ({ ...prev, quoteAmount: value }))}
+                                onDiscountChange={onDiscountAmountChange} //{(value) => setCarLeadObj(prev => ({ ...prev, discountAmount: value }))}
+                                onFinalChange={onFinalAmountChange} //{(value) => setCarLeadObj(prev => ({ ...prev, finalAmount: value }))}
+                                isViewMode={isViewMode}
+                            />
+                            )}
+                        </div>
 
             {/* Remark */}
             <div>

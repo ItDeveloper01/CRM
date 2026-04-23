@@ -8,8 +8,8 @@ import { PassportDetailsObject } from "./Model/PassportDetailsModel";
 import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 import { validateFromDate } from "./validations";
 import { getLabelById, getRadioValue } from "./utils/selectUtils";
-import { DateViewField, ViewField } from "./ConstantComponent/ViewComponents";
-
+import { DateViewField, ViewField ,ViewSelect} from "./ConstantComponent/ViewComponents";
+import QuoteCalculator from "./paymentComponents/QuoteComponent";
 
 
 
@@ -141,6 +141,19 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
     console.log("Ticket type : " + airTicketingdObj.airTicketType);
   }
 
+     const onBaseAmountChange = (value) => {
+        setAirTicketingLeadObj(prev => ({ ...prev, quoteAmount: value }));
+    };
+
+    const onFinalAmountChange = (value) => {
+        debugger;
+        setAirTicketingLeadObj(prev => ({ ...prev, finalAmount: value }));
+    };
+
+    const onDiscountAmountChange = (discPerc,discAmtValue) => {
+        debugger;
+        setAirTicketingLeadObj(prev => ({ ...prev, discountAmount: discAmtValue }));
+    };
   // const [airTicketType, setAirTicketType] = useState([]);
   return (
     <div>
@@ -431,7 +444,7 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
         </div>
 
         {/* Quote Given */}
-        <label className="label-style">Quote Given</label>
+        <label className="label-style">Quote Comments</label>
         {isViewMode ? (
           <ViewField value={airTicketingdObj.quoteGiven} />
         ) : (
@@ -444,6 +457,23 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           onChange={handleChange}
         />
         )}
+            <div className="flex-1 min-w-[200px]">
+                                    <label className="label-style">Quote Amount</label>
+                                    {isViewMode ? (
+                                        <ViewSelect value={airTicketingdObj.finalAmount || "-"} />
+                                    ):(
+                                    <QuoteCalculator
+                                        baseAmt={airTicketingdObj.quoteAmount || 0}
+                                        discountPct={airTicketingdObj.discountPercent || 0}
+                                        discountAmt={airTicketingdObj.discountAmount || 0}
+                                        finalAmt={airTicketingdObj.finalAmount || 0}
+                                        onBaseChange={onBaseAmountChange} // {(value) => setCarLeadObj(prev => ({ ...prev, quoteAmount: value }))}
+                                        onDiscountChange={onDiscountAmountChange} //{(value) => setCarLeadObj(prev => ({ ...prev, discountAmount: value }))}
+                                        onFinalChange={onFinalAmountChange} //{(value) => setCarLeadObj(prev => ({ ...prev, finalAmount: value }))}
+                                        isViewMode={isViewMode}
+                                    />
+                                    )}
+                                </div>
       </div>
       {/* Remark */}
       <div>

@@ -32,6 +32,7 @@ export const UserObject = {
   photoBase64:"",      // base64 string for photo upload
   
   broadCastHistory:[],
+  notifications:[],
   
   isUpdatepasword:false, // to check password update or not
   selectedDepartmentList:[],  // to store department list
