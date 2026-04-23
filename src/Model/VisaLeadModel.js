@@ -23,6 +23,9 @@ export const VISALeadObject = {
   passportDuration: "",
   airTicketIssuedBy: "",
 
+  quoteAmount :0,
+  discountAmount: 0,
+  finalAmount: 0,
 
   createdBy_UserID: "", // default user
   createdAt: new Date().toISOString(),   // ISO datetime "YYYY-MM-DDTHH:mm:ssZ"

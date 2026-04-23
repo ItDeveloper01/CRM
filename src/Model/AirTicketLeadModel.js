@@ -35,6 +35,10 @@ export const AirTicketingLeadObject = {
     assigneeTo_UserID: "",
     updatedBy_UserID: "",
 
+    quoteAmount :0,
+  discountAmount: 0,
+  finalAmount: 0,
+
 };
 
 export function getEmptyAirTicketObj(){

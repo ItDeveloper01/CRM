@@ -10,6 +10,7 @@ import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 import PassportDetails from "./PassportDetails";
 import { DateViewField, ViewField, ViewSelect } from "./ConstantComponent/ViewComponents";
 import { getLabelById, getRadioValue } from "./utils/selectUtils";
+import QuoteCalculator from "./paymentComponents/QuoteComponent";
 
 
 const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mode }) => {
@@ -67,6 +68,34 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
 
     }, [memoIsUpdate]);
 
+   
+
+    const onQuotePercentageChange = (value) => {
+
+        debugger;
+        //setVisaLeadObj(prev => ({ ...prev, discountPercent: value }));
+        if (value !== undefined) {
+            if(visadObj.quoteAmount!=null && visadObj.quoteAmount!==0){
+                const discountAmt = (visadObj.quoteAmount * value) / 100;
+                setVisaLeadObj(prev => ({ ...prev,  discountAmount: discountAmt, finalAmount: visadObj.quoteAmount - discountAmt }));
+            }
+        }
+
+    };
+
+     const onBaseAmountChange = (value) => {
+        setVisaLeadObj(prev => ({ ...prev, quoteAmount: value }));
+    };
+
+    const onFinalAmountChange = (value) => {
+        debugger;
+        setVisaLeadObj(prev => ({ ...prev, finalAmount: value }));
+    };
+
+    const onDiscountAmountChange = (discPerc,discAmtValue) => {
+        debugger;
+        setVisaLeadObj(prev => ({ ...prev, discountAmount: discAmtValue }));
+    };
     return (
 
         <div>
@@ -510,7 +539,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
             </div>
             {/* Quote Given */}
             <div className="flex-1 min-w-[200px]">
-                <label className="label-style">Quote Given</label>
+                <label className="label-style">Quote Comments</label>
                 {isViewMode ? (
                     <ViewSelect value={visadObj.quoteGiven || "-"} />
                 ):(
@@ -524,7 +553,24 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                 />
                 )}
             </div>
-
+            <div className="flex-1 min-w-[200px]">
+                <label className="label-style">Quote Amount</label>
+                {isViewMode ? (
+                    <ViewSelect value={visadObj.finalAmount || "-"} />
+                ):(
+                <QuoteCalculator
+                    baseAmt={visadObj.quoteAmount || 0}
+                    discountPct={visadObj.discountPercent || 0}
+                    discountAmt={visadObj.discountAmount || 0}
+                    finalAmt={visadObj.finalAmount || 0}
+                    onBaseChange={onBaseAmountChange} // {(value) => setVisaLeadObj(prev => ({ ...prev, quoteAmount: value }))}
+                    onDiscountChange={onDiscountAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, discountAmount: value }))}
+                    onFinalChange={onFinalAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, finalAmount: value }))}
+                    isViewMode={isViewMode}
+                />
+                )}
+            </div>
+    
             {/* Remark */}
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Remark</label>
