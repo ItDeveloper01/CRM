@@ -4,13 +4,19 @@ import "./LeadStyle.css";
 import config from './config';
 import { VISALeadObject } from "./Model/VisaLeadModel";
 import HistoryHover from "./HIstoryHover";
-import { set } from "lodash";
+import { get, set } from "lodash";
 import { useMemo } from "react";
 import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 import PassportDetails from "./PassportDetails";
 import { DateViewField, ViewField, ViewSelect } from "./ConstantComponent/ViewComponents";
 import { getLabelById, getRadioValue } from "./utils/selectUtils";
 import QuoteCalculator from "./paymentComponents/QuoteComponent";
+import { use } from "react";
+import axios from "axios";
+import { MessageType } from "@microsoft/signalr";
+import { useMessageBox } from "./Notification";
+import { Type } from "lucide-react";
+import { id } from "intl-tel-input/i18n";
 
 
 const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mode }) => {
@@ -24,6 +30,73 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
     const memoHistories = useMemo(() => histories || [], [histories]);
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
     const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+    const [purposeOfTravel, setPurposeOfTravel] = useState([]);
+    const [visaType,setVisaType] = useState([]);
+    const [noOfEntries,setNoOfEntries] = useState([]);
+
+    const { showMessage } = useMessageBox();
+
+    const getPurposeOfTravelListEndPoint = config.apiUrl + '/MasterData/GetTravelPurposeList';
+    const getVisaTypeListEndPoint = config.apiUrl + '/MasterData/GetVisaTypeList';
+    const getNoOfEntriesListEndPoint = config.apiUrl + '/MasterData/GetNoOfEntriesList';
+
+
+    useEffect(() => {
+        const fetchPurposeOfTrvelList = async () => {
+            try {
+                const purOfTravel = await axios.get(getPurposeOfTravelListEndPoint, {
+                });
+                setPurposeOfTravel(purOfTravel.data || []);
+            }
+            catch (error) {
+                console.error("Error while Fetching Travel Purpose", error);
+                showMessage({
+                    type: MessageType.ERROR,
+                    message: "Error fetching special requirements data.",
+                });
+            }
+        };
+        fetchPurposeOfTrvelList();
+
+
+        const fetchVisaTypeList = async () => {
+            try {
+                const visaTypeList = await axios.get(getVisaTypeListEndPoint, {
+                });
+                setVisaType(visaTypeList.data || []);
+            }
+            catch (error) {
+                console.error("Error while Fetching Visa Type", error);
+                showMessage
+                ({
+                    Type: MessageType.ERROR,
+                    message: "Error fetching Visa type data.",
+                })
+
+            }
+        };
+        fetchVisaTypeList();
+
+        const  fetchNoOfEntriesList = async() => {
+            try{
+                const noOfEntriesList =await axios.get(getNoOfEntriesListEndPoint,{})
+                setNoOfEntries(noOfEntriesList.data || []);
+            }
+            catch(error){
+                console.error("Error while Fetching No Of Entries",error);
+                showMessage
+                ({
+                    Type: MessageType.ERROR,
+                    message: "Error fetching No Of Entries data.",
+                })
+            }
+        };
+        fetchNoOfEntriesList();
+
+
+    }, []);
+
+
 
     const handleChange = (e) => {
 
@@ -68,22 +141,22 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
 
     }, [memoIsUpdate]);
 
-   
+
 
     const onQuotePercentageChange = (value) => {
 
         debugger;
         //setVisaLeadObj(prev => ({ ...prev, discountPercent: value }));
         if (value !== undefined) {
-            if(visadObj.quoteAmount!=null && visadObj.quoteAmount!==0){
+            if (visadObj.quoteAmount != null && visadObj.quoteAmount !== 0) {
                 const discountAmt = (visadObj.quoteAmount * value) / 100;
-                setVisaLeadObj(prev => ({ ...prev,  discountAmount: discountAmt, finalAmount: visadObj.quoteAmount - discountAmt }));
+                setVisaLeadObj(prev => ({ ...prev, discountAmount: discountAmt, finalAmount: visadObj.quoteAmount - discountAmt }));
             }
         }
 
     };
 
-     const onBaseAmountChange = (value) => {
+    const onBaseAmountChange = (value) => {
         setVisaLeadObj(prev => ({ ...prev, quoteAmount: value }));
     };
 
@@ -92,7 +165,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
         setVisaLeadObj(prev => ({ ...prev, finalAmount: value }));
     };
 
-    const onDiscountAmountChange = (discPerc,discAmtValue) => {
+    const onDiscountAmountChange = (discPerc, discAmtValue) => {
         debugger;
         setVisaLeadObj(prev => ({ ...prev, discountAmount: discAmtValue }));
     };
@@ -252,21 +325,40 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                 <div className="flex-1">
                     <label className="label-style">Purpose of Travel</label>
                     {isViewMode ? (
-                        <ViewSelect value={visadObj.purposeOfTravel || "-"} />
+                        <ViewSelect
+                            value={getLabelById(
+                                purposeOfTravel,
+                                visadObj.purposeOfTravel,
+                                "id",
+                                "purposeOfTravelName"
+                            )}
+                        />
                     ) : (
                         <select
                             className={`border-highlight`}
                             name="purposeOfTravel"
                             value={visadObj.purposeOfTravel}
-                            onChange={handleChange}
+                            // onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setVisaLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
                         >
                             <option value="">Select</option>
-                            <option value="Business">Business</option>
+                            {/* <option value="Business">Business</option>
                             <option value="Tourism">Tourism</option>
                             <option value="Attending an Exhibition">Attending an Exhibition</option>
                             <option value="Event-Conference">Event-Conference</option>
                             <option value="Visiting Friends and Relatives">Visiting Friends and Relatives</option>
-                            <option value="Transit">Transit</option>
+                            <option value="Transit">Transit</option> */}
+                            {purposeOfTravel.map((purOfTravel) => (
+                                <option key={purOfTravel.id} value={purOfTravel.id}>
+                                    {purOfTravel.purposeOfTravelName}
+                                </option>
+                            ))}
                         </select>
                     )}
                 </div>
@@ -277,20 +369,37 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                 <div className="flex-1 min-w-[250px]">
                     <label className="label-style">Visa Type</label>
                     {isViewMode ? (
-                        <ViewSelect value={visadObj.visaType || "-"} />
+                        <ViewSelect value={getLabelById(
+                                visaType,
+                                visadObj.visaType,
+                                "id",
+                                "visaTypeName"
+                            )}/>
                     ) : (
                         <select
                             className={`border-highlight`}
                             name="visaType"
                             value={visadObj.visaType}
-                            onChange={handleChange}
+                            // onChange={handleChange}
+                             onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setVisaLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
                         >
                             <option value="">Select</option>
-                            <option value="Business">Business</option>
+                            {/* <option value="Business">Business</option>
                             <option value="Tourist">Tourist</option>
                             <option value="Transit">Transit</option>
                             <option value="Dependent">Dependent</option>
-                            <option value="Student">Student</option>
+                            <option value="Student">Student</option> */}
+                            {visaType.map((visaTypeList)=>(
+                                <option key={visaTypeList.id} value={visaTypeList.id}>
+                                    {visaTypeList.visaTypeName}
+                                </option>
+                            ))}
                         </select>
                     )}
                 </div>
@@ -298,18 +407,35 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                 <div className="flex-1">
                     <label className="label-style">No Of Entries</label>
                     {isViewMode ? (
-                        <ViewSelect value={visadObj.noOfEntries || "-"} />
+                        // <ViewSelect value={visadObj.noOfEntries || "-"} />
+                        <ViewSelect value={getLabelById(
+                                noOfEntries,
+                                visadObj.noOfEntries,
+                                "id",
+                                "noOfEntriesName"
+                            )}/>
                     ) : (
                         <select
                             className={`border-highlight`}
                             name="noOfEntries"
                             value={visadObj.noOfEntries}
-                            onChange={handleChange}
+                           onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setVisaLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
                         >
                             <option value="">Select</option>
-                            <option value="Single">Single</option>
+                            {/* <option value="Single">Single</option>
                             <option value="Double">Double</option>
-                            <option value="Multiple">Multiple</option>
+                            <option value="Multiple">Multiple</option> */}
+                            {noOfEntries.map((noOfEntriesList)=>(
+                                <option key={noOfEntriesList.id} value={noOfEntriesList.id}>
+                                    {noOfEntriesList.noOfEntriesName}
+                                </option>
+                            ))}
                         </select>
                     )}
                 </div>
@@ -542,48 +668,48 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                 <label className="label-style">Quote Comments</label>
                 {isViewMode ? (
                     <ViewSelect value={visadObj.quoteGiven || "-"} />
-                ):(
-                <input
-                    type="text"
-                    className={`border-highlight`}
-                    name="quoteGiven"
-                    value={visadObj.quoteGiven || ""}
-                    placeholder="Enter quote"
-                    onChange={handleChange}
-                />
+                ) : (
+                    <input
+                        type="text"
+                        className={`border-highlight`}
+                        name="quoteGiven"
+                        value={visadObj.quoteGiven || ""}
+                        placeholder="Enter quote"
+                        onChange={handleChange}
+                    />
                 )}
             </div>
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Quote Amount</label>
                 {isViewMode ? (
                     <ViewSelect value={visadObj.finalAmount || "-"} />
-                ):(
-                <QuoteCalculator
-                    baseAmt={visadObj.quoteAmount || 0}
-                    discountPct={visadObj.discountPercent || 0}
-                    discountAmt={visadObj.discountAmount || 0}
-                    finalAmt={visadObj.finalAmount || 0}
-                    onBaseChange={onBaseAmountChange} // {(value) => setVisaLeadObj(prev => ({ ...prev, quoteAmount: value }))}
-                    onDiscountChange={onDiscountAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, discountAmount: value }))}
-                    onFinalChange={onFinalAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, finalAmount: value }))}
-                    isViewMode={isViewMode}
-                />
+                ) : (
+                    <QuoteCalculator
+                        baseAmt={visadObj.quoteAmount || 0}
+                        discountPct={visadObj.discountPercent || 0}
+                        discountAmt={visadObj.discountAmount || 0}
+                        finalAmt={visadObj.finalAmount || 0}
+                        onBaseChange={onBaseAmountChange} // {(value) => setVisaLeadObj(prev => ({ ...prev, quoteAmount: value }))}
+                        onDiscountChange={onDiscountAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, discountAmount: value }))}
+                        onFinalChange={onFinalAmountChange} //{(value) => setVisaLeadObj(prev => ({ ...prev, finalAmount: value }))}
+                        isViewMode={isViewMode}
+                    />
                 )}
             </div>
-    
+
             {/* Remark */}
             <div className="flex-1 min-w-[200px]">
                 <label className="label-style">Remark</label>
-                { isViewMode ? (
+                {isViewMode ? (
                     <ViewSelect value={visadObj.notes || "-"} />
-                ):(
-                <textarea
-                    className={`border-highlight`}
-                    name="notes"
-                    value={visadObj.notes || ""}
-                    placeholder="Remark"
-                    onChange={handleChange}
-                />
+                ) : (
+                    <textarea
+                        className={`border-highlight`}
+                        name="notes"
+                        value={visadObj.notes || ""}
+                        placeholder="Remark"
+                        onChange={handleChange}
+                    />
                 )}
                 {/* History hover component */}
                 {memoIsUpdate && (

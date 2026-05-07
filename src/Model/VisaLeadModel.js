@@ -8,12 +8,12 @@ export const VISALeadObject = {
   country2: "",
   country3: "",
 
-  visaType: "",
+  visaType: null,
   travelDate: null, // ISO date string "YYYY-MM-DD"
 
   noOfApplicants: null,
-  purposeOfTravel: "",
-  noOfEntries: "",
+  purposeOfTravel: null,
+  noOfEntries: null,
   travelPlanStatus: "",
   hotelBooking: "",
   overseasInsurance: "",

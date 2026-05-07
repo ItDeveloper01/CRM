@@ -12,71 +12,145 @@ export const TABLE_API_MAP = {
     fetch: "/CarRentalMaster/GetCityMasterListTable",
     save: "/CarRentalMaster/SaveCityMasterListTable",
     //checkActiveRecords: "/CarRentalMaster/CheckCanDeleteEnquiryMode" // ✅ NEW endpoint for delete validation
+    title: "City Master List",
   },
   2: {
     fetch: "/CarRentalMaster/GetVehicleTypeTable",
     save: "/CarRentalMaster/SaveSaveVehicleTypeDTOTable",
     //checkActiveRecords: "/CarRentalMaster/CheckCanDeleteEnquirySource" // ✅ NEW endpoint for delete validation
+    title: "Vehicle Types",
   },
   3: {
     fetch: "/CarRentalMaster/GetSpecialRequirementDTOTable",
     save: "/CarRentalMaster/SaveSpecialRequirementDTOTable",
     //checkActiveRecords: "/CarRentalMaster/CheckCanDeleteCustomerType" // ✅ NEW endpoint for delete validation
+    title: "Special Requirements",
   },
+  4: {
+    fetch: "/CarRentalMaster/GetDutyTypeMasterListDTOTable", 
+    save: "/CarRentalMaster/SaveDutyTypeMasterListTable",
+     title: "Duty Type List",
+  },
+  5: {
+    fetch : "/CarRentalMaster/GetRequirementTypeMasterListDTOTable",
+    save: "/CarRentalMaster/SaveRequirementTypeMasterListDTOTable",
+    title: "Requirement Type List",
+  }
+  // 6: {
+  //   fetch: "/CarRentalMaster/"
+  // }
 };
 
 const GET_ENQUIRY_MODE_TABLE_API = BASE_URL + "/CarRentalMaster/GetEnquiryModeTable";
 
+debugger;
 const SAVE_TABLE_API = (tableId) => BASE_URL + `/tables/${tableId}/save`;
 
 
 // ================= FETCH TABLES =================
-export const fetchCarTablesApi = async (token) => {
-    debugger;
-  const tableArray=[];
+// export const fetchCarTablesApi = async (token) => {
+   
+//   const tableArray=[];
 
-  try {
-    const response = await axios.get(BASE_URL + TABLE_API_MAP[1].fetch, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+//   try {
+//     const response = await axios.get(BASE_URL + TABLE_API_MAP[1].fetch, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
 
-    console.log("📊 Fetched tables data:", response.data);
+//     console.log("📊 Fetched tables data:", response.data);
 
-     const enquiryTable = mapEnquiryModeTable(response.data);
-     tableArray.push(enquiryTable);
+//      const enquiryTable = mapEnquiryModeTable(response.data);
+//      tableArray.push(enquiryTable);
 
-     console.log("📊 Mapped City List Master table:", enquiryTable);
+//      console.log("📊 Mapped City List Master table:", enquiryTable);
 
     
 
-     const enquirySourceTable = await axios.get(BASE_URL + TABLE_API_MAP[2].fetch, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+//      const enquirySourceTable = await axios.get(BASE_URL + TABLE_API_MAP[2].fetch, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
 
-     const mappedEnquirySourceTable = mapEnquirySourceTable(enquirySourceTable.data);
-     tableArray.push(mappedEnquirySourceTable);
-     console.log("📊 Mapped enquiry source table:", mappedEnquirySourceTable);
-
-
-      const customerTypeTable = await axios.get(BASE_URL + TABLE_API_MAP[3].fetch, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-     const mappedCustomerTypeTable = mapCustomerTypeTable(customerTypeTable.data);
-     tableArray.push(mappedCustomerTypeTable);
-     console.log("📊 Mapped customer type table:", mappedCustomerTypeTable);
+//      const mappedEnquirySourceTable = mapEnquirySourceTable(enquirySourceTable.data);
+//      tableArray.push(mappedEnquirySourceTable);
+//      console.log("📊 Mapped enquiry source table:", mappedEnquirySourceTable);
 
 
-    return tableArray; // ✅ SAME as mock format
+//       const customerTypeTable = await axios.get(BASE_URL + TABLE_API_MAP[3].fetch, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "application/json",
+//       },
+//     });
+    
+//      const mappedCustomerTypeTable = mapCustomerTypeTable(customerTypeTable.data);
+//      tableArray.push(mappedCustomerTypeTable);
+//      console.log("📊 Mapped customer type table:", mappedCustomerTypeTable);
+
+//      debugger;
+//      const dutyTypeTable = await axios.get(BASE_URL + TABLE_API_MAP[4].fetch, {
+//      headers: {
+//        Authorization: `Bearer ${token}`,
+//        "Content-Type": "application/json",
+//      },
+//     });
+    
+   
+//     const mappedDutyTypeTable = mapDutyTypeTable(dutyTypeTable.data);
+//     tableArray.push(mappedDutyTypeTable);
+//     console.log("📊 Mapped duty type table:", mappedDutyTypeTable);
+
+//     const requirementTypeTable = await axios.get(BASE_URL + TABLE_API_MAP[5].fetch, {
+//      headers: {
+//        Authorization: `Bearer ${token}`,
+//        "Content-Type": "application/json",
+//      },
+//     });
+    
+   
+//     const mappedRequirementTypeTable = mapRequirementTypeTable(requirementTypeTable.data);
+//     tableArray.push(mappedRequirementTypeTable);
+//     console.log("📊 Mapped duty type table:", mappedRequirementTypeTable);
+
+
+
+//     return tableArray; // ✅ SAME as mock format
+//   } catch (error) {
+//     console.error("❌ Error fetching tables:", error);
+//     throw error;
+//   }
+// };
+debugger
+export const fetchCarTablesApi = async (token) => {
+  debugger;
+  const tableArray = [];
+
+  try {
+    debugger;
+    for (const tableId of Object.keys(TABLE_API_MAP)) {
+      const { fetch } = TABLE_API_MAP[tableId];
+
+      if (!fetch) continue;
+
+      const response = await axios.get(BASE_URL + fetch, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const mappedTable = mapTableData(Number(tableId), response.data);
+      tableArray.push(mappedTable);
+
+      console.log(`📊 Mapped table ${tableId}:`, mappedTable);
+    }
+
+    return tableArray;
   } catch (error) {
     console.error("❌ Error fetching tables:", error);
     throw error;
@@ -154,8 +228,10 @@ export const saveCarTableApi = async (tableId, payload, token) => {
   }
 };
 
+debugger;
 export const checkActiveCarRecordsApi = async (tableId, rowId, token) => {
   try {
+    debugger;
     const apiStr = BASE_URL + TABLE_API_MAP[tableId].checkActiveRecords;
 
     const response = await axios.get(apiStr, {
@@ -185,73 +261,146 @@ const enquiryModeColumns = [
   { key: "Created On", label: "Created On", editable: false, hideOnNew: true }
 ];
 
-const mapEnquiryModeTable = (data) => {
-  debugger;
-  return {
-    id: 1,
-    title: "City Master List",
-    columns: enquiryModeColumns, // 👈 instead of headers
-    headers: enquiryModeColumns, // for display in table header
+// const mapEnquiryModeTable = (data) => {
+//   debugger;
+//   return {
+//     id: 1,
+//     title: "City Master List",
+//     columns: enquiryModeColumns, // 👈 instead of headers
+//     headers: enquiryModeColumns, // for display in table header
 
-    rows: data.map((item) => ({
-      Id: item.id,
-      Name: item.propertyName,
-      Active: item.isActive ? "Active" : "Inactive",
-      "Created By": item.createdBy,
-      "Created On": item.createdOn,
+//     rows: data.map((item) => ({
+//       Id: item.id,
+//       Name: item.propertyName,
+//       Active: item.isActive ? "Active" : "Inactive",
+//       "Created By": item.createdBy,
+//       "Created On": item.createdOn,
 
-      isNew: false,
-      isDirty: false,
-      isEditing: false,
-      canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
-      errors: {}
-    }))
-  };
-};
+//       isNew: false,
+//       isDirty: false,
+//       isEditing: false,
+//       canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
+//       errors: {}
+//     }))
+//   };
+// };
 
 
-const mapEnquirySourceTable = (data) => {
-  return {
-    id: 2,
-    title: "Vehicle Types",
-    columns: enquiryModeColumns, // 👈 instead of headers
-    headers: enquiryModeColumns, // for display in table header
+// const mapEnquirySourceTable = (data) => {
+//   return {
+//     id: 2,
+//     title: "Vehicle Types",
+//     columns: enquiryModeColumns, // 👈 instead of headers
+//     headers: enquiryModeColumns, // for display in table header
 
-    rows: data.map((item) => ({
-      Id: item.id,
-      Name: item.propertyName,
-      Active: item.isActive ? "Active" : "Inactive",
-      "Created By": item.createdBy,
-      "Created On": item.createdOn,
+//     rows: data.map((item) => ({
+//       Id: item.id,
+//       Name: item.propertyName,
+//       Active: item.isActive ? "Active" : "Inactive",
+//       "Created By": item.createdBy,
+//       "Created On": item.createdOn,
 
-      isNew: false,
-      isDirty: false,
-      isEditing: false,
-       canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
-      errors: {}
-    }))
-  };
-};
+//       isNew: false,
+//       isDirty: false,
+//       isEditing: false,
+//        canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
+//       errors: {}
+//     }))
+//   };
+// };
 
-const mapCustomerTypeTable = (data) => {
-  return {
-    id: 3,
-    title: "Special Requirements",
-    columns: enquiryModeColumns, // 👈 instead of headers
-    headers: enquiryModeColumns, // for display in table header
+// const mapCustomerTypeTable = (data) => {
+//   return {
+//     id: 3,
+//     title: "Special Requirements",
+//     columns: enquiryModeColumns, // 👈 instead of headers
+//     headers: enquiryModeColumns, // for display in table header
 
-    rows: data.map((item) => ({
-      Id: item.id,
-      Name: item.propertyName,
-      Active: item.isActive ? "Active" : "Inactive",
-      "Created By": item.createdBy,
-      "Created On": item.createdOn,
+//     rows: data.map((item) => ({
+//       Id: item.id,
+//       Name: item.propertyName,
+//       Active: item.isActive ? "Active" : "Inactive",
+//       "Created By": item.createdBy,
+//       "Created On": item.createdOn,
 
-      isNew: false,
-      isDirty: false,
-      isEditing: false,
-      canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
+//       isNew: false,
+//       isDirty: false,
+//       isEditing: false,
+//       canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
       
+//       errors: {}
+//     }))
+//   };
+// };
+
+// const mapDutyTypeTable = (data) => {
+//   debugger;
+//   return {
+//     id: 4,
+//     title: "Duty Type List",
+//     columns: enquiryModeColumns, // 👈 instead of headers
+//     headers: enquiryModeColumns, // for display in table header
+
+//     rows: data.map((item) => ({
+//       Id: item.id,
+//       Name: item.propertyName,
+//       Active: item.isActive ? "Active" : "Inactive",
+//       "Created By": item.createdBy,
+//       "Created On": item.createdOn,
+
+//       isNew: false,
+//       isDirty: false,
+//       isEditing: false,
+//       canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
+
+//       errors: {}
+//     }))
+//   };
+// };
+
+// const mapRequirementTypeTable = (data) => {
+//   debugger;
+//   return {
+//     id: 5,
+//     title: "Requirement Type List",
+//     columns: enquiryModeColumns, // 👈 instead of headers
+//     headers: enquiryModeColumns, // for display in table header
+
+//     rows: data.map((item) => ({
+//       Id: item.id,
+//       Name: item.propertyName,
+//       Active: item.isActive ? "Active" : "Inactive",
+//       "Created By": item.createdBy,
+//       "Created On": item.createdOn,
+
+//       isNew: false,
+//       isDirty: false,
+//       isEditing: false,
+//       canBeDeleted: item.canBeDeleted, // ✅ NEW field for delete validation
+      
+//       errors: {}
+//     }))
+//   };
+// };
+// ================= GENERIC MAPPER =================
+const mapTableData = (tableId, data) => {
+  return {
+    id: tableId,
+    title: TABLE_API_MAP[tableId].title,
+    columns: enquiryModeColumns,
+    headers: enquiryModeColumns,
+
+    rows: data.map((item) => ({
+      Id: item.id,
+      Name: item.propertyName,
+      Active: item.isActive ? "Active" : "Inactive",
+      "Created By": item.createdBy,
+      "Created On": item.createdOn,
+
+      isNew: false,
+      isDirty: false,
+      isEditing: false,
+      canBeDeleted: item.canBeDeleted,
       errors: {}
     }))
   };
