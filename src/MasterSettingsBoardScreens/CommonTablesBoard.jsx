@@ -279,6 +279,7 @@ export default function CommonTablesBoard({
     }, 100);
   };
 
+  debugger;
   const handleDeleteRow = (tableId, rowId) => {
     setTables((prev) =>
       prev.map((t) =>
@@ -289,6 +290,7 @@ export default function CommonTablesBoard({
     );
   };
 
+  debugger;
   const handleSoftDelete = async (tableId, row) => {
   // ✅ New row → direct remove
   if (row.isNew) {
@@ -310,31 +312,31 @@ export default function CommonTablesBoard({
     //const data = await res.json();
 
    
-    const res = await checkActiveRecordsApi(tableId, row, user.token);
+//     const res = await checkActiveRecordsApi(tableId, row, user.token);
 
-    debugger;
-    let data={};
+//     debugger;
+//     let data={};
 
-    console.log("API response for delete validation:", res.result);
- if(res.result.recordCount>0)
-   {
-       data = { canDelete: res.result.canDelete, message: "This item is linked to "+res.result.recordCount+" active records." }; // Mocked response
-    }
-    else
-    {
-      data= { canDelete: res.result.canDelete, message: "No active records linked." }; // Mocked response
-    }
+//     console.log("API response for delete validation:", res.result);
+//  if(res.result.recordCount>0)
+//    {
+//        data = { canDelete: res.result.canDelete, message: "This item is linked to "+res.result.recordCount+" active records." }; // Mocked response
+//     }
+//     else
+//     {
+//       data= { canDelete: res.result.canDelete, message: "No active records linked." }; // Mocked response
+//     }
 
  
 debugger;
 let confirmed = false;
 
-if (!data.canDelete) {
-  // ❌ Only message, no confirmation
-  //alert(`⚠️ ${data.message}`);
-  showMessage(` ${data.message}.` + " Can't be deleted.", MESSAGE_TYPES.WARNING);
-  return;
-}
+// if (!data.canDelete) {
+//   // ❌ Only message, no confirmation
+//   //alert(`⚠️ ${data.message}`);
+//   showMessage(` ${data.message}.` + " Can't be deleted.", MESSAGE_TYPES.WARNING);
+//   return;
+// }
 
 // ✅ Only when canDelete = true
 confirmed = window.confirm("Are you sure you want to delete?");

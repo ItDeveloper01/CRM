@@ -10,6 +10,13 @@ import { validateFromDate } from "./validations";
 import { getLabelById, getRadioValue } from "./utils/selectUtils";
 import { DateViewField, ViewField ,ViewSelect} from "./ConstantComponent/ViewComponents";
 import QuoteCalculator from "./paymentComponents/QuoteComponent";
+import config from "./config";
+import axios from "axios";
+import { useMessageBox } from "./Notification";
+import { MESSAGE_TYPES } from "./Constants";
+import { id } from "intl-tel-input/i18n";
+import { MessageType } from "@microsoft/signalr";
+ 
 
 
 
@@ -24,20 +31,27 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
   const memoHistories = useMemo(() => histories || [], [histories]);
   const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
   const [errors, setErrors] = useState({});
+  const { showMessage } = useMessageBox();
   const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+  const [travelClass, setTravelClass] = useState([]);
+  const [ticketType, setTicketType] = useState([]);
+
+  const getTravelClassEndPoint = config.apiUrl + '/MasterData/GetAirlineTravelClassList';
+  const getTicketTypeEndPoint = config.apiUrl + '/MasterData/GetTicketTypeList';
 
 
-  const travelClassOptions = [
-    { value: "economy", label: "Economy" },
-    { value: "premium-economy", label: "Premium Economy" },
-    { value: "business class", label: "Business Class" },
-    { value: "first class", label: "First Class" },
-  ];
 
-  const ticketTypeOptions = [
-    { value: "individual", label: "Individual" },
-    { value: "group", label: "Group" },
-  ];
+  // const travelClassOptions = [
+  //   { value: "economy", label: "Economy" },
+  //   { value: "premium-economy", label: "Premium Economy" },
+  //   { value: "business class", label: "Business Class" },
+  //   { value: "first class", label: "First Class" },
+  // ];
+
+  // const ticketTypeOptions = [
+  //   { value: "individual", label: "Individual" },
+  //   { value: "group", label: "Group" },
+  // ];
 
 
 
@@ -100,14 +114,58 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
         passportValidityDate: airTicketingdObj.passportValidityDate
       }));
       
-
-
       console.log("Updated Passport Details objects:", passportDetailsObj);
     }
     console.log("Airticketing Obj in useEffect.....:", airTicketingdObj);
     console.log("Histories in useEffect.....:", histories);
     console.log("isUpdate flag....", memoIsUpdate);
   }, [memoIsUpdate]);
+
+ useEffect(()=>{
+   const fetchTravelClass = async () => {
+    try {
+      const travClass = await axios.get(getTravelClassEndPoint, {
+        // headers: {
+        //   Authorization: `Bearer ${sessionUser.token}`,
+        // }
+      })
+      setTravelClass(travClass.data || []);
+    }catch(error)
+    {
+      console.error("Error fetching travel class :", error);
+      showMessage({
+        type: MESSAGE_TYPES.ERROR,
+        message: "Error fetching travel class data.",
+      });
+    };
+  }
+    fetchTravelClass();
+
+
+
+      const fetchTicketType = async() => {
+        try
+        {
+          const tiktType = await axios.get(getTicketTypeEndPoint,{
+            //  headers: {
+            //   Authorization: `Bearer ${sessionUser.token}`,
+            // }
+          })
+          setTicketType(tiktType.data || []);
+        }
+        catch (error)
+        {
+          console.error("Error fetching ticket type :", error);
+               showMessage ({
+                 type: MESSAGE_TYPES.ERROR,
+                message: "Error fetching travel class data.",
+               });
+        };
+      }
+      fetchTicketType();
+
+ },[]);
+  
 
   const handleFromDateBlur = (FieldName) => {
     const dateValue = airTicketingdObj[FieldName];   //............. we pass feild name here so we can reuse it just passing the name of element inside this component 
@@ -324,30 +382,36 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           {isViewMode ? (
             <ViewField
               value={getLabelById(
-                travelClassOptions,
+                travelClass,
                 airTicketingdObj.travelClass,
-                "value",
-                "label"
+                "id",
+                "travelClassName"
               )}
             />
           ) : (
             <select
               name="travelClass"
               value={airTicketingdObj.travelClass || ""}
-              onChange={handleChange}
+               onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setAirTicketingLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
               className={`border-highlight`}
             >
-              {/* <option value="">Select Class</option>
-            <option value="economy">Economy</option>
-            <option value="premium-economy">Premium Economy</option>
-            <option value="business class">Business Class</option>
-            <option value="first class">First Class</option> */}
               <option value="">Select Class</option>
-              {travelClassOptions.map((opt) => (
+              {/* {travelClassOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
-              ))}
+              ))} */}
+              {travelClass.map((travClass)=>
+              <option key={travClass.id} value={travClass.id}>
+                {travClass.travelClassName}
+              </option>
+              )}
             </select>
           )}
         </div>
@@ -359,28 +423,34 @@ const LeadAirTicketing = ({ airTicketingdObj, setAirTicketingLeadObj, histories,
           {isViewMode ? (
             <ViewField
               value={getLabelById(
-                ticketTypeOptions,
+                ticketType,
                 airTicketingdObj.ticketType,
-                "value",
-                "label"
+                "id",
+                "ticketTypeName"
               )}
             />
           ) : (
             <select
               name="ticketType"
               value={airTicketingdObj.ticketType || ""}
-              onChange={handleChange}
+              onChange={(e) => {
+                                const value = e.target.value === "" ? null : Number(e.target.value);
+                                setAirTicketingLeadObj((prev) => ({
+                                    ...prev,
+                                    [e.target.name]: value,
+                                }));
+                            }}
               className={`border-highlight`}
             >
               {/* <option value="">Select Ticket Type</option>
               <option value="individual">Individual</option>
               <option value="group">Group</option> */}
               <option value="">Select Ticket Type</option>
-              {ticketTypeOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+             {ticketType.map((tiktType)=>
+             <option key={tiktType.id} value={tiktType.id} >
+                  {tiktType.ticketTypeName}
+             </option>
+            )}
             </select>
           )}
         </div>

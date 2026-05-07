@@ -151,7 +151,7 @@ export const saveTableApi = async (tableId, payload, token) => {
     throw error;
   }
 };
-
+debugger;
 export const checkActiveRecordsApi = async (tableId, rowId, token) => {
   try {
     const apiStr = BASE_URL + TABLE_API_MAP[tableId].checkActiveRecords;
