@@ -35,6 +35,9 @@ import { ViewField, ViewSelect, DateViewField } from './ConstantComponent/ViewCo
 import { useLocation } from 'react-router-dom';
 import { useRef } from 'react';
 
+import LeadHolidays from './LeadHolidays';
+import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
+
 
 
 
@@ -62,6 +65,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     airTicketType: "Domestic"   // default selected
   });
   const [carLeaddObj, setCarLeadObj] = useState(getEmptyCarLeadObj());
+
+  const [holidayLeadObj, setHolidayLeadObj] = useState(getEmptyHolidayLeadObj());
+
   // const [airTicketingdObj, setAirTicketingLeadObj] = useState(getEmptyAirTicketObj(), );
   const [statusReason, setStatusReason] = useState(false);     // for status popup
   const [isUpdateMode, setIsUpdateMode] = useState(false);
@@ -659,6 +665,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       case 'Car Rentals':
         setLeadObj(prev => ({ ...prev, category: getEmptyCarLeadObj() }));
         break;
+        case 'Holiday':
+          setLeadObj(prev => ({ ...prev, category: getEmptyHolidayLeadObj() }));
+          break;
 
       default:
         return null;
@@ -844,6 +853,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     console.log("In renderCategoryFields CarRentalsObj....:", carLeaddObj);
     console.log("In renderCategoryFields VisaObj....:", visadObj);
     console.log("In renderCategoryFields AirTicketingObj....:", airTicketingdObj);
+    console.log("In renderCategoryFields HolidayLeadObj....:", holidayLeadObj);
 
     switch (selectedLeadName.toLowerCase()) {
 
@@ -915,54 +925,27 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       case 'holiday':
         return (
           <>
-            <div className="flex-1">
-              <label htmlFor="holidayType" className="label-style">Holiday Type</label>
-              <select
-                id="holidayType"
-                name="holidayType"
-                className="border-highlight"
-                onChange={handleChange}
-              >
-                <option value="">Select Holiday Type</option>
-                <option value="INT-FIT">International FIT</option>
-                <option value="DOM-FIT">Domestic FIT</option>
-                <option value="INT-GIT">International GIT</option>
-                <option value="DOM-GIT">Domestic GIT</option>
-              </select>
-            </div>
-            <div>
-              <label className="label-style">No of Passenger</label>
-              <input
-                className={`border-highlight`}
-                name="numPassenger"
-                type="number"
-                min="1"
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label-style">Special Requirement</label>
-              <input
-                name="requirement"
-                placeholder="Special Requirement"
-                onChange={handleChange}
-                className={`border-highlight`}
-              />
+            {(
+              console.log("History to pass to HistoryHover:", LeadObj.histories),
 
-            </div>
-            <div>
-              {/* Quote Given */}
-              <label className="label-style">Quote Given</label>
-              <input
-                type="text"
-                placeholder="Enter quote"
-                className={`border-highlight`}
+              <LeadHolidays
+
+                holidayLeadObj={holidayLeadObj}
+                setHolidayLeadObj={setHolidayLeadObj}
+                cities={cities}
+                handleChange={handleChange}
+                histories={leadObj.histories || []}
+                mode={mode}   // PASS MODE
+
+                isUpdate={isUpdateMode} // fallback to empty array
+              // readOnly={readOnly}
 
               />
-            </div>
+
+
+            )}
           </>
         );
-
       default:
         return null;
     }
