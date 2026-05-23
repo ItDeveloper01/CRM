@@ -665,8 +665,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       case 'Car Rentals':
         setLeadObj(prev => ({ ...prev, category: getEmptyCarLeadObj() }));
         break;
+        
         case 'Holiday':
-          setLeadObj(prev => ({ ...prev, category: getEmptyHolidayLeadObj() }));
+        setLeadObj(prev => ({ ...prev, category: getEmptyHolidayLeadObj() }));
           break;
 
       default:
@@ -1196,6 +1197,16 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             // carLeaddObj.updatedBy_UserID ||= currentUser?.user?.userId;
             const deepCarRentalsCopy = cloneDeep(carLeaddObj);
             deepCopy.category = { ...deepCarRentalsCopy };
+            break;
+
+            case "holiday": // lowercase because of .toLowerCase()
+
+            holidayLeadObj.createdBy_UserID ||= currentUser?.user?.userId;
+            holidayLeadObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            // holidayLeadObj.updatedBy_UserID ||= currentUser?.user?.userId;
+            const deepHolidayLeadCopy = cloneDeep(holidayLeadObj);
+            deepCopy.category = { ...deepHolidayLeadCopy };
+            console.log("Holiday Lead Obj to be sent...", deepCopy.category);
             break;
 
           default:

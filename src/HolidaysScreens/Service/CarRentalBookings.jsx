@@ -1,178 +1,197 @@
-// import { Train } from "lucide-react";
+
 // import { useState } from "react";
 
-// export default function CarRentalBookingForm({ onSubmit }) {
-//   const [formData, setFormData] = useState({
-//     fromDestination: "",
-//     toDestination: "",
-//     fromDate: "",
-//     toDate: "",
-//     timeSlot: ""
-//   });
+// const Field = ({ label, children }) => (
+//   <div className="flex flex-col gap-1">
+//     <label className="text-[11px] tracking-wide text-gray-500 font-semibold uppercase">
+//       {label}
+//     </label>
+//     {children}
+//   </div>
+// );
 
-//   const handleChange = (e) => {
-//     setFormData({
-//       ...formData,
-//       [e.target.name]: e.target.value
-//     });
-//   };
+// export default function CarRentalBookingForm() {
+//   const [tripType, setTripType] = useState("Local");
 
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (onSubmit) {
-//       onSubmit(formData);
-//     } else {
-//       console.log("Booking submitted:", formData);
-//     }
-//   };
+//   const inputClass =
+//     "border border-gray-300 rounded-lg px-3 py-2 text-sm w-full bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 hover:border-gray-400 transition";
 
 //   return (
-//     <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8">
-//       <div className="flex items-center gap-3 mb-6">
-//         <div className="bg-indigo-600 p-3 rounded-lg">
-//           <Train className="w-6 h-6 text-white" />
-//         </div>
-//         <div>
-//           <h1 className="text-2xl font-bold text-gray-900">Car Rental Booking</h1>
-//           <p className="text-sm text-gray-600">CRM Travel Services</p>
-//         </div>
+//     <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-4 space-y-5 max-w-5xl mx-auto">
+//       {/* Header */}
+//       <div className="border-b pb-2">
+//         <h2 className="text-lg font-semibold text-gray-800">
+//           🚗 Car Rental
+//         </h2>
 //       </div>
 
-//       <form onSubmit={handleSubmit} className="space-y-6">
-//         {/* Destinations */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//           <div>
-//             <label htmlFor="fromDestination" className="block text-sm font-medium text-gray-700 mb-2">
-//               From Destination
-//             </label>
-//             <input
-//               type="text"
-//               id="fromDestination"
-//               name="fromDestination"
-//               value={formData.fromDestination}
-//               onChange={handleChange}
-//               placeholder="Enter departure station"
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-//               required
-//             />
-//           </div>
-
-//           <div>
-//             <label htmlFor="toDestination" className="block text-sm font-medium text-gray-700 mb-2">
-//               To Destination
-//             </label>
-//             <input
-//               type="text"
-//               id="toDestination"
-//               name="toDestination"
-//               value={formData.toDestination}
-//               onChange={handleChange}
-//               placeholder="Enter arrival station"
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-//               required
-//             />
-//           </div>
-//         </div>
-
-//         {/* Dates */}
-//         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-//           <div>
-//             <label htmlFor="fromDate" className="block text-sm font-medium text-gray-700 mb-2">
-//               Departure Date
-//             </label>
-//             <input
-//               type="date"
-//               id="fromDate"
-//               name="fromDate"
-//               value={formData.fromDate}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-//               required
-//             />
-//           </div>
-
-//           <div>
-//             <label htmlFor="toDate" className="block text-sm font-medium text-gray-700 mb-2">
-//               Return Date
-//             </label>
-//             <input
-//               type="date"
-//               id="toDate"
-//               name="toDate"
-//               value={formData.toDate}
-//               onChange={handleChange}
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-//             />
-//           </div>
-//         </div>
-
-//         {/* Time Slot */}
-//         <div>
-//           <label htmlFor="timeSlot" className="block text-sm font-medium text-gray-700 mb-2">
-//             Preferred Time Slot
-//           </label>
+//       {/* Trip Setup */}
+//       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+//         <Field label="Trip Type">
 //           <select
-//             id="timeSlot"
-//             name="timeSlot"
-//             value={formData.timeSlot}
-//             onChange={handleChange}
-//             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
-//             required
+//             value={tripType}
+//             onChange={(e) => setTripType(e.target.value)}
+//             className={inputClass}
 //           >
-//             <option value="">Select time slot</option>
-//             <option value="early-morning">Early Morning (05:00 - 08:00)</option>
-//             <option value="morning">Morning (08:00 - 12:00)</option>
-//             <option value="afternoon">Afternoon (12:00 - 17:00)</option>
-//             <option value="evening">Evening (17:00 - 21:00)</option>
-//             <option value="night">Night (21:00 - 05:00)</option>
+//             <option>Local</option>
+//             <option>Outstation</option>
+//             <option>Airport</option>
 //           </select>
-//         </div>
+//         </Field>
 
-//         {/* Submit Button */}
-//         <button
-//           type="submit"
-//           className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
-//         >
-//           Search Trains
+//         <Field label="Vehicle Type">
+//           <select className={inputClass}>
+//             <option>Sedan</option>
+//             <option>SUV</option>
+//             <option>Luxury</option>
+//             <option>Tempo Traveller</option>
+//           </select>
+//         </Field>
+
+//         <Field label="No. of Vehicles">
+//           <input type="number" className={inputClass} />
+//         </Field>
+
+//         <Field label="Driver">
+//           <select className={inputClass}>
+//             <option>With Driver</option>
+//             <option>Self Drive</option>
+//           </select>
+//         </Field>
+//       </div>
+
+//       {/* Locations */}
+//       <div className="grid md:grid-cols-2 gap-3">
+//         <Field label="Pickup Location">
+//           <input className={inputClass} />
+//         </Field>
+
+//         {tripType !== "Local" && (
+//           <Field label="Drop Location">
+//             <input className={inputClass} />
+//           </Field>
+//         )}
+//       </div>
+
+//       {/* Schedule */}
+//       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+//         <Field label="Pickup Date">
+//           <input type="date" className={inputClass} />
+//         </Field>
+
+//         <Field label="Pickup Time">
+//           <input type="time" className={inputClass} />
+//         </Field>
+
+//         <Field label="Drop Date">
+//           <input type="date" className={inputClass} />
+//         </Field>
+
+//         <Field label="Drop Time">
+//           <input type="time" className={inputClass} />
+//         </Field>
+//       </div>
+
+//       {/* Extras */}
+//       <div className="grid md:grid-cols-3 gap-3">
+//         <Field label="Luggage">
+//           <input type="number" className={inputClass} />
+//         </Field>
+
+//         <Field label="Special Request">
+//           <input className={inputClass} />
+//         </Field>
+
+//         <Field label="Notes">
+//           <input className={inputClass} />
+//         </Field>
+//       </div>
+
+//       {/* Footer */}
+//       <div className="flex justify-end border-t pt-2">
+//         <button className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg text-sm shadow">
+//           Save Booking
 //         </button>
-//       </form>
+//       </div>
 //     </div>
 //   );
 // }
 
-import { useState } from "react";
 
+import { CarRentalModel  } from "../../Model/FIT Services/CarRentalModel";
+
+const styles = {
+  container:
+    "bg-white rounded-2xl shadow-md border border-gray-200 p-4 space-y-5 max-w-5xl mx-auto",
+
+  header: "border-b pb-2",
+
+  grid4: "grid grid-cols-2 md:grid-cols-4 gap-3",
+  grid2: "grid md:grid-cols-2 gap-3",
+  grid3: "grid md:grid-cols-3 gap-3",
+
+  label:
+    "text-[11px] tracking-wide text-gray-500 font-semibold uppercase",
+
+  input:
+    "border border-gray-300 rounded-lg px-3 py-2 text-sm w-full bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 transition"
+};
+
+// ✅ reusable field component (MUST be defined)
 const Field = ({ label, children }) => (
   <div className="flex flex-col gap-1">
-    <label className="text-[11px] tracking-wide text-gray-500 font-semibold uppercase">
-      {label}
-    </label>
+    <label className={styles.label}>{label}</label>
     {children}
   </div>
 );
 
-export default function CarRentalBookingForm() {
-  const [tripType, setTripType] = useState("Local");
+// // optional fallback model (avoid crashes)
+// const CarRentalModel = {
+//   tripType: "Local",
+//   vehicleType: "Sedan",
+//   noOfVehicles: 1,
+//   driverType: "With Driver",
+//   route: {},
+//   pickupDate: "",
+//   pickupTime: "",
+//   dropDate: "",
+//   dropTime: "",
+//   luggage: 0,
+//   specialRequest: "",
+//   notes: ""
+// };
 
-  const inputClass =
-    "border border-gray-300 rounded-lg px-3 py-2 text-sm w-full bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 hover:border-gray-400 transition";
+export default function CarRentalBookingForm({ data, onChange }) {
+  const form = {
+    ...CarRentalModel,
+    ...(data || {}),
+    route: {
+      pickup: "",
+      drop: "",
+      ...(data?.route || {})
+    }
+  };
+
+  const set = (updated) => onChange(updated);
 
   return (
-    <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-4 space-y-5 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="border-b pb-2">
+    <div className={styles.container}>
+
+      {/* HEADER */}
+      <div className={styles.header}>
         <h2 className="text-lg font-semibold text-gray-800">
-          🚗 Car Rental
+          🚗 Car Rental Booking
         </h2>
       </div>
 
-      {/* Trip Setup */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* TRIP SETUP */}
+      <div className={styles.grid4}>
+
         <Field label="Trip Type">
           <select
-            value={tripType}
-            onChange={(e) => setTripType(e.target.value)}
-            className={inputClass}
+            value={form.tripType}
+            onChange={(e) => set({ ...form, tripType: e.target.value })}
+            className={styles.input}
           >
             <option>Local</option>
             <option>Outstation</option>
@@ -181,7 +200,11 @@ export default function CarRentalBookingForm() {
         </Field>
 
         <Field label="Vehicle Type">
-          <select className={inputClass}>
+          <select
+            value={form.vehicleType}
+            onChange={(e) => set({ ...form, vehicleType: e.target.value })}
+            className={styles.input}
+          >
             <option>Sedan</option>
             <option>SUV</option>
             <option>Luxury</option>
@@ -190,70 +213,101 @@ export default function CarRentalBookingForm() {
         </Field>
 
         <Field label="No. of Vehicles">
-          <input type="number" className={inputClass} />
+          <input
+            type="number"
+            value={form.noOfVehicles}
+            onChange={(e) => set({ ...form, noOfVehicles: e.target.value })}
+            className={styles.input}
+          />
         </Field>
 
-        <Field label="Driver">
-          <select className={inputClass}>
+        <Field label="Driver Type">
+          <select
+            value={form.driverType}
+            onChange={(e) => set({ ...form, driverType: e.target.value })}
+            className={styles.input}
+          >
             <option>With Driver</option>
             <option>Self Drive</option>
           </select>
         </Field>
+
       </div>
 
-      {/* Locations */}
-      <div className="grid md:grid-cols-2 gap-3">
+      {/* ROUTE */}
+      <div className={styles.grid2}>
+
         <Field label="Pickup Location">
-          <input className={inputClass} />
+          <input
+            value={form.route?.pickup}
+            onChange={(e) =>
+              set({
+                ...form,
+                route: { ...form.route, pickup: e.target.value }
+              })
+            }
+            className={styles.input}
+          />
         </Field>
 
-        {tripType !== "Local" && (
+        {form.tripType !== "Local" && (
           <Field label="Drop Location">
-            <input className={inputClass} />
+            <input
+              value={form.route?.drop}
+              onChange={(e) =>
+                set({
+                  ...form,
+                  route: { ...form.route, drop: e.target.value }
+                })
+              }
+              className={styles.input}
+            />
           </Field>
         )}
+
       </div>
 
-      {/* Schedule */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {/* SCHEDULE */}
+      <div className={styles.grid4}>
+
         <Field label="Pickup Date">
-          <input type="date" className={inputClass} />
+          <input
+            type="date"
+            value={form.pickupDate}
+            onChange={(e) => set({ ...form, pickupDate: e.target.value })}
+            className={styles.input}
+          />
         </Field>
 
         <Field label="Pickup Time">
-          <input type="time" className={inputClass} />
+          <input
+            type="time"
+            value={form.pickupTime}
+            onChange={(e) => set({ ...form, pickupTime: e.target.value })}
+            className={styles.input}
+          />
         </Field>
 
         <Field label="Drop Date">
-          <input type="date" className={inputClass} />
+          <input
+            type="date"
+            value={form.dropDate}
+            onChange={(e) => set({ ...form, dropDate: e.target.value })}
+            className={styles.input}
+          />
         </Field>
 
         <Field label="Drop Time">
-          <input type="time" className={inputClass} />
+          <input
+            type="time"
+            value={form.dropTime}
+            onChange={(e) => set({ ...form, dropTime: e.target.value })}
+            className={styles.input}
+          />
         </Field>
+
       </div>
 
-      {/* Extras */}
-      <div className="grid md:grid-cols-3 gap-3">
-        <Field label="Luggage">
-          <input type="number" className={inputClass} />
-        </Field>
-
-        <Field label="Special Request">
-          <input className={inputClass} />
-        </Field>
-
-        <Field label="Notes">
-          <input className={inputClass} />
-        </Field>
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-end border-t pt-2">
-        <button className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-lg text-sm shadow">
-          Save Booking
-        </button>
-      </div>
     </div>
   );
 }

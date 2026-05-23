@@ -1,57 +1,168 @@
 import React, { useState, useEffect } from "react";
+import { getEmptyPaxDetailsObj } from "../../Model/HolidayLeadObj";
+
+
+
+// ======================
+// 🧩 REUSABLE UI
+// ======================
+function InputBox({ label, value, onChange }) {
+  return (
+    <div className="min-w-[100px]">
+      <label className="text-xs text-gray-500">{label}</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border rounded px-2 py-1"
+      />
+    </div>
+  );
+}
+
+function SelectBox({ label, value, onChange, options = [], disabled }) {
+  return (
+    <div className="min-w-[140px]">
+      <label className="text-xs text-gray-500">{label}</label>
+      <select
+        disabled={disabled}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border rounded px-2 py-1"
+      >
+        <option value="">Select</option>
+        {options.map(opt => (
+          <option key={opt.id} value={opt.id}>
+            {opt.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 // ✅ NEW: PAX Component (isolated & reusable)
 export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
-  const [adults, setAdults] = useState(holidayLeadObj.NoOfAdults);
-  const [children, setChildren] = useState(holidayLeadObj.NoOfChildren);
-  const [infants, setInfants] = useState(holidayLeadObj.NoOfInfants);
-  const [diffAbled, setDiffAbled] = useState(holidayLeadObj.IsDifferentAbled);
-  const [seniorCitizen, setSeniorCitizen] = useState(holidayLeadObj.IsSeniorCitizen);
-  const [extraAdults, setExtraAdults] = useState(0);
-  const [childrenWithBed, setChildrenWithBed] = useState(0);
-  const [childrenWithoutBed, setChildrenWithoutBed] = useState(0);
-  const [rooms, setRooms] = useState(1);
-  const [roomType, setRoomType] = useState("");
-  const [hotelType, setHotelType] = useState("");
-  //const total = Number(adults) + Number(children) + Number(infants);
+
+  // ======================
+  // 🔥 MOCK API LAYER (same file)
+  // ======================
+  const getRoomTypesAPI = async () => {
+    return [
+      { id: 1, name: "Single" },
+      { id: 2, name: "Double" },
+      { id: 3, name: "Triple" },
+      { id: 4, name: "Twin Bed" }
+    ];
+  };
+
+  const getHotelTypesAPI = async () => {
+    return [
+      { id: 1, name: "Budget" },
+      { id: 2, name: "3 Star" },
+      { id: 3, name: "4 Star" },
+      { id: 4, name: "5 Star" },
+      { id: 5, name: "Luxury" }
+    ];
+  };
+
+  const getDisabilityTypesAPI = async () => {
+    return [
+      { id: 1, name: "Wheelchair" },
+      { id: 2, name: "Visual" },
+      { id: 3, name: "Hearing" },
+      { id: 4, name: "Other" }
+    ];
+  };
+
   const [isPaxOpen, setIsPaxOpen] = useState(true);
 
-  const paxCount =
-    Number(adults || 0) +
-    Number(extraAdults || 0) +
-    Number(childrenWithBed || 0) +
-    Number(childrenWithoutBed || 0) +
-    Number(infants || 0);
+  // ======================
+  // 🔥 DROPDOWN STATES (NEW)
+  // ======================
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [hotelTypes, setHotelTypes] = useState([]);
+  const [disabilityTypes, setDisabilityTypes] = useState([]);
 
-  const hasPaxDetails = paxCount > 0;
-
+  // ======================
+  // 🔥 LOAD DROPDOWNS FROM API
+  // ======================
   useEffect(() => {
-    console.log("In Pax Componenet", { holidayLeadObj });
-    console.log("PAX Details Updated:", { adults, children, infants, diffAbled, seniorCitizen });
+
+    const loadDropdowns = async () => {
+
+      const rooms = await getRoomTypesAPI();
+      const hotels = await getHotelTypesAPI();
+      const disabilities = await getDisabilityTypesAPI();
+
+      setRoomTypes(rooms);
+      setHotelTypes(hotels);
+      setDisabilityTypes(disabilities);
+    };
+
+    loadDropdowns();
+
   }, []);
 
+  // ======================
+  // 🔥 Single Source of Truth
+  // ======================
+  const [paxDetailsObj, setPaxDetailsObj] = useState(
+    holidayLeadObj?.paxDetails || getEmptyPaxDetailsObj()
+  );
 
+  // ======================
+  // 🔥 Derived Count
+  // ======================
+  const paxCount =
+    Number(paxDetailsObj?.noOfAdults || 0) +
+    Number(paxDetailsObj?.noOfExtraAdults || 0) +
+    Number(paxDetailsObj?.noOfChildrenWithBed || 0) +
+    Number(paxDetailsObj?.noOfChildrenWithoutBed || 0) +
+    Number(paxDetailsObj?.infants || 0);
+
+  // ======================
+  // 🔥 Sync Parent Object
+  // ======================
   useEffect(() => {
-    setHolidayLeadObj(prev => ({ ...prev, NoOfAdults: adults, NoOfChildren: children, NoOfInfants: infants }));
-  }, [adults, children, infants, setHolidayLeadObj]);
+
+    setHolidayLeadObj(prev => ({
+      ...prev,
+      paxDetails: {
+        ...paxDetailsObj,
+        totalPax: paxCount
+      }
+    }));
+
+  }, [paxDetailsObj, paxCount]);
+
+  // ======================
+  // 🔥 Common Updater
+  // ======================
+  const updateField = (key, value) => {
+
+    setPaxDetailsObj(prev => ({
+      ...prev,
+      [key]: value
+    }));
+
+  };
 
   return (
     <div className="mt-5 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
 
-      {/* 🔥 HEADER */}
+      {/* HEADER */}
       <div
         onClick={() => setIsPaxOpen(prev => !prev)}
         className="flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-50 cursor-pointer transition-all border-b"
       >
 
-        {/* LEFT */}
         <div className="flex items-center gap-2">
 
           <span className="font-semibold text-sm text-gray-800">
             PAX Details
           </span>
 
-          {/* Count Badge */}
           {paxCount > 0 && (
             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
               {paxCount}
@@ -60,12 +171,12 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
         </div>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-2">
-          {/* 🟢 Pulse when collapsed */}
+
           {paxCount > 0 && !isPaxOpen && (
             <span className="w-3.5 h-3.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.9)]"></span>
           )}
+
           <span>{isPaxOpen ? "▲" : "▼"}</span>
         </div>
       </div>
@@ -73,9 +184,10 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
       {/* BODY */}
       <div
         className={`transition-all duration-300 overflow-hidden
-      ${isPaxOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0"}
+        ${isPaxOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0"}
       `}
       >
+
         <div className="border-t border-gray-100 px-5 py-5 bg-gradient-to-br from-white to-blue-50/30">
 
           {/* GRID */}
@@ -89,8 +201,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={adults}
-                onChange={(e) => setAdults(e.target.value)}
+                value={paxDetailsObj.noOfAdults}
+                onChange={(e) => updateField("noOfAdults", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -103,8 +215,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={extraAdults}
-                onChange={(e) => setExtraAdults(e.target.value)}
+                value={paxDetailsObj.noOfExtraAdults}
+                onChange={(e) => updateField("noOfExtraAdults", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -117,8 +229,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={childrenWithBed}
-                onChange={(e) => setChildrenWithBed(e.target.value)}
+                value={paxDetailsObj.noOfChildrenWithBed}
+                onChange={(e) => updateField("noOfChildrenWithBed", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -131,8 +243,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={childrenWithoutBed}
-                onChange={(e) => setChildrenWithoutBed(e.target.value)}
+                value={paxDetailsObj.noOfChildrenWithoutBed}
+                onChange={(e) => updateField("noOfChildrenWithoutBed", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -145,8 +257,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={infants}
-                onChange={(e) => setInfants(e.target.value)}
+                value={paxDetailsObj.infants}
+                onChange={(e) => updateField("infants", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
@@ -159,50 +271,49 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <input
                 type="number"
-                value={rooms}
-                onChange={(e) => setRooms(e.target.value)}
+                value={paxDetailsObj.noOfRooms}
+                onChange={(e) => updateField("noOfRooms", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
             </div>
 
-            {/* Room Type */}
+            {/* Room Type (API BIND) */}
             <div className="min-w-[120px]">
               <label className="text-[11px] font-medium text-gray-500 mb-1 block">
                 Room Type
               </label>
 
               <select
-                value={roomType}
-                onChange={(e) => setRoomType(e.target.value)}
+                value={paxDetailsObj.RoomType}
+                onChange={(e) => updateField("RoomType", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Select</option>
-                <option>Single</option>
-                <option>Double</option>
-                <option>Triple</option>
-                <option>Twin Bed</option>
+                {roomTypes.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* Hotel Type */}
+            {/* Hotel Type (API BIND) */}
             <div className="min-w-[120px]">
               <label className="text-[11px] font-medium text-gray-500 mb-1 block">
                 Hotel Type
               </label>
 
               <select
-                value={hotelType}
-                onChange={(e) => setHotelType(e.target.value)}
+                value={paxDetailsObj.HotelType}
+                onChange={(e) => updateField("HotelType", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Select</option>
-                <option>Budget</option>
-                <option>3 Star</option>
-                <option>4 Star</option>
-                <option>5 Star</option>
-                <option>Luxury</option>
-                <option>Resort</option>
-                <option>Villa</option>
+                {hotelTypes.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -219,60 +330,70 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
           </div>
 
-          {/* Bottom Section */}
+          {/* Bottom (API BIND Disability) */}
           <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-gray-200 pt-4">
 
-            {/* Senior */}
+            {/* Senior Citizen */}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={seniorCitizen}
-                onChange={() => setSeniorCitizen(!seniorCitizen)}
+                checked={paxDetailsObj.isSeniorCitizen}
+                onChange={(e) =>
+                  updateField("isSeniorCitizen", e.target.checked)
+                }
                 className="accent-blue-600 h-4 w-4"
               />
-
               <span className="text-xs font-medium text-gray-700">
                 Senior Citizen
               </span>
             </label>
 
-            {/* Diff Abled */}
+            {/* Differently Abled */}
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
-                checked={diffAbled}
-                onChange={() => setDiffAbled(!diffAbled)}
+                checked={paxDetailsObj.isDifferentAbled}
+                onChange={(e) =>
+                  updateField("isDifferentAbled", e.target.checked)
+                }
                 className="accent-blue-600 h-4 w-4"
               />
-
               <span className="text-xs font-medium text-gray-700">
                 Differently Abled
               </span>
             </label>
 
-            {/* Disability */}
+            {/* Disability Type API */}
             <div className="min-w-[220px]">
+
               <label className="text-[11px] font-medium text-gray-500 mb-1 block">
                 Disability Type
               </label>
 
               <select
-                disabled={!diffAbled}
+                disabled={!paxDetailsObj.isDifferentAbled}
+                value={paxDetailsObj.DisabilityType}
+                onChange={(e) =>
+                  updateField("DisabilityType",Number(e.target.value) || 0)
+                }
                 className={`w-full rounded-xl border px-3 py-2 text-sm shadow-sm outline-none
-              ${diffAbled
+                ${paxDetailsObj.isDifferentAbled
                     ? "border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     : "border-gray-100 bg-gray-100 text-gray-400"
                   }`}
               >
-                <option>Select</option>
-                <option>Wheelchair</option>
-                <option>Visual</option>
-                <option>Hearing</option>
-                <option>Other</option>
+                <option value="">Select</option>
+                {disabilityTypes.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
+
             </div>
 
           </div>
+
         </div>
       </div>
     </div>

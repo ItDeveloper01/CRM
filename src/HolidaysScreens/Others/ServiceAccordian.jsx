@@ -3,7 +3,11 @@ import { Car, Map, Plane, Shield, Train } from "lucide-react";
 import TrainBookingForm from "../Service/TrainBookings";
 import CarRentalBookingForm from "../Service/CarRentalBookings";
 import AirportTransferForm from "../Service/AirportTransferForm";
+import {AirportTransferModel} from "../../Model/FIT Services/AirportTransferModel";
+import { TrainBookingModel } from "../../Model/FIT Services/TrainBookingModel";
+import { CarRentalModel } from "../../Model/FIT Services/CarRentalModel";
 import SightseeingForm from "../Service/SightSeeingForm";
+import { SightseeingModel } from "../../Model/FIT Services/SighSeeingModel";
 import { useEffect } from "react";
 
 
@@ -16,7 +20,7 @@ export default function ServicesAccordion({
   getAIAssistant
 }) {
   const [isOpen, setIsOpen] = useState(true);
-  const [activeService, setActiveService] = useState(
+  const [activeService, setActiveService] = useState("train"
     // serviceConfig[0]?.key 
   );
   const [activeBookingIndex, setActiveBookingIndex] = useState({});
@@ -42,45 +46,51 @@ export default function ServicesAccordion({
   const serviceConfig = [
 
     {
-      key: "train",
+      key: "trainTicketBookingServices",
       label: "Train Tickets",
       icon: <Train size={16} />,
-      component: TrainBookingForm
+      component: TrainBookingForm,
+      model: TrainBookingModel
     },
 
     {
-      key: "car",
+      key: "carRentalServices",
       label: "Car Rental",
       icon: <Car size={16} />,
-      component: CarRentalBookingForm
+      component: CarRentalBookingForm,
+      model: CarRentalModel
     },
 
     {
-      key: "transfer",
+      key: "airportTransferService",
       label: "Airport Transfers",
       icon: <Plane size={16} />,
-      component: AirportTransferForm
+      component: AirportTransferForm,
+      model: AirportTransferModel
     },
 
     {
-      key: "sightseeing",
+      key: "sightseeingServices",
       label: "Sightseeing",
       icon: <Map size={16} />,
-      component: SightseeingForm
+      component: SightseeingForm,
+      model: SightseeingModel
     },
 
     {
       key: "insurance",
       label: "Insurance",
       icon: <Shield size={16} />,
-      component: PlaceholderForm
+      component: PlaceholderForm,
+      model:{}
     },
 
     {
       key: "visa",
       label: "Visa",
       icon: <Shield size={16} />,
-      component: PlaceholderForm
+      component: PlaceholderForm,
+      model:{}
     }
   ];
 
@@ -103,11 +113,11 @@ export default function ServicesAccordion({
     0
   );
 
-  useEffect(() => {
-    if (serviceConfig.length > 0 && !activeService) {
-      setActiveService(serviceConfig[0].key);
-    }
-  }, [serviceConfig, activeService]);
+  // useEffect(() => {
+  //   if (serviceConfig.length > 0 && !activeService) {
+  //     setActiveService(serviceConfig[0].key);
+  //   }
+  // }, [serviceConfig, activeService]);
 
 
 
@@ -232,7 +242,10 @@ export default function ServicesAccordion({
                     <button
                       className="text-blue-600 text-sm mt-2 hover:underline"
                       onClick={() => {
-                        addBooking(service.key);
+                        addBooking(
+                         service.key,
+                        service.model
+                        );
                         setIsOpen(true); // 🔥 auto-open
                       }}
                     >
@@ -263,7 +276,10 @@ export default function ServicesAccordion({
                       <button
                         className="text-blue-600"
                         onClick={() => {
-                          addBooking(service.key);
+                          addBooking(
+                            service.key,
+                            service.model
+                          );
                           setIsOpen(true);
                         }}
                       >

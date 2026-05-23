@@ -361,7 +361,7 @@
 //         maxDiscount: 10,
 
 //         schedule: [ getEmptyHolidayScheduleObj()    ]
-        
+
 //         // schedule: [
 //         //     {
 //         //         day: 1,
@@ -672,7 +672,7 @@
 //     );
 // }
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 export default function ItinerarySection({
     holidayLeadObj = {},
@@ -683,490 +683,554 @@ export default function ItinerarySection({
     const [itineraries, setItineraries] = useState([]);
     const [tabs, setTabs] = useState([{ id: 1 }]);
     const [activeTab, setActiveTab] = useState(0);
-
-    const [tabState, setTabState] = useState({}); 
+    const initializedRef = useRef(false);
+    const [tabState, setTabState] = useState({});
     // tabState[tabId] = { itinerary, variant, pickup, showDiscount }
 
     // ======================================================
     // DUMMY DATA (same as yours)
     // ======================================================
 
-const dummyItineraries = [
-  {
-    itineraryID: 101,
-    name: "Kashmir Delight Tour",
-
-    variants: [
-      {
-        variantID: 1,
-        label: "Classic Loop",
-        route: "Srinagar → Gulmarg → Pahalgam → Srinagar",
-
-        startCity: "Srinagar",
-        endCity: "Srinagar",
-
-        baseStartDate: "2026-09-12",
-        baseEndDate: "2026-09-17",
-
-        basePrice: 30000,
-        discount: 10,
-
-        seats: 12,
-        bookedSeats: 8,
-
-        schedule: [
-          { day: 1, title: "Arrival Srinagar", details: "Dal Lake stay" },
-          { day: 2, title: "Gulmarg", details: "Cable car ride" },
-          { day: 3, title: "Pahalgam", details: "Valley exploration" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 5000,
-            pickupDate: "2026-09-11",
-            adjustedStartDate: "2026-09-12"
-          },
-          {
-            city: "Mumbai",
-            cost: 6500,
-            pickupDate: "2026-09-10",
-            adjustedStartDate: "2026-09-12"
-          }
-        ]
-      },
-
-      {
-        variantID: 2,
-        label: "Luxury Escape",
-        route: "Srinagar → Sonmarg → Gulmarg → Srinagar",
-
-        startCity: "Srinagar",
-        endCity: "Srinagar",
-
-        baseStartDate: "2026-10-02",
-        baseEndDate: "2026-10-07",
-
-        basePrice: 52000,
-        discount: 15,
-
-        seats: 10,
-        bookedSeats: 5,
-
-        schedule: [
-          { day: 1, title: "Arrival", details: "Luxury houseboat stay" },
-          { day: 2, title: "Sonmarg", details: "Snow point visit" },
-          { day: 3, title: "Gulmarg", details: "Premium gondola ride" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 8000,
-            pickupDate: "2026-10-01",
-            adjustedStartDate: "2026-10-02"
-          },
-          {
-            city: "Hyderabad",
-            cost: 9500,
-            pickupDate: "2026-10-01",
-            adjustedStartDate: "2026-10-02"
-          }
-        ]
-      },
-
-      {
-        variantID: 3,
-        label: "Budget Backpacker",
-        route: "Srinagar → Gulmarg → Srinagar",
-
-        startCity: "Srinagar",
-        endCity: "Srinagar",
-
-        baseStartDate: "2026-11-05",
-        baseEndDate: "2026-11-09",
-
-        basePrice: 18000,
-        discount: 5,
-
-        seats: 18,
-        bookedSeats: 12,
-
-        schedule: [
-          { day: 1, title: "Arrival", details: "Hostel check-in" },
-          { day: 2, title: "Gulmarg", details: "Sightseeing" },
-          { day: 3, title: "Local Srinagar", details: "Market visit" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 4000,
-            pickupDate: "2026-11-04",
-            adjustedStartDate: "2026-11-05"
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    itineraryID: 102,
-    name: "Spiti Valley Expedition",
-
-    variants: [
-      {
-        variantID: 4,
-        label: "Backpacking Circuit",
-        route: "Delhi → Manali → Kaza → Chandratal → Delhi",
-
-        startCity: "Delhi",
-        endCity: "Delhi",
-
-        baseStartDate: "2026-06-15",
-        baseEndDate: "2026-06-22",
-
-        basePrice: 22000,
-        discount: 5,
-
-        seats: 20,
-        bookedSeats: 15,
-
-        schedule: [
-          { day: 1, title: "Delhi to Manali", details: "Volvo journey" },
-          { day: 2, title: "Manali", details: "Acclimatization" },
-          { day: 3, title: "Kaza", details: "Mountain drive" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 0,
-            pickupDate: "2026-06-14",
-            adjustedStartDate: "2026-06-15"
-          }
-        ]
-      },
-
-      {
-        variantID: 5,
-        label: "Adventure Riders",
-        route: "Chandigarh → Manali → Kaza → Pin Valley → Chandigarh",
-
-        startCity: "Chandigarh",
-        endCity: "Chandigarh",
-
-        baseStartDate: "2026-07-10",
-        baseEndDate: "2026-07-18",
-
-        basePrice: 35000,
-        discount: 8,
-
-        seats: 15,
-        bookedSeats: 9,
-
-        schedule: [
-          { day: 1, title: "Ride Begins", details: "Bike allocation" },
-          { day: 2, title: "Manali", details: "Mountain briefing" },
-          { day: 3, title: "Kaza", details: "High altitude ride" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Chandigarh",
-            cost: 1500,
-            pickupDate: "2026-07-09",
-            adjustedStartDate: "2026-07-10"
-          },
-          {
-            city: "Delhi",
-            cost: 3500,
-            pickupDate: "2026-07-09",
-            adjustedStartDate: "2026-07-10"
-          }
-        ]
-      },
-
-      {
-        variantID: 6,
-        label: "Premium SUV Expedition",
-        route: "Delhi → Shimla → Kaza → Manali → Delhi",
-
-        startCity: "Delhi",
-        endCity: "Delhi",
-
-        baseStartDate: "2026-08-05",
-        baseEndDate: "2026-08-13",
-
-        basePrice: 48000,
-        discount: 12,
-
-        seats: 12,
-        bookedSeats: 7,
-
-        schedule: [
-          { day: 1, title: "Departure", details: "Luxury SUV transfer" },
-          { day: 2, title: "Shimla", details: "Mall road visit" },
-          { day: 3, title: "Kaza", details: "Camping experience" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 0,
-            pickupDate: "2026-08-04",
-            adjustedStartDate: "2026-08-05"
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    itineraryID: 103,
-    name: "Goa Beach Party Retreat",
-
-    variants: [
-      {
-        variantID: 7,
-        label: "Weekend Party Edition",
-        route: "North Goa → South Goa",
-
-        startCity: "Goa",
-        endCity: "Goa",
-
-        baseStartDate: "2026-12-18",
-        baseEndDate: "2026-12-21",
-
-        basePrice: 18000,
-        discount: 12,
-
-        seats: 25,
-        bookedSeats: 19,
-
-        schedule: [
-          { day: 1, title: "Arrival", details: "Beach party" },
-          { day: 2, title: "North Goa", details: "Club hopping" },
-          { day: 3, title: "South Goa", details: "Water sports" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Mumbai",
-            cost: 4000,
-            pickupDate: "2026-12-17",
-            adjustedStartDate: "2026-12-18"
-          }
-        ]
-      },
-
-      {
-        variantID: 8,
-        label: "Luxury Beach Escape",
-        route: "Candolim → Morjim → Palolem",
-
-        startCity: "Goa",
-        endCity: "Goa",
-
-        baseStartDate: "2027-01-10",
-        baseEndDate: "2027-01-15",
-
-        basePrice: 42000,
-        discount: 18,
-
-        seats: 14,
-        bookedSeats: 6,
-
-        schedule: [
-          { day: 1, title: "Resort Check-in", details: "Welcome drinks" },
-          { day: 2, title: "Private Cruise", details: "Sunset yacht party" },
-          { day: 3, title: "Beach Leisure", details: "Spa and cafe tour" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Bangalore",
-            cost: 7000,
-            pickupDate: "2027-01-09",
-            adjustedStartDate: "2027-01-10"
-          },
-          {
-            city: "Delhi",
-            cost: 9500,
-            pickupDate: "2027-01-09",
-            adjustedStartDate: "2027-01-10"
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    itineraryID: 104,
-    name: "Leh Ladakh Adventure",
-
-    variants: [
-      {
-        variantID: 9,
-        label: "Bike Expedition",
-        route: "Leh → Nubra → Pangong → Leh",
-
-        startCity: "Leh",
-        endCity: "Leh",
-
-        baseStartDate: "2026-07-01",
-        baseEndDate: "2026-07-08",
-
-        basePrice: 38000,
-        discount: 10,
-
-        seats: 16,
-        bookedSeats: 10,
-
-        schedule: [
-          { day: 1, title: "Arrival Leh", details: "Rest and acclimatize" },
-          { day: 2, title: "Nubra Valley", details: "Camel safari" },
-          { day: 3, title: "Pangong Lake", details: "Lakeside camping" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Delhi",
-            cost: 8500,
-            pickupDate: "2026-06-30",
-            adjustedStartDate: "2026-07-01"
-          }
-        ]
-      },
-
-      {
-        variantID: 10,
-        label: "SUV Explorer",
-        route: "Leh → Khardung La → Pangong → Tso Moriri",
-
-        startCity: "Leh",
-        endCity: "Leh",
-
-        baseStartDate: "2026-08-12",
-        baseEndDate: "2026-08-20",
-
-        basePrice: 55000,
-        discount: 14,
-
-        seats: 12,
-        bookedSeats: 4,
-
-        schedule: [
-          { day: 1, title: "Leh Arrival", details: "Hotel check-in" },
-          { day: 2, title: "Khardung La", details: "Highest motorable road" },
-          { day: 3, title: "Pangong", details: "Photography tour" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Mumbai",
-            cost: 12000,
-            pickupDate: "2026-08-11",
-            adjustedStartDate: "2026-08-12"
-          },
-          {
-            city: "Delhi",
-            cost: 10000,
-            pickupDate: "2026-08-11",
-            adjustedStartDate: "2026-08-12"
-          }
-        ]
-      }
-    ]
-  },
-
-  {
-    itineraryID: 105,
-    name: "Kerala Backwaters Retreat",
-
-    variants: [
-      {
-        variantID: 11,
-        label: "Houseboat Experience",
-        route: "Kochi → Alleppey → Munnar",
-
-        startCity: "Kochi",
-        endCity: "Kochi",
-
-        baseStartDate: "2026-09-20",
-        baseEndDate: "2026-09-25",
-
-        basePrice: 26000,
-        discount: 7,
-
-        seats: 20,
-        bookedSeats: 13,
-
-        schedule: [
-          { day: 1, title: "Kochi Arrival", details: "Fort Kochi tour" },
-          { day: 2, title: "Alleppey", details: "Houseboat cruise" },
-          { day: 3, title: "Munnar", details: "Tea plantation visit" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Chennai",
-            cost: 3500,
-            pickupDate: "2026-09-19",
-            adjustedStartDate: "2026-09-20"
-          },
-          {
-            city: "Bangalore",
-            cost: 3000,
-            pickupDate: "2026-09-19",
-            adjustedStartDate: "2026-09-20"
-          }
-        ]
-      },
-
-      {
-        variantID: 12,
-        label: "Luxury Ayurveda Retreat",
-        route: "Kochi → Kumarakom → Kovalam",
-
-        startCity: "Kochi",
-        endCity: "Trivandrum",
-
-        baseStartDate: "2026-11-10",
-        baseEndDate: "2026-11-16",
-
-        basePrice: 60000,
-        discount: 20,
-
-        seats: 10,
-        bookedSeats: 3,
-
-        schedule: [
-          { day: 1, title: "Arrival", details: "Luxury wellness resort" },
-          { day: 2, title: "Ayurveda Therapy", details: "Spa sessions" },
-          { day: 3, title: "Beach Leisure", details: "Sunset relaxation" }
-        ],
-
-        pickupOptions: [
-          {
-            city: "Mumbai",
-            cost: 6500,
-            pickupDate: "2026-11-09",
-            adjustedStartDate: "2026-11-10"
-          }
-        ]
-      }
-    ]
-  }
-];
+    const dummyItineraries = [
+        {
+            itineraryID: 101,
+            name: "Kashmir Delight Tour",
+
+            variants: [
+                {
+                    variantID: 1,
+                    label: "Classic Loop",
+                    route: "Srinagar → Gulmarg → Pahalgam → Srinagar",
+
+                    startCity: "Srinagar",
+                    endCity: "Srinagar",
+
+                    baseStartDate: "2026-09-12",
+                    baseEndDate: "2026-09-17",
+
+                    basePrice: 30000,
+                    discount: 10,
+
+                    seats: 12,
+                    bookedSeats: 8,
+
+                    schedule: [
+                        { day: 1, title: "Arrival Srinagar", details: "Dal Lake stay" },
+                        { day: 2, title: "Gulmarg", details: "Cable car ride" },
+                        { day: 3, title: "Pahalgam", details: "Valley exploration" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 5000,
+                            pickupDate: "2026-09-11",
+                            adjustedStartDate: "2026-09-12"
+                        },
+                        {
+                            city: "Mumbai",
+                            cost: 6500,
+                            pickupDate: "2026-09-10",
+                            adjustedStartDate: "2026-09-12"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 2,
+                    label: "Luxury Escape",
+                    route: "Srinagar → Sonmarg → Gulmarg → Srinagar",
+
+                    startCity: "Srinagar",
+                    endCity: "Srinagar",
+
+                    baseStartDate: "2026-10-02",
+                    baseEndDate: "2026-10-07",
+
+                    basePrice: 52000,
+                    discount: 15,
+
+                    seats: 10,
+                    bookedSeats: 5,
+
+                    schedule: [
+                        { day: 1, title: "Arrival", details: "Luxury houseboat stay" },
+                        { day: 2, title: "Sonmarg", details: "Snow point visit" },
+                        { day: 3, title: "Gulmarg", details: "Premium gondola ride" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 8000,
+                            pickupDate: "2026-10-01",
+                            adjustedStartDate: "2026-10-02"
+                        },
+                        {
+                            city: "Hyderabad",
+                            cost: 9500,
+                            pickupDate: "2026-10-01",
+                            adjustedStartDate: "2026-10-02"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 3,
+                    label: "Budget Backpacker",
+                    route: "Srinagar → Gulmarg → Srinagar",
+
+                    startCity: "Srinagar",
+                    endCity: "Srinagar",
+
+                    baseStartDate: "2026-11-05",
+                    baseEndDate: "2026-11-09",
+
+                    basePrice: 18000,
+                    discount: 5,
+
+                    seats: 18,
+                    bookedSeats: 12,
+
+                    schedule: [
+                        { day: 1, title: "Arrival", details: "Hostel check-in" },
+                        { day: 2, title: "Gulmarg", details: "Sightseeing" },
+                        { day: 3, title: "Local Srinagar", details: "Market visit" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 4000,
+                            pickupDate: "2026-11-04",
+                            adjustedStartDate: "2026-11-05"
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            itineraryID: 102,
+            name: "Spiti Valley Expedition",
+
+            variants: [
+                {
+                    variantID: 4,
+                    label: "Backpacking Circuit",
+                    route: "Delhi → Manali → Kaza → Chandratal → Delhi",
+
+                    startCity: "Delhi",
+                    endCity: "Delhi",
+
+                    baseStartDate: "2026-06-15",
+                    baseEndDate: "2026-06-22",
+
+                    basePrice: 22000,
+                    discount: 5,
+
+                    seats: 20,
+                    bookedSeats: 15,
+
+                    schedule: [
+                        { day: 1, title: "Delhi to Manali", details: "Volvo journey" },
+                        { day: 2, title: "Manali", details: "Acclimatization" },
+                        { day: 3, title: "Kaza", details: "Mountain drive" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 0,
+                            pickupDate: "2026-06-14",
+                            adjustedStartDate: "2026-06-15"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 5,
+                    label: "Adventure Riders",
+                    route: "Chandigarh → Manali → Kaza → Pin Valley → Chandigarh",
+
+                    startCity: "Chandigarh",
+                    endCity: "Chandigarh",
+
+                    baseStartDate: "2026-07-10",
+                    baseEndDate: "2026-07-18",
+
+                    basePrice: 35000,
+                    discount: 8,
+
+                    seats: 15,
+                    bookedSeats: 9,
+
+                    schedule: [
+                        { day: 1, title: "Ride Begins", details: "Bike allocation" },
+                        { day: 2, title: "Manali", details: "Mountain briefing" },
+                        { day: 3, title: "Kaza", details: "High altitude ride" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Chandigarh",
+                            cost: 1500,
+                            pickupDate: "2026-07-09",
+                            adjustedStartDate: "2026-07-10"
+                        },
+                        {
+                            city: "Delhi",
+                            cost: 3500,
+                            pickupDate: "2026-07-09",
+                            adjustedStartDate: "2026-07-10"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 6,
+                    label: "Premium SUV Expedition",
+                    route: "Delhi → Shimla → Kaza → Manali → Delhi",
+
+                    startCity: "Delhi",
+                    endCity: "Delhi",
+
+                    baseStartDate: "2026-08-05",
+                    baseEndDate: "2026-08-13",
+
+                    basePrice: 48000,
+                    discount: 12,
+
+                    seats: 12,
+                    bookedSeats: 7,
+
+                    schedule: [
+                        { day: 1, title: "Departure", details: "Luxury SUV transfer" },
+                        { day: 2, title: "Shimla", details: "Mall road visit" },
+                        { day: 3, title: "Kaza", details: "Camping experience" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 0,
+                            pickupDate: "2026-08-04",
+                            adjustedStartDate: "2026-08-05"
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            itineraryID: 103,
+            name: "Goa Beach Party Retreat",
+
+            variants: [
+                {
+                    variantID: 7,
+                    label: "Weekend Party Edition",
+                    route: "North Goa → South Goa",
+
+                    startCity: "Goa",
+                    endCity: "Goa",
+
+                    baseStartDate: "2026-12-18",
+                    baseEndDate: "2026-12-21",
+
+                    basePrice: 18000,
+                    discount: 12,
+
+                    seats: 25,
+                    bookedSeats: 19,
+
+                    schedule: [
+                        { day: 1, title: "Arrival", details: "Beach party" },
+                        { day: 2, title: "North Goa", details: "Club hopping" },
+                        { day: 3, title: "South Goa", details: "Water sports" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Mumbai",
+                            cost: 4000,
+                            pickupDate: "2026-12-17",
+                            adjustedStartDate: "2026-12-18"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 8,
+                    label: "Luxury Beach Escape",
+                    route: "Candolim → Morjim → Palolem",
+
+                    startCity: "Goa",
+                    endCity: "Goa",
+
+                    baseStartDate: "2027-01-10",
+                    baseEndDate: "2027-01-15",
+
+                    basePrice: 42000,
+                    discount: 18,
+
+                    seats: 14,
+                    bookedSeats: 6,
+
+                    schedule: [
+                        { day: 1, title: "Resort Check-in", details: "Welcome drinks" },
+                        { day: 2, title: "Private Cruise", details: "Sunset yacht party" },
+                        { day: 3, title: "Beach Leisure", details: "Spa and cafe tour" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Bangalore",
+                            cost: 7000,
+                            pickupDate: "2027-01-09",
+                            adjustedStartDate: "2027-01-10"
+                        },
+                        {
+                            city: "Delhi",
+                            cost: 9500,
+                            pickupDate: "2027-01-09",
+                            adjustedStartDate: "2027-01-10"
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            itineraryID: 104,
+            name: "Leh Ladakh Adventure",
+
+            variants: [
+                {
+                    variantID: 9,
+                    label: "Bike Expedition",
+                    route: "Leh → Nubra → Pangong → Leh",
+
+                    startCity: "Leh",
+                    endCity: "Leh",
+
+                    baseStartDate: "2026-07-01",
+                    baseEndDate: "2026-07-08",
+
+                    basePrice: 38000,
+                    discount: 10,
+
+                    seats: 16,
+                    bookedSeats: 10,
+
+                    schedule: [
+                        { day: 1, title: "Arrival Leh", details: "Rest and acclimatize" },
+                        { day: 2, title: "Nubra Valley", details: "Camel safari" },
+                        { day: 3, title: "Pangong Lake", details: "Lakeside camping" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Delhi",
+                            cost: 8500,
+                            pickupDate: "2026-06-30",
+                            adjustedStartDate: "2026-07-01"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 10,
+                    label: "SUV Explorer",
+                    route: "Leh → Khardung La → Pangong → Tso Moriri",
+
+                    startCity: "Leh",
+                    endCity: "Leh",
+
+                    baseStartDate: "2026-08-12",
+                    baseEndDate: "2026-08-20",
+
+                    basePrice: 55000,
+                    discount: 14,
+
+                    seats: 12,
+                    bookedSeats: 4,
+
+                    schedule: [
+                        { day: 1, title: "Leh Arrival", details: "Hotel check-in" },
+                        { day: 2, title: "Khardung La", details: "Highest motorable road" },
+                        { day: 3, title: "Pangong", details: "Photography tour" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Mumbai",
+                            cost: 12000,
+                            pickupDate: "2026-08-11",
+                            adjustedStartDate: "2026-08-12"
+                        },
+                        {
+                            city: "Delhi",
+                            cost: 10000,
+                            pickupDate: "2026-08-11",
+                            adjustedStartDate: "2026-08-12"
+                        }
+                    ]
+                }
+            ]
+        },
+
+        {
+            itineraryID: 105,
+            name: "Kerala Backwaters Retreat",
+
+            variants: [
+                {
+                    variantID: 11,
+                    label: "Houseboat Experience",
+                    route: "Kochi → Alleppey → Munnar",
+
+                    startCity: "Kochi",
+                    endCity: "Kochi",
+
+                    baseStartDate: "2026-09-20",
+                    baseEndDate: "2026-09-25",
+
+                    basePrice: 26000,
+                    discount: 7,
+
+                    seats: 20,
+                    bookedSeats: 13,
+
+                    schedule: [
+                        { day: 1, title: "Kochi Arrival", details: "Fort Kochi tour" },
+                        { day: 2, title: "Alleppey", details: "Houseboat cruise" },
+                        { day: 3, title: "Munnar", details: "Tea plantation visit" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Chennai",
+                            cost: 3500,
+                            pickupDate: "2026-09-19",
+                            adjustedStartDate: "2026-09-20"
+                        },
+                        {
+                            city: "Bangalore",
+                            cost: 3000,
+                            pickupDate: "2026-09-19",
+                            adjustedStartDate: "2026-09-20"
+                        }
+                    ]
+                },
+
+                {
+                    variantID: 12,
+                    label: "Luxury Ayurveda Retreat",
+                    route: "Kochi → Kumarakom → Kovalam",
+
+                    startCity: "Kochi",
+                    endCity: "Trivandrum",
+
+                    baseStartDate: "2026-11-10",
+                    baseEndDate: "2026-11-16",
+
+                    basePrice: 60000,
+                    discount: 20,
+
+                    seats: 10,
+                    bookedSeats: 3,
+
+                    schedule: [
+                        { day: 1, title: "Arrival", details: "Luxury wellness resort" },
+                        { day: 2, title: "Ayurveda Therapy", details: "Spa sessions" },
+                        { day: 3, title: "Beach Leisure", details: "Sunset relaxation" }
+                    ],
+
+                    pickupOptions: [
+                        {
+                            city: "Mumbai",
+                            cost: 6500,
+                            pickupDate: "2026-11-09",
+                            adjustedStartDate: "2026-11-10"
+                        }
+                    ]
+                }
+            ]
+        }
+    ];
     // ======================================================
     useEffect(() => {
         setItineraries(dummyItineraries);
     }, []);
 
+    useEffect(() => {
+
+        const selectedItineraries = tabs.map((_, index) => {
+
+            const item = tabState[index];
+
+            if (!item?.itinerary || !item?.variant) return null;
+
+            return {
+                itineraryID: item.itinerary.itineraryID,
+                variantID: item.variant.variantID,
+                pickupCity: item.pickup?.city || ""
+            };
+
+        }).filter(Boolean);
+
+        setHolidayLeadObj(prev => ({
+            ...prev,
+            selectedItineraries
+        }));
+
+    }, [tabState, tabs]);
     // ======================================================
     // TAB HANDLERS
     // ======================================================
+
+    useEffect(() => {
+
+        if (initializedRef.current) return;
+
+        if (!holidayLeadObj?.selectedItineraries?.length) return;
+
+        if (!itineraries.length) return;
+
+        const newTabState = {};
+        const newTabs = [];
+
+        holidayLeadObj.selectedItineraries.forEach((item, index) => {
+
+            const itinerary = itineraries.find(
+                x => x.itineraryID === item.itineraryID
+            );
+
+            const variant = itinerary?.variants.find(
+                x => x.variantID === item.variantID
+            );
+
+            const pickup = variant?.pickupOptions.find(
+                x => x.city === item.pickupCity
+            );
+
+            newTabs.push({ id: index + 1 });
+
+            newTabState[index] = {
+                itinerary,
+                variant,
+                pickup,
+                showDiscount: true
+            };
+        });
+
+        setTabs(newTabs);
+        setTabState(newTabState);
+
+        initializedRef.current = true;
+
+    }, [holidayLeadObj, itineraries]);
 
     const addTab = () => {
         const newTab = { id: Date.now() };
@@ -1174,22 +1238,53 @@ const dummyItineraries = [
         setActiveTab(tabs.length);
     };
 
+    // const removeTab = (index) => {
+    //     const newTabs = tabs.filter((_, i) => i !== index);
+    //     setTabs(newTabs);
+    //     setActiveTab(Math.max(0, index - 1));
+    // };
+
     const removeTab = (index) => {
+
+        // remove tab
         const newTabs = tabs.filter((_, i) => i !== index);
+
+        // remove tabState entry
+        const newTabState = {};
+
+        Object.keys(tabState).forEach(key => {
+
+            const numKey = Number(key);
+
+            // skip deleted tab
+            if (numKey === index) return;
+
+            // shift indexes after deleted tab
+            const newKey = numKey > index
+                ? numKey - 1
+                : numKey;
+
+            newTabState[newKey] = tabState[numKey];
+        });
+
         setTabs(newTabs);
-        setActiveTab(Math.max(0, index - 1));
+        setTabState(newTabState);
+
+        setActiveTab(prev =>
+            Math.max(0, prev > index ? prev - 1 : prev)
+        );
     };
 
     const getPickupShift = (variant, pickup) =>
-    pickup?.dateShiftDays || 0;
+        pickup?.dateShiftDays || 0;
 
-// const getFinalPrice = (variant, pickup) => {
-//     const base = variant.basePrice;
-//     const discount = (base * variant.discount) / 100;
-//     const pickupCost = pickup?.cost || 0;
+    // const getFinalPrice = (variant, pickup) => {
+    //     const base = variant.basePrice;
+    //     const discount = (base * variant.discount) / 100;
+    //     const pickupCost = pickup?.cost || 0;
 
-//     return base + pickupCost - discount;
-// };
+    //     return base + pickupCost - discount;
+    // };
     // ======================================================
     // TAB STATE HANDLING
     // ======================================================
@@ -1210,6 +1305,14 @@ const dummyItineraries = [
         pickup: null,
         showDiscount: true
     };
+
+    useEffect(() => {
+        if (!current.variant) return;
+        console.log("Selected Itinerary => ", current.itinerary);
+        console.log("Selected Variant => ", current.variant);
+        console.log("Selected Pickup => ", current.pickup);
+
+    }, [current.itinerary, current.variant, current.pickup]);
 
     // ======================================================
     // HELPERS
@@ -1280,406 +1383,405 @@ const dummyItineraries = [
             </div>
 
             {/* ================= BODY ================= */}
-<div className="p-6 space-y-6">
+            <div className="p-6 space-y-6">
 
-    {/* ================= ITINERARY ================= */}
-    <select
-        className="border p-2 w-full rounded"
-        value={current.itinerary?.itineraryID || ""}
-        onChange={(e) => {
-            const it = itineraries.find(
-                x => x.itineraryID === Number(e.target.value)
-            );
+                {/* ================= ITINERARY ================= */}
+                <select
+                    className="border p-2 w-full rounded"
+                    value={current.itinerary?.itineraryID || ""}
+                    onChange={(e) => {
+                        const it = itineraries.find(
+                            x => x.itineraryID === Number(e.target.value)
+                        );
 
-            updateTabState(activeTab, {
-                itinerary: it,
-                variant: null,
-                pickup: null
-            });
-        }}
-    >
-        <option value="">Select Itinerary</option>
-        {itineraries.map(it => (
-            <option key={it.itineraryID} value={it.itineraryID}>
-                {it.name}
-            </option>
-        ))}
-    </select>
-
-    {/* ================= VARIANTS ================= */}
-    {current.itinerary && (
-        <div className="flex gap-2 flex-wrap">
-            {current.itinerary.variants.map(v => (
-                <button
-                    key={v.variantID}
-                    onClick={() =>
                         updateTabState(activeTab, {
-                            variant: v,
+                            itinerary: it,
+                            variant: null,
                             pickup: null
-                        })
-                    }
-                    className={`px-3 py-1 rounded-full text-xs border flex gap-2 items-center
-                        ${current.variant?.variantID === v.variantID
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-100"
-                        }`}
+                        });
+                    }}
                 >
-                    <span>{v.label}</span>
+                    <option value="">Select Itinerary</option>
+                    {itineraries.map(it => (
+                        <option key={it.itineraryID} value={it.itineraryID}>
+                            {it.name}
+                        </option>
+                    ))}
+                </select>
 
-                    {/* 🧭 TOUR DATES */}
-                    <span className="text-[10px] opacity-70">
-                        Tour: {v.baseStartDate} → {v.baseEndDate}
-                    </span>
-                </button>
-            ))}
-        </div>
-    )}
+                {/* ================= VARIANTS ================= */}
+                {current.itinerary && (
+                    <div className="flex gap-2 flex-wrap">
+                        {current.itinerary.variants.map(v => (
+                            <button
+                                key={v.variantID}
+                                onClick={() =>
+                                    updateTabState(activeTab, {
+                                        variant: v,
+                                        pickup: null
+                                    })
+                                }
+                                className={`px-3 py-1 rounded-full text-xs border flex gap-2 items-center
+                        ${current.variant?.variantID === v.variantID
+                                        ? "bg-blue-600 text-white"
+                                        : "bg-gray-100"
+                                    }`}
+                            >
+                                <span>{v.label}</span>
 
-    {/* ================= PICKUP SECTION ================= */}
-    {current.variant && (
-        <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
-
-            <div className="flex justify-between items-center">
-                <h3 className="font-semibold text-sm">
-                    📍 Pickup Selection
-                </h3>
-            </div>
-
-            {/* DROPDOWN */}
-            <select
-                className="border p-2 text-sm rounded w-full"
-                onChange={(e) => {
-                    const p = current.variant.pickupOptions.find(
-                        x => x.city === e.target.value
-                    );
-
-                    updateTabState(activeTab, { pickup: p });
-                }}
-            >
-                <option value="">Select Pickup City</option>
-
-                {current.variant.pickupOptions.map((p, i) => (
-                    <option key={i} value={p.city}>
-                        {p.city} — Pickup {p.pickupDate} (+₹{p.cost})
-                    </option>
-                ))}
-            </select>
-
-            {/* 📍 PICKUP DETAILS */}
-            {current.pickup && (
-                <div className="bg-white border rounded-lg p-3 grid grid-cols-3 gap-3 text-xs">
-
-                    <div>
-                        <p className="text-gray-500">Pickup City</p>
-                        <p className="font-semibold">{current.pickup.city}</p>
-                    </div>
-
-                    <div>
-                        <p className="text-gray-500">Pickup Date</p>
-                        <p className="font-semibold text-blue-600">
-                            {current.pickup.pickupDate}
-                        </p>
-                    </div>
-
-                    <div>
-                        <p className="text-gray-500">Cost Impact</p>
-                        <p className="font-semibold text-green-600">
-                            +₹{current.pickup.cost}
-                        </p>
-                    </div>
-
-                </div>
-            )}
-        </div>
-    )}
-
- 
-{/* ================= CARDS ================= */}
-{current.variant && (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {/* ======================================================
-            1. TOUR TIMELINE CARD
-        ====================================================== */}
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-
-            {/* TOP ACCENT */}
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
-
-            <div className="flex items-start justify-between">
-
-                <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-600">
-                        Tour Timeline
-                    </p>
-
-                    <div className="mt-5 space-y-4">
-
-                        {/* START */}
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sm">
-                                📍
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-semibold text-slate-800">
-                                    {current.variant.startCity}
-                                </p>
-
-                                <p className="mt-0.5 text-xs text-slate-500">
-                                    {current.variant.baseStartDate}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* END */}
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-sm">
-                                🏁
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-semibold text-slate-800">
-                                    {current.variant.endCity}
-                                </p>
-
-                                <p className="mt-0.5 text-xs text-slate-500">
-                                    {current.variant.baseEndDate}
-                                </p>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-100 to-blue-100 text-xl shadow-inner">
-                    🧭
-                </div>
-
-            </div>
-        </div>
-
-        {/* ======================================================
-            2. PRICING CARD
-        ====================================================== */}
-        <div className="relative overflow-hidden rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
-
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-green-600" />
-
-            {/* TOGGLE */}
-            <button
-                onClick={() =>
-                    updateTabState(activeTab, {
-                        showDiscount: !current.showDiscount
-                    })
-                }
-                className="absolute right-4 top-4 rounded-lg px-2 py-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
-            >
-                ⋯
-            </button>
-
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
-                Pricing Breakdown
-            </p>
-
-            <div className="mt-5 space-y-4">
-
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">
-                        Base Package
-                    </span>
-
-                    <span className="text-sm font-semibold text-slate-900">
-                        ₹{current.variant.basePrice}
-                    </span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">
-                        Pickup Charges
-                    </span>
-
-                    <span className="text-sm font-semibold text-slate-900">
-                        ₹{current.pickup?.cost || 0}
-                    </span>
-                </div>
-
-                {current.showDiscount && (
-                    <div className="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2">
-                        <span className="text-sm font-medium text-emerald-700">
-                            Discount ({current.variant.discount}%)
-                        </span>
-
-                        <span className="text-sm font-bold text-emerald-700">
-                            -₹
-                            {Math.round(
-                                (current.variant.basePrice *
-                                    current.variant.discount) /
-                                    100
-                            )}
-                        </span>
+                                {/* 🧭 TOUR DATES */}
+                                <span className="text-[10px] opacity-70">
+                                    Tour: {v.baseStartDate} → {v.baseEndDate}
+                                </span>
+                            </button>
+                        ))}
                     </div>
                 )}
 
-                <div className="border-t border-dashed border-slate-200 pt-4">
+                {/* ================= PICKUP SECTION ================= */}
+                {current.variant && (
+                    <div className="border rounded-xl p-4 bg-gray-50 space-y-3">
 
-                    <div className="flex items-end justify-between">
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-slate-400">
-                                Total Payable
-                            </p>
-
-                            <p className="mt-1 text-2xl font-bold text-slate-900">
-                                ₹
-                                {current.variant.basePrice +
-                                    (current.pickup?.cost || 0) -
-                                    (current.showDiscount
-                                        ? Math.round(
-                                              (current.variant.basePrice *
-                                                  current.variant.discount) /
-                                                  100
-                                          )
-                                        : 0)}
-                            </p>
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-sm">
+                                📍 Pickup Selection
+                            </h3>
                         </div>
 
-                        <div className="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                            Inclusive
-                        </div>
-                    </div>
+                        {/* DROPDOWN */}
+                        <select
+                            className="border p-2 text-sm rounded w-full"
+                            onChange={(e) => {
+                                const p = current.variant.pickupOptions.find(
+                                    x => x.city === e.target.value
+                                );
 
-                </div>
-            </div>
-        </div>
-
-        {/* ======================================================
-            3. SEAT AVAILABILITY CARD
-        ====================================================== */}
-        <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-white p-6 shadow-sm">
-
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
-
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-600">
-                Seat Availability
-            </p>
-
-            <div className="mt-5">
-
-                {/* STATS */}
-                <div className="grid grid-cols-3 gap-3">
-
-                    <div className="rounded-2xl bg-slate-50 p-3 text-center">
-                        <p className="text-xs text-slate-500">
-                            Total
-                        </p>
-
-                        <p className="mt-1 text-lg font-bold text-slate-800">
-                            {current.variant.seats}
-                        </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-red-50 p-3 text-center">
-                        <p className="text-xs text-red-500">
-                            Booked
-                        </p>
-
-                        <p className="mt-1 text-lg font-bold text-red-600">
-                            {current.variant.bookedSeats}
-                        </p>
-                    </div>
-
-                    <div className="rounded-2xl bg-emerald-50 p-3 text-center">
-                        <p className="text-xs text-emerald-600">
-                            Available
-                        </p>
-
-                        <p className="mt-1 text-lg font-bold text-emerald-700">
-                            {current.variant.seats -
-                                current.variant.bookedSeats}
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* PROGRESS */}
-                <div className="mt-6">
-
-                    <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                        <span>Booking Progress</span>
-
-                        <span>
-                            {Math.round(
-                                (current.variant.bookedSeats /
-                                    current.variant.seats) *
-                                    100
-                            )}
-                            %
-                        </span>
-                    </div>
-
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
-                            style={{
-                                width: `${
-                                    (current.variant.bookedSeats /
-                                        current.variant.seats) *
-                                    100
-                                }%`
+                                updateTabState(activeTab, { pickup: p });
                             }}
-                        />
+                        >
+                            <option value="">Select Pickup City</option>
+
+                            {current.variant.pickupOptions.map((p, i) => (
+                                <option key={i} value={p.city}>
+                                    {p.city} — Pickup {p.pickupDate} (+₹{p.cost})
+                                </option>
+                            ))}
+                        </select>
+
+                        {/* 📍 PICKUP DETAILS */}
+                        {current.pickup && (
+                            <div className="bg-white border rounded-lg p-3 grid grid-cols-3 gap-3 text-xs">
+
+                                <div>
+                                    <p className="text-gray-500">Pickup City</p>
+                                    <p className="font-semibold">{current.pickup.city}</p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500">Pickup Date</p>
+                                    <p className="font-semibold text-blue-600">
+                                        {current.pickup.pickupDate}
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p className="text-gray-500">Cost Impact</p>
+                                    <p className="font-semibold text-green-600">
+                                        +₹{current.pickup.cost}
+                                    </p>
+                                </div>
+
+                            </div>
+                        )}
                     </div>
+                )}
 
-                </div>
 
-                {/* FOOTER */}
-                <div className="mt-5 flex items-center justify-between rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
+                {/* ================= CARDS ================= */}
+                {current.variant && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                    <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        {/* ======================================================
+            1. TOUR TIMELINE CARD
+        ====================================================== */}
+                        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                        <span className="text-xs font-medium text-slate-600">
-                            Seats updating live
-                        </span>
+                            {/* TOP ACCENT */}
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
+
+                            <div className="flex items-start justify-between">
+
+                                <div>
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-600">
+                                        Tour Timeline
+                                    </p>
+
+                                    <div className="mt-5 space-y-4">
+
+                                        {/* START */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sm">
+                                                📍
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm font-semibold text-slate-800">
+                                                    {current.variant.startCity}
+                                                </p>
+
+                                                <p className="mt-0.5 text-xs text-slate-500">
+                                                    {current.variant.baseStartDate}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* END */}
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-sm">
+                                                🏁
+                                            </div>
+
+                                            <div>
+                                                <p className="text-sm font-semibold text-slate-800">
+                                                    {current.variant.endCity}
+                                                </p>
+
+                                                <p className="mt-0.5 text-xs text-slate-500">
+                                                    {current.variant.baseEndDate}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-100 to-blue-100 text-xl shadow-inner">
+                                    🧭
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {/* ======================================================
+            2. PRICING CARD
+        ====================================================== */}
+                        <div className="relative overflow-hidden rounded-3xl border border-emerald-200 bg-white p-6 shadow-sm">
+
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-green-600" />
+
+                            {/* TOGGLE */}
+                            <button
+                                onClick={() =>
+                                    updateTabState(activeTab, {
+                                        showDiscount: !current.showDiscount
+                                    })
+                                }
+                                className="absolute right-4 top-4 rounded-lg px-2 py-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+                            >
+                                ⋯
+                            </button>
+
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
+                                Pricing Breakdown
+                            </p>
+
+                            <div className="mt-5 space-y-4">
+
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-slate-500">
+                                        Base Package
+                                    </span>
+
+                                    <span className="text-sm font-semibold text-slate-900">
+                                        ₹{current.variant.basePrice}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm text-slate-500">
+                                        Pickup Charges
+                                    </span>
+
+                                    <span className="text-sm font-semibold text-slate-900">
+                                        ₹{current.pickup?.cost || 0}
+                                    </span>
+                                </div>
+
+                                {current.showDiscount && (
+                                    <div className="flex items-center justify-between rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2">
+                                        <span className="text-sm font-medium text-emerald-700">
+                                            Discount ({current.variant.discount}%)
+                                        </span>
+
+                                        <span className="text-sm font-bold text-emerald-700">
+                                            -₹
+                                            {Math.round(
+                                                (current.variant.basePrice *
+                                                    current.variant.discount) /
+                                                100
+                                            )}
+                                        </span>
+                                    </div>
+                                )}
+
+                                <div className="border-t border-dashed border-slate-200 pt-4">
+
+                                    <div className="flex items-end justify-between">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-wide text-slate-400">
+                                                Total Payable
+                                            </p>
+
+                                            <p className="mt-1 text-2xl font-bold text-slate-900">
+                                                ₹
+                                                {current.variant.basePrice +
+                                                    (current.pickup?.cost || 0) -
+                                                    (current.showDiscount
+                                                        ? Math.round(
+                                                            (current.variant.basePrice *
+                                                                current.variant.discount) /
+                                                            100
+                                                        )
+                                                        : 0)}
+                                            </p>
+                                        </div>
+
+                                        <div className="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                                            Inclusive
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ======================================================
+                                3. SEAT AVAILABILITY CARD
+                            ====================================================== */}
+                        <div className="relative overflow-hidden rounded-3xl border border-amber-200 bg-white p-6 shadow-sm">
+
+                            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-600">
+                                Seat Availability
+                            </p>
+
+                            <div className="mt-5">
+
+                                {/* STATS */}
+                                <div className="grid grid-cols-3 gap-3">
+
+                                    <div className="rounded-2xl bg-slate-50 p-3 text-center">
+                                        <p className="text-xs text-slate-500">
+                                            Total
+                                        </p>
+
+                                        <p className="mt-1 text-lg font-bold text-slate-800">
+                                            {current.variant.seats}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl bg-red-50 p-3 text-center">
+                                        <p className="text-xs text-red-500">
+                                            Booked
+                                        </p>
+
+                                        <p className="mt-1 text-lg font-bold text-red-600">
+                                            {current.variant.bookedSeats}
+                                        </p>
+                                    </div>
+
+                                    <div className="rounded-2xl bg-emerald-50 p-3 text-center">
+                                        <p className="text-xs text-emerald-600">
+                                            Available
+                                        </p>
+
+                                        <p className="mt-1 text-lg font-bold text-emerald-700">
+                                            {current.variant.seats -
+                                                current.variant.bookedSeats}
+                                        </p>
+                                    </div>
+
+                                </div>
+
+                                {/* PROGRESS */}
+                                <div className="mt-6">
+
+                                    <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
+                                        <span>Booking Progress</span>
+
+                                        <span>
+                                            {Math.round(
+                                                (current.variant.bookedSeats /
+                                                    current.variant.seats) *
+                                                100
+                                            )}
+                                            %
+                                        </span>
+                                    </div>
+
+                                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
+                                            style={{
+                                                width: `${(current.variant.bookedSeats /
+                                                    current.variant.seats) *
+                                                    100
+                                                    }%`
+                                            }}
+                                        />
+                                    </div>
+
+                                </div>
+
+                                {/* FOOTER */}
+                                <div className="mt-5 flex items-center justify-between rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3">
+
+                                    <div className="flex items-center gap-2">
+                                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+
+                                        <span className="text-xs font-medium text-slate-600">
+                                            Seats updating live
+                                        </span>
+                                    </div>
+
+                                    <span className="text-xs font-semibold text-amber-700">
+                                        Fast Filling
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
+                )}
+                {/* ================= SCHEDULE ================= */}
+                {current.variant && (
+                    <table className="w-full text-sm border">
+                        <thead className="bg-gray-100">
+                            <tr>
+                                <th className="p-2 border">Day</th>
+                                <th className="p-2 border">Title</th>
+                                <th className="p-2 border">Details</th>
+                            </tr>
+                        </thead>
 
-                    <span className="text-xs font-semibold text-amber-700">
-                        Fast Filling
-                    </span>
-
-                </div>
+                        <tbody>
+                            {current.variant.schedule.map((s, i) => (
+                                <tr key={i}>
+                                    <td className="border p-2 text-center">
+                                        Day {s.day}
+                                    </td>
+                                    <td className="border p-2">{s.title}</td>
+                                    <td className="border p-2">{s.details}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
 
             </div>
-        </div>
-
-    </div>
-)}
-                    {/* ================= SCHEDULE ================= */}
-                    {current.variant && (
-                        <table className="w-full text-sm border">
-                            <thead className="bg-gray-100">
-                                <tr>
-                                    <th className="p-2 border">Day</th>
-                                    <th className="p-2 border">Title</th>
-                                    <th className="p-2 border">Details</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {current.variant.schedule.map((s, i) => (
-                                    <tr key={i}>
-                                        <td className="border p-2 text-center">
-                                            Day {s.day}
-                                        </td>
-                                        <td className="border p-2">{s.title}</td>
-                                        <td className="border p-2">{s.details}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-
-             </div>
         </div>
     );
 }

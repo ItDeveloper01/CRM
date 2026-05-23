@@ -263,7 +263,34 @@
 
 import dayjs from "dayjs";
 import { getEmptyHolidayServiceObj } from "./HolidayServicesModel";
+import {getEmptyPassportDetailsObj} from "./PassportDetailsModel";
+import { PaxDetails } from "../HolidaysScreens/Others/PaxDetails";
 
+
+export const getEmptyPaxDetailsObj = () => {
+  return {
+    noOfAdults: 0,
+    noOfExtraAdults: 0,
+
+    noOfChildrenWithBed: 0,
+    noOfChildrenWithoutBed: 0,
+
+    infants: 0,
+
+    noOfRooms: 1,
+
+    RoomType: 0,
+    HotelType: 0,
+
+    isSeniorCitizen : false,
+
+   isDifferentAbled : false,
+
+    DisabilityType: 0,
+
+    totalPax: 0
+  };
+};
 // ======================================================
 // ITINERARY DAY MODEL
 // ======================================================
@@ -416,23 +443,6 @@ export const getEmptyPackagePreferenceObj = () => {
 // PASSPORT / VISA MODEL
 // ======================================================
 
-export const PassportDetailsModel = {
-
-    passportNo: "",
-
-    passportExpiry: "",
-
-    visaRequired: false,
-
-    visaStatus: "",
-
-    insuranceRequired: false
-};
-
-export const getEmptyPassportDetailsObj = () => {
-
-    return structuredClone(PassportDetailsModel);
-};
 
 // ======================================================
 // HOLIDAY LEAD MODEL
@@ -456,17 +466,7 @@ export const HolidayLeadObject = {
     // PAX
     // =====================================================
 
-    NoOfAdults: 1,
-
-    NoOfChildren: 0,
-
-    NoOfInfants: 0,
-
-    IsSeniorCitizen: false,
-
-    IsDifferentAbled: false,
-
-    DisabilitySelected: null,
+    paxDetails: getEmptyPaxDetailsObj(),
 
     // =====================================================
     // SERVICES
