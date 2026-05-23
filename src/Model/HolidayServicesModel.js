@@ -214,50 +214,50 @@ const servicesObj = {
     // 🚆 TRAIN SERVICES
     // ==================================================
 
-    trainServices: [
+    trainTicketBookingServices: [
 
-        {
-            serviceID: 1,
+        // {
+        //     serviceID: 1,
 
-            serviceType: "train",
+        //     serviceType: "train",
 
-            serviceName: "Domestic Train Booking",
+        //     serviceName: "Domestic Train Booking",
 
-            category: "Transport",
+        //     category: "Transport",
 
-            status: "Pending",
+        //     status: "Pending",
 
-            estimatedCost: 5000,
+        //     estimatedCost: 5000,
 
-            finalCost: 4500,
+        //     finalCost: 4500,
 
-            bookings: [
+        //     bookings: [
 
-                {
-                    bookingID: 101,
+        //         {
+        //             bookingID: 101,
 
-                    tripType: "One Way",
+        //             tripType: "One Way",
 
-                    travelType: "Domestic",
+        //             travelType: "Domestic",
 
-                    classType: "Sleeper",
+        //             classType: "Sleeper",
 
-                    quota: "General",
+        //             quota: "General",
 
-                    fromRoute: "Mumbai",
+        //             fromRoute: "Mumbai",
 
-                    toRoute: "Delhi",
+        //             toRoute: "Delhi",
 
-                    departureDate: "2026-06-10",
+        //             departureDate: "2026-06-10",
 
-                    departureSlot: "Morning",
+        //             departureSlot: "Morning",
 
-                    departureTime: "08:30",
+        //             departureTime: "08:30",
 
-                    passengers: []
-                }
-            ]
-        }
+        //             passengers: []
+        //         }
+        //     ]
+        // }
     ],
 
     // ==================================================
@@ -266,15 +266,15 @@ const servicesObj = {
 
     flightServices: [
 
-        {
-            serviceID: 2,
+        // {
+        //     serviceID: 2,
 
-            serviceType: "flight",
+        //     serviceType: "flight",
 
-            serviceName: "Flight Booking",
+        //     serviceName: "Flight Booking",
 
-            bookings: []
-        }
+        //     bookings: []
+        // }
     ],
 
     // ==================================================
@@ -283,15 +283,15 @@ const servicesObj = {
 
     hotelServices: [
 
-        {
-            serviceID: 3,
+        // {
+        //     serviceID: 3,
 
-            serviceType: "hotel",
+        //     serviceType: "hotel",
 
-            serviceName: "Hotel Booking",
+        //     serviceName: "Hotel Booking",
 
-            bookings: []
-        }
+        //     bookings: []
+        // }
     ],
 
     // ==================================================
@@ -300,15 +300,15 @@ const servicesObj = {
 
     carRentalServices: [
 
-        {
-            serviceID: 4,
+        // {
+        //     serviceID: 4,
 
-            serviceType: "car",
+        //     serviceType: "car",
 
-            serviceName: "Car Rental",
+        //     serviceName: "Car Rental",
 
-            bookings: [ getEmptyCarRentalBookingObj()    ]
-        }
+        //     bookings: [ getEmptyCarRentalBookingObj()    ]
+        // }
     ],
 
     // ==================================================
@@ -317,15 +317,15 @@ const servicesObj = {
 
     transferServices: [
 
-        {
-            serviceID: 5,
+        // {
+        //     serviceID: 5,
 
-            serviceType: "transfer",
+        //     serviceType: "transfer",
 
-            serviceName: "Airport Transfer",
+        //     serviceName: "Airport Transfer",
 
-            bookings: [ getEmptyTransferBookingObj() ]
-        }
+        //     bookings: [ getEmptyTransferBookingObj() ]
+        // }
     ],
 
     // ==================================================
@@ -334,15 +334,15 @@ const servicesObj = {
 
     sightseeingServices: [
 
-        {
-            serviceID: 6,
+        // {
+        //     serviceID: 6,
 
-            serviceType: "sightseeing",
+        //     serviceType: "sightseeing",
 
-            serviceName: "Sightseeing",
+        //     serviceName: "Sightseeing",
 
-            bookings: [ getEmptySightseeingBookingObj() ]
-        }
+        //     bookings: [ getEmptySightseeingBookingObj() ]
+        // }
     ],
 
     // ==================================================

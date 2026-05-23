@@ -10,7 +10,9 @@ import QuoteCalculator from "./paymentComponents/QuoteComponent";
 
 import PassportDetails from "./PassportDetails";
 
-import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
+import { getEmptyPassportDetailsObj } from  "./Model/PassportDetailsModel";
+
+import { getEmptyPaxDetailsObj } from "./Model/HolidayLeadObj";
 
 import { PaxDetails } from "./HolidaysScreens/Others/PaxDetails";
 import TravelPackage from "./HolidaysScreens/Others/Travelpackage";
@@ -62,7 +64,7 @@ const LeadHolidays = ({
 }) => {
 
     const isViewMode = mode === "view";
-     const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+     const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj()); 
 
     const memoHistories = useMemo(
         () => histories || [],
@@ -286,12 +288,38 @@ const LeadHolidays = ({
         config.apiUrl +
         "/MasterData/GetSpecialRequirementsList";
 
+
+useEffect(() => {
+
+try {
+
+
+    setHolidayLeadObj(prev => ({
+
+        ...prev,
+        passportDetails: passportDetailsObj
+    }));
+}catch (error) {
+
+    console.error(error);
+    showMessage({
+        type: MESSAGE_TYPES.ERROR,
+        message:            "Error setting Passport Details."
+    });}
+
+} , [passportDetailsObj]);
+
+
     useEffect(() => {
 
         const fetchData = async () => {
 
             try {
 
+                setHolidayLeadObj(prev => ({
+                    ...prev,
+                    passportDetails: passportDetailsObj
+                }));
                 const res = await axios.get(
                     getSpecialRequirementsListEndPoint
                 );
@@ -325,9 +353,12 @@ const LeadHolidays = ({
     const getBookings = (key) =>
         holidayLeadObj?.services?.[key] || [];
 
-    const addBooking = (key) => {
+    const addBooking = (key, model) => {
 
-        setHolidayLeadObj(prev => ({
+
+         console.log("KEY =>", key);
+         console.log("MODEL =>", model);
+          setHolidayLeadObj(prev => ({
 
             ...prev,
 
@@ -337,7 +368,7 @@ const LeadHolidays = ({
 
                 [key]: [
                     ...(prev.services?.[key] || []),
-                    {}
+                     structuredClone(model) // 🔥 important
                 ]
             }
         }));
@@ -601,12 +632,14 @@ const LeadHolidays = ({
                     // showInsurance={true}
                     // isViewMode={isViewMode}
 
+
                      passportDetailsObj={passportDetailsObj}
           setPassportDetailsObj={setPassportDetails}
-          setParentObject={setHolidayLeadObj}
-          showVisaStatus
-          showPassportValidityDate
-          showInsurance
+          setParentObject= {null}
+          showVisaStatus= {true}
+          showPassportValidityDate= {true}
+          showInsurance= {true}
+           showPassportValidity = {true}
           isViewMode={isViewMode}
                 />
             )}
