@@ -395,7 +395,15 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
           setSelectedLeadName(incomingLead.category.categoryName || "Car Rentals");
           break;
         }
+
+        case "holiday": { 
+          const mappedHolidayLead = mapObject(incomingLead.category, getEmptyHolidayLeadObj());
+          newLead.category = mappedHolidayLead;
+          setHolidayLeadObj(mappedHolidayLead);
+          setSelectedLeadName(incomingLead.category.categoryName || "Holiday");
+          break;
       }
+    }
 
     } else {
       // No category → decide default (Visa example here)

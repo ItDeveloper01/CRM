@@ -165,11 +165,8 @@ export default function CarRentalBookingForm({ data, onChange }) {
   const form = {
     ...CarRentalModel,
     ...(data || {}),
-    route: {
-      pickup: "",
-      drop: "",
-      ...(data?.route || {})
-    }
+    pickupLocation: data?.pickupLocation ?? data?.route?.pickup ?? "",
+    dropLocation: data?.dropLocation ?? data?.route?.drop ?? ""
   };
 
   const set = (updated) => onChange(updated);
@@ -216,7 +213,7 @@ export default function CarRentalBookingForm({ data, onChange }) {
           <input
             type="number"
             value={form.noOfVehicles}
-            onChange={(e) => set({ ...form, noOfVehicles: e.target.value })}
+            onChange={(e) => set({ ...form, noOfVehicles:Number( e.target.value )})}
             className={styles.input}
           />
         </Field>
@@ -239,11 +236,11 @@ export default function CarRentalBookingForm({ data, onChange }) {
 
         <Field label="Pickup Location">
           <input
-            value={form.route?.pickup}
+            value={form.pickupLocation || ""}
             onChange={(e) =>
               set({
                 ...form,
-                route: { ...form.route, pickup: e.target.value }
+                pickupLocation: e.target.value
               })
             }
             className={styles.input}
@@ -253,11 +250,11 @@ export default function CarRentalBookingForm({ data, onChange }) {
         {form.tripType !== "Local" && (
           <Field label="Drop Location">
             <input
-              value={form.route?.drop}
+              value={form.dropLocation || ""}
               onChange={(e) =>
                 set({
                   ...form,
-                  route: { ...form.route, drop: e.target.value }
+                  dropLocation: e.target.value
                 })
               }
               className={styles.input}

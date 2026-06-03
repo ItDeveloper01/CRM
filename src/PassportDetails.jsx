@@ -131,11 +131,13 @@ const PassportDetails = ({
     debugger;
     const { name, value } = e.target;
     console.log("printing name and value : ", name, value);
+    if(setParentObject){
     setParentObject(prev => ({
       ...prev,
       [name]: value
     }));
-
+  }
+  else console.warn("No parent object setter function provided for PassportDetails component. Changes will not be propagated to parent.");
     //  setParentObject(prev => ({
     //   ...prev,
     //   [name]: value
