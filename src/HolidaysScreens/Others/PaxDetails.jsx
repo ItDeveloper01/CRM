@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { getEmptyPaxDetailsObj } from "../../Model/HolidayLeadObj";
+import axios from "axios";
+import config from "../../config";
 
 
 
@@ -48,31 +50,36 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
   // 🔥 MOCK API LAYER (same file)
   // ======================
   const getRoomTypesAPI = async () => {
-    return [
-      { id: 1, name: "Single" },
-      { id: 2, name: "Double" },
-      { id: 3, name: "Triple" },
-      { id: 4, name: "Twin Bed" }
-    ];
+    const response = await axios.get(
+      config.apiUrl + "/MasterData/GetRoomTypeList"
+    );
+
+    return (response.data || []).map(item => ({
+      id: item.id,
+      name: item.roomType
+    }));
   };
 
   const getHotelTypesAPI = async () => {
-    return [
-      { id: 1, name: "Budget" },
-      { id: 2, name: "3 Star" },
-      { id: 3, name: "4 Star" },
-      { id: 4, name: "5 Star" },
-      { id: 5, name: "Luxury" }
-    ];
+    const response = await axios.get(
+      config.apiUrl + "/MasterData/GetHotelTypeList"
+    );
+
+    return (response.data || []).map(item => ({
+      id: item.id,
+      name: item.hotelType
+    }));
   };
 
   const getDisabilityTypesAPI = async () => {
-    return [
-      { id: 1, name: "Wheelchair" },
-      { id: 2, name: "Visual" },
-      { id: 3, name: "Hearing" },
-      { id: 4, name: "Other" }
-    ];
+    const response = await axios.get(
+      config.apiUrl + "/MasterData/GetDisabilityTypeList"
+    );
+
+    return (response.data || []).map(item => ({
+      id: item.id,
+      name: item.disabilityType
+    }));
   };
 
   const [isPaxOpen, setIsPaxOpen] = useState(true);
@@ -91,13 +98,18 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
     const loadDropdowns = async () => {
 
-      const rooms = await getRoomTypesAPI();
-      const hotels = await getHotelTypesAPI();
-      const disabilities = await getDisabilityTypesAPI();
+      try {
+        const rooms = await getRoomTypesAPI();
+        const hotels = await getHotelTypesAPI();
+        const disabilities = await getDisabilityTypesAPI();
 
-      setRoomTypes(rooms);
-      setHotelTypes(hotels);
-      setDisabilityTypes(disabilities);
+        setRoomTypes(rooms);
+        setHotelTypes(hotels);
+        setDisabilityTypes(disabilities);
+      } catch (error) {
+        console.error("Error loading pax dropdowns", error);
+        setDisabilityTypes([]);
+      }
     };
 
     loadDropdowns();
@@ -353,9 +365,14 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
               <input
                 type="checkbox"
                 checked={paxDetailsObj.isDifferentAbled}
-                onChange={(e) =>
-                  updateField("isDifferentAbled", e.target.checked)
-                }
+                onChange={(e) => {
+                  const isChecked = e.target.checked;
+                  updateField("isDifferentAbled", isChecked);
+
+                  if (!isChecked) {
+                    updateField("DisabilityType", 0);
+                  }
+                }}
                 className="accent-blue-600 h-4 w-4"
               />
               <span className="text-xs font-medium text-gray-700">
@@ -372,7 +389,7 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <select
                 disabled={!paxDetailsObj.isDifferentAbled}
-                value={paxDetailsObj.DisabilityType}
+                value={paxDetailsObj.DisabilityType || ""}
                 onChange={(e) =>
                   updateField("DisabilityType",Number(e.target.value) || 0)
                 }
