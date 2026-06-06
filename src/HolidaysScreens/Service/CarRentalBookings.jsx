@@ -118,7 +118,12 @@
 // }
 
 
-import { CarRentalModel  } from "../../Model/FIT Services/CarRentalModel";
+import config from "../../config";
+import { CarRentalModel } from "../../Model/FIT Services/CarRentalModel";
+import { useGetSessionUser } from "./../../SessionContext"
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
 
 const styles = {
   container:
@@ -145,6 +150,25 @@ const Field = ({ label, children }) => (
   </div>
 );
 
+
+
+
+// const loadVehicles = async () => {
+//   try {
+//     const response = await fetch( config.apiUrl + "/api/MasterDataController/GetHolidayTransportVehicleTypeMasterList");
+
+//     if (!response.ok) {
+//       throw new Error("Failed to load vehicles");
+//     }
+
+//     const data = await response.json();
+//     setVehicles(data);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
+
+
 // // optional fallback model (avoid crashes)
 // const CarRentalModel = {
 //   tripType: "Local",
@@ -161,23 +185,91 @@ const Field = ({ label, children }) => (
 //   notes: ""
 // };
 
-export default function CarRentalBookingForm({ data, onChange }) {
-  const form = {
+export default function CarRentalBookingForm({ data, onChange, travelScope }) {
+
+  const { user: sessionUser } = useGetSessionUser();
+  const [vehicles, setVehicles] = useState([]);
+  const scopeLabel = travelScope ? ` (${travelScope})` : "";
+
+  const normalizeDate = (date) =>
+    date ? date.substring(0, 10) : "";
+
+  // const form = {
+  //   ...CarRentalModel,
+  //   ...(data || {}),
+  //   pickupLocation: data?.pickupLocation ?? data?.route?.pickup ?? "",
+  //   dropLocation: data?.dropLocation ?? data?.route?.drop ?? "",
+
+  //   pickupDate: normalizeDate(data?.pickupDate),
+  //   dropDate: normalizeDate(data?.dropDate)
+  // };
+
+
+const [form, setForm] = useState({
+  ...CarRentalModel,
+  ...(data || {}),
+  pickupLocation: data?.pickupLocation ?? data?.route?.pickup ?? "",
+  dropLocation: data?.dropLocation ?? data?.route?.drop ?? "",
+  pickupDate: normalizeDate(data?.pickupDate),
+  dropDate: normalizeDate(data?.dropDate)
+});
+
+
+
+useEffect(() => {
+  setForm({
     ...CarRentalModel,
     ...(data || {}),
     pickupLocation: data?.pickupLocation ?? data?.route?.pickup ?? "",
-    dropLocation: data?.dropLocation ?? data?.route?.drop ?? ""
-  };
+    dropLocation: data?.dropLocation ?? data?.route?.drop ?? "",
+    pickupDate: normalizeDate(data?.pickupDate),
+    dropDate: normalizeDate(data?.dropDate)
+  });
+}, [data]);
 
-  const set = (updated) => onChange(updated);
+useEffect(() => {
+  console.log("CarRentalBookingForm mounted or travelScope changed, loading vehicles...", data, travelScope);
+  loadVehicles();
+}, [travelScope, data]);
 
-  return (
+
+const loadVehicles = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    let apiString = config.apiUrl + `/MasterData/GetHolidayTransportVehicleTypeMasterList`;
+    const response = await axios.get(
+     apiString,
+      {
+        params: {
+          TravelScope: travelScope || "International",
+        },
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      }
+    );
+
+    const vehicleData = response?.data;
+    setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
+  } catch (error) {
+    console.error(error);
+    setVehicles([]);
+  }
+};
+
+const set = (updated) => {
+  setForm(updated);
+  onChange?.(updated);
+};
+
+
+return (
     <div className={styles.container}>
 
       {/* HEADER */}
       <div className={styles.header}>
         <h2 className="text-lg font-semibold text-gray-800">
-          🚗 Car Rental Booking
+          🚗 Car Rental Booking{scopeLabel}
         </h2>
       </div>
 
@@ -196,7 +288,7 @@ export default function CarRentalBookingForm({ data, onChange }) {
           </select>
         </Field>
 
-        <Field label="Vehicle Type">
+        {/* <Field label="Vehicle Type">
           <select
             value={form.vehicleType}
             onChange={(e) => set({ ...form, vehicleType: e.target.value })}
@@ -207,13 +299,32 @@ export default function CarRentalBookingForm({ data, onChange }) {
             <option>Luxury</option>
             <option>Tempo Traveller</option>
           </select>
-        </Field>
+        </Field> */}
+        <Field label="Vehicle Type">
+          <select
+            value={form.vehicleTypeId}
+            onChange={(e) =>
+              set({
+                ...form,
+                vehicleTypeId: Number(e.target.value),
+              })
+            }
+            className={styles.input}
+          >
+            <option value="">Select Vehicle Type</option>
 
+            {vehicles.map((vehicle) => (
+              <option key={vehicle.id} value={vehicle.id}>
+                {vehicle.vehicleType}
+              </option>
+            ))}
+          </select>
+        </Field>
         <Field label="No. of Vehicles">
           <input
             type="number"
             value={form.noOfVehicles}
-            onChange={(e) => set({ ...form, noOfVehicles:Number( e.target.value )})}
+            onChange={(e) => set({ ...form, noOfVehicles: Number(e.target.value) })}
             className={styles.input}
           />
         </Field>

@@ -131,11 +131,13 @@ const Section = ({ icon, title, children }) => (
 
 export default function AirportTransferForm({
   data,
-  onChange
+  onChange,
+  travelScope
 }) {
 
   const form = data || {};
   const [errors, setErrors] = useState({});
+  const scopeLabel = travelScope ? ` (${travelScope})` : "";
 
   // ======================================================
   // AUTO ARRIVAL TIME
@@ -241,7 +243,7 @@ export default function AirportTransferForm({
       <div className="flex justify-between items-center border-b pb-2">
 
         <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          ✈️ Airport Transfer
+          ✈️ Airport Transfer{scopeLabel}
         </h2>
 
         <button

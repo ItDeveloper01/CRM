@@ -296,8 +296,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
               </label>
 
               <select
-                value={paxDetailsObj.RoomType}
-                onChange={(e) => updateField("RoomType", Number(e.target.value) || 0)}
+                value={paxDetailsObj.roomType}
+                onChange={(e) => updateField("roomType", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Select</option>
@@ -316,8 +316,8 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
               </label>
 
               <select
-                value={paxDetailsObj.HotelType}
-                onChange={(e) => updateField("HotelType", Number(e.target.value) || 0)}
+                value={paxDetailsObj.hotelType}
+                onChange={(e) => updateField("hotelType", Number(e.target.value) || 0)}
                 className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               >
                 <option value="">Select</option>
@@ -389,9 +389,9 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
               <select
                 disabled={!paxDetailsObj.isDifferentAbled}
-                value={paxDetailsObj.DisabilityType || ""}
+                value={paxDetailsObj.disabilityType || ""}
                 onChange={(e) =>
-                  updateField("DisabilityType",Number(e.target.value) || 0)
+                  updateField("disabilityType",Number(e.target.value) || 0)
                 }
                 className={`w-full rounded-xl border px-3 py-2 text-sm shadow-sm outline-none
                 ${paxDetailsObj.isDifferentAbled
