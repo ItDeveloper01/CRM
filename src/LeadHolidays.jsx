@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { getEmptyPackagePreferenceObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayItineraryObj } from "./Model/HolidayLeadObj";
@@ -65,6 +65,12 @@ const LeadHolidays = ({
 
     const isViewMode = mode === "view";
      const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj()); 
+     const passportDetailsUpdateSource = useRef(null);
+
+     const setPassportDetailsState = (updated) => {
+       passportDetailsUpdateSource.current = "local";
+       setPassportDetails(updated);
+     };
 
     const memoHistories = useMemo(
         () => histories || [],
@@ -72,14 +78,36 @@ const LeadHolidays = ({
     );
 
     const { showMessage } = useMessageBox();
+    
+const getHolidayOpt = (leadType, tripType) => {
 
+    if (leadType === "FIT" &&
+        tripType === "International")
+        return 1;
+
+    if (leadType === "FIT" &&
+        tripType === "Domestic")
+        return 2;
+
+    if (leadType === "GIT" &&
+        tripType === "International")
+        return 3;
+
+    if (leadType === "GIT" &&
+        tripType === "Domestic")
+        return 4;
+
+    return "";
+};
     // ======================================================
     // HOLIDAY TYPE
     // ======================================================
 
-    const [holidayOpt, setHolidayOpt] = useState(
-        holidayLeadObj?.holidayOpt || ""
-    );
+  const [holidayOpt, setHolidayOpt] = useState(
+    holidayLeadObj?.holidayOpt ?? ""
+);
+
+    
 
     const holidayOptions = [
 
@@ -209,6 +237,24 @@ const LeadHolidays = ({
     const selectedConfig =
         holidayConfigs[holidayOpt];
 
+        useEffect(() => {
+
+    if (!holidayLeadObj) return;
+
+    if (isUpdate) {
+
+        setHolidayOpt(
+            holidayLeadObj.holidayOpt ?? ""
+        );
+
+        setPassportDetails(
+            holidayLeadObj.passportDetails ??
+            getEmptyPassportDetailsObj()
+        );
+    }
+
+}, [holidayLeadObj?.holidayLeadID]);
+
 // usefffect(() => {
 
 //     debugger;
@@ -226,56 +272,80 @@ const LeadHolidays = ({
     // AUTO APPLY VALUES
     // ======================================================
 
+useEffect(() => {
+
+    if (!isUpdate) return;
+
+    const opt = getHolidayOpt( holidayLeadObj?.leadType,holidayLeadObj?.tripType);
+
+    setHolidayOpt(opt);
+
+    setPassportDetails(
+        holidayLeadObj?.passportDetails ??
+        getEmptyPassportDetailsObj()
+    );
+
+}, [isUpdate,  holidayLeadObj?.leadType, holidayLeadObj?.tripType]);
+
     useEffect(() => {
 
-        debugger;
-        if (!selectedConfig) return;
+    if (!selectedConfig) return;
 
+    setHolidayLeadObj(prev => {
 
-        
-          if(selectedConfig.features.itinerary ==true) 
-          {
-              const iti =  getEmptyHolidayItineraryObj();
-                setHolidayLeadObj(prev => ({
-                    ...prev,
-
-                    itineraries: [iti]
-                }));
-          }
-
-          if(selectedConfig.features.packagePreferences ==true) 
-          {
-                const  pack= getEmptyPackagePreferenceObj();
-                    setHolidayLeadObj(prev => ({
-                        ...prev,
-                        packages: [pack]
-                    }));
-          }
-
-          if(selectedConfig.features.services ==true) 
-          {
-            const serv= getEmptyHolidayServiceObj();
-                setHolidayLeadObj(prev => ({
-                    ...prev,
-                    services: serv
-                }));
-          }
-          if(selectedConfig.features.visa ==true)
-          {
-
-          }
-
-        setHolidayLeadObj(prev => ({
+        const updated = {
 
             ...prev,
 
             holidayOpt,
 
             ...selectedConfig.values
+        };
 
-        }));
+        // Only initialize defaults for NEW leads
+        if (!isUpdate) {
 
-    }, [holidayOpt]);
+            if (
+                selectedConfig.features.itinerary &&
+                (!prev.itineraries ||
+                    prev.itineraries.length === 0)
+            ) {
+                updated.itineraries = [
+                    getEmptyHolidayItineraryObj()
+                ];
+            }
+
+            if (
+                selectedConfig.features.packagePreferences &&
+                (!prev.packages ||
+                    prev.packages.length === 0)
+            ) {
+                updated.packages = [
+                    getEmptyPackagePreferenceObj()
+                ];
+            }
+
+            if (
+                selectedConfig.features.services &&
+                !prev.services
+            ) {
+                updated.services =
+                    getEmptyHolidayServiceObj();
+            }
+
+            if (
+                selectedConfig.features.visa &&
+                !prev.passportDetails
+            ) {
+                updated.passportDetails =
+                    getEmptyPassportDetailsObj();
+            }
+        }
+
+        return updated;
+    });
+
+}, [holidayOpt, isUpdate]);
 
     // ======================================================
     // SPECIAL REQUIREMENTS
@@ -290,24 +360,37 @@ const LeadHolidays = ({
 
 
 useEffect(() => {
+  if (!holidayLeadObj?.passportDetails) return;
+  if (passportDetailsUpdateSource.current === "local") {
+    passportDetailsUpdateSource.current = "remote";
+    return;
+  }
 
-try {
+  passportDetailsUpdateSource.current = "remote";
+  setPassportDetails(holidayLeadObj.passportDetails);
+}, [holidayLeadObj?.passportDetails]);
 
+useEffect(() => {
+  if (!passportDetailsObj) return;
+  if (passportDetailsUpdateSource.current === "remote") {
+    passportDetailsUpdateSource.current = null;
+    return;
+  }
 
+  try {
+    passportDetailsUpdateSource.current = "local";
     setHolidayLeadObj(prev => ({
-
-        ...prev,
-        passportDetails: passportDetailsObj
+      ...prev,
+      passportDetails: passportDetailsObj
     }));
-}catch (error) {
-
+  } catch (error) {
     console.error(error);
     showMessage({
-        type: MESSAGE_TYPES.ERROR,
-        message:            "Error setting Passport Details."
-    });}
-
-} , [passportDetailsObj]);
+      type: MESSAGE_TYPES.ERROR,
+      message: "Error setting Passport Details."
+    });
+  }
+}, [passportDetailsObj, setHolidayLeadObj, showMessage]);
 
 
     useEffect(() => {
@@ -315,11 +398,6 @@ try {
         const fetchData = async () => {
 
             try {
-
-                setHolidayLeadObj(prev => ({
-                    ...prev,
-                    passportDetails: passportDetailsObj
-                }));
                 const res = await axios.get(
                     getSpecialRequirementsListEndPoint
                 );
@@ -578,7 +656,7 @@ try {
             {selectedConfig?.features?.services && (
 
                 <ServiceAccordion
-                   
+                    travelScope={holidayLeadObj?.tripType || selectedConfig?.values?.tripType}
                     getBookings={getBookings}
                     addBooking={addBooking}
                     removeBooking={removeBooking}
@@ -598,7 +676,7 @@ try {
                     holidayLeadObj={holidayLeadObj}
                     setHolidayLeadObj={setHolidayLeadObj}
                     isViewMode={isViewMode}
-                    
+                    travelScope={holidayLeadObj?.tripType || selectedConfig?.values?.tripType}
                 />
             )}
 
@@ -634,7 +712,7 @@ try {
 
 
                      passportDetailsObj={passportDetailsObj}
-          setPassportDetailsObj={setPassportDetails}
+          setPassportDetailsObj={setPassportDetailsState}
           setParentObject= {null}
           showVisaStatus= {true}
           showPassportValidityDate= {true}

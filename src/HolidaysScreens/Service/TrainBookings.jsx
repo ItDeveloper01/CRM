@@ -56,10 +56,11 @@ const OPTIONS = {
 // ======================================================
 // COMPONENT
 // ======================================================
-export default function TrainBookingForm({ data, onChange }) {
+export default function TrainBookingForm({ data, onChange, travelScope }) {
   const form = {
     ...TrainBookingModel,
     ...data,
+    mode: travelScope || "Domestic",
     route: {
       from: "",
       to: "",
@@ -81,7 +82,7 @@ export default function TrainBookingForm({ data, onChange }) {
       {/* ====================================================== */}
       {/* HEADER */}
       {/* ====================================================== */}
-  <div className={`${styles.header} flex justify-between items-center`}>
+  <div className={styles.header}>
   
   {/* Title */}
   <h2 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
@@ -89,18 +90,6 @@ export default function TrainBookingForm({ data, onChange }) {
       ? "🚆 Domestic Train Booking"
       : "🌍 🚆 International Train Booking"}
   </h2>
-
-  {/* Dropdown */}
-  <select
-    value={form.mode || "Domestic"}
-    onChange={(e) =>
-      set({ ...form, mode: e.target.value })
-    }
-    className={`${styles.input} !w-40 ml-4`}
-  >
-    <option value="Domestic">Domestic</option>
-    <option value="International">International</option>
-  </select>
 
 </div>
 

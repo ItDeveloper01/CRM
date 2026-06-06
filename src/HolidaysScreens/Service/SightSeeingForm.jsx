@@ -78,12 +78,14 @@ const Select = ({ options, value, onChange }) => (
 );
 
 // ====== MAIN COMPONENT ======
-export default function SightseeingForm({ data, onChange }) {
+export default function SightseeingForm({ data, onChange, travelScope }) {
   // 🔥 merge model like TrainBookingForm pattern
   const form = {
     ...SightseeingModel,
     ...data,
   };
+
+  const scopeLabel = travelScope ? ` (${travelScope})` : "";
 
   const updateField = (key, value) => {
     onChange?.({
@@ -97,7 +99,7 @@ export default function SightseeingForm({ data, onChange }) {
       {/* Header */}
       <div className={styles.header}>
         <h2 className="text-lg font-semibold text-gray-800">
-          🗺️ Sightseeing / Attractions
+          🗺️ Sightseeing / Attractions{scopeLabel}
         </h2>
       </div>
 

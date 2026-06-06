@@ -7,9 +7,9 @@ export const CarRentalModel = {
   pickupLocation: "",
   dropLocation: "",
 
-  pickupDate: "",
+  pickupDate: null,
   pickupTime: "",
-  dropDate: "",
+  dropDate: null,
   dropTime: "",
 
   luggage: 0,

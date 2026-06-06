@@ -294,14 +294,36 @@ const CalendarIcon = ({ size = 14, color = "#2563eb" }) => (
     </svg>
 );
 
+// 🔥 TOGGLE SWITCH STYLES
+const toggleStyles = {
+    wrapper: "flex items-center gap-2",
+    toggle: (isActive) => `
+        relative inline-flex items-center h-6 w-11 rounded-full cursor-pointer 
+        transition-all duration-300 flex-shrink-0 shadow-inner
+        ${isActive 
+            ? "bg-gradient-to-r from-emerald-400 to-emerald-500" 
+            : "bg-gradient-to-r from-slate-300 to-slate-400"}
+    `,
+    circle: (isActive) => `
+        absolute h-5 w-5 bg-white rounded-full shadow-md transition-transform duration-300
+        ${isActive ? "translate-x-5" : "translate-x-0.5"}
+    `,
+    label: (isActive) => `
+        text-xs font-semibold tracking-wide transition-colors duration-200 min-w-[24px]
+        ${isActive ? "text-emerald-600" : "text-slate-400"}
+    `
+};
+
 export default function TravelPackage({
     holidayLeadObj = {},
     setHolidayLeadObj,
     cities = [],
-    isViewMode = false
+    isViewMode = false,
+    travelScope = ""
 }) {
 
     const [isOpen, setIsOpen] = useState(true);
+    const scopeLabel = travelScope ? ` (${travelScope})` : "";
 
     const [activeTab, setActiveTab] = useState(0);
 
@@ -429,7 +451,7 @@ export default function TravelPackage({
                     <div className="flex items-center gap-2">
 
                         <span className="font-semibold text-gray-700">
-                            Package Preferences
+                            Package Preferences{scopeLabel}
                         </span>
 
                         {/* ACTIVE COUNT */}
@@ -588,7 +610,7 @@ export default function TravelPackage({
                                     <div className="border border-gray-200 rounded-xl p-4 bg-gray-50">
 
                                         {/* ROW 1 */}
-                                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
 
                                             <div>
                                                 <label className="label-style flex items-center gap-1">
@@ -648,53 +670,51 @@ export default function TravelPackage({
                                                     Flexible Dates
                                                 </label>
 
-                                                <select
-                                                    value={
-                                                        pkg.isFlexibleDates
-                                                            ? "yes"
-                                                            : "no"
-                                                    }
-                                                    onChange={(e) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "isFlexibleDates",
-                                                            e.target.value === "yes"
-                                                        )
-                                                    }
-                                                    className="border-highlight"
-                                                >
-                                                    <option value="no">
-                                                        No
-                                                    </option>
+                                                <div className="flex items-end gap-2">
+                                                    <div className={toggleStyles.wrapper}>
+                                                        <button
+                                                            type="button"
+                                                          onClick={() => {
+    const newValue = !pkg.isFlexibleDates;
+    const updated = [...packagesArray];
+    updated[index] = {
+        ...updated[index],
+        isFlexibleDates: newValue,
+        ...(newValue === false && { flexibleDays: 0 })
+    };
+    setHolidayLeadObj(prev => ({ ...prev, packages: updated }));
+}}
+                                                            className={toggleStyles.toggle(pkg.isFlexibleDates)}
+                                                        >
+                                                            <div className={toggleStyles.circle(pkg.isFlexibleDates)} />
+                                                        </button>
+                                                        <span className={toggleStyles.label(pkg.isFlexibleDates)}>
+                                                            {pkg.isFlexibleDates ? "Yes" : "No"}
+                                                        </span>
+                                                    </div>
 
-                                                    <option value="yes">
-                                                        Yes
-                                                    </option>
-                                                </select>
-                                            </div>
-
-                                            <div>
-                                                <label className="label-style">
-                                                    ± Days
-                                                </label>
-
-                                                <input
-                                                    type="number"
-                                                    value={pkg.flexibleDays || 0}
-                                                    onChange={(e) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "flexibleDays",
-                                                            Number(e.target.value)
-                                                        )
-                                                    }
-                                                    className="border-highlight"
-                                                />
+                                                    <input
+                                                        type="number"
+                                                        disabled={!pkg.isFlexibleDates}
+                                                        value={pkg.isFlexibleDates ? (pkg.flexibleDays || 0) : 0}
+                                                        onChange={(e) =>
+                                                            updatePackage(
+                                                                index,
+                                                                "flexibleDays",
+                                                                Number(e.target.value)
+                                                            )
+                                                        }
+                                                        placeholder="Days"
+                                                        className={`h-9 w-16 px-2 py-1 text-sm border-2 border-gray-300 rounded ${
+                                                            !pkg.isFlexibleDates ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                                                        }`}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* ROW 2 */}
-                                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
 
                                             <div>
                                                 <label className="label-style">

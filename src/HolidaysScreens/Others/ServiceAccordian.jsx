@@ -3,6 +3,7 @@ import { Car, Map, Plane, Shield, Train } from "lucide-react";
 import TrainBookingForm from "../Service/TrainBookings";
 import CarRentalBookingForm from "../Service/CarRentalBookings";
 import AirportTransferForm from "../Service/AirportTransferForm";
+import HotelBookingForm, { HotelBookingModel } from "../Service/HotelBookingForm";
 import {AirportTransferModel} from "../../Model/FIT Services/AirportTransferModel";
 import { TrainBookingModel } from "../../Model/FIT Services/TrainBookingModel";
 import { CarRentalModel } from "../../Model/FIT Services/CarRentalModel";
@@ -12,7 +13,7 @@ import { useEffect } from "react";
 
 
 export default function ServicesAccordion({
-
+  travelScope, //International/Domestic
   getBookings,
   addBooking,
   removeBooking,
@@ -25,7 +26,22 @@ export default function ServicesAccordion({
   );
   const [activeBookingIndex, setActiveBookingIndex] = useState({});
 
+useEffect(() => {
 
+    const firstServiceWithBookings =
+        serviceConfig.find(
+            service =>
+                getBookings(service.key)?.length > 0
+        );
+
+    if (firstServiceWithBookings) {
+
+        setActiveService(
+            firstServiceWithBookings.key
+        );
+    }
+
+}, []);
   // ======================================================
   // PLACEHOLDER
   // ======================================================
@@ -59,6 +75,14 @@ export default function ServicesAccordion({
       icon: <Car size={16} />,
       component: CarRentalBookingForm,
       model: CarRentalModel
+    },
+
+    {
+      key: "hotelServices",
+      label: "Hotel",
+      icon: <Map size={16} />,
+      component: HotelBookingForm,
+      model: HotelBookingModel
     },
 
     {
@@ -271,6 +295,7 @@ export default function ServicesAccordion({
                         onChange={(val) =>
                           updateBooking(service.key, activeIdx, val)
                         }
+                        travelScope={travelScope}
                       />
                     ) : (
                       <button
