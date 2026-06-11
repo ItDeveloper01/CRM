@@ -4,7 +4,7 @@ export const TrainBookingModel = {
   tripType: "ONE_WAY",
   classType: "",
   mode: "Domestic",
-
+   country:"",
   quota: "",
   fareType: "",
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { fetchCountries } from "../../api/commonApi";
 
 export const HotelBookingModel = {
   hotelName: "",
@@ -27,21 +28,10 @@ export default function HotelBookingForm({ data = {}, onChange, travelScope = ""
     setForm({ ...HotelBookingModel, ...(data || {}) });
   }, [data]);
 
-  // Fetch countries list
+  // Fetch countries list (common API helper)
   useEffect(() => {
-    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedCountries = data
-          .map((country) => ({
-            name: country.name.common,
-            value: country.cca2 || country.name.common,
-            flag: country.flags?.png
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        setCountries(formattedCountries);
-      })
+    fetchCountries()
+      .then(setCountries)
       .catch((err) => console.error("Error fetching countries:", err));
   }, []);
 
@@ -52,6 +42,7 @@ export default function HotelBookingForm({ data = {}, onChange, travelScope = ""
 
   return (
     <div className="bg-white rounded-lg p-4 border">
+
       <h3 className="text-lg font-semibold mb-3">🏨 Hotel Booking {travelScope ? `(${travelScope})` : ""}</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
