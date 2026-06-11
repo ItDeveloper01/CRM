@@ -24,6 +24,7 @@ import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
 // import SignalRService from './SignalRService';
 import MasterSettings from './MasterSettingsBoard';
+import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManager';
 
 export default function App() {
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
@@ -102,6 +103,10 @@ export default function App() {
                  <Route
                   path='/masterSettings'
                   element={<MasterSettings />}
+                 />
+                 <Route
+                  path ='/operations/ItineraryManager'  
+                  element={<TravelAgencyItineraryManager/>}               
                  />
 
               {/* ✅ Users List */}

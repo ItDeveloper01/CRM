@@ -1505,7 +1505,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
           <div className="flex flex-col flex-1">
             <label className="label-style">Area</label>
             {isViewMode ? (
-              <ViewSelect value={leadObj.city} />
+              <ViewSelect value={leadObj.area} />
             ) : (
               <select
                 className={`border-highlight`}
