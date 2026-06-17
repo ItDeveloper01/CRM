@@ -3,6 +3,23 @@ import axios from "axios";
 import { getEmptyPackagePreferenceObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayItineraryObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayServiceObj } from "./Model/HolidayServicesModel";
+
+import SpecialRequirementsSection from "./HolidaysScreens/Others/SpecialRequirementSection";
+// Instead of one big destructure, try explicit imports:
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import Chip from "@mui/material/Chip";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+
+
+
+
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+
+
 import config from "./config";
 
 import HistoryHover from "./HIstoryHover";
@@ -67,10 +84,26 @@ const LeadHolidays = ({
      const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj()); 
      const passportDetailsUpdateSource = useRef(null);
 
-     const setPassportDetailsState = (updated) => {
+  const [showModal, setShowModal] = useState(false);
+
+  const setPassportDetailsState = (updated) => {
        passportDetailsUpdateSource.current = "local";
        setPassportDetails(updated);
      };
+
+     const masterRequirements = [
+  { id: 1, name: "Visa Assistance" },
+  { id: 2, name: "Travel Insurance" },
+  { id: 3, name: "Forex Assistance" },
+  { id: 4, name: "Vegetarian Meals" },
+  { id: 5, name: "Jain Meals" },
+  { id: 6, name: "Wheelchair Assistance" },
+  { id: 7, name: "Senior Citizen Assistance" },
+  { id: 8, name: "Private Vehicle" },
+  { id: 9, name: "Early Check-In" },
+  { id: 10, name: "Late Check-Out" }
+];
+
 
     const memoHistories = useMemo(
         () => histories || [],
@@ -394,10 +427,21 @@ useEffect(() => {
 
 
     useEffect(() => {
+    
+        debugger;
+
+    
 
         const fetchData = async () => {
 
             try {
+
+                debugger;
+
+                let str= config.operationsUrl + "/TestOperations/TestingPhase";
+                const testData =  await axios.get(str);
+                console.log("TEST DATA =>", testData.data);
+
                 const res = await axios.get(
                     getSpecialRequirementsListEndPoint
                 );
@@ -726,93 +770,85 @@ useEffect(() => {
             {/* SPECIAL REQUIREMENTS */}
             {/* ===================================== */}
 
-            <div>
+            {/* <div>
 
                 <label className="label-style">
                     Special Requirements
                 </label>
 
-                {isViewMode ? (
+                <div className="flex items-center flex-wrap gap-2 mt-2">
+                  {Array.isArray(holidayLeadObj?.specialRequirement) &&
+                    holidayLeadObj.specialRequirement.length > 0 ? (
+                      holidayLeadObj.specialRequirement
+                        .map((id) => {
+                          const req = specialRequirement.find((r) => r.id === id);
+                          return req?.specialRequirements;
+                        })
+                        .filter(Boolean)
+                        .map((name) => (
+                          <Chip key={name} label={name} size="small" />
+                        ))
+                    ) : (
+                      <span className="text-gray-500">-</span>
+                    )}
 
-                    <ViewField
-                        value={
-                            specialRequirement
-                                .filter(sr =>
-                                    holidayLeadObj
-                                        ?.specialRequirement
-                                        ?.includes(sr.id)
-                                )
-                                .map(sr =>
-                                    sr.specialRequirements
-                                )
-                                .join(", ")
-                            || "-"
-                        }
-                    />
-
-                ) : (
-
-                    <FormControl
-                        fullWidth
-                        size="small"
+                  {!isViewMode && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setShowModal(true);
+                      }}
                     >
+                      <EditIcon />
+                    </IconButton>
+                  )}
 
-                        <Select
-                            multiple
-                            className="border-highlight"
-                            value={
-                                holidayLeadObj
-                                    ?.specialRequirement
-                                || []
-                            }
-                            onChange={(e) => {
+                  {isViewMode && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setShowModal(true);
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                </div>
 
-                                const value =
-                                    e.target.value;
+                <Dialog
+                  open={showModal}
+                  onClose={() => setShowModal(false)}
+                  maxWidth="sm"
+                  fullWidth
+                >
+                  <DialogTitle>
+                    Select Special Requirements
+                  </DialogTitle>
+                  <DialogContent>
+                    <HolidaySpecialRequirements
+                      requirements={specialRequirement}
+                      selectedIds={holidayLeadObj?.specialRequirement || []}
+                      onClose={() => setShowModal(false)}
+                      onSave={(selectedIds) => {
+                        setHolidayLeadObj((prev) => ({
+                          ...prev,
+                          specialRequirement: selectedIds,
+                        }));
+                        setShowModal(false);
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+            </div> */}
 
-                                setHolidayLeadObj(
-                                    prev => ({
 
-                                        ...prev,
+<SpecialRequirementsSection
+  holidayLeadObj={holidayLeadObj}
+  setHolidayLeadObj={setHolidayLeadObj}
+  isViewMode={isViewMode}
+   allRequirements={specialRequirement}  
+/>
 
-                                        specialRequirement:
-                                            value
-                                    })
-                                );
-                            }}
-                        >
-
-                            {specialRequirement.map(
-                                item => (
-
-                                <MenuItem
-                                    key={item.id}
-                                    value={item.id}
-                                >
-
-                                    <Checkbox
-                                        checked={
-                                            holidayLeadObj
-                                                ?.specialRequirement
-                                                ?.includes(item.id)
-                                            || false
-                                        }
-                                    />
-
-                                    <ListItemText
-                                        primary={
-                                            item.specialRequirements
-                                        }
-                                    />
-
-                                </MenuItem>
-                            ))}
-
-                        </Select>
-
-                    </FormControl>
-                )}
-            </div>
 
             {/* ===================================== */}
             {/* QUOTE COMMENTS */}
