@@ -4,7 +4,7 @@ export const variantObj = {
 
 
     id: null,
-    name: "",
+    variantsname: "",
     guideId: null,
 
     baseAmount: 0,
@@ -33,8 +33,8 @@ export const pickupPointObj = {
     point: "",
     location: "",
     rate: 0,
-    total: 0,
-    occupied: 0
+    // total: 0,
+    // occupied: 0
 }
 
 export const getEmptyPickupPointObj = () => {
@@ -71,7 +71,7 @@ export const getEmptyActivityObj = () => {
 
 // ======================= itinerary Object(main object)=========================
 export const ItineraryObject = {
-    itineraryId: null,
+    Id: null,
 
     // ===============================
     // BASIC DETAILS
