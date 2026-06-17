@@ -38,6 +38,7 @@ export default function ManageItineraryForm({ open, onClose, onSave, initialData
   useEffect(() => {
     if (!open) return;
 
+    debugger;
     if (initialData) {
       setItName(initialData.title || "");
       setDesc(initialData.description || "");
@@ -150,7 +151,17 @@ export default function ManageItineraryForm({ open, onClose, onSave, initialData
             <button onClick={onClose}>✕ Cancel</button>
             <button
               onClick={() => {
-                onSave?.({ itName, description, numDays, variants, days });
+                // onSave?.({ itName, description, numDays, variants, days });
+                onSave?.({
+  id: initialData?.id ?? null,
+  itineraryBasicDetails: {
+    itName,
+    description,
+    numDays,
+  },
+  variantsDetails: variants,
+  days,
+});
                 
                 onClose?.();
               }}

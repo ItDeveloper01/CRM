@@ -21,7 +21,8 @@ function addDays(ds, n) {
   const d = new Date(ds);
   if (isNaN(d)) return "";
   d.setDate(d.getDate() + Number(n) - 1);
-  return d.toLocaleDateString("en-GB");
+  // return d.toLocaleDateString("en-GB");
+  return d.toISOString().split("T")[0]; // ✅ FIX
 }
 
 let _id = 100;
@@ -30,15 +31,16 @@ const uid = () => String(++_id);
 export function mkVariant(n) {
   return {
     id: uid(),
-    name: `Variant ${n}`,
+    variantsname: `Variant ${n}`,
     status: "Active",
     startLocation: "",
     endLocation: "",
-    startDate: "",
-    endDate: "",
+    startDate: null,
+    endDate: null,
     totalSeats: 0,
     occupiedSeats: 0,
-    pickups: [{ id: uid(), point: "", location: "", rate: "" }],
+    // pickups:[]
+    // pickups: [{ id: uid(), point: "", location: "", rate: "" }],
     // , total: 0, occupied: 0
   };
 }
@@ -136,7 +138,8 @@ function PickupTable({ pickups = [], onChange }) {
   const upd = (id, k, v) =>
     onChange(pickups.map((p) => (p.id === id ? { ...p, [k]: v } : p)));
   const add = () =>
-    onChange([...pickups, { id: uid(), point: "", location: "", rate: "", total: 0, occupied: 0 }]);
+    onChange([...pickups, { id: uid(), point: "", location: "", rate: "" }]);
+  // , total: 0, occupied: 0
   const del = (id) => {
     if (pickups.length > 1) onChange(pickups.filter((p) => p.id !== id));
   };
@@ -242,8 +245,8 @@ function VariantPanel({ variant, numDays, onChange }) {
         <div>
           <label style={labelStyle}>Variant Name *</label>
           <input
-            value={variant.variantName}
-            onChange={(e) => set("name", e.target.value)}
+            value={variant.variantsname}
+            onChange={(e) => set("variantsname", e.target.value)}
             style={inputStyle}
             placeholder="Standard Package"
           />
@@ -492,7 +495,7 @@ export default function VariantsSection({ variants, setVariants, numDays }) {
           const act = v.id === tabId;
           return (
             <div key={v.id} onClick={() => setActiveTab(v.id)} style={variantTabStyle(act)}>
-              {v.name}
+              {v.variantsname}
               {variants.length > 1 && (
                 <span
                   onClick={(e) => { e.stopPropagation(); removeVariant(v.id); }}

@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useRef } from "react";
+
 
 export const ManageActivityModal = ({ open, onClose, onSave, initialActivity, }) => {
-  const [activity, setActivity] = useState({ time: "14:00", title: "", notes: "" });
+  const nextActivityId = useRef(1);
+  const [activity, setActivity] = useState({id:"", time: "14:00", title: "", notes: "" });
   useEffect(() => {
     if (initialActivity) {
       debugger;
       setActivity(initialActivity);
     } else {
       setActivity({
+        id:nextActivityId.current,
         time: "14:00",
         title: "",
         notes: "",
@@ -18,7 +21,8 @@ export const ManageActivityModal = ({ open, onClose, onSave, initialActivity, })
   const submit = () => {
     if (!activity.title.trim()) return;
     onSave(activity);
-    setActivity({ time: "14:00", title: "", notes: "" });
+    nextActivityId.current += 1;
+    setActivity({ id:nextActivityId.current, time: "14:00", title: "", notes: "" });
     onClose();
   };
   return (

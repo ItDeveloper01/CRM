@@ -31,6 +31,8 @@ export function mkDay(n) {
  *   setDays   {Function} – state setter from parent
  */
 export default function DayWiseSchedule({ days, setDays }) {
+  const nextId = useRef(100);
+
   const [selectedDay, setSelectedDay]         = useState(0);
   const [showActivityModal, setShowActivityModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState(null);
@@ -73,6 +75,10 @@ export default function DayWiseSchedule({ days, setDays }) {
   };
 
   const saveActivity = (activity) => {
+      const activityWithId = {
+    ...activity,
+    id: activity.id || nextId.current++, // generate only if new
+  };
     setDays((prev) =>
       prev.map((day, dayIndex) => {
         if (dayIndex !== selectedDay) return day;

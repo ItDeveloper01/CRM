@@ -2,6 +2,8 @@
 import { useState, useRef } from "react";
 import ManageItineraryForm from "./ItineraryForm";
 import { useItinerary } from "./UseItinerary";
+import axios from "axios";
+import config from "../../config";
 
 
 
@@ -187,92 +189,92 @@ const INITIAL_DATA = {
           variantName: "Standard Package",
           status: "Active",           // references a status string / enum
           startLocation: "Kochi",
-          endLocation:   "Alleppey",
+          endLocation: "Alleppey",
           startDate: "2026-01-05",
-          endDate:   "2026-01-08",    // auto-calc: startDate + numDays - 1
+          endDate: "2026-01-08",    // auto-calc: startDate + numDays - 1
 
           // ── Seats & Pricing ──
-          totalSeats:    20,
-          occupiedSeats:  8,
+          totalSeats: 20,
+          occupiedSeats: 8,
           // availableSeats & occupancyRate are computed:
           //   availableSeats = totalSeats - occupiedSeats  → 12
           //   occupancyRate  = (occupiedSeats/totalSeats)*100 → 40%
 
           guideId: 1,                 // → James D'Silva
-          baseAmount:  18000.00,
-          discountPercent:    10,            // %
+          baseAmount: 18000.00,
+          discountPercent: 10,            // %
           // totalAmount is computed: baseAmount - (baseAmount * discount/100) → 16200
 
           // ── Pickup Points ──
           pickupPoints: [
             {
               id: "1",                  // → Kochi Airport / Kochi, Kerala
-              point:"kochi",
+              point: "kochi",
               location: "kerala",
-              rate:    25000,
-              totalSeats:    12,
-              occupiedSeats:  5,
+              rate: 25000,
+              totalSeats: 12,
+              occupiedSeats: 5,
             },
-            
+
           ],
-        
+
           // ── Day-wise Schedule ──
-          
+
         },
-        
+
       ],
       days: [
-            {
-              dayId: 1,
-              // title: "Arrival & Kochi Sightseeing",
-              // description: "Welcome to Kochi! City tour and evening by the harbour.",
-              activities: [
-                { id: "a1", time: "09:00 AM", title: "Airport Pickup",        notes: "Pickup from Kochi Airport, transfer to hotel." },
-                { id: "a2", time: "11:00 AM", title: "Hotel Check-in",         notes: "Check-in at Fragrant Nature Kochi." },
-                { id: "a3", time: "02:00 PM", title: "Fort Kochi Walk",        notes: "Visit Chinese Fishing Nets, Dutch Palace & Jew Town." },
-                { id: "a4", time: "06:30 PM", title: "Sunset at Marine Drive", notes: "Leisure walk along Marine Drive." },
-              ],
-            },
-            {
-              dayId: 2,
-              // title: "Kochi → Alleppey Houseboat",
-              // description: "Board a traditional kettuvallam and cruise the backwaters.",
-              activities: [
-                { id: "a5", time: "08:00 AM", title: "Breakfast & Checkout",   notes: "Buffet breakfast at hotel, luggage transfer arranged." },
-                { id: "a6", time: "10:00 AM", title: "Drive to Alleppey",      notes: "1.5 hr drive via NH66." },
-                { id: "a7", time: "12:00 PM", title: "Houseboat Check-in",     notes: "Welcome drink & orientation on houseboat." },
-                { id: "a8", time: "03:00 PM", title: "Backwater Cruise",       notes: "Cruise through narrow canals & village life." },
-                { id: "a9", time: "07:00 PM", title: "Dinner on Deck",         notes: "Kerala fish curry & karimeen served on board." },
-              ],
-            },
-            {
-              dayId: 3,
-              // title: "Alleppey Village Experience",
-              // description: "Morning canoe ride and local village interactions.",
-              activities: [
-                { id: "a10", time: "06:30 AM", title: "Sunrise Canoe Ride",   notes: "Small canoe through narrow canals at sunrise." },
-                { id: "a11", time: "09:00 AM", title: "Breakfast on Board",   notes: "Traditional Kerala breakfast — appam & stew." },
-                { id: "a12", time: "11:00 AM", title: "Village Walk",         notes: "Visit toddy-tapper families and coir-making units." },
-                { id: "a13", time: "04:00 PM", title: "Cooking Demo",         notes: "Learn to cook Kerala prawn masala with local chef." },
-              ],
-            },
-            {
-              dayId: 4,
-              // title: "Departure",
-              // description: "Check-out, souvenir shopping and drop-off.",
-              activities: [
-                { id: "a14", time: "08:00 AM", title: "Checkout from Houseboat", notes: "Pack bags, final breakfast on board." },
-                { id: "a15", time: "10:00 AM", title: "Souvenir Shopping",       notes: "Stop at Alleppey market — spices, coir products." },
-                { id: "a16", time: "12:00 PM", title: "Drop-off at Kochi Airport",notes: "Transfer to Kochi Airport for onward journey." },
-              ],
-            },
+        {
+          dayId: 1,
+          // title: "Arrival & Kochi Sightseeing",
+          // description: "Welcome to Kochi! City tour and evening by the harbour.",
+          activities: [
+            { id: "a1", time: "09:00 AM", title: "Airport Pickup", notes: "Pickup from Kochi Airport, transfer to hotel." },
+            { id: "a2", time: "11:00 AM", title: "Hotel Check-in", notes: "Check-in at Fragrant Nature Kochi." },
+            { id: "a3", time: "02:00 PM", title: "Fort Kochi Walk", notes: "Visit Chinese Fishing Nets, Dutch Palace & Jew Town." },
+            { id: "a4", time: "06:30 PM", title: "Sunset at Marine Drive", notes: "Leisure walk along Marine Drive." },
           ],
+        },
+        {
+          dayId: 2,
+          // title: "Kochi → Alleppey Houseboat",
+          // description: "Board a traditional kettuvallam and cruise the backwaters.",
+          activities: [
+            { id: "a5", time: "08:00 AM", title: "Breakfast & Checkout", notes: "Buffet breakfast at hotel, luggage transfer arranged." },
+            { id: "a6", time: "10:00 AM", title: "Drive to Alleppey", notes: "1.5 hr drive via NH66." },
+            { id: "a7", time: "12:00 PM", title: "Houseboat Check-in", notes: "Welcome drink & orientation on houseboat." },
+            { id: "a8", time: "03:00 PM", title: "Backwater Cruise", notes: "Cruise through narrow canals & village life." },
+            { id: "a9", time: "07:00 PM", title: "Dinner on Deck", notes: "Kerala fish curry & karimeen served on board." },
+          ],
+        },
+        {
+          dayId: 3,
+          // title: "Alleppey Village Experience",
+          // description: "Morning canoe ride and local village interactions.",
+          activities: [
+            { id: "a10", time: "06:30 AM", title: "Sunrise Canoe Ride", notes: "Small canoe through narrow canals at sunrise." },
+            { id: "a11", time: "09:00 AM", title: "Breakfast on Board", notes: "Traditional Kerala breakfast — appam & stew." },
+            { id: "a12", time: "11:00 AM", title: "Village Walk", notes: "Visit toddy-tapper families and coir-making units." },
+            { id: "a13", time: "04:00 PM", title: "Cooking Demo", notes: "Learn to cook Kerala prawn masala with local chef." },
+          ],
+        },
+        {
+          dayId: 4,
+          // title: "Departure",
+          // description: "Check-out, souvenir shopping and drop-off.",
+          activities: [
+            { id: "a14", time: "08:00 AM", title: "Checkout from Houseboat", notes: "Pack bags, final breakfast on board." },
+            { id: "a15", time: "10:00 AM", title: "Souvenir Shopping", notes: "Stop at Alleppey market — spices, coir products." },
+            { id: "a16", time: "12:00 PM", title: "Drop-off at Kochi Airport", notes: "Transfer to Kochi Airport for onward journey." },
+          ],
+        },
+      ],
     },
     {
       id: 2, title: "Spiti Valley Expedition", description: "spiti testing ", numDays: [3], status: "Draft", cat: "Family", start: 20, end: 30, dates: "20–30 Jan", guide: "TBD", cities: "Delhi", seats: 4, total: 12, rate: "₹55,000",
       days: [3]
 
-       
+
     },
   ],
   "Feb 2026": [
@@ -692,9 +694,9 @@ export default function TravelAgencyItineraryManager() {
   debugger;
   const { createItinerary, updateItinerary, loading, error } = useItinerary();
   const [showItineraryModal, setShowItineraryModal] = useState(false);
-const [editingItinerary, setEditingItinerary] = useState(null); // null = add mode
+  const [editingItinerary, setEditingItinerary] = useState(null); // null = add mode
   const [data, setData] = useState(INITIAL_DATA);
-  console.log("Monthly itinerary : ",data);
+  console.log("Monthly itinerary : ", data);
   const [activeFilter, setActiveFilter] = useState("All");
   const [timelineMonth, setTimelineMonth] = useState(null);
   // const [editCard, setEditCard] = useState(null);         // card being edited
@@ -711,8 +713,8 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
   };
 
   debugger;
-  console.log("MOnthly data :"+data);
-  
+  console.log("MOnthly data :" + data);
+
 
   // Delete a card from a month
   const handleDelete = (month, id) => {
@@ -733,10 +735,10 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
     setSelectedMonth(month);
     // setEditingCard(null);
     // setManageFormOpen(true);
-     setEditingItinerary(null);
-  setShowItineraryModal(true);
-  console.log("HandleADDClick :",month);
-  debugger;
+    setEditingItinerary(null);
+    setShowItineraryModal(true);
+    console.log("HandleADDClick :", month);
+    debugger;
   };
 
   // Save a new card
@@ -762,8 +764,8 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
     setSelectedMonth(null);
 
     debugger;
-    
-    console.log("Card Details : ",card);
+
+    console.log("Card Details : ", card);
   };
 
   // Open edit modal
@@ -775,10 +777,10 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
     // setManageFormOpen(true);
 
 
-  // setEditingItinerary(INITIAL_DATA); // pass the full itinerary object
-  setEditingItinerary(card); // ← was passing INITIAL_DATA by mistake
-  setShowItineraryModal(true);
-  debugger;
+    // setEditingItinerary(INITIAL_DATA); // pass the full itinerary object
+    setEditingItinerary(card); // ← was passing INITIAL_DATA by mistake
+    setShowItineraryModal(true);
+    debugger;
 
   };
   // Save edits to existing card
@@ -867,9 +869,9 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
     setManageFormOpen(false);
     setEditingCard(null);
     console.log("Formdata", formData);
-    
+
   };
-  
+
   const tlCards = timelineMonth ? (data[timelineMonth] || []) : [];
 
   return (
@@ -980,70 +982,88 @@ const [editingItinerary, setEditingItinerary] = useState(null); // null = add mo
         }
       /> */}
 
-  <ManageItineraryForm
-  open={showItineraryModal}
-  onClose={() => setShowItineraryModal(false)}
-  initialData={editingItinerary}
-  onSave={(formData) => {
-    console.log("new itineray details : ", formData);
-    if (editingItinerary) {
-      // UPDATE — find which month this card lives in and replace it
-      const month = findMonth(editingItinerary);
-      if (month) {
-        setData((prev) => ({
-          ...prev,
-          [month]: prev[month].map((c) =>
-            c.id === editingItinerary.id
-              ? {
-                  ...c,
-                  title:       formData.itName,
-                  description: formData.description,
-                  numDays:     formData.numDays,
-                  days:        formData.days,
-                  variants:    formData.variants,
-                  total:       formData.variants[0]?.totalSeats    ?? c.total,
-                  seats:       formData.variants[0]?.occupiedSeats ?? c.seats,
-                }
-              : c
-          ),
-        }));
-      }
-    } else {
-      // CREATE — add to the selected month
+      <ManageItineraryForm
+        open={showItineraryModal}
+        onClose={() => setShowItineraryModal(false)}
+        initialData={editingItinerary}
+        onSave={async (formData) => {
+          console.log(" itineray formData details : ", formData);
+            try {
+              debugger;
 
-      
-      const createItinerary={
-            id:          nextId.current++,
-            title:       formData.itName,
-            description: formData.description,
-            numDays:     formData.numDays,
-            days:        formData.days,
-            variants:    formData.variants,
-            status:      formData.variants[0]?.status ?? "Draft",
-            total:       formData.variants[0]?.totalSeats    ?? 0,
-            seats:       formData.variants[0]?.occupiedSeats ?? 0,
-            // guide:       "",
-            // rate:        "",
-          };
-          
-console.log("Created itinerary:" , createItinerary);
-     
-      setData((prev) => ({
-        ...prev,
-        [selectedMonth]: [
-          ...(prev[selectedMonth] || []),
-          createItinerary,
-        ],
-      }));
-    }
+              let str= config.operationsUrl + "/TestOperations/GetTestOperations";
 
-    setShowItineraryModal(false);
-    setEditingItinerary(null);
-  }}
-/>
+              const response = await axios.post(str,formData);
 
-{error   && <p style={{ color: "red"  }}>{error}</p>}
-{loading && <p style={{ color: "gray" }}>Saving…</p>}
+
+              console.log("Response from API:", response.data);
+
+          } catch (err) {
+              console.error(err);
+          }
+
+          if (editingItinerary) {
+            // UPDATE — find which month this card lives in and replace it
+            const month = findMonth(editingItinerary);
+            if (month) {
+              setData((prev) => ({
+                ...prev,
+                [month]: prev[month].map((c) =>
+                  c.id === editingItinerary.id
+                    ? {
+                      ...c,
+                      // ...formData,    .......unccomment and delete below lines to get data from form data directly 
+                      title: formData.itName,
+                      description: formData.description,
+                      numDays: formData.numDays,
+                      days: formData.days,
+                      variantsDetails: formData.variants,
+                      total: formData.variants[0]?.totalSeats ?? c.total,
+                      seats: formData.variants[0]?.occupiedSeats ?? c.seats,
+                    }
+                    : c
+                ),
+              }));
+            }
+          } else {
+            // CREATE — add to the selected month
+
+
+            const createItinerary = {
+              id: nextId.current++,
+              
+              // itineraryBasicDetails: {
+              //   itName: formData.itName,
+              //   description: formData.description,
+              //   numDays: formData.numDays,
+              // },
+
+              // days: formData.days,
+              // variantsDetails: formData.variants,
+              ...formData,
+              
+            };
+
+            console.log("created formdata :", createItinerary.formData);
+
+            console.log("Created itinerary:", createItinerary);
+
+            setData((prev) => ({
+              ...prev,
+              [selectedMonth]: [
+                ...(prev[selectedMonth] || []),
+                createItinerary,
+              ],
+            }));
+          }
+
+          setShowItineraryModal(false);
+          setEditingItinerary(null);
+        }}
+      />
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loading && <p style={{ color: "gray" }}>Saving…</p>}
     </div>
   );
 }
