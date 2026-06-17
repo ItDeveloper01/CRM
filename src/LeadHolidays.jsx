@@ -392,6 +392,8 @@ useEffect(() => {
         "/MasterData/GetSpecialRequirementsList";
 
 
+    // const getoperationendpoint = config.operationsUrl+"/TestOperations/getTestOperations"
+
 useEffect(() => {
   if (!holidayLeadObj?.passportDetails) return;
   if (passportDetailsUpdateSource.current === "local") {
@@ -432,15 +434,19 @@ useEffect(() => {
 
     
 
+       
+
         const fetchData = async () => {
 
             try {
 
-                debugger;
 
-                let str= config.operationsUrl + "/TestOperations/TestingPhase";
-                const testData =  await axios.get(str);
-                console.log("TEST DATA =>", testData.data);
+                  debugger;
+ 
+                // let str= config.operationsUrl + "/TestOperations/GetTestOperations";
+                // const testData =  await axios.get(str);
+                // console.log("TEST DATA =>", testData.data);
+
 
                 const res = await axios.get(
                     getSpecialRequirementsListEndPoint
