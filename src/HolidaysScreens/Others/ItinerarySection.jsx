@@ -673,6 +673,7 @@
 // }
 
 import React, { useEffect, useState, useRef } from "react";
+import DestinationSearch from "./DestinationSearch";
 
 export default function ItinerarySection({
     holidayLeadObj = {},
@@ -685,480 +686,663 @@ export default function ItinerarySection({
     const [activeTab, setActiveTab] = useState(0);
     const initializedRef = useRef(false);
     const [tabState, setTabState] = useState({});
+    const [scope, setScope] = useState("International"); 
+
+    //const [tabState, setTabState] = useState({});
     // tabState[tabId] = { itinerary, variant, pickup, showDiscount }
 
     // ======================================================
     // DUMMY DATA (same as yours)
     // ======================================================
 
-    const dummyItineraries = [
+const cities = {
+    Kashmir: ["Srinagar", "Gulmarg", "Pahalgam", "Sonmarg"],
+    Spiti: ["Delhi", "Manali", "Kaza", "Chandratal", "Shimla", "Pin Valley"],
+    Goa: ["North Goa", "South Goa", "Candolim", "Morjim", "Palolem"],
+    Ladakh: ["Leh", "Nubra", "Pangong", "Khardung La", "Tso Moriri"],
+    Kerala: ["Kochi", "Alleppey", "Munnar", "Kumarakom", "Kovalam"]
+};
+
+const audienceList = [
+    { id: 1, name: "Family & Kids" },
+    { id: 2, name: "Honeymoon Couples" },
+    { id: 3, name: "Senior Citizens" },
+    { id: 4, name: "Students" },
+    { id: 5, name: "Women Special" },
+    { id: 6, name: "Friends Group" },
+    { id: 7, name: "Adventure Seekers" },
+    { id: 8, name: "Corporate Groups" },
+    { id: 9, name: "Pilgrimage / Religious" },
+    { id: 10, name: "Luxury Travelers" }
+];
+
+const audiences = [
+    ["Family"],
+    ["Couples"],
+    ["Backpackers"],
+    ["Solo Travelers"],
+    ["Luxury Travelers"],
+    ["Adventure Seekers"],
+    ["Groups"],
+    ["Honeymoon"]
+];
+
+const labels = [
+    "Classic Escape",
+    "Luxury Edition",
+    "Budget Explorer",
+    "Adventure Circuit",
+    "Weekend Special",
+    "Premium Journey",
+    "Backpacking Loop"
+];
+
+// random helpers
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+ const [selectedDestinations, setSelectedDestinations] = useState([]);
+
+  const handleSelect = (item) => {
+    setSelectedDestinations((prev) => [...prev, item]);
+  };
+
+const addDays = (dateStr, days) => {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split("T")[0];
+};
+
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+function generateVariants(baseStartYear, count, cityGroup) {
+    const variants = [];
+
+    for (let i = 0; i < count; i++) {
+        const startMonth = rand(0, 11);
+        const startDay = rand(1, 20);
+
+        const baseStartDate = new Date(baseStartYear, startMonth, startDay)
+            .toISOString().split("T")[0];
+
+        const duration = rand(3, 9);
+        const baseEndDate = addDays(baseStartDate, duration);
+
+        const startCity = cityGroup[0];
+        const endCity = cityGroup[0];
+
+        const price = rand(15000, 60000);
+        const discount = rand(5, 20);
+
+        const seats = rand(10, 25);
+        const bookedSeats = rand(2, seats - 2);
+
+        const variant = {
+            variantID: i + 1,
+            label: pick(labels),
+
+            route: cityGroup.slice(0, rand(2, cityGroup.length)).join(" → "),
+
+            startCity,
+            endCity,
+
+            baseStartDate,
+            baseEndDate,
+
+            basePrice: price,
+            discount,
+
+            seats,
+            bookedSeats,
+
+            targetAudience: pick(audiences),
+
+            schedule: [
+                { day: 1, title: "Arrival", details: "Welcome & check-in" },
+                { day: 2, title: "Exploration", details: "Local sightseeing" },
+                { day: 3, title: "Experience Day", details: "Adventure / leisure activity" }
+            ],
+
+            pickupOptions: [
+                {
+                    city: "Delhi",
+                    cost: rand(2000, 9000),
+                    pickupDate: addDays(baseStartDate, -1),
+                    adjustedStartDate: baseStartDate
+                }
+            ]
+        };
+
+        variants.push(variant);
+    }
+
+    return variants;
+}
+
+function buildItineraries() {
+    return [
         {
             itineraryID: 101,
             name: "Kashmir Delight Tour",
-
-            variants: [
-                {
-                    variantID: 1,
-                    label: "Classic Loop",
-                    route: "Srinagar → Gulmarg → Pahalgam → Srinagar",
-
-                    startCity: "Srinagar",
-                    endCity: "Srinagar",
-
-                    baseStartDate: "2026-09-12",
-                    baseEndDate: "2026-09-17",
-
-                    basePrice: 30000,
-                    discount: 10,
-
-                    seats: 12,
-                    bookedSeats: 8,
-
-                    schedule: [
-                        { day: 1, title: "Arrival Srinagar", details: "Dal Lake stay" },
-                        { day: 2, title: "Gulmarg", details: "Cable car ride" },
-                        { day: 3, title: "Pahalgam", details: "Valley exploration" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 5000,
-                            pickupDate: "2026-09-11",
-                            adjustedStartDate: "2026-09-12"
-                        },
-                        {
-                            city: "Mumbai",
-                            cost: 6500,
-                            pickupDate: "2026-09-10",
-                            adjustedStartDate: "2026-09-12"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 2,
-                    label: "Luxury Escape",
-                    route: "Srinagar → Sonmarg → Gulmarg → Srinagar",
-
-                    startCity: "Srinagar",
-                    endCity: "Srinagar",
-
-                    baseStartDate: "2026-10-02",
-                    baseEndDate: "2026-10-07",
-
-                    basePrice: 52000,
-                    discount: 15,
-
-                    seats: 10,
-                    bookedSeats: 5,
-
-                    schedule: [
-                        { day: 1, title: "Arrival", details: "Luxury houseboat stay" },
-                        { day: 2, title: "Sonmarg", details: "Snow point visit" },
-                        { day: 3, title: "Gulmarg", details: "Premium gondola ride" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 8000,
-                            pickupDate: "2026-10-01",
-                            adjustedStartDate: "2026-10-02"
-                        },
-                        {
-                            city: "Hyderabad",
-                            cost: 9500,
-                            pickupDate: "2026-10-01",
-                            adjustedStartDate: "2026-10-02"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 3,
-                    label: "Budget Backpacker",
-                    route: "Srinagar → Gulmarg → Srinagar",
-
-                    startCity: "Srinagar",
-                    endCity: "Srinagar",
-
-                    baseStartDate: "2026-11-05",
-                    baseEndDate: "2026-11-09",
-
-                    basePrice: 18000,
-                    discount: 5,
-
-                    seats: 18,
-                    bookedSeats: 12,
-
-                    schedule: [
-                        { day: 1, title: "Arrival", details: "Hostel check-in" },
-                        { day: 2, title: "Gulmarg", details: "Sightseeing" },
-                        { day: 3, title: "Local Srinagar", details: "Market visit" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 4000,
-                            pickupDate: "2026-11-04",
-                            adjustedStartDate: "2026-11-05"
-                        }
-                    ]
-                }
-            ]
+            variants: generateVariants(2026, 25, cities.Kashmir)
         },
-
         {
             itineraryID: 102,
             name: "Spiti Valley Expedition",
-
-            variants: [
-                {
-                    variantID: 4,
-                    label: "Backpacking Circuit",
-                    route: "Delhi → Manali → Kaza → Chandratal → Delhi",
-
-                    startCity: "Delhi",
-                    endCity: "Delhi",
-
-                    baseStartDate: "2026-06-15",
-                    baseEndDate: "2026-06-22",
-
-                    basePrice: 22000,
-                    discount: 5,
-
-                    seats: 20,
-                    bookedSeats: 15,
-
-                    schedule: [
-                        { day: 1, title: "Delhi to Manali", details: "Volvo journey" },
-                        { day: 2, title: "Manali", details: "Acclimatization" },
-                        { day: 3, title: "Kaza", details: "Mountain drive" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 0,
-                            pickupDate: "2026-06-14",
-                            adjustedStartDate: "2026-06-15"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 5,
-                    label: "Adventure Riders",
-                    route: "Chandigarh → Manali → Kaza → Pin Valley → Chandigarh",
-
-                    startCity: "Chandigarh",
-                    endCity: "Chandigarh",
-
-                    baseStartDate: "2026-07-10",
-                    baseEndDate: "2026-07-18",
-
-                    basePrice: 35000,
-                    discount: 8,
-
-                    seats: 15,
-                    bookedSeats: 9,
-
-                    schedule: [
-                        { day: 1, title: "Ride Begins", details: "Bike allocation" },
-                        { day: 2, title: "Manali", details: "Mountain briefing" },
-                        { day: 3, title: "Kaza", details: "High altitude ride" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Chandigarh",
-                            cost: 1500,
-                            pickupDate: "2026-07-09",
-                            adjustedStartDate: "2026-07-10"
-                        },
-                        {
-                            city: "Delhi",
-                            cost: 3500,
-                            pickupDate: "2026-07-09",
-                            adjustedStartDate: "2026-07-10"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 6,
-                    label: "Premium SUV Expedition",
-                    route: "Delhi → Shimla → Kaza → Manali → Delhi",
-
-                    startCity: "Delhi",
-                    endCity: "Delhi",
-
-                    baseStartDate: "2026-08-05",
-                    baseEndDate: "2026-08-13",
-
-                    basePrice: 48000,
-                    discount: 12,
-
-                    seats: 12,
-                    bookedSeats: 7,
-
-                    schedule: [
-                        { day: 1, title: "Departure", details: "Luxury SUV transfer" },
-                        { day: 2, title: "Shimla", details: "Mall road visit" },
-                        { day: 3, title: "Kaza", details: "Camping experience" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 0,
-                            pickupDate: "2026-08-04",
-                            adjustedStartDate: "2026-08-05"
-                        }
-                    ]
-                }
-            ]
+            variants: generateVariants(2026, 30, cities.Spiti)
         },
-
         {
             itineraryID: 103,
             name: "Goa Beach Party Retreat",
-
-            variants: [
-                {
-                    variantID: 7,
-                    label: "Weekend Party Edition",
-                    route: "North Goa → South Goa",
-
-                    startCity: "Goa",
-                    endCity: "Goa",
-
-                    baseStartDate: "2026-12-18",
-                    baseEndDate: "2026-12-21",
-
-                    basePrice: 18000,
-                    discount: 12,
-
-                    seats: 25,
-                    bookedSeats: 19,
-
-                    schedule: [
-                        { day: 1, title: "Arrival", details: "Beach party" },
-                        { day: 2, title: "North Goa", details: "Club hopping" },
-                        { day: 3, title: "South Goa", details: "Water sports" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Mumbai",
-                            cost: 4000,
-                            pickupDate: "2026-12-17",
-                            adjustedStartDate: "2026-12-18"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 8,
-                    label: "Luxury Beach Escape",
-                    route: "Candolim → Morjim → Palolem",
-
-                    startCity: "Goa",
-                    endCity: "Goa",
-
-                    baseStartDate: "2027-01-10",
-                    baseEndDate: "2027-01-15",
-
-                    basePrice: 42000,
-                    discount: 18,
-
-                    seats: 14,
-                    bookedSeats: 6,
-
-                    schedule: [
-                        { day: 1, title: "Resort Check-in", details: "Welcome drinks" },
-                        { day: 2, title: "Private Cruise", details: "Sunset yacht party" },
-                        { day: 3, title: "Beach Leisure", details: "Spa and cafe tour" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Bangalore",
-                            cost: 7000,
-                            pickupDate: "2027-01-09",
-                            adjustedStartDate: "2027-01-10"
-                        },
-                        {
-                            city: "Delhi",
-                            cost: 9500,
-                            pickupDate: "2027-01-09",
-                            adjustedStartDate: "2027-01-10"
-                        }
-                    ]
-                }
-            ]
+            variants: generateVariants(2026, 20, cities.Goa)
         },
-
         {
             itineraryID: 104,
             name: "Leh Ladakh Adventure",
-
-            variants: [
-                {
-                    variantID: 9,
-                    label: "Bike Expedition",
-                    route: "Leh → Nubra → Pangong → Leh",
-
-                    startCity: "Leh",
-                    endCity: "Leh",
-
-                    baseStartDate: "2026-07-01",
-                    baseEndDate: "2026-07-08",
-
-                    basePrice: 38000,
-                    discount: 10,
-
-                    seats: 16,
-                    bookedSeats: 10,
-
-                    schedule: [
-                        { day: 1, title: "Arrival Leh", details: "Rest and acclimatize" },
-                        { day: 2, title: "Nubra Valley", details: "Camel safari" },
-                        { day: 3, title: "Pangong Lake", details: "Lakeside camping" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Delhi",
-                            cost: 8500,
-                            pickupDate: "2026-06-30",
-                            adjustedStartDate: "2026-07-01"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 10,
-                    label: "SUV Explorer",
-                    route: "Leh → Khardung La → Pangong → Tso Moriri",
-
-                    startCity: "Leh",
-                    endCity: "Leh",
-
-                    baseStartDate: "2026-08-12",
-                    baseEndDate: "2026-08-20",
-
-                    basePrice: 55000,
-                    discount: 14,
-
-                    seats: 12,
-                    bookedSeats: 4,
-
-                    schedule: [
-                        { day: 1, title: "Leh Arrival", details: "Hotel check-in" },
-                        { day: 2, title: "Khardung La", details: "Highest motorable road" },
-                        { day: 3, title: "Pangong", details: "Photography tour" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Mumbai",
-                            cost: 12000,
-                            pickupDate: "2026-08-11",
-                            adjustedStartDate: "2026-08-12"
-                        },
-                        {
-                            city: "Delhi",
-                            cost: 10000,
-                            pickupDate: "2026-08-11",
-                            adjustedStartDate: "2026-08-12"
-                        }
-                    ]
-                }
-            ]
+            variants: generateVariants(2026, 28, cities.Ladakh)
         },
-
         {
             itineraryID: 105,
             name: "Kerala Backwaters Retreat",
-
-            variants: [
-                {
-                    variantID: 11,
-                    label: "Houseboat Experience",
-                    route: "Kochi → Alleppey → Munnar",
-
-                    startCity: "Kochi",
-                    endCity: "Kochi",
-
-                    baseStartDate: "2026-09-20",
-                    baseEndDate: "2026-09-25",
-
-                    basePrice: 26000,
-                    discount: 7,
-
-                    seats: 20,
-                    bookedSeats: 13,
-
-                    schedule: [
-                        { day: 1, title: "Kochi Arrival", details: "Fort Kochi tour" },
-                        { day: 2, title: "Alleppey", details: "Houseboat cruise" },
-                        { day: 3, title: "Munnar", details: "Tea plantation visit" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Chennai",
-                            cost: 3500,
-                            pickupDate: "2026-09-19",
-                            adjustedStartDate: "2026-09-20"
-                        },
-                        {
-                            city: "Bangalore",
-                            cost: 3000,
-                            pickupDate: "2026-09-19",
-                            adjustedStartDate: "2026-09-20"
-                        }
-                    ]
-                },
-
-                {
-                    variantID: 12,
-                    label: "Luxury Ayurveda Retreat",
-                    route: "Kochi → Kumarakom → Kovalam",
-
-                    startCity: "Kochi",
-                    endCity: "Trivandrum",
-
-                    baseStartDate: "2026-11-10",
-                    baseEndDate: "2026-11-16",
-
-                    basePrice: 60000,
-                    discount: 20,
-
-                    seats: 10,
-                    bookedSeats: 3,
-
-                    schedule: [
-                        { day: 1, title: "Arrival", details: "Luxury wellness resort" },
-                        { day: 2, title: "Ayurveda Therapy", details: "Spa sessions" },
-                        { day: 3, title: "Beach Leisure", details: "Sunset relaxation" }
-                    ],
-
-                    pickupOptions: [
-                        {
-                            city: "Mumbai",
-                            cost: 6500,
-                            pickupDate: "2026-11-09",
-                            adjustedStartDate: "2026-11-10"
-                        }
-                    ]
-                }
-            ]
+            variants: generateVariants(2026, 22, cities.Kerala)
         }
     ];
+}
+
+// 👇 THIS is your final dummy data
+const dummyItineraries = buildItineraries();
+
+//    const dummyItineraries = [
+//     {
+//         itineraryID: 101,
+//         name: "Kashmir Delight Tour",
+
+//         variants: [
+//             {
+//                 variantID: 1,
+//                 label: "Classic Loop",
+//                 route: "Srinagar → Gulmarg → Pahalgam → Srinagar",
+
+//                 startCity: "Srinagar",
+//                 endCity: "Srinagar",
+
+//                 baseStartDate: "2026-09-12",
+//                 baseEndDate: "2026-09-17",
+
+//                 basePrice: 30000,
+//                 discount: 10,
+
+//                 seats: 12,
+//                 bookedSeats: 8,
+
+//                 targetAudience: ["Family", "Couples", "Backpackers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival Srinagar", details: "Dal Lake stay" },
+//                     { day: 2, title: "Gulmarg", details: "Cable car ride" },
+//                     { day: 3, title: "Pahalgam", details: "Valley exploration" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 5000,
+//                         pickupDate: "2026-09-11",
+//                         adjustedStartDate: "2026-09-12"
+//                     },
+//                     {
+//                         city: "Mumbai",
+//                         cost: 6500,
+//                         pickupDate: "2026-09-10",
+//                         adjustedStartDate: "2026-09-12"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 2,
+//                 label: "Luxury Escape",
+//                 route: "Srinagar → Sonmarg → Gulmarg → Srinagar",
+
+//                 startCity: "Srinagar",
+//                 endCity: "Srinagar",
+
+//                 baseStartDate: "2026-10-02",
+//                 baseEndDate: "2026-10-07",
+
+//                 basePrice: 52000,
+//                 discount: 15,
+
+//                 seats: 10,
+//                 bookedSeats: 5,
+
+//                 targetAudience: ["Couples", "Luxury Travelers", "Honeymoon"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival", details: "Luxury houseboat stay" },
+//                     { day: 2, title: "Sonmarg", details: "Snow point visit" },
+//                     { day: 3, title: "Gulmarg", details: "Premium gondola ride" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 8000,
+//                         pickupDate: "2026-10-01",
+//                         adjustedStartDate: "2026-10-02"
+//                     },
+//                     {
+//                         city: "Hyderabad",
+//                         cost: 9500,
+//                         pickupDate: "2026-10-01",
+//                         adjustedStartDate: "2026-10-02"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 3,
+//                 label: "Budget Backpacker",
+//                 route: "Srinagar → Gulmarg → Srinagar",
+
+//                 startCity: "Srinagar",
+//                 endCity: "Srinagar",
+
+//                 baseStartDate: "2026-11-05",
+//                 baseEndDate: "2026-11-09",
+
+//                 basePrice: 18000,
+//                 discount: 5,
+
+//                 seats: 18,
+//                 bookedSeats: 12,
+
+//                 targetAudience: ["Backpackers", "Students", "Solo Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival", details: "Hostel check-in" },
+//                     { day: 2, title: "Gulmarg", details: "Sightseeing" },
+//                     { day: 3, title: "Local Srinagar", details: "Market visit" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 4000,
+//                         pickupDate: "2026-11-04",
+//                         adjustedStartDate: "2026-11-05"
+//                     }
+//                 ]
+//             }
+//         ]
+//     },
+
+//     {
+//         itineraryID: 102,
+//         name: "Spiti Valley Expedition",
+
+//         variants: [
+//             {
+//                 variantID: 4,
+//                 label: "Backpacking Circuit",
+//                 route: "Delhi → Manali → Kaza → Chandratal → Delhi",
+
+//                 startCity: "Delhi",
+//                 endCity: "Delhi",
+
+//                 baseStartDate: "2026-06-15",
+//                 baseEndDate: "2026-06-22",
+
+//                 basePrice: 22000,
+//                 discount: 5,
+
+//                 seats: 20,
+//                 bookedSeats: 15,
+
+//                 targetAudience: ["Backpackers", "Adventure Seekers", "Solo Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Delhi to Manali", details: "Volvo journey" },
+//                     { day: 2, title: "Manali", details: "Acclimatization" },
+//                     { day: 3, title: "Kaza", details: "Mountain drive" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 0,
+//                         pickupDate: "2026-06-14",
+//                         adjustedStartDate: "2026-06-15"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 5,
+//                 label: "Adventure Riders",
+//                 route: "Chandigarh → Manali → Kaza → Pin Valley → Chandigarh",
+
+//                 startCity: "Chandigarh",
+//                 endCity: "Chandigarh",
+
+//                 baseStartDate: "2026-07-10",
+//                 baseEndDate: "2026-07-18",
+
+//                 basePrice: 35000,
+//                 discount: 8,
+
+//                 seats: 15,
+//                 bookedSeats: 9,
+
+//                 targetAudience: ["Bikers", "Adventure Seekers", "Groups"],
+
+//                 schedule: [
+//                     { day: 1, title: "Ride Begins", details: "Bike allocation" },
+//                     { day: 2, title: "Manali", details: "Mountain briefing" },
+//                     { day: 3, title: "Kaza", details: "High altitude ride" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Chandigarh",
+//                         cost: 1500,
+//                         pickupDate: "2026-07-09",
+//                         adjustedStartDate: "2026-07-10"
+//                     },
+//                     {
+//                         city: "Delhi",
+//                         cost: 3500,
+//                         pickupDate: "2026-07-09",
+//                         adjustedStartDate: "2026-07-10"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 6,
+//                 label: "Premium SUV Expedition",
+//                 route: "Delhi → Shimla → Kaza → Manali → Delhi",
+
+//                 startCity: "Delhi",
+//                 endCity: "Delhi",
+
+//                 baseStartDate: "2026-08-05",
+//                 baseEndDate: "2026-08-13",
+
+//                 basePrice: 48000,
+//                 discount: 12,
+
+//                 seats: 12,
+//                 bookedSeats: 7,
+
+//                 targetAudience: ["Families", "Corporate Groups", "Luxury Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Departure", details: "Luxury SUV transfer" },
+//                     { day: 2, title: "Shimla", details: "Mall road visit" },
+//                     { day: 3, title: "Kaza", details: "Camping experience" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 0,
+//                         pickupDate: "2026-08-04",
+//                         adjustedStartDate: "2026-08-05"
+//                     }
+//                 ]
+//             }
+//         ]
+//     },
+
+//     {
+//         itineraryID: 103,
+//         name: "Goa Beach Party Retreat",
+
+//         variants: [
+//             {
+//                 variantID: 7,
+//                 label: "Weekend Party Edition",
+//                 route: "North Goa → South Goa",
+
+//                 startCity: "Goa",
+//                 endCity: "Goa",
+
+//                 baseStartDate: "2026-12-18",
+//                 baseEndDate: "2026-12-21",
+
+//                 basePrice: 18000,
+//                 discount: 12,
+
+//                 seats: 25,
+//                 bookedSeats: 19,
+
+//                 targetAudience: ["Young Groups", "Friends", "Party Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival", details: "Beach party" },
+//                     { day: 2, title: "North Goa", details: "Club hopping" },
+//                     { day: 3, title: "South Goa", details: "Water sports" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Mumbai",
+//                         cost: 4000,
+//                         pickupDate: "2026-12-17",
+//                         adjustedStartDate: "2026-12-18"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 8,
+//                 label: "Luxury Beach Escape",
+//                 route: "Candolim → Morjim → Palolem",
+
+//                 startCity: "Goa",
+//                 endCity: "Goa",
+
+//                 baseStartDate: "2027-01-10",
+//                 baseEndDate: "2027-01-15",
+
+//                 basePrice: 42000,
+//                 discount: 18,
+
+//                 seats: 14,
+//                 bookedSeats: 6,
+
+//                 targetAudience: ["Couples", "Luxury Travelers", "Honeymoon"],
+
+//                 schedule: [
+//                     { day: 1, title: "Resort Check-in", details: "Welcome drinks" },
+//                     { day: 2, title: "Private Cruise", details: "Sunset yacht party" },
+//                     { day: 3, title: "Beach Leisure", details: "Spa and cafe tour" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Bangalore",
+//                         cost: 7000,
+//                         pickupDate: "2027-01-09",
+//                         adjustedStartDate: "2027-01-10"
+//                     },
+//                     {
+//                         city: "Delhi",
+//                         cost: 9500,
+//                         pickupDate: "2027-01-09",
+//                         adjustedStartDate: "2027-01-10"
+//                     }
+//                 ]
+//             }
+//         ]
+//     },
+
+//     {
+//         itineraryID: 104,
+//         name: "Leh Ladakh Adventure",
+
+//         variants: [
+//             {
+//                 variantID: 9,
+//                 label: "Bike Expedition",
+//                 route: "Leh → Nubra → Pangong → Leh",
+
+//                 startCity: "Leh",
+//                 endCity: "Leh",
+
+//                 baseStartDate: "2026-07-01",
+//                 baseEndDate: "2026-07-08",
+
+//                 basePrice: 38000,
+//                 discount: 10,
+
+//                 seats: 16,
+//                 bookedSeats: 10,
+
+//                 targetAudience: ["Bikers", "Adventure Seekers", "Solo Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival Leh", details: "Rest and acclimatize" },
+//                     { day: 2, title: "Nubra Valley", details: "Camel safari" },
+//                     { day: 3, title: "Pangong Lake", details: "Lakeside camping" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Delhi",
+//                         cost: 8500,
+//                         pickupDate: "2026-06-30",
+//                         adjustedStartDate: "2026-07-01"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 10,
+//                 label: "SUV Explorer",
+//                 route: "Leh → Khardung La → Pangong → Tso Moriri",
+
+//                 startCity: "Leh",
+//                 endCity: "Leh",
+
+//                 baseStartDate: "2026-08-12",
+//                 baseEndDate: "2026-08-20",
+
+//                 basePrice: 55000,
+//                 discount: 14,
+
+//                 seats: 12,
+//                 bookedSeats: 4,
+
+//                 targetAudience: ["Families", "Photographers", "Luxury Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Leh Arrival", details: "Hotel check-in" },
+//                     { day: 2, title: "Khardung La", details: "Highest motorable road" },
+//                     { day: 3, title: "Pangong", details: "Photography tour" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Mumbai",
+//                         cost: 12000,
+//                         pickupDate: "2026-08-11",
+//                         adjustedStartDate: "2026-08-12"
+//                     },
+//                     {
+//                         city: "Delhi",
+//                         cost: 10000,
+//                         pickupDate: "2026-08-11",
+//                         adjustedStartDate: "2026-08-12"
+//                     }
+//                 ]
+//             }
+//         ]
+//     },
+
+//     {
+//         itineraryID: 105,
+//         name: "Kerala Backwaters Retreat",
+
+//         variants: [
+//             {
+//                 variantID: 11,
+//                 label: "Houseboat Experience",
+//                 route: "Kochi → Alleppey → Munnar",
+
+//                 startCity: "Kochi",
+//                 endCity: "Kochi",
+
+//                 baseStartDate: "2026-09-20",
+//                 baseEndDate: "2026-09-25",
+
+//                 basePrice: 26000,
+//                 discount: 7,
+
+//                 seats: 20,
+//                 bookedSeats: 13,
+
+//                 targetAudience: ["Couples", "Families", "Relaxation Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Kochi Arrival", details: "Fort Kochi tour" },
+//                     { day: 2, title: "Alleppey", details: "Houseboat cruise" },
+//                     { day: 3, title: "Munnar", details: "Tea plantation visit" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Chennai",
+//                         cost: 3500,
+//                         pickupDate: "2026-09-19",
+//                         adjustedStartDate: "2026-09-20"
+//                     },
+//                     {
+//                         city: "Bangalore",
+//                         cost: 3000,
+//                         pickupDate: "2026-09-19",
+//                         adjustedStartDate: "2026-09-20"
+//                     }
+//                 ]
+//             },
+
+//             {
+//                 variantID: 12,
+//                 label: "Luxury Ayurveda Retreat",
+//                 route: "Kochi → Kumarakom → Kovalam",
+
+//                 startCity: "Kochi",
+//                 endCity: "Trivandrum",
+
+//                 baseStartDate: "2026-11-10",
+//                 baseEndDate: "2026-11-16",
+
+//                 basePrice: 60000,
+//                 discount: 20,
+
+//                 seats: 10,
+//                 bookedSeats: 3,
+
+//                 targetAudience: ["Wellness Seekers", "Luxury Travelers", "Senior Travelers"],
+
+//                 schedule: [
+//                     { day: 1, title: "Arrival", details: "Luxury wellness resort" },
+//                     { day: 2, title: "Ayurveda Therapy", details: "Spa sessions" },
+//                     { day: 3, title: "Beach Leisure", details: "Sunset relaxation" }
+//                 ],
+
+//                 pickupOptions: [
+//                     {
+//                         city: "Mumbai",
+//                         cost: 6500,
+//                         pickupDate: "2026-11-09",
+//                         adjustedStartDate: "2026-11-10"
+//                     }
+//                 ]
+//             }
+//         ]
+//     }
+// ];
     // ======================================================
     useEffect(() => {
         setItineraries(dummyItineraries);
@@ -1172,11 +1356,13 @@ export default function ItinerarySection({
 
             if (!item?.itinerary || !item?.variant) return null;
 
-            return {
-                itineraryID: item.itinerary.itineraryID,
-                variantID: item.variant.variantID,
-                pickupCity: item.pickup?.city || ""
-            };
+           return {
+    itineraryID: item.itinerary.itineraryID,
+    variantID: item.variant.variantID,
+    pickupCity: item.pickup?.city || "",
+    targetAudience: item.targetAudience || "",
+    selectedDate: item.selectedDate || ""
+};
 
         }).filter(Boolean);
 
@@ -1303,8 +1489,12 @@ export default function ItinerarySection({
         itinerary: null,
         variant: null,
         pickup: null,
-        showDiscount: true
+        showDiscount: true,
+        // filter-only defaults (so filter card renders before selecting itinerary/variant)
+        targetAudience: "",
+        selectedDate: ""
     };
+
 
     useEffect(() => {
         if (!current.variant) return;
@@ -1351,13 +1541,23 @@ export default function ItinerarySection({
                                     : "bg-gray-100"
                                 }`}
                         >
+Itinerary {i + 1}
 
+{state?.targetAudience && (
+    <span className="text-[10px] text-blue-600">
+        {state.targetAudience}
+    </span>
+)}
+
+{/* {state?.itinerary && (
+    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+)} */}
                             {/* green dot */}
                             {state?.itinerary && (
                                 <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                             )}
 
-                            Itinerary {i + 1}
+                      
 
                             {tabs.length > 1 && (
                                 <span
@@ -1385,7 +1585,116 @@ export default function ItinerarySection({
             {/* ================= BODY ================= */}
             <div className="p-6 space-y-6">
 
+                {/* ================= FILTERS ================= */}
+              {/* ================= FILTERS ================= */}
+<div className="border rounded-lg p-4 mt-4 bg-white shadow-sm">
+    <div className="flex flex-wrap gap-4 items-end">
+
+        {/* TARGET AUDIENCE */}
+        <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">
+                Target Audience 🎯
+            </label>
+
+            <select
+                className="border p-2 rounded text-sm min-w-[220px]"
+                value={current.targetAudienceId || ""}
+                onChange={(e) =>
+                    updateTabState(activeTab, {
+                        targetAudienceId: Number(e.target.value)
+                    })
+                }
+            >
+                <option value="">Select Audience</option>
+
+                {audienceList.map((audience) => (
+                    <option key={audience.id} value={audience.id}>
+                        {audience.name}
+                    </option>
+                ))}
+            </select>
+        </div>
+
+        {/* DATE PICKER */}
+        <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">
+                Start Date 📅
+            </label>
+
+            <input
+                type="date"
+                className="border p-2 rounded text-sm"
+                value={current.selectedDate || current.variant?.baseStartDate}
+                min={current.variant?.baseStartDate}
+                max={current.variant?.baseEndDate}
+                onChange={(e) =>
+                    updateTabState(activeTab, {
+                        selectedDate: e.target.value
+                    })
+                }
+            />
+        </div>
+
+        {/* LOCATION SEARCH */}
+        <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">
+                Location 📍
+            </label>
+
+            <input
+                type="text"
+                placeholder="Country / Sector / State / City"
+                className="border p-2 rounded text-sm min-w-[250px]"
+            />
+        </div>
+
+        {/* OR */}
+        <div className="pb-2 font-semibold text-gray-500">
+            OR
+        </div>
+
+        {/* TOUR CODE SEARCH */}
+        <div className="flex flex-col">
+            <label className="text-xs text-gray-500 mb-1">
+                Tour Code 🏷️
+            </label>
+
+            <input
+                type="text"
+                placeholder="Enter Tour Code"
+                className="border p-2 rounded text-sm min-w-[180px]"
+            />
+        </div>
+
+  <div style={{ padding: 20 }}>
+      <h2>Create Itinerary</h2>
+
+      {/* SEARCH BOX */}
+      <DestinationSearch  scope={scope} onSelect={handleSelect} />
+
+      {/* SELECTED ITEMS */}
+      <h3>Selected Destinations</h3>
+
+      {selectedDestinations.map((d) => (
+        <div
+          key={d.id}
+          style={{
+            padding: "6px",
+            margin: "5px 0",
+            background: "#f2f2f2",
+            borderRadius: "6px"
+          }}
+        >
+          {d.fullPath}
+        </div>
+      ))}
+    </div>
+
+
+    </div>
+</div>       
                 {/* ================= ITINERARY ================= */}
+
                 <select
                     className="border p-2 w-full rounded"
                     value={current.itinerary?.itineraryID || ""}
