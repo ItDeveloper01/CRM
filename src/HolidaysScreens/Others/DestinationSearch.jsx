@@ -7,8 +7,11 @@ export default function DestinationSearch({ scope= 'International', onSelect }) 
   const [results, setResults] = useState([]);
 
   useEffect(() => {
+
+    console.log("onSelect prop:", onSelect);
+
     const delay = setTimeout(() => {
-      if (query.length > 1) fetchResults(query);
+      if (query.length > 5) fetchResults(query);
     }, 300);
 
     return () => clearTimeout(delay);
@@ -40,7 +43,13 @@ export default function DestinationSearch({ scope= 'International', onSelect }) 
         {results.map((item) => (
           <div
             key={item.id}
-            onClick={() => onSelect(item)}
+            onClick={() => {
+                            onSelect(item) ;
+                            setResults([]);
+                             
+    setQuery("");
+                          }
+                        }
             style={{ cursor: "pointer", padding: 5 }}
           >
             <b>{item.name}</b>
