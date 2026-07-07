@@ -281,7 +281,7 @@ const servicesObj = {
     // 🏨 HOTEL SERVICES
     // ==================================================
 
-    hotelServices: [
+    hotelBookingServices: [
 
         // {
         //     serviceID: 3,
