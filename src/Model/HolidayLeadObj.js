@@ -472,13 +472,15 @@ export const HolidayLeadObject = {
     // SERVICES
     // =====================================================
 
-    services: [],
+    services: null,
 
     // =====================================================
     // ITINERARIES
     // =====================================================
 
     itineraries: [],
+
+    selectedGITItinerariesForEdit:null,
 
     // =====================================================
     // PACKAGE PREFERENCES
@@ -502,9 +504,9 @@ export const HolidayLeadObject = {
     // PRICING
     // =====================================================
 
-    quoteAmount: 165364,
+    quoteAmount: 0,
 
-    discountAmount: 5623,
+    discountAmount: 0,
 
     finalAmount: 0,
 

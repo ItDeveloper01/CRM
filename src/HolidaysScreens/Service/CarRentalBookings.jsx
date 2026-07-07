@@ -192,7 +192,7 @@ export default function CarRentalBookingForm({ data, onChange, travelScope }) {
   const scopeLabel = travelScope ? ` (${travelScope})` : "";
 
   const normalizeDate = (date) =>
-    date ? date.substring(0, 10) : "";
+    date ? date.substring(0, 10) : null;
 
   // const form = {
   //   ...CarRentalModel,

@@ -210,21 +210,15 @@ export default function TrainBookingForm({ data, onChange, travelScope }) {
       {/* ====================================================== */}
       <div className={styles.grid3}>
            {form.mode === "International" && (
-          <Field label="Country">
-            <select
-              className={styles.input}
-              value={form.country || ""}
-              onChange={(e) => set({ ...form, country: e.target.value })}
-              disabled={countriesLoading}
-            >
-              <option value="">{countriesLoading ? "Loading..." : "Select Country"}</option>
-              {countries.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+         <Field label="Country">
+  <input
+    type="text"
+    className={styles.input}
+    value={form.country || ""}
+    onChange={(e) => set({ ...form, country: e.target.value })}
+    placeholder="Enter Country"
+  />
+</Field>
         )}
         <Field label="From">
           <input
