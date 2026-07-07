@@ -286,6 +286,8 @@ const getHolidayOpt = (leadType, tripType) => {
         );
     }
 
+    console.log("Holiday Lead Object Updated:", holidayLeadObj);
+
 }, [holidayLeadObj?.holidayLeadID]);
 
 // usefffect(() => {
@@ -389,7 +391,7 @@ useEffect(() => {
 
     const getSpecialRequirementsListEndPoint =
         config.apiUrl +
-        "/MasterData/GetSpecialRequirementsList";
+        "/MasterData/GetHolidaySpecialRequirementsList";
 
 
     // const getoperationendpoint = config.operationsUrl+"/TestOperations/getTestOperations"

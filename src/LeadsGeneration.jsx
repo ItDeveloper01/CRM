@@ -1085,6 +1085,26 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             deepLeadCopy.category = { ...deepCarRentalsCopy };;
             break;
 
+            case  "holiday":
+
+
+             debugger;
+            if (!holidayLeadObj.createdBy_UserID) {
+              holidayLeadObj.createdBy_UserID = currentUser?.user?.userId;
+            }
+
+            if (!holidayLeadObj.assignee_UserID) {
+              holidayLeadObj.assignee_UserID = currentUser?.user?.userId;
+            }
+
+            // if (!carLeaddObj.updatedBy_UserID) {
+            //   carLeaddObj.updatedBy_UserID = currentUser?.user?.userId;
+            // }
+            const deepHolidayLeadObj = cloneDeep(holidayLeadObj);
+            deepLeadCopy.category = { ...deepHolidayLeadObj };;
+            break;
+            
+
           default:
             debugger;
             deepLeadCopy.category = { ...getEmptyLeadObj() };
@@ -1210,7 +1230,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             case "holiday": // lowercase because of .toLowerCase()
 
             holidayLeadObj.createdBy_UserID ||= currentUser?.user?.userId;
-            holidayLeadObj.assigneeTo_UserID ||= currentUser?.user?.userId;
+            holidayLeadObj.assignee_UserID ||= currentUser?.user?.userId;
             // holidayLeadObj.updatedBy_UserID ||= currentUser?.user?.userId;
             const deepHolidayLeadCopy = cloneDeep(holidayLeadObj);
             deepCopy.category = { ...deepHolidayLeadCopy };

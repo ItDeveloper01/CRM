@@ -55,14 +55,13 @@ export default function HotelBookingForm({ data = {}, onChange, travelScope = ""
         {travelScope === "International" && (
           <div>
             <label className="label-style">Country</label>
-            <select className={inputBase} value={form.country || ""} onChange={(e)=> set({...form, country: e.target.value})}>
-              <option value="">Select Country</option>
-              {countries.map((country) => (
-                <option key={country.value} value={country.name}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+          <input
+          type="text"
+          className={inputBase}
+          value={form.country || ""}
+          onChange={(e) => set({ ...form, country: e.target.value })}
+          placeholder="Enter Country"
+        />
           </div>
         )}
 

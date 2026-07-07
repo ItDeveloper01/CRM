@@ -1,87 +1,283 @@
-import React, { useState } from "react";
-import Chip from "@mui/material/Chip";
-import IconButton from "@mui/material/IconButton";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
+import React, { useMemo, useState } from "react";
+
+import {
+    Chip,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Stack,
+    Typography
+} from "@mui/material";
+
 import EditIcon from "@mui/icons-material/Edit";
+
 import HolidaySpecialRequirements from "./HolidaySpecialRequirements";
 
+//---------------------------------------------------------
+// Stable empty-array reference.
+//
+// If we fall back to `[]` inline on every render, that's a
+// brand new array each time — a new reference even though
+// the "content" is the same empty list. HolidaySpecialRequirements
+// resyncs its local selection state whenever this prop's
+// reference changes, so any unrelated re-render of this
+// component (e.g. another field on the same lead form changing)
+// was silently resetting the user's in-progress selection back
+// to whatever was last saved. A module-level constant keeps the
+// same reference across renders, so the child only resyncs when
+// the actual saved list changes.
+//---------------------------------------------------------
+
+const EMPTY_REQUIREMENT_IDS = [];
+
 export default function SpecialRequirementsSection({
-  holidayLeadObj,
-  setHolidayLeadObj,
-  isViewMode = false,
-  allRequirements = [],   // ← passed from LeadHolidays (specialRequirement state)
+
+    holidayLeadObj,
+    setHolidayLeadObj,
+    isViewMode = false,
+    allRequirements = []
+
 }) {
-  const [showModal, setShowModal] = useState(false);
 
-  const selectedIds = Array.isArray(holidayLeadObj?.specialRequirement)
-    ? holidayLeadObj.specialRequirement
-    : [];
+    const [showModal, setShowModal] = useState(false);
 
-  // Resolve id → label+isFree for chip display
-  const selectedChips = selectedIds
-    .map((id) => {
-      const match = allRequirements.find((r) => r.id === id);
-      return match
-        ? { id, label: match.specialRequirements ?? match.name, isFree: match.isFree !== false }
-        : null;
-    })
-    .filter(Boolean);
+    //---------------------------------------------------------
+    // Selected Requirement IDs
+    //---------------------------------------------------------
 
-  const handleSave = (ids) => {
-    setHolidayLeadObj((prev) => ({ ...prev, specialRequirement: ids }));
-    setShowModal(false);
-  };
+    const selectedRequirementIds = Array.isArray(
+        holidayLeadObj?.specialRequirements
+    )
+        ? holidayLeadObj.specialRequirements
+        : EMPTY_REQUIREMENT_IDS;
 
-  return (
-    <div>
-      <label className="label-style">Special Requirements</label>
+    //---------------------------------------------------------
+    // Selected Chips
+    //---------------------------------------------------------
 
-      <div className="flex items-center flex-wrap gap-2 mt-2">
-        {selectedChips.length > 0 ? (
-          selectedChips.map(({ id, label, isFree }) => (
-            <Chip
-              key={id}
-              label={label}
-              size="small"
-              sx={{
-                backgroundColor: isFree ? "#EAF3DE" : "#FAEEDA",
-                color: isFree ? "#3B6D11" : "#854F0B",
-                border: `1px solid ${isFree ? "#639922" : "#BA7517"}`,
-                fontWeight: 500,
-                fontSize: 12,
-              }}
-            />
-          ))
-        ) : (
-          <span className="text-gray-500 text-sm">-</span>
-        )}
+    const selectedRequirements = useMemo(() => {
 
-        <IconButton size="small" onClick={() => setShowModal(true)}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-      </div>
+        return selectedRequirementIds
+            .map(id => {
 
-      <Dialog
-        open={showModal}
-        onClose={() => setShowModal(false)}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{ sx: { borderRadius: 3 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 600, fontSize: 16 }}>
-          Select Special Requirements
-        </DialogTitle>
-        <DialogContent sx={{ pt: 2 }}>
-          <HolidaySpecialRequirements
-            requirements={allRequirements}          // ← the fetched list
-            selectedIds={selectedIds}               // ← pre-ticks in edit mode
-            onClose={() => setShowModal(false)}
-            onSave={handleSave}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+                const req = allRequirements.find(
+                    x => String(x.requirementID) === String(id)
+                );
+
+                return req ?? null;
+
+            })
+            .filter(Boolean);
+
+    }, [selectedRequirementIds, allRequirements]);
+
+    //---------------------------------------------------------
+    // Save
+    //---------------------------------------------------------
+
+    const handleSave = (ids) => {
+
+        setHolidayLeadObj(prev => ({
+
+            ...prev,
+
+            specialRequirements: ids
+
+        }));
+
+        setShowModal(false);
+
+    };
+
+    //---------------------------------------------------------
+    // UI
+    //---------------------------------------------------------
+
+    return (
+
+        <div>
+
+            <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={1}
+            >
+
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                >
+
+                    <Typography
+                        className="label-style"
+                    >
+                        Special Requirements
+                    </Typography>
+
+                    {
+                        selectedRequirementIds.length > 0 &&
+
+                        <Chip
+
+                            size="small"
+
+                            color="primary"
+
+                            label={`${selectedRequirementIds.length} Selected`}
+
+                        />
+
+                    }
+
+                </Stack>
+
+                {
+                    !isViewMode &&
+
+                    <IconButton
+
+                        size="small"
+
+                        onClick={() => setShowModal(true)}
+
+                    >
+
+                        <EditIcon fontSize="small" />
+
+                    </IconButton>
+
+                }
+
+            </Stack>
+
+            {/* ==========================================
+                    Selected Requirement Chips
+            =========================================== */}
+
+            {
+
+                selectedRequirements.length === 0 ? (
+
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+
+                        No special requirements selected.
+
+                    </Typography>
+
+                ) : (
+
+                    <Stack
+
+                        direction="row"
+
+                        spacing={1}
+
+                        useFlexGap
+
+                        flexWrap="wrap"
+
+                    >
+
+                        {
+
+                            selectedRequirements.map(req => (
+
+                                <Chip
+
+                                    key={req.requirementID}
+
+                                    size="small"
+
+                                    label={req.specialRequirementName}
+
+                                    color={
+                                        req.isFree
+                                            ? "success"
+                                            : "warning"
+                                    }
+
+                                    variant="outlined"
+
+                                />
+
+                            ))
+
+                        }
+
+                    </Stack>
+
+                )
+
+            }
+
+            {/* ==========================================
+                    Popup
+            =========================================== */}
+
+            <Dialog
+
+                open={showModal}
+
+                onClose={() => setShowModal(false)}
+
+                fullWidth
+
+                maxWidth="lg"
+
+                PaperProps={{
+
+                    sx: {
+
+                        borderRadius: 3,
+
+                        height: "85vh"
+
+                    }
+
+                }}
+
+            >
+
+                <DialogTitle>
+
+                    Special Requirements
+
+                </DialogTitle>
+
+                <DialogContent
+                    sx={{
+                        p: 2
+                    }}
+                >
+
+                    <HolidaySpecialRequirements
+
+                        requirements={allRequirements}
+
+                        selectedRequirementIds={
+                            selectedRequirementIds
+                        }
+
+                        isViewMode={isViewMode}
+
+                        onClose={() => setShowModal(false)}
+
+                        onSave={handleSave}
+
+                    />
+
+                </DialogContent>
+
+            </Dialog>
+
+        </div>
+
+    );
+
 }

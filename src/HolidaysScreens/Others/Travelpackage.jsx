@@ -864,31 +864,18 @@ export default function TravelPackage({
                                                 <label className="label-style">
                                                     Departure City
                                                 </label>
-
-                                                <select
-                                                    value={pkg.departureCity || ""}
-                                                    onChange={(e) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "departureCity",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="border-highlight"
-                                                >
-                                                    <option value="">
-                                                        Select City
-                                                    </option>
-
-                                                    {cities.map(city => (
-                                                        <option
-                                                            key={city.id}
-                                                            value={city.id}
-                                                        >
-                                                            {city.cityName}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                  <input
+                                                        type="text"
+                                                        value={pkg.departureCity || ""}
+                                                        onChange={(e) =>
+                                                            updatePackage(
+                                                                index,
+                                                                "departureCity",
+                                                                e.target.value
+                                                            ) }
+                                                        className="border-highlight"
+                                                        placeholder="Enter Departure City"
+                                                     />
                                             </div>
                                         </div>
 
