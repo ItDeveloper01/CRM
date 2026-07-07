@@ -78,7 +78,7 @@ useEffect(() => {
     },
 
     {
-      key: "hotelServices",
+      key: "hotelBookingServices",
       label: "Hotel",
       icon: <Map size={16} />,
       component: HotelBookingForm,
@@ -129,6 +129,35 @@ useEffect(() => {
       ...prev,
       [key]: idx
     }));
+  };
+
+  // Adds a booking and selects the newly created one (it's appended at the end).
+  const handleAddBooking = (service, currentBookings) => {
+    addBooking(service.key, service.model);
+    setActiveIndexForService(service.key, currentBookings.length);
+    setIsOpen(true);
+  };
+
+  // Removes a booking and picks a sensible next active index:
+  // - removing the active tab -> select the one above it (or the new first one, if it was first)
+  // - removing a tab before the active one -> shift active index down by 1 to track the same item
+  // - removing a tab after the active one -> active index is unaffected
+  const handleRemoveBooking = (service, idx, currentBookings) => {
+    removeBooking(service.key, idx);
+
+    const currentActive = activeBookingIndex[service.key] ?? 0;
+    const newLength = currentBookings.length - 1;
+
+    let nextIndex = currentActive;
+    if (idx === currentActive) {
+      nextIndex = idx > 0 ? idx - 1 : 0;
+    } else if (idx < currentActive) {
+      nextIndex = currentActive - 1;
+    }
+
+    nextIndex = Math.min(Math.max(nextIndex, 0), Math.max(newLength - 1, 0));
+
+    setActiveIndexForService(service.key, nextIndex);
   };
 
   // 🔢 Total bookings across all services
@@ -254,7 +283,7 @@ useEffect(() => {
                         </button>
 
                         <button
-                          onClick={() => removeBooking(service.key, idx)}
+                          onClick={() => handleRemoveBooking(service, idx, bookings)}
                           className="text-red-500 text-sm px-1"
                         >
                           ✕
@@ -265,13 +294,7 @@ useEffect(() => {
 
                     <button
                       className="text-blue-600 text-sm mt-2 hover:underline"
-                      onClick={() => {
-                        addBooking(
-                         service.key,
-                        service.model
-                        );
-                        setIsOpen(true); // 🔥 auto-open
-                      }}
+                      onClick={() => handleAddBooking(service, bookings)}
                     >
                       + Add Booking
                     </button>
@@ -300,13 +323,7 @@ useEffect(() => {
                     ) : (
                       <button
                         className="text-blue-600"
-                        onClick={() => {
-                          addBooking(
-                            service.key,
-                            service.model
-                          );
-                          setIsOpen(true);
-                        }}
+                        onClick={() => handleAddBooking(service, bookings)}
                       >
                         Add First Booking
                       </button>
