@@ -199,13 +199,6 @@ export default function SightseeingForm({ data, onChange, travelScope }) {
           />
         </Field>
       </div>
-
-      {/* Footer */}
-      <div className="flex justify-end pt-2 border-t">
-        <button className={styles.button}>
-          Save Sightseeing
-        </button>
-      </div>
     </div>
   );
 }
