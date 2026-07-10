@@ -211,27 +211,7 @@ export default function AirportTransferForm({
   // VALIDATION
   // ======================================================
 
-  const validate = () => {
-
-    let err = {};
-
-    if (
-      !form.arrival?.flightTime &&
-      (form.transferType === "Arrival" || form.transferType === "Both")
-    ) {
-      err.arrivalFlightTime = "Required";
-    }
-
-    if (
-      !form.departure?.flightTime &&
-      (form.transferType === "Departure" || form.transferType === "Both")
-    ) {
-      err.departureFlightTime = "Required";
-    }
-
-    setErrors(err);
-  };
-
+ 
   return (
 
     <div className={styles.card}>
@@ -536,16 +516,7 @@ export default function AirportTransferForm({
       {/* ====================================================== */}
       {/* FOOTER */}
       {/* ====================================================== */}
-
-      <div className="flex justify-end pt-2 border-t">
-        <button
-          onClick={validate}
-          className={styles.button}
-        >
-          Validate & Save
-        </button>
-      </div>
-
+   
     </div>
   );
 }
