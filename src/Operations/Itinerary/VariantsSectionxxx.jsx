@@ -14,18 +14,15 @@ import {
   statValueStyle,
   STATUS_OPTIONS,
 } from "../itineraryStyles";
+import { getEmptyPickupPointObj, getEmptyVariantObj } from "../Model/ItineraryModel";
 // import { STATUS_OPTIONS } from "../ItineraryStyle";
-import {
-    getEmptyVariantObj,
-    getEmptyPickupPointObj
-} from "../Model/ItineraryModel";
 
 // ── helpers ───────────────────────────────────────────────────────────────
 function addDays(ds, n) {
   if (!ds || !n) return "";
   const d = new Date(ds);
   if (isNaN(d)) return "";
-  d.setDate(d.getDate() + Number(n) - 1);
+  d.setVariantFieldDate(d.getDate() + Number(n) - 1);
   // return d.toLocaleDateString("en-GB");
   return d.toISOString().split("T")[0]; // ✅ FIX
 }
@@ -34,6 +31,7 @@ function addDays(ds, n) {
 // const uid = () => String(++_id);
 
 // export function mkVariant(n) {
+
 //   return {
 //     id: uid(),
 //     variantsName: `Variant ${n}`,
@@ -51,18 +49,6 @@ function addDays(ds, n) {
 //     // , total: 0, occupied: 0
 //   };
 // }
-export function mkVariant(n) {
-
-    const obj = getEmptyVariantObj();
-
-    obj.variantsName = `Variant ${n}`;
-
-    obj.pickupPoints = [
-        getEmptyPickupPointObj()
-    ];
-
-    return obj;
-}
 
 // const guides = [
 //   { id: 1, guidename: "Priya Mishra" },
@@ -71,15 +57,31 @@ export function mkVariant(n) {
 // ];
 
 // ── StatusDropdown ────────────────────────────────────────────────────────
-function StatusDropdown({ value, onChange }) {
+export function mkVariant(n) {
 
-  const [open, setOpen] = useState(false);
+    const obj = getEmptyVariantObj();
+
+    // obj.id = uid();
+    obj.variantsName = `Variant ${n}`;
+
+    obj.pickupPoints = [
+        {
+            ...getEmptyPickupPointObj(),
+            // id: uid()
+        }
+    ];
+
+    return obj;
+}
+
+function StatusDropdown({ value, onChange }) {
+  const [open, setVariantFieldOpen] = useState(false);
   const cfg = STATUS_CFG[value] || STATUS_CFG.Active;
 
   return (
     <div style={{ position: "relative" }}>
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => setVariantFieldOpen((o) => !o)}
         style={{
           display: "flex",
           alignItems: "center",
@@ -132,7 +134,7 @@ function StatusDropdown({ value, onChange }) {
             return (
               <div
                 key={s}
-                onClick={() => { onChange(s); setOpen(false); }}
+                onClick={() => { onChange(s); setVariantFieldOpen(false); }}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -168,15 +170,19 @@ function PickupTable({ pickups = [], onChange }) {
     };
 
     onChange(arr);
-
 };
   // const add = () =>
   //   onChange([...pickups, { id: uid(), pickupPoint: "", pickupCity: "", ratePerPax: 0 }]);
+  //=======new========
   const add = () =>
     onChange([
         ...pickups,
-        getEmptyPickupPointObj()
+        {
+            ...getEmptyPickupPointObj(),
+            // id: uid()
+        }
     ]);
+
   // , total: 0, occupied: 0
   // const del = (id) => {
   //   if (pickups.length > 1) onChange(pickups.filter((p) => p.id !== id));
@@ -201,14 +207,15 @@ function PickupTable({ pickups = [], onChange }) {
       <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
         <thead>
           <tr style={{ background: "#f8f9ff" }}>
-            {["#", "Pickup Point", "Pickup City", "Per Pax Rate (₹)", "Actions"].map((h) => (
+            {["#", "Pickup Point", "Pickup Location", "Per Pax Rate (₹)", "Actions"].map((h) => (
               <th key={h} style={tableHeaderCellStyle}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {pickups?.map((p, i) => (
-            <tr key={p.id ?? i} style={{ borderBottom: `1px solid ${colors.borderLight}` }}>
+            <tr key={p.id || i} style={{ borderBottom: `1px solid ${colors.borderLight}` }}>
+              {/*old=== key={p.id} */}
               <td style={{ padding: "8px 10px", color: colors.textSubtle, fontWeight: 500 }}>
                 {i + 1}.
               </td>
@@ -235,11 +242,13 @@ function PickupTable({ pickups = [], onChange }) {
                   value={p.ratePerPax || ""}
                   // onChange={(e) => upd(p.id, "ratePerPax", e.target.value)}
                   // onChange={(e) => upd(p.id, "ratePerPax", e.target.value === "" ? null : Number(e.target.value))}
-                   onChange={(e)=>upd(
+                  onChange={(e)=>
+upd(
 i,
 "ratePerPax",
 e.target.value===""?null:Number(e.target.value)
-)}
+)
+}
                   placeholder="25,000"
                   style={{ ...inputStyle, width: 90 }}
                 />
@@ -248,7 +257,7 @@ e.target.value===""?null:Number(e.target.value)
                 <div style={{ display: "flex", gap: 6 }}>
                   <button style={iconButtonStyle("edit")}>✏️</button>
                   {/* <button onClick={() => del(p.id)} style={iconButtonStyle("delete")}>🗑️</button> */}
-                  <button onClick={() => del(i)} style={iconButtonStyle("delete")}>🗑️</button>
+                  <button onClick={()=>del(i)} style={iconButtonStyle("delete")}>🗑️</button>
                 </div>
               </td>
             </tr>
@@ -266,11 +275,26 @@ e.target.value===""?null:Number(e.target.value)
 // ── VariantPanel ──────────────────────────────────────────────────────────
 function VariantPanel({ variant, numDays, onChange }) {
   debugger;
-  const set = (k, v) => {
-    const upd = { ...variant, [k]: v };
-    if (k === "startDate") upd.endDate = addDays(v, numDays);
-    onChange(upd);
-  };
+  // const setVariantField = (k, v) => {
+  //   const upd = { ...variant, [k]: v };
+  //   if (k === "startDate") upd.endDate = addDays(v, numDays);
+  //   onChange(upd);
+  // };
+
+  // =========new======
+  const setVariantField = (field,value)=>{
+
+    const updatedVariant={
+        ...variant,
+        [field]:value
+    };
+
+    if(field==="startDate"){
+        updatedVariant.endDate=addDays(value,numDays);
+    }
+
+    onChange(updatedVariant);
+}
 
   const pct =
     variant.totalSeats > 0
@@ -317,14 +341,14 @@ function VariantPanel({ variant, numDays, onChange }) {
           <label style={labelStyle}>Variant Name *</label>
           <input
             value={variant.variantsName}
-            onChange={(e) => set("variantsName", e.target.value)}
+            onChange={(e) => setVariantField("variantsName", e.target.value)}
             style={inputStyle}
             placeholder="Standard Package"
           />
         </div>
         <div>
           <label style={labelStyle}>Status *</label>
-          {/* <StatusDropdown value={variant.status} onChange={(v) => set("status", v)} /> */}
+          {/* <StatusDropdown value={variant.status} onChange={(v) => setVariantField("status", v)} /> */}
           <select
             value={variant.status ?? ""}
             // onChange={(e) =>
@@ -334,9 +358,9 @@ function VariantPanel({ variant, numDays, onChange }) {
             //         Number(e.target.value) // converts string to integer
             //     )
             // }
-            // onChange={(e) => set("status", e.target.value)}
+            // onChange={(e) => setVariantField("status", e.target.value)}
             onChange={(e) =>
-              set(
+              setVariantField(
                 "status",
                 e.target.value === "" ? null : Number(e.target.value)
               )
@@ -356,7 +380,7 @@ function VariantPanel({ variant, numDays, onChange }) {
           <label style={labelStyle}>Start City *</label>
           <input
             value={variant.startLocation}
-            onChange={(e) => set("startLocation", e.target.value)}
+            onChange={(e) => setVariantField("startLocation", e.target.value)}
             style={inputStyle}
             placeholder="Kochi"
           />
@@ -365,7 +389,7 @@ function VariantPanel({ variant, numDays, onChange }) {
           <label style={labelStyle}>End City *</label>
           <input
             value={variant.endLocation}
-            onChange={(e) => set("endLocation", e.target.value)}
+            onChange={(e) => setVariantField("endLocation", e.target.value)}
             style={inputStyle}
             placeholder="Alleppey"
           />
@@ -374,9 +398,9 @@ function VariantPanel({ variant, numDays, onChange }) {
           <label style={labelStyle}>Target Audience *</label>
           <select
             value={variant.targetAudienceId ?? ""}
-            // onChange={(e) => set("targetAudienceId", Number(e.target.value))}
+            // onChange={(e) => setVariantField("targetAudienceId", Number(e.target.value))}
             onChange={(e) =>
-              set(
+              setVariantField(
                 "targetAudienceId",
                 e.target.value === "" ? null : Number(e.target.value)
               )
@@ -409,7 +433,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             <input
               type="date"
               value={variant.startDate}
-              onChange={(e) => set("startDate", e.target.value)}
+              onChange={(e) => setVariantField("startDate", e.target.value)}
               style={{ ...inputStyle, width: 145 }}
             />
           </div>
@@ -457,7 +481,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             type="number"
             min="0"
             value={variant.totalSeats}
-            onChange={(e) => set("totalSeats", Number(e.target.value))}
+            onChange={(e) => setVariantField("totalSeats", Number(e.target.value))}
             style={{ ...inputStyle, width: 100 }}
           />
         </div>
@@ -469,7 +493,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             max={variant.totalSeats}
             value={variant.occupiedSeats}
             onChange={(e) =>
-              set("occupiedSeats", Math.min(Number(e.target.value), variant.totalSeats))
+              setVariantField("occupiedSeats", Math.min(Number(e.target.value), variant.totalSeats))
             }
             style={{ ...inputStyle, width: 100 }}
           />
@@ -478,16 +502,10 @@ function VariantPanel({ variant, numDays, onChange }) {
           <label style={labelStyle}>Guide *</label>
           <select
             value={variant.guideId || ""}
-            // onChange={(e) => set("guideId", e.target.value)}
-             onChange={(e) =>
-              set(
-                "guideId",
-                e.target.value === "" ? null : Number(e.target.value)
-              )
-            }
-            // uncomment below code to pass null or int value to backend  adjust set for guide
+            onChange={(e) => setVariantField("guideId", e.target.value)}
+            // uncomment below code to pass null or int value to backend  adjust setVariantField for guide
             //            onChange={(e) =>
-            //   setGuide(
+            //   setVariantFieldGuide(
             //     e.target.value === "" ? null : Number(e.target.value)
             //   )
             // }
@@ -507,7 +525,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             type="number"
             min="0"
             value={variant.perPaxBaseAmount || ""}
-            onChange={(e) => set("perPaxBaseAmount", Number(e.target.value))}
+            onChange={(e) => setVariantField("perPaxBaseAmount", Number(e.target.value))}
             style={{ ...inputStyle, width: 140 }}
             placeholder="0.00"
           />
@@ -519,7 +537,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             min="0"
             max="100"
             value={variant.discountPercent || ""}
-            onChange={(e) => set("discountPercent", Number(e.target.value))}
+            onChange={(e) => setVariantField("discountPercent", Number(e.target.value))}
             style={{ ...inputStyle, width: 120 }}
             placeholder="0"
           />
@@ -552,116 +570,75 @@ function VariantPanel({ variant, numDays, onChange }) {
 /**
  * Props:
  *   variants      {Array}    – array of variant objects
- *   setVariants   {Function} – state setter from parent
+ *   setVariantFieldVariants   {Function} – state setVariantFieldter from parent
  *   numDays       {number}   – used to auto-calculate end date
  */
-// export default function VariantsSection({ variants, setVariants, numDays }) {
-export default function VariantsSection({
-    itineraryObj,
-    setItineraryObj
-}) {
+export default function VariantsSection({ variants, setVariantFieldVariants, numDays }) {
+  const [activeTab, setVariantFieldActiveTab] = useState(null);
 
-    const variants = itineraryObj.variantsDetails;
-
-    const numDays = itineraryObj.itineraryBasicDetails.numDays;
-  debugger;
-  const [activeTab, setActiveTab] = useState(null);
-
-  // const tabId = activeTab || variants[0]?.id;
-  const activeIndexFromTab = activeTab ?? 0;
-
-const activeVariant = variants[activeIndexFromTab];
-  // const activeVariant = variants.find((v) => v.id === tabId) || variants[0];
+  const tabId = activeTab || variants[0]?.id;
+  const activeVariant = variants.find((v) => v.id === tabId) || variants[0];
   const activeIndex = variants.findIndex(
-    v => v.id === activeVariant?.id
+    v => v.id === activeVariant.id
 );
-// ===============Temp
-// const activeIndex = variants.findIndex(
-//     (v) => v === activeVariant
-// );
+
   // const updVariant = (id, v) =>
-  //   setVariants((prev) => prev.map((x) => (x.id === id ? v : x)));
-  const updVariant = (index, newVariant) => {
+  //   setVariantFieldVariants((prev) => prev.map((x) => (x.id === id ? v : x)));
+const updVariant=(index,newVariant)=>{
 
-    setItineraryObj(prev => {
+    setVariantFieldVariants(prev=>{
 
-        const arr = [...prev.variantsDetails];
+        const arr=[...prev];
 
-        arr[index] = newVariant;
+        arr[index]=newVariant;
 
-        return {
-
-            ...prev,
-
-            variantsDetails: arr
-
-        };
+        return arr;
 
     });
 
-};
+}
+
 
   // const addVariant = () => {
   //   const v = mkVariant(variants.length + 1);
-  //   setVariants((prev) => [...prev, v]);
-  //   setActiveTab(v.id);
+  //   setVariantFieldVariants((prev) => [...prev, v]);
+  //   setVariantFieldActiveTab(v.id);
   // };
 
   const addVariant = () => {
 
     const v = mkVariant(variants.length + 1);
 
-    setItineraryObj(prev => ({
+    setVariantFieldVariants(prev => {
 
-        ...prev,
+        const arr = [...prev, v];
 
-        variantsDetails: [
+        setVariantFieldActiveTab(arr.length - 1);
 
-            ...prev.variantsDetails,
+        return arr;
 
-            v
-
-        ]
-
-    }));
-
-    setActiveTab(v.id);
+    });
 
 };
 
   // const removeVariant = (id) => {
   //   if (variants.length === 1) return;
   //   const rest = variants.filter((v) => v.id !== id);
-  //   setVariants(rest);
-  //   if (tabId === id) setActiveTab(rest[0].id);
+  //   setVariantFieldVariants(rest);
+  //   if (tabId === id) setVariantFieldActiveTab(rest[0].id);
   // };
+
   const removeVariant = (index) => {
 
     if (variants.length <= 1)
         return;
 
-    setItineraryObj(prev => {
+    const arr = variants.filter((_, i) => i !== index);
 
-        const arr = prev.variantsDetails.filter((_, i) => i !== index);
+    setVariantFieldVariants(arr);
 
-        return {
-
-            ...prev,
-
-            variantsDetails: arr
-
-        };
-
-    });
-
-    if (activeIndexFromTab === index) {
-
-        setActiveTab(0);
-
-    } else if (activeIndexFromTab > index) {
-
-        setActiveTab(activeIndexFromTab - 1);
-
+    if (activeTab === variants[index]?.id) {
+        setVariantFieldActiveTab(arr[0]?.id ?? null);
     }
 
 };
@@ -711,20 +688,19 @@ const activeVariant = variants[activeIndexFromTab];
         }}
       >
         {variants.map((v,index) => {
-          // const act = v.id === tabId;
-          const act = index === activeIndexFromTab;
+          const act = v.id === tabId;
           return (
-            // <div key={v.id} onClick={() => setActiveTab(variants.length)} style={variantTabStyle(act)}>
-             <div key={v.id ?? index} onClick={() => setActiveTab(index)} style={variantTabStyle(act)}> 
-             {/* confirm BOVE LINE   */}
-             
+            <div key={v.id} onClick={() => setVariantFieldActiveTab(v.id)} style={variantTabStyle(act)}>
               {v.variantsName}
               {variants.length > 1 && (
                 <span
                   // onClick={(e) => { e.stopPropagation(); removeVariant(v.id); }}
                   onClick={(e)=>{
-    e.stopPropagation();
-    removeVariant(index);
+
+e.stopPropagation();
+
+removeVariant(index);
+
 }}
                   style={{ marginLeft: 4, color: colors.textSubtle, fontSize: 14, lineHeight: 1 }}
                 >
@@ -745,16 +721,12 @@ const activeVariant = variants[activeIndexFromTab];
 
       {/* Active variant panel */}
       {activeVariant && (
-        // <VariantPanel
-        //   variant={activeVariant}
-        //   numDays={numDays}
-        //   onChange={(v) => updVariant(activeVariant.id, v)}
-        // />
         <VariantPanel
-    variant={activeVariant}
-    numDays={numDays}
-    onChange={(v)=>updVariant(activeIndexFromTab,v)}
-/>
+          variant={activeVariant}
+          numDays={numDays}
+          // onChange={(v) => updVariant(activeVariant.id, v)}
+           onChange={(v)=>updVariant(activeIndex,v)}
+        />
       )}
     </div>
   );
