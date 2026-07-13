@@ -12,13 +12,46 @@ import { colors, labelStyle, inputStyle } from "../itineraryStyles";
  *   updateNumDays {Function} – handler that validates + sets numDays AND resizes the days array
  */
 export default function ItineraryDetailsSection({
-  itName,
-  setItName,
-  description,
-  setDesc,
-  numDays,
+  // tourCode,
+  // setTourCode,
+  // itName,
+  // setItName,
+  // description,
+  // setDesc,
+  // numDays,
+  // updateNumDays,
+  // travelScope,
+  // setTravelScope,
+  itineraryObj,
+  setItineraryObj,
   updateNumDays,
 }) {
+  debugger;
+  console.log("Itinerary:", itineraryObj);
+  const basic = itineraryObj.itineraryBasicDetails;
+  const handleChange = (field, value) => {
+
+    setItineraryObj(prev => ({
+
+      ...prev,
+
+      itineraryBasicDetails: {
+
+        ...prev.itineraryBasicDetails,
+
+        [field]: value
+
+      }
+
+    }));
+
+  };
+  const travScope = [
+    { id: 1, travelScope: "Domestic" },
+    { id: 2, travelScope: "International" },
+  ]
+
+  
   return (
     <div
       style={{
@@ -52,13 +85,30 @@ export default function ItineraryDetailsSection({
       </div>
 
       {/* Fields */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr 130px", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "120px 2fr 3fr 130px 150px", gap: 14, alignItems: "end" }}>
+        {/* Tour Code */}
+        <div>
+          <label style={labelStyle}>Tour Code *</label>
+          <input
+            value={basic.tourCode}
+            // onChange={(e)=> setTourCode(e.target.value)}
+            onChange={(e) =>
+              handleChange("tourCode", e.target.value)
+            }
+            style={inputStyle}
+            placeholder="e.g. KD001"
+          />
+        </div>
+
         {/* Itinerary Name */}
         <div>
           <label style={labelStyle}>Itinerary Name *</label>
           <input
-            value={itName}
-            onChange={(e) => setItName(e.target.value)}
+            value={basic.itName}
+            // onChange={(e) => setItName(e.target.value)}
+            onChange={(e)=>
+    handleChange("itName",e.target.value)
+}
             style={inputStyle}
             placeholder="e.g. Kerala Backwaters Escape"
           />
@@ -68,8 +118,13 @@ export default function ItineraryDetailsSection({
         <div>
           <label style={labelStyle}>Description</label>
           <input
-            value={description}
-            onChange={(e) => setDesc(e.target.value)}
+            // value={description}
+            // onChange={(e) => setDesc(e.target.value)}
+            value={basic.description}
+
+onChange={(e)=>
+    handleChange("description",e.target.value)
+}
             style={inputStyle}
             placeholder="e.g. Explore the beautiful backwaters…"
           />
@@ -83,7 +138,8 @@ export default function ItineraryDetailsSection({
               type="number"
               min="0"
               max="30"
-              value={numDays}
+              // value={numDays}
+              value={basic.numDays}
               onChange={(e) => updateNumDays(e.target.value)}
               style={{ ...inputStyle, paddingRight: 36 }}
             />
@@ -101,7 +157,46 @@ export default function ItineraryDetailsSection({
             </span>
           </div>
         </div>
+
+        {/* Travel Scope */}
+        <div>
+          <label style={labelStyle}>Travel Sector *</label>
+          <select
+            // value={travelSector}
+            // ========
+            // value={travelScope}
+            // onChange={(e) =>
+            //   setTravelScope(
+            //     e.target.value === "" ? null : Number(e.target.value)
+            //   )
+            // }
+            value={basic.travelScope ?? ""}
+            onChange={(e)=>
+
+handleChange(
+
+"travelScope",
+
+e.target.value === ""
+? null
+: Number(e.target.value)
+
+)
+
+}
+            style={inputStyle}
+          >
+            <option value=""> Select Sector</option>
+            {travScope.map((travSect) => (
+              <option key={travSect.id} value={travSect.id}>
+                {travSect.travelScope}
+              </option>
+            ))}
+          </select>
+
+        </div>
       </div>
+
     </div>
   );
 }

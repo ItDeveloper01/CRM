@@ -125,158 +125,215 @@ function blankCard(id, month) {
 const INITIAL_DATA = {
   "Jan 2026": [
     {
-      // id: 1, title: "Andaman Island Hop", description: "Testing For Description", numDays: [3], status: "Confirmed", cat: "Leisure", start: 5, end: 12, dates: "5–12 Jan", guide: "James D'Silva", cities: "Chennai, Port Blair", seats: 18, total: 20, rate: "₹42,000",
-      // days: [
-      //   {
-      //     id: 1, title: "Arrival", 
-      //     // activities: []
-      //       activities: [
-      //       {
-      //         time: "09:00 AM",
-      //         title: "Airport Pickup",
-      //         notes: "Pickup from airport"
-      //       },
-      //       {
-      //         time: "12:00 PM",
-      //         title: "Hotel Check-in",
-      //         notes: "Check-in at hotel"
-      //       }
-      //     ] 
-      //   },
-      //   {
-      //     id: 2,
-      //     title: "Havelock",
-      //     desc: "Beach Visit",
-      //     activities: [
-      //       {
-      //         time: "10:00 AM",
-      //         title: "Beach Tour",
-      //         notes: "Visit Radhanagar Beach"
-      //       }
-      //     ]
-      //   },
-      //   {
-      //     id: 3,
-      //     title: "Havelock",
-      //     desc: "Beach Visit",
-      //     activities: [
-      //       {
-      //         time: "10:00 AM",
-      //         title: "new",
-      //         notes: "Visit  Beach"
-      //       }
-      //     ]
-      //   },
+
+    //   id: 1,
+    //   title: "Kerala Backwaters Escape",
+    //   description: "Explore the beautiful backwaters of Kerala with houseboat stays and scenic village walks.",
+    //   numDays: 4,
+    //   // ── top-level fields editingCard passes directly ──
+    //   total: 20,                           // → totalSeats
+    //   seats: 8,                            // → bookedSeats  (lowercase 's')
+    //   startDate: "2026-01-05",
+    //   endDate: "2026-01-08",
+    //   guide: "James D'Silva",
+    //   rate: "₹18000",
+    //   variants: [
+    //     {
+    //       // ── Variant Meta ──
+    //       id: "1001",
+    //       variantName: "Standard Package",
+    //       status: "Active",           // references a status string / enum
+    //       startLocation: "Kochi",
+    //       endLocation: "Alleppey",
+    //       startDate: "2026-01-05",
+    //       endDate: "2026-01-08",    // auto-calc: startDate + numDays - 1
+
+    //       // ── Seats & Pricing ──
+    //       totalSeats: 20,
+    //       occupiedSeats: 8,
+    //       // availableSeats & occupancyRate are computed:
+    //       //   availableSeats = totalSeats - occupiedSeats  → 12
+    //       //   occupancyRate  = (occupiedSeats/totalSeats)*100 → 40%
+
+    //       guideId: 1,                 // → James D'Silva
+    //       perPaxBaseAmount: 18000.00,
+    //       discountPercent: 10,            // %
+    //       // totalAmount is computed: baseAmount - (baseAmount * discount/100) → 16200
+
+    //       // ── Pickup Points ──
+    //       pickupPoints: [
+    //         {
+    //           id: "1",                  // → Kochi Airport / Kochi, Kerala
+    //           point: "kochi",
+    //           location: "kerala",
+    //           rate: 25000,
+    //           totalSeats: 12,
+    //           occupiedSeats: 5,
+    //         },
+
+    //       ],
+
+    //       // ── Day-wise Schedule ──
+
+    //     },
+
+    //   ],
+    //   days: [
+    //     {
+    //       dayId: 1,
+    //       // title: "Arrival & Kochi Sightseeing",
+    //       // description: "Welcome to Kochi! City tour and evening by the harbour.",
+    //       activities: [
+    //         { id: "a1", time: "09:00 AM", title: "Airport Pickup", notes: "Pickup from Kochi Airport, transfer to hotel." },
+    //         { id: "a2", time: "11:00 AM", title: "Hotel Check-in", notes: "Check-in at Fragrant Nature Kochi." },
+    //         { id: "a3", time: "02:00 PM", title: "Fort Kochi Walk", notes: "Visit Chinese Fishing Nets, Dutch Palace & Jew Town." },
+    //         { id: "a4", time: "06:30 PM", title: "Sunset at Marine Drive", notes: "Leisure walk along Marine Drive." },
+    //       ],
+    //     },
+    //     {
+    //       dayId: 2,
+    //       // title: "Kochi → Alleppey Houseboat",
+    //       // description: "Board a traditional kettuvallam and cruise the backwaters.",
+    //       activities: [
+    //         { id: "a5", time: "08:00 AM", title: "Breakfast & Checkout", notes: "Buffet breakfast at hotel, luggage transfer arranged." },
+    //         { id: "a6", time: "10:00 AM", title: "Drive to Alleppey", notes: "1.5 hr drive via NH66." },
+    //         { id: "a7", time: "12:00 PM", title: "Houseboat Check-in", notes: "Welcome drink & orientation on houseboat." },
+    //         { id: "a8", time: "03:00 PM", title: "Backwater Cruise", notes: "Cruise through narrow canals & village life." },
+    //         { id: "a9", time: "07:00 PM", title: "Dinner on Deck", notes: "Kerala fish curry & karimeen served on board." },
+    //       ],
+    //     },
+    //     {
+    //       dayId: 3,
+    //       // title: "Alleppey Village Experience",
+    //       // description: "Morning canoe ride and local village interactions.",
+    //       activities: [
+    //         { id: "a10", time: "06:30 AM", title: "Sunrise Canoe Ride", notes: "Small canoe through narrow canals at sunrise." },
+    //         { id: "a11", time: "09:00 AM", title: "Breakfast on Board", notes: "Traditional Kerala breakfast — appam & stew." },
+    //         { id: "a12", time: "11:00 AM", title: "Village Walk", notes: "Visit toddy-tapper families and coir-making units." },
+    //         { id: "a13", time: "04:00 PM", title: "Cooking Demo", notes: "Learn to cook Kerala prawn masala with local chef." },
+    //       ],
+    //     },
+    //     {
+    //       dayId: 4,
+    //       // title: "Departure",
+    //       // description: "Check-out, souvenir shopping and drop-off.",
+    //       activities: [
+    //         { id: "a14", time: "08:00 AM", title: "Checkout from Houseboat", notes: "Pack bags, final breakfast on board." },
+    //         { id: "a15", time: "10:00 AM", title: "Souvenir Shopping", notes: "Stop at Alleppey market — spices, coir products." },
+    //         { id: "a16", time: "12:00 PM", title: "Drop-off at Kochi Airport", notes: "Transfer to Kochi Airport for onward journey." },
+    //       ],
+    //     },
+    //   ],
+    // },
+    // {
+    //   id: 2, title: "Spiti Valley Expedition", description: "spiti testing ", numDays: [3], status: "Draft", cat: "Family", start: 20, end: 30, dates: "20–30 Jan", guide: "TBD", cities: "Delhi", seats: 4, total: 12, rate: "₹55,000",
+    //   days: [3]
 
 
-      // ],
+    // },
 
-      id: 1,
-      title: "Kerala Backwaters Escape",
-      description: "Explore the beautiful backwaters of Kerala with houseboat stays and scenic village walks.",
-      numDays: 4,
-      // ── top-level fields editingCard passes directly ──
-      total: 20,                           // → totalSeats
-      seats: 8,                            // → bookedSeats  (lowercase 's')
+    id: 1,
+
+  itineraryBasicDetails: {
+    tourCode: "KD001",
+    itName: "Kerala Backwaters Escape",
+    description:
+      "Explore the beautiful backwaters of Kerala with houseboat stays and scenic village walks.",
+    numDays: 4,
+    travelScope: 1 // 1 = Domestic, 2 = International
+  },
+
+  variantsDetails: [
+    {
+      id: "1001",
+      variantsName: "Standard Package",
+      status: "Active",
+
+      startLocation: "Kochi",
+      endLocation: "Alleppey",
+
       startDate: "2026-01-05",
       endDate: "2026-01-08",
-      guide: "James D'Silva",
-      rate: "₹18000",
-      variants: [
+
+      totalSeats: 20,
+      occupiedSeats: 8,
+
+      guideId: 1,
+
+      perPaxBaseAmount: 18000,
+      discountPercent: 10,
+
+      pickupPoints: [
         {
-          // ── Variant Meta ──
-          id: "1001",
-          variantName: "Standard Package",
-          status: "Active",           // references a status string / enum
-          startLocation: "Kochi",
-          endLocation: "Alleppey",
-          startDate: "2026-01-05",
-          endDate: "2026-01-08",    // auto-calc: startDate + numDays - 1
-
-          // ── Seats & Pricing ──
-          totalSeats: 20,
-          occupiedSeats: 8,
-          // availableSeats & occupancyRate are computed:
-          //   availableSeats = totalSeats - occupiedSeats  → 12
-          //   occupancyRate  = (occupiedSeats/totalSeats)*100 → 40%
-
-          guideId: 1,                 // → James D'Silva
-          baseAmount: 18000.00,
-          discountPercent: 10,            // %
-          // totalAmount is computed: baseAmount - (baseAmount * discount/100) → 16200
-
-          // ── Pickup Points ──
-          pickupPoints: [
-            {
-              id: "1",                  // → Kochi Airport / Kochi, Kerala
-              point: "kochi",
-              location: "kerala",
-              rate: 25000,
-              totalSeats: 12,
-              occupiedSeats: 5,
-            },
-
-          ],
-
-          // ── Day-wise Schedule ──
-
-        },
-
-      ],
-      days: [
-        {
-          dayId: 1,
-          // title: "Arrival & Kochi Sightseeing",
-          // description: "Welcome to Kochi! City tour and evening by the harbour.",
-          activities: [
-            { id: "a1", time: "09:00 AM", title: "Airport Pickup", notes: "Pickup from Kochi Airport, transfer to hotel." },
-            { id: "a2", time: "11:00 AM", title: "Hotel Check-in", notes: "Check-in at Fragrant Nature Kochi." },
-            { id: "a3", time: "02:00 PM", title: "Fort Kochi Walk", notes: "Visit Chinese Fishing Nets, Dutch Palace & Jew Town." },
-            { id: "a4", time: "06:30 PM", title: "Sunset at Marine Drive", notes: "Leisure walk along Marine Drive." },
-          ],
-        },
-        {
-          dayId: 2,
-          // title: "Kochi → Alleppey Houseboat",
-          // description: "Board a traditional kettuvallam and cruise the backwaters.",
-          activities: [
-            { id: "a5", time: "08:00 AM", title: "Breakfast & Checkout", notes: "Buffet breakfast at hotel, luggage transfer arranged." },
-            { id: "a6", time: "10:00 AM", title: "Drive to Alleppey", notes: "1.5 hr drive via NH66." },
-            { id: "a7", time: "12:00 PM", title: "Houseboat Check-in", notes: "Welcome drink & orientation on houseboat." },
-            { id: "a8", time: "03:00 PM", title: "Backwater Cruise", notes: "Cruise through narrow canals & village life." },
-            { id: "a9", time: "07:00 PM", title: "Dinner on Deck", notes: "Kerala fish curry & karimeen served on board." },
-          ],
-        },
-        {
-          dayId: 3,
-          // title: "Alleppey Village Experience",
-          // description: "Morning canoe ride and local village interactions.",
-          activities: [
-            { id: "a10", time: "06:30 AM", title: "Sunrise Canoe Ride", notes: "Small canoe through narrow canals at sunrise." },
-            { id: "a11", time: "09:00 AM", title: "Breakfast on Board", notes: "Traditional Kerala breakfast — appam & stew." },
-            { id: "a12", time: "11:00 AM", title: "Village Walk", notes: "Visit toddy-tapper families and coir-making units." },
-            { id: "a13", time: "04:00 PM", title: "Cooking Demo", notes: "Learn to cook Kerala prawn masala with local chef." },
-          ],
-        },
-        {
-          dayId: 4,
-          // title: "Departure",
-          // description: "Check-out, souvenir shopping and drop-off.",
-          activities: [
-            { id: "a14", time: "08:00 AM", title: "Checkout from Houseboat", notes: "Pack bags, final breakfast on board." },
-            { id: "a15", time: "10:00 AM", title: "Souvenir Shopping", notes: "Stop at Alleppey market — spices, coir products." },
-            { id: "a16", time: "12:00 PM", title: "Drop-off at Kochi Airport", notes: "Transfer to Kochi Airport for onward journey." },
-          ],
-        },
-      ],
-    },
-    {
-      id: 2, title: "Spiti Valley Expedition", description: "spiti testing ", numDays: [3], status: "Draft", cat: "Family", start: 20, end: 30, dates: "20–30 Jan", guide: "TBD", cities: "Delhi", seats: 4, total: 12, rate: "₹55,000",
-      days: [3]
-
-
-    },
+          id: "1",
+          pickupPoint: "Kochi Airport",
+          pickupLocation: "Kerala",
+          ratePerPax: 25000,
+          // totalSeats: 12,
+          // occupiedSeats: 5
+        }
+      ]
+    }
   ],
+
+  days: [
+    {
+      dayId: 1,
+      activities: [
+        {
+          id: "a1",
+          activityTime: "09:00 AM",
+          activityTitle: "Airport Pickup",
+          activityNotes: "Pickup from Kochi Airport"
+        },
+        {
+          id: "a2",
+          activityTime: "11:00 AM",
+          activityTitle: "Hotel Check-in",
+          activityNotes: "Check in to hotel"
+        }
+      ]
+    },
+
+    {
+      dayId: 2,
+      activities: [
+        {
+          id: "a3",
+          time: "09:00 AM",
+          title: "Drive to Alleppey",
+          notes: "Travel to Alleppey"
+        }
+      ]
+    },
+
+    {
+      dayId: 3,
+      activities: [
+        {
+          id: "a4",
+          time: "10:00 AM",
+          title: "Village Tour",
+          notes: "Explore local villages"
+        }
+      ]
+    },
+
+    {
+      dayId: 4,
+      activities: [
+        {
+          id: "a5",
+          time: "09:00 AM",
+          title: "Departure",
+          notes: "Drop to Airport"
+        }
+      ]
+    }
+  
+  ],
+}
+],
   "Feb 2026": [
     { id: 3, title: "Rann of Kutch Festival", status: "Confirmed", cat: "Leisure", start: 2, end: 6, dates: "2–6 Feb", guide: "Sneha Patel", cities: "Ahmedabad, Bhuj", seats: 22, total: 25, rate: "₹18,000" },
     { id: 4, title: "Coorg Coffee Trail", status: "Active", cat: "Leisure", start: 14, end: 18, dates: "14–18 Feb", guide: "Priya Nair", cities: "Bangalore, Coorg", seats: 10, total: 16, rate: "₹21,000" },
@@ -408,6 +465,7 @@ function ItineraryCard({ card, onDelete, onEdit }) {
     </div>
   );
 }
+
 
 // ─── ITINERARY FORM MODAL (shared for Add + Edit) ────────────────────────────
 // function ItineraryFormModal({ mode, card, month, onClose, onSave, onDelete }) {
@@ -713,7 +771,7 @@ export default function TravelAgencyItineraryManager() {
   };
 
   debugger;
-  console.log("MOnthly data :" + data);
+  // console.log("MOnthly data :" + data);
 
 
   // Delete a card from a month
@@ -874,6 +932,73 @@ export default function TravelAgencyItineraryManager() {
 
   const tlCards = timelineMonth ? (data[timelineMonth] || []) : [];
 
+  /// New Hanldesave 
+  const handleSave = async (request) => {
+
+    // ============API written inside useItinerary=============
+
+    try {
+       console.log("Request object:", request);
+
+      debugger;
+      let response;
+
+      if (request.id) {
+
+        response = await updateItinerary(request);
+
+      } else {
+
+        response = await createItinerary(request);
+        console.log("Payload : ",response);
+        
+      }
+
+      console.log("API Response :", response);
+
+      if (request.id) {
+
+        debugger;
+        // UPDATE
+        const month = findMonth(editingItinerary);
+
+        if (month) {
+
+          setData(prev => ({
+            ...prev,
+            [month]: prev[month].map(c =>
+              c.id === request.id
+                ? response
+                : c
+            )
+          }));
+
+        }
+
+      } else {
+
+        // CREATE
+        setData(prev => ({
+          ...prev,
+          [selectedMonth]: [
+            ...(prev[selectedMonth] || []),
+            response
+          ]
+        }));
+
+      }
+
+      setShowItineraryModal(false);
+      setEditingItinerary(null);
+
+    } catch (err) {
+
+      console.error(err);
+
+    }
+
+  };
+
   return (
     <div className={`h-screen flex flex-col ${STYLES.pageBg} ${STYLES.pagePadding}`}>
 
@@ -982,17 +1107,18 @@ export default function TravelAgencyItineraryManager() {
         }
       /> */}
 
-      <ManageItineraryForm
+      {/* <ManageItineraryForm
         open={showItineraryModal}
         onClose={() => setShowItineraryModal(false)}
         initialData={editingItinerary}
-        onSave={async (formData) => {
+        onSave={ async (formData) => {
           console.log(" itineray formData details : ", formData);
             try {
               debugger;
 
-              let str= config.operationsUrl + "/TestOperations/GetTestOperations";
-
+              // let str= config.operationsUrl + "/Itinerary/GetTestOperations";
+               let str= config.operationsUrl + "/Itinerary/CreateItinerary";
+              console.log(config.operationsUrl);
               const response = await axios.post(str,formData);
 
 
@@ -1060,6 +1186,15 @@ export default function TravelAgencyItineraryManager() {
           setShowItineraryModal(false);
           setEditingItinerary(null);
         }}
+      /> */}
+
+      <ManageItineraryForm
+        open={showItineraryModal}
+        onClose={() => setShowItineraryModal(false)
+                      //  setEditingItinerary(null);
+        }
+        initialData={editingItinerary}
+        onSave={handleSave}
       />
 
       {error && <p style={{ color: "red" }}>{error}</p>}
