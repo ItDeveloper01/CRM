@@ -37,7 +37,7 @@ import { useRef } from 'react';
 
 import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
-
+console.log("LeadHolidays =", LeadHolidays);
 
 
 
@@ -142,7 +142,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
-
+  const holidayRef = useRef(null);
 
 
   // const prepareAirTicketPayload = (obj) => {
@@ -396,14 +396,14 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
           break;
         }
 
-        case "holiday": { 
+        case "holiday": {
           const mappedHolidayLead = mapObject(incomingLead.category, getEmptyHolidayLeadObj());
           newLead.category = mappedHolidayLead;
           setHolidayLeadObj(mappedHolidayLead);
           setSelectedLeadName(incomingLead.category.categoryName || "Holiday");
           break;
+        }
       }
-    }
 
     } else {
       // No category → decide default (Visa example here)
@@ -673,10 +673,10 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       case 'Car Rentals':
         setLeadObj(prev => ({ ...prev, category: getEmptyCarLeadObj() }));
         break;
-        
-        case 'Holiday':
+
+      case 'Holiday':
         setLeadObj(prev => ({ ...prev, category: getEmptyHolidayLeadObj() }));
-          break;
+        break;
 
       default:
         return null;
@@ -938,7 +938,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
               console.log("History to pass to HistoryHover:", LeadObj.histories),
 
               <LeadHolidays
-
+                ref={holidayRef}
                 holidayLeadObj={holidayLeadObj}
                 setHolidayLeadObj={setHolidayLeadObj}
                 cities={cities}
@@ -959,6 +959,55 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
         return null;
     }
   };
+
+
+
+
+const validateServiceForm = (errs) => {
+  try {
+
+let isBasicFormValid=true;
+let isServiceFormValid=true;
+ if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    setShowPopup(true);
+    isBasicFormValid=false;
+  }
+
+    switch (selectedLeadName.toLowerCase()) {
+
+      case "holiday": {
+        const isValid = holidayRef.current?.validate();
+
+        if (!isValid) {
+          setShowPopup(true);
+          isServiceFormValid=false;
+        }
+
+        break;
+      }
+
+      // case "visa":
+      //   return visaRef.current?.validate();
+
+      // case "airticket":
+      //   return airTicketRef.current?.validate();
+
+      // case "carrental":
+      //   return carRentalRef.current?.validate();
+
+      default:
+        break;
+    }
+
+    return (isBasicFormValid && isServiceFormValid);
+
+  } catch (error) {
+    console.error("Service validation failed:", error);
+    setShowPopup(true);
+    return false;
+  }
+};
 
   const handleSubmit = async (e) => {
 
@@ -998,17 +1047,10 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     if (followUpDateError) errs.followUpDate = followUpDateError;
     // if (returnDateError) errs.returnDate = returnDateError;
 
-
-
-    try {
-      if (Object.keys(errs).length > 0) {
-        setErrors(errs);        // highlight specific fields
-        setShowPopup(true);     // also show the popup
-        return;
-      }
-    } catch (error) {
-      console.error("Validation Failed", error);
-    }
+// Validate the selected service form
+if (!validateServiceForm(errs)) {
+  return;
+}
 
     // Remove empty errors (fields without error)
     Object.keys(errs).forEach((key) => {
@@ -1020,10 +1062,6 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     if (Object.keys(errs).length === 0) {
       console.log("Form Submitted:", leadObj);
     }
-
-
-
-
 
     try {
       // written by Priyanka
@@ -1085,10 +1123,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             deepLeadCopy.category = { ...deepCarRentalsCopy };;
             break;
 
-            case  "holiday":
+          case "holiday":
 
-
-             debugger;
+            debugger;
             if (!holidayLeadObj.createdBy_UserID) {
               holidayLeadObj.createdBy_UserID = currentUser?.user?.userId;
             }
@@ -1103,7 +1140,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             const deepHolidayLeadObj = cloneDeep(holidayLeadObj);
             deepLeadCopy.category = { ...deepHolidayLeadObj };;
             break;
-            
+
 
           default:
             debugger;
@@ -1227,7 +1264,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
             deepCopy.category = { ...deepCarRentalsCopy };
             break;
 
-            case "holiday": // lowercase because of .toLowerCase()
+          case "holiday": // lowercase because of .toLowerCase()
 
             holidayLeadObj.createdBy_UserID ||= currentUser?.user?.userId;
             holidayLeadObj.assignee_UserID ||= currentUser?.user?.userId;
@@ -1659,7 +1696,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
           <div className='flex gap-4 mt-4'>
             <div className='flex flex-col flex-1'>
               <label className='label-style'>Category<span className="text-red-500 text-lg leading-none"> *</span></label>
-              {isViewMode ? (
+              {isViewMode || isEditMode ? (
                 <ViewSelect value={selectedCategory} />
               ) : (
                 // {/* <fieldset disabled={readOnly}> */}
@@ -1688,10 +1725,10 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
                 disabled={!selectedLeadName}
                 // className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                 className={`font-semibold py-2 px-4 rounded-lg transition ${!selectedLeadName
-                    ? "bg-gray-200 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                  ? "bg-gray-200 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
                   }`}
-                >
+              >
                 {isEditMode ? "Update Lead" : "Generate Lead"}
                 {/* {submitBtnTxt} */}
               </button>

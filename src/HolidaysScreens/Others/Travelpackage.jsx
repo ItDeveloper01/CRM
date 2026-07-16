@@ -300,8 +300,8 @@ const toggleStyles = {
     toggle: (isActive) => `
         relative inline-flex items-center h-6 w-11 rounded-full cursor-pointer 
         transition-all duration-300 flex-shrink-0 shadow-inner
-        ${isActive 
-            ? "bg-gradient-to-r from-emerald-400 to-emerald-500" 
+        ${isActive
+            ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
             : "bg-gradient-to-r from-slate-300 to-slate-400"}
     `,
     circle: (isActive) => `
@@ -674,16 +674,16 @@ export default function TravelPackage({
                                                     <div className={toggleStyles.wrapper}>
                                                         <button
                                                             type="button"
-                                                          onClick={() => {
-    const newValue = !pkg.isFlexibleDates;
-    const updated = [...packagesArray];
-    updated[index] = {
-        ...updated[index],
-        isFlexibleDates: newValue,
-        ...(newValue === false && { flexibleDays: 0 })
-    };
-    setHolidayLeadObj(prev => ({ ...prev, packages: updated }));
-}}
+                                                            onClick={() => {
+                                                                const newValue = !pkg.isFlexibleDates;
+                                                                const updated = [...packagesArray];
+                                                                updated[index] = {
+                                                                    ...updated[index],
+                                                                    isFlexibleDates: newValue,
+                                                                    ...(newValue === false && { flexibleDays: 0 })
+                                                                };
+                                                                setHolidayLeadObj(prev => ({ ...prev, packages: updated }));
+                                                            }}
                                                             className={toggleStyles.toggle(pkg.isFlexibleDates)}
                                                         >
                                                             <div className={toggleStyles.circle(pkg.isFlexibleDates)} />
@@ -705,9 +705,8 @@ export default function TravelPackage({
                                                             )
                                                         }
                                                         placeholder="Days"
-                                                        className={`h-9 w-16 px-2 py-1 text-sm border-2 border-gray-300 rounded ${
-                                                            !pkg.isFlexibleDates ? "bg-gray-100 cursor-not-allowed" : "bg-white"
-                                                        }`}
+                                                        className={`h-9 w-16 px-2 py-1 text-sm border-2 border-gray-300 rounded ${!pkg.isFlexibleDates ? "bg-gray-100 cursor-not-allowed" : "bg-white"
+                                                            }`}
                                                     />
                                                 </div>
                                             </div>
@@ -864,18 +863,18 @@ export default function TravelPackage({
                                                 <label className="label-style">
                                                     Departure City
                                                 </label>
-                                                  <input
-                                                        type="text"
-                                                        value={pkg.departureCity || ""}
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "departureCity",
-                                                                e.target.value
-                                                            ) }
-                                                        className="border-highlight"
-                                                        placeholder="Enter Departure City"
-                                                     />
+                                                <input
+                                                    type="text"
+                                                    value={pkg.departureCity || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(
+                                                            index,
+                                                            "departureCity",
+                                                            e.target.value
+                                                        )}
+                                                    className="border-highlight"
+                                                    placeholder="Enter Departure City"
+                                                />
                                             </div>
                                         </div>
 
@@ -908,18 +907,21 @@ export default function TravelPackage({
                                                 Notes
                                             </label>
 
-                                            <textarea
-                                                rows={3}
-                                                value={pkg.notes || ""}
-                                                onChange={(e) =>
-                                                    updatePackage(
-                                                        index,
-                                                        "notes",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="border-highlight"
-                                            />
+                                            <div>
+                                                <textarea
+                                                    rows={3}
+                                                    maxLength={300}
+                                                    value={pkg.notes || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(index, "notes", e.target.value)
+                                                    }
+                                                    className="border-highlight"
+                                                />
+
+                                                <div className="mt-1 text-right text-xs text-gray-500">
+                                                    {(pkg.notes || "").length}/300
+                                                </div>
+                                            </div>
                                         </div>
 
                                     </div>

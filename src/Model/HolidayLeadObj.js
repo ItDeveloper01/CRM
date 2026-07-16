@@ -462,6 +462,8 @@ export const HolidayLeadObject = {
 
     status: "",
 
+    requestedDestinations: "", // New field for preferred destinations
+
     // =====================================================
     // PAX
     // =====================================================
@@ -514,9 +516,9 @@ export const HolidayLeadObject = {
     // REMARKS
     // =====================================================
 
-    quoteGiven: "xv345436456",
+    quoteGiven: "",
 
-    notes: "xvxcv",
+    notes: "",
 
     // =====================================================
     // AUDIT
