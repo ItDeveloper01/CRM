@@ -1,10 +1,15 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+    useEffect, useMemo, useRef, useState, forwardRef,
+    useImperativeHandle,
+} from "react";
 import axios from "axios";
 import { getEmptyPackagePreferenceObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayItineraryObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayServiceObj } from "./Model/HolidayServicesModel";
 
 import SpecialRequirementsSection from "./HolidaysScreens/Others/SpecialRequirementSection";
+
+import DestinationSelector from "./HolidaysScreens/Others/DestinationSelector";
 // Instead of one big destructure, try explicit imports:
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -27,7 +32,7 @@ import QuoteCalculator from "./paymentComponents/QuoteComponent";
 
 import PassportDetails from "./PassportDetails";
 
-import { getEmptyPassportDetailsObj } from  "./Model/PassportDetailsModel";
+import { getEmptyPassportDetailsObj } from "./Model/PassportDetailsModel";
 
 import { getEmptyPaxDetailsObj } from "./Model/HolidayLeadObj";
 
@@ -72,37 +77,40 @@ import { getEmptyItineraryDayObj } from "./Model/HolidayLeadObj";
 // MAIN COMPONENT
 // ======================================================
 
-const LeadHolidays = ({
+const LeadHolidays = forwardRef(({
     holidayLeadObj,
     setHolidayLeadObj,
     histories,
     isUpdate,
     mode
-}) => {
+}, ref) => {
 
     const isViewMode = mode === "view";
-     const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj()); 
-     const passportDetailsUpdateSource = useRef(null);
+    const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
+    const passportDetailsUpdateSource = useRef(null);
+    const [errors, setErrors] = useState({});
+    const [showModal, setShowModal] = useState(false);
 
-  const [showModal, setShowModal] = useState(false);
+    const setPassportDetailsState = (updated) => {
+        passportDetailsUpdateSource.current = "local";
+        setPassportDetails(updated);
+    };
 
-  const setPassportDetailsState = (updated) => {
-       passportDetailsUpdateSource.current = "local";
-       setPassportDetails(updated);
-     };
+    const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
+    const masterRequirements = [
+        { id: 1, name: "Visa Assistance" },
+        { id: 2, name: "Travel Insurance" },
+        { id: 3, name: "Forex Assistance" },
+        { id: 4, name: "Vegetarian Meals" },
+        { id: 5, name: "Jain Meals" },
+        { id: 6, name: "Wheelchair Assistance" },
+        { id: 7, name: "Senior Citizen Assistance" },
+        { id: 8, name: "Private Vehicle" },
+        { id: 9, name: "Early Check-In" },
+        { id: 10, name: "Late Check-Out" }
+    ];
 
-     const masterRequirements = [
-  { id: 1, name: "Visa Assistance" },
-  { id: 2, name: "Travel Insurance" },
-  { id: 3, name: "Forex Assistance" },
-  { id: 4, name: "Vegetarian Meals" },
-  { id: 5, name: "Jain Meals" },
-  { id: 6, name: "Wheelchair Assistance" },
-  { id: 7, name: "Senior Citizen Assistance" },
-  { id: 8, name: "Private Vehicle" },
-  { id: 9, name: "Early Check-In" },
-  { id: 10, name: "Late Check-Out" }
-];
+
 
 
     const memoHistories = useMemo(
@@ -111,36 +119,37 @@ const LeadHolidays = ({
     );
 
     const { showMessage } = useMessageBox();
-    
-const getHolidayOpt = (leadType, tripType) => {
 
-    if (leadType === "FIT" &&
-        tripType === "International")
-        return 1;
+    const getHolidayOpt = (leadType, tripType) => {
 
-    if (leadType === "FIT" &&
-        tripType === "Domestic")
-        return 2;
+        if (leadType === "FIT" &&
+            tripType === "International")
+            return 1;
 
-    if (leadType === "GIT" &&
-        tripType === "International")
-        return 3;
+        if (leadType === "FIT" &&
+            tripType === "Domestic")
+            return 2;
 
-    if (leadType === "GIT" &&
-        tripType === "Domestic")
-        return 4;
+        if (leadType === "GIT" &&
+            tripType === "International")
+            return 3;
 
-    return "";
-};
+        if (leadType === "GIT" &&
+            tripType === "Domestic")
+            return 4;
+
+        return "";
+    };
     // ======================================================
     // HOLIDAY TYPE
     // ======================================================
 
-  const [holidayOpt, setHolidayOpt] = useState(
-    holidayLeadObj?.holidayOpt ?? ""
-);
+    const [holidayOpt, setHolidayOpt] = useState(
+        holidayLeadObj?.holidayOpt ?? ""
+    );
 
-    
+
+
 
     const holidayOptions = [
 
@@ -270,117 +279,117 @@ const getHolidayOpt = (leadType, tripType) => {
     const selectedConfig =
         holidayConfigs[holidayOpt];
 
-        useEffect(() => {
+    useEffect(() => {
 
-    if (!holidayLeadObj) return;
+        if (!holidayLeadObj) return;
 
-    if (isUpdate) {
+        if (isUpdate) {
 
-        setHolidayOpt(
-            holidayLeadObj.holidayOpt ?? ""
-        );
+            setHolidayOpt(
+                holidayLeadObj.holidayOpt ?? ""
+            );
 
-        setPassportDetails(
-            holidayLeadObj.passportDetails ??
-            getEmptyPassportDetailsObj()
-        );
-    }
+            setPassportDetails(
+                holidayLeadObj.passportDetails ??
+                getEmptyPassportDetailsObj()
+            );
+        }
 
-    console.log("Holiday Lead Object Updated:", holidayLeadObj);
+        console.log("Holiday Lead Object Updated:", holidayLeadObj);
 
-}, [holidayLeadObj?.holidayLeadID]);
+    }, [holidayLeadObj?.holidayLeadID]);
 
-// usefffect(() => {
+    // usefffect(() => {
 
-//     debugger;
-//         if (selectedConfig) {
+    //     debugger;
+    //         if (selectedConfig) {
 
-//             switch (selectedConfig.values) {
-//                 case "GIT_INTERNATIONAL":
-//                 case "GIT_DOMESTIC":    
-                                
-//             }
-           
-//         }   
-//     }, [holidayOpt]);
+    //             switch (selectedConfig.values) {
+    //                 case "GIT_INTERNATIONAL":
+    //                 case "GIT_DOMESTIC":    
+
+    //             }
+
+    //         }   
+    //     }, [holidayOpt]);
     // ======================================================
     // AUTO APPLY VALUES
     // ======================================================
 
-useEffect(() => {
+    useEffect(() => {
 
-    if (!isUpdate) return;
+        if (!isUpdate) return;
 
-    const opt = getHolidayOpt( holidayLeadObj?.leadType,holidayLeadObj?.tripType);
+        const opt = getHolidayOpt(holidayLeadObj?.leadType, holidayLeadObj?.tripType);
 
-    setHolidayOpt(opt);
+        setHolidayOpt(opt);
 
-    setPassportDetails(
-        holidayLeadObj?.passportDetails ??
-        getEmptyPassportDetailsObj()
-    );
+        setPassportDetails(
+            holidayLeadObj?.passportDetails ??
+            getEmptyPassportDetailsObj()
+        );
 
-}, [isUpdate,  holidayLeadObj?.leadType, holidayLeadObj?.tripType]);
+    }, [isUpdate, holidayLeadObj?.leadType, holidayLeadObj?.tripType]);
 
     useEffect(() => {
 
-    if (!selectedConfig) return;
+        if (!selectedConfig) return;
 
-    setHolidayLeadObj(prev => {
+        setHolidayLeadObj(prev => {
 
-        const updated = {
+            const updated = {
 
-            ...prev,
+                ...prev,
 
-            holidayOpt,
+                holidayOpt,
 
-            ...selectedConfig.values
-        };
+                ...selectedConfig.values
+            };
 
-        // Only initialize defaults for NEW leads
-        if (!isUpdate) {
+            // Only initialize defaults for NEW leads
+            if (!isUpdate) {
 
-            if (
-                selectedConfig.features.itinerary &&
-                (!prev.itineraries ||
-                    prev.itineraries.length === 0)
-            ) {
-                updated.itineraries = [
-                    getEmptyHolidayItineraryObj()
-                ];
+                if (
+                    selectedConfig.features.itinerary &&
+                    (!prev.itineraries ||
+                        prev.itineraries.length === 0)
+                ) {
+                    updated.itineraries = [
+                        getEmptyHolidayItineraryObj()
+                    ];
+                }
+
+                if (
+                    selectedConfig.features.packagePreferences &&
+                    (!prev.packages ||
+                        prev.packages.length === 0)
+                ) {
+                    updated.packages = [
+                        getEmptyPackagePreferenceObj()
+                    ];
+                }
+
+                if (
+                    selectedConfig.features.services &&
+                    !prev.services
+                ) {
+                    updated.services =
+                        getEmptyHolidayServiceObj();
+                }
+
+                if (
+                    selectedConfig.features.visa &&
+                    !prev.passportDetails
+                ) {
+                    updated.passportDetails =
+                        getEmptyPassportDetailsObj();
+                }
             }
 
-            if (
-                selectedConfig.features.packagePreferences &&
-                (!prev.packages ||
-                    prev.packages.length === 0)
-            ) {
-                updated.packages = [
-                    getEmptyPackagePreferenceObj()
-                ];
-            }
+            return updated;
+        });
 
-            if (
-                selectedConfig.features.services &&
-                !prev.services
-            ) {
-                updated.services =
-                    getEmptyHolidayServiceObj();
-            }
-
-            if (
-                selectedConfig.features.visa &&
-                !prev.passportDetails
-            ) {
-                updated.passportDetails =
-                    getEmptyPassportDetailsObj();
-            }
-        }
-
-        return updated;
-    });
-
-}, [holidayOpt, isUpdate]);
+    }, [holidayOpt, isUpdate]);
 
     // ======================================================
     // SPECIAL REQUIREMENTS
@@ -396,55 +405,55 @@ useEffect(() => {
 
     // const getoperationendpoint = config.operationsUrl+"/TestOperations/getTestOperations"
 
-useEffect(() => {
-  if (!holidayLeadObj?.passportDetails) return;
-  if (passportDetailsUpdateSource.current === "local") {
-    passportDetailsUpdateSource.current = "remote";
-    return;
-  }
+    useEffect(() => {
+        if (!holidayLeadObj?.passportDetails) return;
+        if (passportDetailsUpdateSource.current === "local") {
+            passportDetailsUpdateSource.current = "remote";
+            return;
+        }
 
-  passportDetailsUpdateSource.current = "remote";
-  setPassportDetails(holidayLeadObj.passportDetails);
-}, [holidayLeadObj?.passportDetails]);
+        passportDetailsUpdateSource.current = "remote";
+        setPassportDetails(holidayLeadObj.passportDetails);
+    }, [holidayLeadObj?.passportDetails]);
 
-useEffect(() => {
-  if (!passportDetailsObj) return;
-  if (passportDetailsUpdateSource.current === "remote") {
-    passportDetailsUpdateSource.current = null;
-    return;
-  }
+    useEffect(() => {
+        if (!passportDetailsObj) return;
+        if (passportDetailsUpdateSource.current === "remote") {
+            passportDetailsUpdateSource.current = null;
+            return;
+        }
 
-  try {
-    passportDetailsUpdateSource.current = "local";
-    setHolidayLeadObj(prev => ({
-      ...prev,
-      passportDetails: passportDetailsObj
-    }));
-  } catch (error) {
-    console.error(error);
-    showMessage({
-      type: MESSAGE_TYPES.ERROR,
-      message: "Error setting Passport Details."
-    });
-  }
-}, [passportDetailsObj, setHolidayLeadObj, showMessage]);
+        try {
+            passportDetailsUpdateSource.current = "local";
+            setHolidayLeadObj(prev => ({
+                ...prev,
+                passportDetails: passportDetailsObj
+            }));
+        } catch (error) {
+            console.error(error);
+            showMessage({
+                type: MESSAGE_TYPES.ERROR,
+                message: "Error setting Passport Details."
+            });
+        }
+    }, [passportDetailsObj, setHolidayLeadObj, showMessage]);
 
 
     useEffect(() => {
-    
+
         debugger;
 
-    
 
-       
+
+
 
         const fetchData = async () => {
 
             try {
 
 
-                  debugger;
- 
+                debugger;
+
                 // let str= config.operationsUrl + "/TestOperations/GetTestOperations";
                 // const testData =  await axios.get(str);
                 // console.log("TEST DATA =>", testData.data);
@@ -474,11 +483,34 @@ useEffect(() => {
 
     }, []);
 
-   
+
 
     // ======================================================
     // SERVICE DATA
     // ======================================================
+
+    const validateHoliday = () => {
+
+        const newErrors = {};
+
+        // Holiday Type
+        if (!holidayOpt) {
+            newErrors.holidayType = "Holiday Type is required.";
+        }
+
+        // Requested Destinations
+        if (
+            !holidayLeadObj.requestedDestinations ||
+            holidayLeadObj.requestedDestinations.length === 0
+        ) {
+            newErrors.requestedDestinations =
+                "Please type at least one destination.";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
 
     const getBookings = (key) =>
         holidayLeadObj?.services?.[key] || [];
@@ -486,9 +518,9 @@ useEffect(() => {
     const addBooking = (key, model) => {
 
 
-         console.log("KEY =>", key);
-         console.log("MODEL =>", model);
-          setHolidayLeadObj(prev => ({
+        console.log("KEY =>", key);
+        console.log("MODEL =>", model);
+        setHolidayLeadObj(prev => ({
 
             ...prev,
 
@@ -498,7 +530,7 @@ useEffect(() => {
 
                 [key]: [
                     ...(prev.services?.[key] || []),
-                     structuredClone(model) // 🔥 important
+                    structuredClone(model) // 🔥 important
                 ]
             }
         }));
@@ -584,6 +616,23 @@ useEffect(() => {
     // COMMON CHANGE
     // ======================================================
 
+    useEffect(() => {
+
+        if (
+            holidayLeadObj.requestedDestinations?.length > 0
+        ) {
+
+            setErrors(prev => ({
+                ...prev,
+                requestedDestinations: ""
+            }));
+        }
+
+        console.log("Requested Destinations Length :", holidayLeadObj.requestedDestinations.length);
+        console.log("Requested Destinations String :", holidayLeadObj.requestedDestinations);
+
+    }, [holidayLeadObj.requestedDestinations]);
+
     const handleChange = (e) => {
 
         const { name, value } = e.target;
@@ -620,6 +669,8 @@ useEffect(() => {
         }));
     };
 
+
+
     const onDiscountAmountChange = (
         discPerc,
         discAmtValue
@@ -633,62 +684,123 @@ useEffect(() => {
         }));
     };
 
+    const travelScope =
+        holidayLeadObj?.tripType ||
+        selectedConfig?.values?.tripType ||
+        "Holiday";
+
+    const isGIT =
+        (holidayLeadObj?.leadType ||
+            selectedConfig?.values?.leadType) === "GIT";
+
+
+
+
+    const [destinationInput, setDestinationInput] = useState("");
+
     // ======================================================
     // UI
     // ======================================================
-
+    useImperativeHandle(ref, () => ({
+        validate: validateHoliday
+    }));
     return (
 
-        <div className="space-y-6">
+        <div className="space-y-3">
 
-            {/* ===================================== */}
-            {/* HOLIDAY TYPE */}
-            {/* ===================================== */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-            <div>
+                {/* ===================================== */}
+                {/* HOLIDAY TYPE */}
+                {/* ===================================== */}
 
-                <label className="label-style">
-                    Holiday Type
-                </label>
+                <div className="md:col-span-1">
 
-                {isViewMode ? (
+                    <label className="label-style">Holiday Type
+                        <span className="text-red-500 text-lg  leading-none"> *</span>
+                    </label>
+                    {isViewMode ? (
 
-                    <ViewField
-                        value={
-                            holidayOptions.find(
-                                x => x.id === holidayOpt
-                            )?.name || "-"
-                        }
-                    />
+                        <ViewField
+                            value={
+                                holidayOptions.find(
+                                    x => x.id === holidayOpt
+                                )?.name || "-"
+                            }
+                        />
 
-                ) : (
+                    ) : (
 
-                    <select
-                        className="border-highlight"
-                        value={holidayOpt}
-                        onChange={(e) =>
-                            setHolidayOpt(
-                                Number(e.target.value)
-                            )
-                        }
-                    >
+                        <select
+                            className={`border-highlight ${errors.holidayType ? 'border-red-500' : ''}`}
+                            value={holidayOpt}
+                            onChange={(e) => {
+                                setHolidayOpt(Number(e.target.value))
 
-                        <option value="">
-                            Select Holiday Type
-                        </option>
-
-                        {holidayOptions.map(option => (
-
-                            <option
-                                key={option.id}
-                                value={option.id}
-                            >
-                                {option.name}
+                                setErrors(prev => ({
+                                    ...prev,
+                                    holidayType: ""
+                                }));
+                            }}
+                        >
+                            <option value="">
+                                Select Holiday Type
                             </option>
-                        ))}
 
-                    </select>
-                )}
+                            {holidayOptions.map(option => (
+
+                                <option
+                                    key={option.id}
+                                    value={option.id}
+                                >
+                                    {option.name}
+                                </option>
+
+                            ))}
+
+                        </select>
+
+                    )}
+
+                    {errors.holidayType && (
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.holidayType}
+                        </p>
+                    )}
+                </div>
+
+                {/* ===================================== */}
+                {/* PREFERRED DESTINATIONS */}
+                {/* ===================================== */}
+
+                <div className="md:col-span-2">
+                    <label className="label-style">
+                        Requested Destinations
+                        <span className="ml-2 text-xs font-normal text-slate-400">
+                            (Select multiple destinations separated by  , or ;  )
+                        </span>
+                        <span className="text-red-500 text-lg  leading-none"> *</span>
+                    </label>
+
+                    <DestinationSelector
+                        holidayLeadObj={holidayLeadObj}
+                        setHolidayLeadObj={setHolidayLeadObj}
+                        isViewMode={isViewMode}
+                        error={!!errors.requestedDestinations}
+                        onErrorHandle={(message) =>
+                            setErrors(prev => ({
+                                ...prev,
+                                requestedDestinations: message
+                            }))}
+                    />
+                    {
+                        errors.requestedDestinations &&
+                        <p className="text-red-500 text-sm mt-1">
+                            {errors.requestedDestinations}
+
+                        </p>
+                    }
+                </div>
             </div>
 
             {/* ===================================== */}
@@ -702,161 +814,198 @@ useEffect(() => {
             />
 
             {/* ===================================== */}
-            {/* SERVICES */}
+            {/* ADD DOMESTIC / INTERNATIONAL DETAILS */}
             {/* ===================================== */}
 
-            {selectedConfig?.features?.services && (
-
-                <ServiceAccordion
-                    travelScope={holidayLeadObj?.tripType || selectedConfig?.values?.tripType}
-                    getBookings={getBookings}
-                    addBooking={addBooking}
-                    removeBooking={removeBooking}
-                    updateBooking={updateBooking}
-                    getAIAssistant={getAIAssistant}
-                />
-            )}
-
             {/* ===================================== */}
-            {/* PACKAGE PREFERENCES */}
+            {/* ADDITIONAL DETAILS */}
             {/* ===================================== */}
 
-            {selectedConfig?.features
-                ?.packagePreferences && (
+            <div
+                onClick={() => {
 
-                <TravelPackage
-                    holidayLeadObj={holidayLeadObj}
-                    setHolidayLeadObj={setHolidayLeadObj}
-                    isViewMode={isViewMode}
-                    travelScope={holidayLeadObj?.tripType || selectedConfig?.values?.tripType}
-                />
-            )}
+                    if (isGIT) {
 
-            {/* ===================================== */}
-            {/* ITINERARY */}
-            {/* ===================================== */}
+                        showMessage(
+                            "Group Tour Details will be available in the upcoming release. You can still save the lead with the basic information.",
+                            MESSAGE_TYPES.INFO
+                        );
 
-            {selectedConfig?.features?.itinerary
-                 && (
+                        return;
+                    }
 
-                <ItinerarySection
-                    holidayLeadObj={holidayLeadObj}
-                    setHolidayLeadObj={setHolidayLeadObj}
-                    isViewMode={isViewMode}
-                />
-            )}
+                    setShowAdditionalDetails(prev => !prev);
 
-            {/* ===================================== */}
-            {/* PASSPORT / VISA */}
-            {/* ===================================== */}
+                }}
+                className={`overflow-hidden rounded-xl border transition-all duration-300
+    ${isGIT
+                        ? "cursor-not-allowed border-gray-300 bg-gray-100"
+                        : "cursor-pointer border-blue-300 bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:shadow-lg"
+                    }`}
+            >
 
-            {selectedConfig?.features
-                ?.visa && (
+                <div className="flex items-center justify-between px-4 py-2">
 
-                <PassportDetails
-                    // setParentObject={
-                    //     setHolidayLeadObj
-                    // }
-                    // showVisaStatus={true}
-                    // showPassportValidityDate={true}
-                    // showInsurance={true}
-                    // isViewMode={isViewMode}
+                    <div className="flex items-center gap-2">
 
+                        <div
+                            className={`h-7 w-7 rounded-full flex items-center justify-center text-lg ${isGIT
+                                ? "bg-gray-300"
+                                : "bg-white/20"
+                                }`}
+                        >
+                            {isGIT
+                                ? "🚧"
+                                : showAdditionalDetails
+                                    ? "📂"
+                                    : "✈️"}
+                        </div>
 
-                     passportDetailsObj={passportDetailsObj}
-          setPassportDetailsObj={setPassportDetailsState}
-          setParentObject= {null}
-          showVisaStatus= {true}
-          showPassportValidityDate= {true}
-          showInsurance= {true}
-           showPassportValidity = {true}
-          isViewMode={isViewMode}
-                />
-            )}
+                        <div>
 
-            {/* ===================================== */}
-            {/* SPECIAL REQUIREMENTS */}
-            {/* ===================================== */}
+                            <div
+                                className={`font-semibold text-sm ${isGIT
+                                    ? "text-gray-700"
+                                    : "text-white"
+                                    }`}
+                            >
+                                {isGIT
+                                    ? "Group Tour Details (Coming Soon)"
+                                    : showAdditionalDetails
+                                        ? `Hide ${travelScope} Details`
+                                        : `Add ${travelScope} Details`}
+                            </div>
 
-            {/* <div>
+                            <div
+                                className={`text-xs ${isGIT
+                                    ? "text-gray-600"
+                                    : "text-blue-100"
+                                    }`}
+                            >
+                                {isGIT
+                                    ? "You can save the lead with basic information."
+                                    : showAdditionalDetails
+                                        ? "Hide services, itinerary, passport, pricing & special requirements."
+                                        : "Add services, itinerary, passport, pricing & special requirements."}
+                            </div>
 
-                <label className="label-style">
-                    Special Requirements
-                </label>
+                        </div>
 
-                <div className="flex items-center flex-wrap gap-2 mt-2">
-                  {Array.isArray(holidayLeadObj?.specialRequirement) &&
-                    holidayLeadObj.specialRequirement.length > 0 ? (
-                      holidayLeadObj.specialRequirement
-                        .map((id) => {
-                          const req = specialRequirement.find((r) => r.id === id);
-                          return req?.specialRequirements;
-                        })
-                        .filter(Boolean)
-                        .map((name) => (
-                          <Chip key={name} label={name} size="small" />
-                        ))
-                    ) : (
-                      <span className="text-gray-500">-</span>
+                    </div>
+
+                    {!isGIT && (
+
+                        <div
+                            className={`transition-transform duration-300 text-sm select-none ${showAdditionalDetails
+                                ? "rotate-180"
+                                : ""
+                                }`}
+                        >
+                            ▼
+                        </div>
+
                     )}
 
-                  {!isViewMode && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setShowModal(true);
-                      }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  )}
-
-                  {isViewMode && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setShowModal(true);
-                      }}
-                    >
-                      <EditIcon />
-                    </IconButton>
-                  )}
                 </div>
 
-                <Dialog
-                  open={showModal}
-                  onClose={() => setShowModal(false)}
-                  maxWidth="sm"
-                  fullWidth
-                >
-                  <DialogTitle>
-                    Select Special Requirements
-                  </DialogTitle>
-                  <DialogContent>
-                    <HolidaySpecialRequirements
-                      requirements={specialRequirement}
-                      selectedIds={holidayLeadObj?.specialRequirement || []}
-                      onClose={() => setShowModal(false)}
-                      onSave={(selectedIds) => {
-                        setHolidayLeadObj((prev) => ({
-                          ...prev,
-                          specialRequirement: selectedIds,
-                        }));
-                        setShowModal(false);
-                      }}
+            </div>
+
+            {/* ===================================== */}
+            {/* EXPANDABLE CONTENT */}
+            {/* ===================================== */}
+
+            {showAdditionalDetails && !isGIT && (
+
+                <>
+
+                    {/* SERVICES */}
+
+                    {selectedConfig?.features?.services && (
+
+                        <ServiceAccordion
+                            travelScope={
+                                holidayLeadObj?.tripType ||
+                                selectedConfig?.values?.tripType
+                            }
+                            getBookings={getBookings}
+                            addBooking={addBooking}
+                            removeBooking={removeBooking}
+                            updateBooking={updateBooking}
+                            getAIAssistant={getAIAssistant}
+                        />
+
+                    )}
+
+                    {/* PACKAGE PREFERENCES */}
+
+                    {selectedConfig?.features?.packagePreferences && (
+
+                        <TravelPackage
+                            holidayLeadObj={holidayLeadObj}
+                            setHolidayLeadObj={setHolidayLeadObj}
+                            isViewMode={isViewMode}
+                            travelScope={
+                                holidayLeadObj?.tripType ||
+                                selectedConfig?.values?.tripType
+                            }
+                        />
+
+                    )}
+
+                    {/* ITINERARY */}
+
+                    {selectedConfig?.features?.itinerary && (
+
+                        <ItinerarySection
+                            holidayLeadObj={holidayLeadObj}
+                            setHolidayLeadObj={setHolidayLeadObj}
+                            isViewMode={isViewMode}
+                        />
+
+                    )}
+
+                    {/* PASSPORT */}
+
+                    {selectedConfig?.features?.visa && (
+
+                        <PassportDetails
+                            passportDetailsObj={passportDetailsObj}
+                            setPassportDetailsObj={setPassportDetailsState}
+                            setParentObject={null}
+                            showVisaStatus={true}
+                            showPassportValidityDate={true}
+                            showInsurance={true}
+                            showPassportValidity={true}
+                            isViewMode={isViewMode}
+                        />
+
+                    )}
+
+                    {/* SPECIAL REQUIREMENTS */}
+
+                    <SpecialRequirementsSection
+                        holidayLeadObj={holidayLeadObj}
+                        setHolidayLeadObj={setHolidayLeadObj}
+                        isViewMode={isViewMode}
+                        allRequirements={specialRequirement}
                     />
-                  </DialogContent>
-                </Dialog>
-            </div> */}
 
+                    {/* QUOTE CALCULATOR */}
 
-<SpecialRequirementsSection
-  holidayLeadObj={holidayLeadObj}
-  setHolidayLeadObj={setHolidayLeadObj}
-  isViewMode={isViewMode}
-   allRequirements={specialRequirement}  
-/>
+                    <QuoteCalculator
+                        baseAmt={holidayLeadObj.quoteAmount || 0}
+                        discountPct={holidayLeadObj.discountPercent || 0}
+                        discountAmt={holidayLeadObj.discountAmount || 0}
+                        finalAmt={holidayLeadObj.finalAmount || 0}
+                        onBaseChange={onBaseAmountChange}
+                        onDiscountChange={onDiscountAmountChange}
+                        onFinalChange={onFinalAmountChange}
+                        isViewMode={isViewMode}
+                    />
 
+                </>
+
+            )}
 
             {/* ===================================== */}
             {/* QUOTE COMMENTS */}
@@ -879,31 +1028,6 @@ useEffect(() => {
                 />
 
             </div>
-
-            {/* ===================================== */}
-            {/* QUOTE CALCULATOR */}
-            {/* ===================================== */}
-
-            <QuoteCalculator
-                baseAmt={
-                    holidayLeadObj.quoteAmount || 0
-                }
-                discountPct={
-                    holidayLeadObj.discountPercent || 0
-                }
-                discountAmt={
-                    holidayLeadObj.discountAmount || 0
-                }
-                finalAmt={
-                    holidayLeadObj.finalAmount || 0
-                }
-                onBaseChange={onBaseAmountChange}
-                onDiscountChange={
-                    onDiscountAmountChange
-                }
-                onFinalChange={onFinalAmountChange}
-                isViewMode={isViewMode}
-            />
 
             {/* ===================================== */}
             {/* REMARKS */}
@@ -936,10 +1060,13 @@ useEffect(() => {
                 <HistoryHover
                     histories={memoHistories}
                 />
+
             )}
 
         </div>
+
     );
-};
+});
+
 
 export default LeadHolidays;

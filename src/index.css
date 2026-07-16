@@ -17,3 +17,26 @@ code {
 .hr-border{
     border: 1px  black;
 }
+
+  .ds-scrollbar-hide::-webkit-scrollbar {
+    height: 4px; /* Try 3px if you want it even thinner */
+}
+
+.ds-scrollbar-hide::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ds-scrollbar-hide::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+
+.ds-scrollbar-hide::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+} 
+
+/* Firefox */
+ .ds-scrollbar-hide {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+} 
