@@ -141,6 +141,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
+  const getCountryListMasterEndPoint =config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
 
@@ -217,22 +218,22 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     // })
     // .catch(err => console.error("Error fetching country codes:", err));
 
-
+  debugger;
     //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
-    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedCountries = data
-          .map((country) => ({
-            name: country.name.common,
-            value: country.cca2 || country.name.common,
-            flag: country.flags?.png
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
+    // fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     const formattedCountries = data
+    //       .map((country) => ({
+    //         name: country.name.common,
+    //         value: country.cca2 || country.name.common,
+    //         flag: country.flags?.png
+    //       }))
+    //       .sort((a, b) => a.name.localeCompare(b.name));
 
-        setCountries(formattedCountries);
-      })
-      .catch((err) => console.error("Error fetching countries:", err));
+    //     setCountries(formattedCountries);
+    //   })
+    //   .catch((err) => console.error("Error fetching countries:", err));
 
     // Fetch Special Requirements for Car Rental
     // const fetchSpecialRequirements = async () => {
@@ -249,10 +250,61 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     // };
     // fetchSpecialRequirements();
 
-
+     // Fetch countries from your own API
+    fetchCountries();
     fetchCityList();     // for City API
 
   }, []);
+
+  const fetchCountries = async () => {
+  try {
+    debugger;
+    const response = await axios.get(
+      getCountryListMasterEndPoint
+    );
+
+    const formattedCountries = response.data
+      .filter(country => country.isActive)
+      .map(country => ({
+        id: country.id,
+        name: country.countryName
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    setCountries(formattedCountries);
+
+    console.log("Countries:", formattedCountries);
+
+  } catch (err) {
+    console.error("Error fetching countries:", err);
+  }
+};
+
+
+  // Fetch List of City from API(Self made)
+// below will work but need to change id and name inside visa not used 
+// const fetchCountries = async () => {
+//     debugger;
+//     const countryList = await axios.get(getCountryListMasterEndPoint)
+//       .then((res) => {
+//         console.log('Fetching City List in Lead Generate Page ...', res.data);
+//         setCountries(res.data || []);
+//       }
+//       ).catch((err) => {
+//         debugger;
+//         console.error("Failed to fetch City List :", err);
+//         console.error("Failed ......... :", err.response.data);
+
+//       })
+//       .finally(() => {
+//         // Always executed, regardless of success or error)
+//         console.log('City List Fetch function finished.')
+//         // alert("City List Fetch function finished.");
+//       })
+
+//   }
+
+  
 
   // Fetch List of City from API(Self made)
   const fetchCityList = async () => {
@@ -431,6 +483,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
   const onMobileChangeFocus = async (value) => {
     debugger;
+    try{
     if (isUpdateMode && value != null)
       return; // if in update mode then return
     setISLeadsForPhoneVisible(false);
@@ -454,6 +507,8 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
         }
       });
 
+      debugger;
+      console.log("Duplicate mobile check response:", res);
       console.log("Duplicate mobile check response:", res.data);
 
       if (res.data && res.data.length > 0) {
@@ -467,6 +522,12 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
     }
   }
+  catch(err)
+  {
+    console.log("Failed to Search Lead from Mobile Number : ",err);
+  }
+  }
+  
 
   const fetchEnquiryDetails = async () => {
     debugger;
