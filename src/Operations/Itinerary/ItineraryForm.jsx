@@ -8,6 +8,8 @@ import { mkVariant } from "./VariantsSection";
 
 import { colors, labelStyle, inputStyle } from "../itineraryStyles";
 import ItineraryDetailsSection from "./Itinerarydetailssection";
+import { getEmptyItineraryObj } from "../Model/ItineraryModel";
+import { de } from "intl-tel-input/i18n";
 
 
 // ── ManageItineraryForm ───────────────────────────────────────────────────
@@ -19,68 +21,150 @@ import ItineraryDetailsSection from "./Itinerarydetailssection";
  *   initialData {object|null}
  */
 export default function ManageItineraryForm({ open, onClose, onSave, initialData = null }) {
-  const [itName,      setItName]  = useState("");
-  const [description, setDesc]    = useState("");
-  const [numDays,     setNumDays] = useState(0);
-  const [days,        setDays]    = useState([]);
-  const [variants,    setVariants] = useState(() => [
-    {
-      ...mkVariant(1),
-      name: "Standard Package",
-      startLocation: "Kochi",
-      endLocation: "Alleppey",
-      totalSeats: 0,
-      occupiedSeats: 0,
-    },
-  ]);
+  // const [tourCode, setTourCode] = useState("");
+  // const [itName, setItName] = useState("");
+  // const [description, setDesc] = useState("");
+  // const [numDays, setNumDays] = useState(0);
+  // const [days, setDays] = useState([]);
+  // const [travelScope, setTravelScope] = useState([])
+  // const [variants, setVariants] = useState(() => [
+  //   {
+  //     ...mkVariant(1),
+  //     name: "Standard Package",
+  //     startLocation: "Kochi",
+  //     endLocation: "Alleppey",
+  //     totalSeats: 0,
+  //     occupiedSeats: 0,
+  //   },
+  // ]);
+  const [itineraryObj, setItineraryObj] = useState(getEmptyItineraryObj());
+  debugger;
 
   // ── Sync state when modal opens or initialData changes ──────────────────
+  // useEffect(() => {
+  //   if (!open) return;
+
+  //   debugger;
+  //   if (initialData) {
+  //     setTourCode(initialData.tourCode || "");
+  //     setItName(initialData.title || "");
+  //     setDesc(initialData.description || "");
+  //     const n = initialData.numDays || initialData.days?.length || 0;
+  //     setNumDays(n);
+  //     setDays(initialData.days || []);
+  //     // setTravelScope(initialData.travelScope || "");       ......not null issue 
+  //     setTravelScope(initialData?.travelScope ?? null)
+  //     setVariants(
+  //       initialData.variants?.length
+  //         ? initialData.variants
+  //         : [
+  //           {
+  //             ...mkVariant(1),
+  //             name: "Standard Package",
+  //             totalSeats: initialData.totalSeats || 0,
+  //             occupiedSeats: initialData.bookedSeats || 0,
+  //           },
+  //         ]
+  //     );
+  //   } else {
+  //     setTourCode("");
+  //     setItName("");
+  //     setDesc("");
+  //     setNumDays(0);
+  //     setDays([]);
+  //     // setTravelScope("");
+  //     setTravelScope(null);
+  //     setVariants([{ ...mkVariant(1), name: "Standard Package" }]);
+  //   }
+  // }, [open, initialData]);
   useEffect(() => {
+
     if (!open) return;
 
-    debugger;
     if (initialData) {
-      setItName(initialData.title || "");
-      setDesc(initialData.description || "");
-      const n = initialData.numDays || initialData.days?.length || 0;
-      setNumDays(n);
-      setDays(initialData.days || []);
-      setVariants(
-        initialData.variants?.length
-          ? initialData.variants
-          : [
-              {
-                ...mkVariant(1),
-                name: "Standard Package",
-                totalSeats: initialData.totalSeats || 0,
-                occupiedSeats: initialData.bookedSeats || 0,
-              },
-            ]
-      );
-    } else {
-      setItName("");
-      setDesc("");
-      setNumDays(0);
-      setDays([]);
-      setVariants([{ ...mkVariant(1), name: "Standard Package" }]);
+
+      setItineraryObj(structuredClone(initialData));
+
     }
+    else {
+
+      const obj = getEmptyItineraryObj();
+
+      obj.variantsDetails = [
+        {
+          ...mkVariant(1),
+          variantsName: "Standard Package"
+        }
+      ];
+
+      setItineraryObj(obj);
+
+    }
+
   }, [open, initialData]);
 
+
+
   // ── Update day count ────────────────────────────────────────────────────
-  const updateNumDays = (n) => {
-    const nn = Math.max(1, Math.min(30, Number(n) || 1));
-    setNumDays(nn);
-    setDays((prev) => {
-      if (nn > prev.length)
-        return [
-          ...prev,
-          ...Array.from({ length: nn - prev.length }, (_, i) =>
-            mkDay(prev.length + i + 1)
-          ),
-        ];
-      return prev.slice(0, nn);
+  // const updateNumDays = (n) => {
+  //   const nn = Math.max(1, Math.min(30, Number(n) || 1));
+  //   setNumDays(nn);
+  //   setDays((prev) => {
+  //     if (nn > prev.length)
+  //       return [
+  //         ...prev,
+  //         ...Array.from({ length: nn - prev.length }, (_, i) =>
+  //           mkDay(prev.length + i + 1)
+  //         ),
+  //       ];
+  //     return prev.slice(0, nn);
+  //   });
+  // };
+  const updateNumDays = (value) => {
+
+    const nn = Math.max(1, Math.min(30, Number(value) || 1));
+
+    setItineraryObj(prev => {
+
+      const days = [...prev.days];
+
+      if (nn > days.length) {
+
+        days.push(
+          ...Array.from(
+            { length: nn - days.length },
+            (_, i) => mkDay(days.length + i + 1)
+          )
+        );
+
+      }
+      else {
+
+        days.length = nn;
+        //  days = days.slice(0, nn);    .......to print days title search in future 
+
+      }
+
+      return {
+
+        ...prev,
+
+        itineraryBasicDetails: {
+
+          ...prev.itineraryBasicDetails,
+
+          numDays: nn
+
+        },
+
+        days
+
+      };
+
     });
+
   };
+
 
   if (!open) return null;
 
@@ -152,17 +236,20 @@ export default function ManageItineraryForm({ open, onClose, onSave, initialData
             <button
               onClick={() => {
                 // onSave?.({ itName, description, numDays, variants, days });
-                onSave?.({
-  id: initialData?.id ?? null,
-  itineraryBasicDetails: {
-    itName,
-    description,
-    numDays,
-  },
-  variantsDetails: variants,
-  days,
-});
-                
+                // onSave?.({
+                //   id: initialData?.id ?? null,
+                //   itineraryBasicDetails: {
+                //     tourCode,
+                //     itName,
+                //     description,
+                //     numDays,
+                //     travelScope,
+                //   },
+                //   variantsDetails: variants,
+                //   days,
+                // });
+                onSave?.(itineraryObj);
+
                 onClose?.();
               }}
             >
@@ -186,103 +273,52 @@ export default function ManageItineraryForm({ open, onClose, onSave, initialData
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 16, overflowY: "auto", paddingRight: 8 }}>
 
-            {/* ── Section 1: Itinerary Details ─────────────────────────── */}
-            {/* <div
-              style={{
-                background: colors.white,
-                border: `1px solid ${colors.border}`,
-                borderRadius: 12,
-                padding: 20,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                <span
-                  style={{
-                    background: colors.primary,
-                    color: colors.white,
-                    borderRadius: "50%",
-                    width: 22,
-                    height: 22,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}
-                >
-                  1
-                </span>
-                <span style={{ fontWeight: 700, fontSize: 15, color: colors.primary }}>
-                  Itinerary Details
-                </span>
-              </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr 130px", gap: 14 }}>
-                <div>
-                  <label style={labelStyle}>Itinerary Name *</label>
-                  <input
-                    value={itName}
-                    onChange={(e) => setItName(e.target.value)}
-                    style={inputStyle}
-                    placeholder="e.g. Kerala Backwaters Escape"
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Description</label>
-                  <input
-                    value={description}
-                    onChange={(e) => setDesc(e.target.value)}
-                    style={inputStyle}
-                    placeholder="e.g. Explore the beautiful backwaters…"
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>Number of Days *</label>
-                  <div style={{ position: "relative" }}>
-                    <input
-                      type="number"
-                      min="0"
-                      max="30"
-                      value={numDays}
-                      onChange={(e) => updateNumDays(e.target.value)}
-                      style={{ ...inputStyle, paddingRight: 36 }}
-                    />
-                    <span
-                      style={{
-                        position: "absolute",
-                        right: 10,
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        color: colors.textSubtle,
-                        fontSize: 12,
-                      }}
-                    >
-                      days
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div> */}
+            {/* <ItineraryDetailsSection
+              tourCode={tourCode}
+              setTourCode={setTourCode}
+              itName={itName}
+              setItName={setItName}
+              description={description}
+              setDesc={setDesc}
+              numDays={numDays}
+              updateNumDays={updateNumDays}
+              travelScope={travelScope}
+              setTravelScope={setTravelScope}
+            /> */}
             <ItineraryDetailsSection
-            itName = {itName}
-            setItName={setItName}
-            description={description}
-            setDesc={setDesc}
-            numDays={numDays}
-            updateNumDays={updateNumDays}
+
+              itineraryObj={itineraryObj}
+              setItineraryObj={setItineraryObj}
+              updateNumDays={updateNumDays}
+
             />
+
 
 
 
             {/* ── Section 2: Variants ───────────────────────────────────── */}
-            <VariantsSection
+            {/* <VariantsSection
               variants={variants}
               setVariants={setVariants}
               numDays={numDays}
+            /> */}
+
+            <VariantsSection
+
+              itineraryObj={itineraryObj}
+              setItineraryObj={setItineraryObj}
+
             />
 
             {/* ── Section 3: Day Wise Schedule ─────────────────────────── */}
-            <DayWiseSchedule days={days} setDays={setDays} />
+            {/* <DayWiseSchedule days={days} setDays={setDays} /> */}
+            <DayWiseSchedule
+
+itineraryObj={itineraryObj}
+setItineraryObj={setItineraryObj}
+
+/>
 
           </div>
         </div>

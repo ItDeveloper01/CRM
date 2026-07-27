@@ -18,12 +18,50 @@ export const colors = {
   sectionBg: "#f5f4ef",
 };
 
+// export const STATUS_CFG = {
+//   Active:    { dot: "#22c55e", bg: "#f0fdf4", border: "#86efac", text: "#16a34a" },
+//   Ongoing:   { dot: "#f97316", bg: "#fff7ed", border: "#fdba74", text: "#ea580c" },
+//   Completed: { dot: "#3b82f6", bg: "#eff6ff", border: "#93c5fd", text: "#2563eb" },
+//   Cancelled: { dot: "#ef4444", bg: "#fef2f2", border: "#fca5a5", text: "#dc2626" },
+// };
+
 export const STATUS_CFG = {
-  Active:    { dot: "#22c55e", bg: "#f0fdf4", border: "#86efac", text: "#16a34a" },
-  Ongoing:   { dot: "#f97316", bg: "#fff7ed", border: "#fdba74", text: "#ea580c" },
-  Completed: { dot: "#3b82f6", bg: "#eff6ff", border: "#93c5fd", text: "#2563eb" },
-  Cancelled: { dot: "#ef4444", bg: "#fef2f2", border: "#fca5a5", text: "#dc2626" },
+  1: {
+    label: "Active",
+    dot: "#22c55e",
+    bg: "#f0fdf4",
+    border: "#86efac",
+    text: "#16a34a",
+  },
+  2: {
+    label: "Ongoing",
+    dot: "#f97316",
+    bg: "#fff7ed",
+    border: "#fdba74",
+    text: "#ea580c",
+  },
+  3: {
+    label: "Completed",
+    dot: "#3b82f6",
+    bg: "#eff6ff",
+    border: "#93c5fd",
+    text: "#2563eb",
+  },
+  4: {
+    label: "Cancelled",
+    dot: "#ef4444",
+    bg: "#fef2f2",
+    border: "#fca5a5",
+    text: "#dc2626",
+  },
 };
+
+export const STATUS_OPTIONS = [
+  { value: 1, label: "Active" },
+  { value: 2, label: "Ongoing" },
+  { value: 3, label: "Completed" },
+  { value: 4, label: "Cancelled" },
+];
 
 export const DAY_COLORS = [
   "#8b5cf6", "#3b82f6", "#22c55e", "#f59e0b",

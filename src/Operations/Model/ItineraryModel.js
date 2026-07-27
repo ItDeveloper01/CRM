@@ -4,22 +4,28 @@ export const variantObj = {
 
 
     id: null,
-    variantsname: "",
-    guideId: null,
-
-    baseAmount: 0,
-    discountPercent: 0,
+    variantsName: "",
+    // status: "",
+    status: null,
+    startLocation: "",
+    endLocation: "",
+    TargetAudienceId: null,
 
     startDate: null,
     endDate: null,
 
-    startLocation: "",
-    endLocation: "",
+    perPaxBaseAmount: 0,
+    discountPercent: 0,
+    guideId: null,
+
 
     totalSeats: 0,
     occupiedSeats: 0,
 
-    status: "",
+     createdAt: null,
+  updatedAt: null,
+  createdBy_UserID:'',
+  UpdatedBy_UserID :'',
     pickupPoints: [],
 
 }
@@ -30,11 +36,15 @@ export const getEmptyVariantObj = () => {
 
 export const pickupPointObj = {
     id: null,
-    point: "",
-    location: "",
-    rate: 0,
+    pickupPoint: "",
+    pickupCity: "",
+    ratePerPax: 0,
     // total: 0,
     // occupied: 0
+     createdAt: null,
+  updatedAt: null,
+  createdBy_UserID:'',
+  UpdatedBy_UserID :'',
 }
 
 export const getEmptyPickupPointObj = () => {
@@ -46,9 +56,13 @@ export const getEmptyPickupPointObj = () => {
 
 export const dayObj = {
     id: null,
-    title: "",
+    dayTitle: "",
 
-    activities: []
+    activities: [],
+  createdAt: null,
+  updatedAt: null,
+  createdBy_UserID:'',
+  UpdatedBy_UserID :'',
 
 }
 
@@ -58,9 +72,13 @@ export const getEmptyItinerarydayObj = () => {
 
 export const activityObj = {
     id: null,
-    time: "",
-    title: "",
-    notes: ""
+    activityTime: "",
+    activityTitle: "",
+    activityNotes: "",
+    createdAt: null,
+    updatedAt: null,
+    createdBy_UserID:'',
+    UpdatedBy_UserID :'',
 }
 
 export const getEmptyActivityObj = () => {
@@ -78,9 +96,11 @@ export const ItineraryObject = {
     // ===============================
 
     itineraryBasicDetails: {
+        tourCode:"",
         itName: "",
         description: "",
         numDays: 0,
+        travelScope :null
     },
 
     // ==================================
@@ -94,6 +114,11 @@ export const ItineraryObject = {
     // ====================================
 
     days: [],
+
+  createdAt: null,
+  updatedAt: null,
+  createdBy_UserID:'',
+  UpdatedBy_UserID :'',
 
 }
 
