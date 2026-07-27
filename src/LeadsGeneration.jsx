@@ -34,9 +34,10 @@ import { User } from 'lucide-react';
 import { ViewField, ViewSelect, DateViewField } from './ConstantComponent/ViewComponents';
 import { useLocation } from 'react-router-dom';
 import { useRef } from 'react';
-
+import { useMessageBox } from "./Notification";
 import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
+import { MESSAGE_TYPES } from './Constants';
 console.log("LeadHolidays =", LeadHolidays);
 
 
@@ -46,6 +47,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
   const reminderState = location.state;
+   const { showMessage } = useMessageBox();
 
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
@@ -143,6 +145,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
+  
+const [isScreenLocked, setIsScreenLocked] = useState(false);
+const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
 
   // const prepareAirTicketPayload = (obj) => {
@@ -429,20 +434,21 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
   };
 
-  const onMobileChangeFocus = async (value) => {
-    debugger;
-    if (isUpdateMode && value != null)
-      return; // if in update mode then return
-    setISLeadsForPhoneVisible(false);
-    //CheckDuplicateMobile
-    const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
-    if (str)
-      return; // if invalid mobile no then return
-    else if (!sessionUser?.token) return; // if no token then return
-    else if (!sessionUser?.user?.userId) return; // if no user id then return
-    else if (!leadObj?.mobileNo) return; // if no mobile no then return
-    else //if(leadObj?.mobileNo !== value) return; // if mobile no not match then return
-    {
+ const onMobileChangeFocus = async (value) => {
+  if (isUpdateMode && value != null)
+    return; // if in update mode then return
+
+  setISLeadsForPhoneVisible(false);
+
+  const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
+  if (str) return; // if invalid mobile no then return
+  else if (!sessionUser?.token) return; // if no token then return
+  else if (!sessionUser?.user?.userId) return; // if no user id then return
+  else if (!leadObj?.mobileNo) return; // if no mobile no then return
+  else {
+    setIsScreenLocked(true);
+
+    try {
       const res = await axios.get(checkDuplicateMobileAPI, {
         headers: {
           Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
@@ -457,16 +463,88 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       console.log("Duplicate mobile check response:", res.data);
 
       if (res.data && res.data.length > 0) {
-        if (value != null)
-          alert("Duplicate mobile number found. Please check the existing leads.");
+        if (value != null) {
+          showMessage(
+            "Duplicate mobile number found. Please check the existing leads.",
+            MESSAGE_TYPES.warning
+          );
+        }
+        console.log("Duplicate mobile number found. Leads:", res.data);
         setISLeadsForPhoneVisible(true);
         setLeadsForPhoneNumber(res.data);
-      }
-      else
+      } else {
         setISLeadsForPhoneVisible(false);
-
+      }
+    } catch (error) {
+      console.error("Error checking duplicate mobile number:", error);
+      showMessage(
+        "Something went wrong while checking the mobile number. Please try again.",
+        MESSAGE_TYPES.error
+      );
+    } finally {
+      setIsScreenLocked(false);
     }
   }
+};
+
+const handleMobileBlur = async (e) => {
+  const mobileNo = e.target.value;
+
+  // keep whatever validation you already had before the API call
+  if (!mobileNo || mobileNo.length !== 10) {
+    return;
+  }
+
+  setIsCheckingMobile(true);
+  document.body.style.cursor = 'wait';
+
+  try {
+    await onMobileChangeFocus(e); // your existing existing-customer check
+  } catch (error) {
+    console.error('Failed to check existing customer:', error);
+    // surface this to the user however you already do errors —
+    // e.g. setErrors(prev => ({ ...prev, mobileNo: 'Could not verify this number' }))
+  } finally {
+    document.body.style.cursor = 'default';
+    setIsCheckingMobile(false);
+  }
+};
+
+  const handleContinueWithNewLead = () => {
+  const mainLead = leadsForPhoneNumber[0]?.mainLead; // DashboardRowDto
+
+  const freshLead = getEmptyLeadObj(); // brand-new lead, no leadID carried over
+  debugger;
+  if (mainLead) {
+    // Only customer-identity fields — adjust names to match your DashboardRowDto exactly
+    freshLead.leadID=mainLead.leadID ||0 ;
+    freshLead.title = mainLead.title || '';
+    freshLead.fName = mainLead.fName || '';
+    freshLead.mName = mainLead.mName || '';
+    freshLead.lName = mainLead.lName || '';
+    freshLead.gender = mainLead.gender || '';
+    freshLead.birthDate = mainLead.birthDate || null;
+    freshLead.mobileNo = mainLead.mobileNo || leadObj.mobileNo || '';
+    freshLead.emailId = mainLead.emailId || '';
+    freshLead.city = mainLead.city || '';
+    freshLead.area = mainLead.area || '';
+    freshLead.customerType = mainLead.customerType || null;
+    freshLead.enquiryMode = mainLead.enquiryMode || null;
+    freshLead.enquirySource = mainLead.enquirySource || null;
+  }
+
+  setLeadObj(freshLead);
+  setIsUpdateMode(false);      // stays a create, not an update
+  setSelectedLeadName("");     // force the user to pick a category for this new lead
+
+  // reset all category objects so nothing bleeds over from the matched lead
+  setVisaObj(getEmptyVisaObj());
+  setAirTicketingLeadObj({ ...getEmptyAirTicketObj(), airTicketType: "Domestic" });
+  setCarLeadObj(getEmptyCarLeadObj());
+  setHolidayLeadObj(getEmptyHolidayLeadObj());
+
+  setISLeadsForPhoneVisible(false);
+};
 
   const fetchEnquiryDetails = async () => {
     debugger;
@@ -839,7 +917,26 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
   };
 
+useEffect(() => {
+  if (isViewMode || isEditMode) return;
 
+  const entries = Object.entries(leadCategoriesByUserIdList);
+
+  if (entries.length === 1 && !leadObj.fK_LeadCategoryID) {
+    const [key] = entries[0];
+
+    handleChangeForCategory({
+      target: {
+        value: key,
+      },
+    });
+  }
+}, [
+  leadCategoriesByUserIdList,
+  leadObj.fK_LeadCategoryID,
+  isViewMode,
+  isEditMode,
+]);
 
   const handleSpecialRequirementsChange = (e) => {
     const { value, checked } = e.target;
@@ -1438,9 +1535,16 @@ if (!validateServiceForm(errs)) {
             {isViewMode ? (
               <ViewField value={leadObj.mobileNo} />
             ) : (
-              <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
-                className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
-              />
+             <input
+                  name='mobileNo'
+                  placeholder='Mobile Number'
+                  onBlur={handleMobileBlur}
+                  onChange={handleChange}
+                  value={leadObj.mobileNo || ''}
+                  maxLength={10}
+                  disabled={isCheckingMobile}
+                  className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""} ${isCheckingMobile ? "cursor-wait opacity-70" : ""}`}
+                />
             )}
             {errors.mobileNo && !isViewMode && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
           </div>
@@ -1605,7 +1709,7 @@ if (!validateServiceForm(errs)) {
           {isGenerateNewLeadAllowed && (
             <div className='text-center my-4'>
               <button
-                onClick={() => setISLeadsForPhoneVisible(false)}
+                 onClick={handleContinueWithNewLead}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                 Continue with New Lead
               </button>
@@ -1817,7 +1921,12 @@ if (!validateServiceForm(errs)) {
       )}
 
       {/* </fieldset> */}
-
+{isScreenLocked && (
+  <div
+    className="fixed inset-0 z-[9999] cursor-wait bg-black/5"
+    aria-hidden="true"
+  />
+)}
     </div>
 
 

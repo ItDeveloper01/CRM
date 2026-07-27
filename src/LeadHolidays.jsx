@@ -960,6 +960,7 @@ const LeadHolidays = forwardRef(({
                             holidayLeadObj={holidayLeadObj}
                             setHolidayLeadObj={setHolidayLeadObj}
                             isViewMode={isViewMode}
+                            scopeType={ selectedConfig?.values?.tripType }
                         />
 
                     )}
