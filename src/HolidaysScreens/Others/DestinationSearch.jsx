@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import config from "../../config";
 
-export default function DestinationSearch({ scope= 'International', onSelect }) {
+export default function DestinationSearch({ scope, onSelect }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
 
@@ -11,7 +11,7 @@ export default function DestinationSearch({ scope= 'International', onSelect }) 
     console.log("onSelect prop:", onSelect);
 
     const delay = setTimeout(() => {
-      if (query.length > 5) fetchResults(query);
+      if (query.length >= 2) fetchResults(query);
     }, 300);
 
     return () => clearTimeout(delay);

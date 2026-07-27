@@ -379,7 +379,11 @@ const transferPayload = {
   SelectedLead: selectedLeadObject,
   NewAssignedUserId: selectedUser?.userId || null,
   ReasonForTransfer: reason,
-  RequestedBy_UserID: sessionUser.user.id
+  RequestedBy_UserID: sessionUser.user.id,
+  OldAssignedUserID :"",
+  NotificationType :"",
+  Message :"",
+  LeadId :0
 };
 
 console.log("Payload for transferring lead to selected user:", transferPayload);
