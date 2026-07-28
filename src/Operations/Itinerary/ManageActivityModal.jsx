@@ -1,28 +1,41 @@
 import { useState, useEffect,useRef } from "react";
+import { getEmptyActivityObj } from "../Model/ItineraryModel";
 
 
 export const ManageActivityModal = ({ open, onClose, onSave, initialActivity, }) => {
-  const nextActivityId = useRef(1);
-  const [activity, setActivity] = useState({id:"", time: "14:00", title: "", notes: "" });
+  // const nextActivityId = useRef(1);
+  // const [activity, setActivity] = useState({id:null, activityTime: "14:00", activityTitle: "", activityNotes: "" });
+  const [activity, setActivity] = useState(getEmptyActivityObj());
   useEffect(() => {
     if (initialActivity) {
       debugger;
-      setActivity(initialActivity);
+      // setActivity(initialActivity);
+       setActivity(structuredClone(initialActivity));
     } else {
-      setActivity({
-        id:nextActivityId.current,
-        time: "14:00",
-        title: "",
-        notes: "",
-      });
+    //  setActivity({
+        // id:nextActivityId.current,
+        //  id: null,
+        // activityTime: "14:00",
+        // activityTitle: "",
+        // activityNotes: "",
+      // });
+              setActivity(getEmptyActivityObj());
+
     }
   }, [initialActivity, open]);
   if (!open) return null;
   const submit = () => {
-    if (!activity.title.trim()) return;
+    if (!activity.activityTitle.trim()) return;
     onSave(activity);
-    nextActivityId.current += 1;
-    setActivity({ id:nextActivityId.current, time: "14:00", title: "", notes: "" });
+    // nextActivityId.current += 1;
+    // setActivity({ id:nextActivityId.current, activityTime: "14:00", activityTitle: "", activityNotes: "" });
+//     setActivity({
+//     id: null,
+//     activityTime: "14:00",
+//     activityTitle: "",
+//     activityNotes: "",
+// });
+setActivity(getEmptyActivityObj());
     onClose();
   };
   return (
@@ -35,14 +48,14 @@ export const ManageActivityModal = ({ open, onClose, onSave, initialActivity, })
         <div className="flex gap-4 mb-4">
           <div className="flex-1">
             <label className="text-sm text-gray-500">Time</label>
-            <input type="time" value={activity.time} onChange={(e) => setActivity({ ...activity, time: e.target.value })} className="w-full border rounded-lg p-3 mt-1" />
+            <input type="time" value={activity.activityTime} onChange={(e) => setActivity({ ...activity, activityTime: e.target.value })} className="w-full border rounded-lg p-3 mt-1" />
           </div>
           <div className="flex-1">
             <label className="text-sm text-gray-500">Activity Title</label>
-            <input placeholder="e.g Beach walk" value={activity.title} onChange={(e) => setActivity({ ...activity, title: e.target.value })} className="w-full border rounded-lg p-3 mt-1" />
+            <input placeholder="e.g Beach walk" value={activity.activityTitle} onChange={(e) => setActivity({ ...activity, activityTitle: e.target.value })} className="w-full border rounded-lg p-3 mt-1" />
           </div>
         </div>
-        <textarea rows="4" placeholder="Optional details" value={activity.notes} onChange={(e) => setActivity({ ...activity, notes: e.target.value })} className="w-full border rounded-lg p-3" />
+        <textarea rows="4" placeholder="Optional details" value={activity.activityNotes} onChange={(e) => setActivity({ ...activity, activityNotes: e.target.value })} className="w-full border rounded-lg p-3" />
         <div className="flex justify-end gap-3 mt-5">
           <button onClick={onClose} className="border px-5 py-2 rounded-xl">Cancel</button>
           {/* <button onClick={submit} className="border px-5 py-2 rounded-xl">Add Activity</button> */}
