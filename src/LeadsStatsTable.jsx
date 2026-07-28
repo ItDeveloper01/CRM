@@ -153,7 +153,7 @@ export default function LeadStatsTable({ leads }) {
   };
 
   return (
-    <div className="space-y-8 p-4" ref={fullPrintRef}>
+    <div  ref={fullPrintRef}>
 
       {/* PRINT ENTIRE */}
       <div className="flex justify-end">

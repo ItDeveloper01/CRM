@@ -8,246 +8,163 @@ import config from "./config";
 import { useMessageBox } from "./Notification";
 import { useGetSessionUser } from "./SessionContext";
 import LeadTransferModal from "./LeadTransferModal";
+import {
+  LoadingOverlay,
+  MultiSelectFilter,
+  SortableHeader,
+  SwapIcon,
+  EyeIcon,
+  splitDestinations,
+  isHolidayLead,
+  getTripType,
+  getLeadType,
+  getDestinations,
+  getLatestUpdate,
+} from "./LeadsSharedTable";
 
+// Flip this one flag to switch every filter back to single-select behaviour.
+// Matching logic (filters.key.includes(...)) stays the same either way.
+const ALLOW_MULTI_SELECT = true;
 
+const FILTER_LABELS = {
+  status: "Status",
+  customerTypeDescription: "Customer Type",
+  categoryName: "Category",
+  createdBy: "Created By",
+  createdAt: "Created Date",
+  tripType: "Domestic/International",
+  leadType: "FIT/GIT",
+  preferredDestination: "Destination",
+};
+
+const BASE_FILTER_KEYS = ["status", "customerTypeDescription", "categoryName", "createdBy", "createdAt"];
+const HOLIDAY_FILTER_KEYS = ["tripType", "leadType", "preferredDestination"];
+
+const EMPTY_FILTERS = {
+  status: [],
+  customerTypeDescription: [],
+  categoryName: [],
+  createdBy: [],
+  createdAt: [],
+  tripType: [],
+  leadType: [],
+  preferredDestination: [],
+};
 
 export default function CreatedLeadsListWithFilters({ users }) {
-  // Flatten all leads
-
-  //  const [modalOpen, setModalOpen ] = useState(false);
-  // const [selectedLead, setSelectedLead] = useState(getEmptyLeadObj());
   const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
   const { user: sessionUser } = useGetSessionUser();
   const { showMessage } = useMessageBox();
-  // const [readOnly, setReadOnly] = useState(true);
+
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
-  const [mode, setMode] = useState("create"); //  ADD THIS
+  const [mode, setMode] = useState("create");
+  const [isLoading, setIsLoading] = useState(false); // drives the shared wait-cursor overlay
 
+  const fetchDataWithFiltersAPI = config.apiUrl + "/Reporting/GetManagerAnalyticsDataWithFilters";
+  const [transferUsers, setTransferUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [leads, setLeads] = useState([]);
+  const [showTransferModal, setShowTransferModal] = useState(false);
 
+  const openTransferModal = (lead) => {
+    setSelectedLead(lead);
+    setShowTransferModal(true);
+    loadTransferUsers();
+  };
 
- const fetchSubordinateRoleListAPI = config.apiUrl + "/Reporting/GetSubordinateranksByUserId"
- const fetchDataWithFiltersAPI = config.apiUrl + "/Reporting/GetManagerAnalyticsDataWithFilters"
- const [hierarchyData, setHierarchyData] = useState({}); // State to hold the hierarchy data
- const [transferUsers, setTransferUsers] = useState([]);
-const [loadingUsers, setLoadingUsers] = useState(false);
-const [leads, setLeads] = useState([]);
-const [showTransferModal, setShowTransferModal] = useState(false);
-const [selectedUser, setSelectedUser] = useState("");
+  const handleTransfer = async (toUserId, leadId) => {
+    if (!toUserId) return;
 
+    setIsLoading(true);
+    try {
+      await fetch(fetchDataWithFiltersAPI, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId, toUserId }),
+      });
 
+      setLeads((prev) =>
+        prev.map((lead) => (lead.id === leadId ? { ...lead, transferTo: toUserId } : lead))
+      );
+    } catch (error) {
+      console.error("Lead transfer failed", error);
+      alert("Unable to transfer lead. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  const loadTransferUsers = async () => {
+    if (transferUsers.length > 0) return;
+    // setLoadingUsers(true);
+    // const res = await fetch("/api/analytics/user-ids");
+    // const data = await res.json();
+    // setTransferUsers(data);
+    // setLoadingUsers(false);
+  };
 
-const openTransferModal = (lead) => {
-  debugger;
-  setSelectedLead(lead);
-  setShowTransferModal(true);
-  loadTransferUsers(); // existing API call
-};
-const handleTransfer = async (toUserId, leadId) => {
-  if (!toUserId) return;
-
-  try {
-    await fetch( fetchDataWithFiltersAPI, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        leadId,
-        toUserId,
-      }),
-    });
-
-    // optional: update UI immediately
-    setLeads((prev) =>
-      prev.map((lead) =>
-        lead.id === leadId
-          ? { ...lead, transferTo: toUserId }
-          : lead
-      )
-    );
-  } catch (error) {
-    console.error("Lead transfer failed", error);
-    alert("Unable to transfer lead. Please try again.");
-  }
-};
-
-
-
-//  try {
-//     debugger;
-//     const response = await axios.post(
-//         fetchDataWithFiltersAPI,
-//         {
-//           userID: sessionUser.user.id,
-//           selectedVerticles: [],   // can be List<DTO> or List<int>
-//           selectedRoles: [] ,           // can be List<DTO> or List<int>
-//           //dateRange : {from: selectedDateRange.from , to:selectedDateRange.to
-//           //}
-//         },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${sessionUser.token}`,
-//             "Content-Type": "application/json"
-//           }
-//         }
-//       );
-
-//     //setListOfVerticles(response.data);
-//     setHierarchyData(response.data);
-//     debugger;
-//     console.log(response.data);
-//     // setSubordinates(response.data);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// };
-
-
-
-   // ✅ ONLY CREATED LEADS
+  // ---------------- FLATTEN LEADS (created-by-me view) ----------------
   const allLeads = useMemo(() => {
-    debugger;
     return users.flatMap((u) => {
       return (u.createdLeads || []).map((lead) => ({
         ...lead,
-        // leadCreatedByName: u.firstName,
-        // assignedTo:lead.leadCreatedByName,
-        createdBy:lead.leadCreatedByName,
-        // createdBy: u.firstName,// ✅ ADD THIS
-        status: lead?.histories?.length > 0
-          ? lead.histories[0].statusDescription
-          : lead.statusDescription,
+        createdBy: lead.leadCreatedByName,
+        status: lead?.histories?.length > 0 ? lead.histories[0].statusDescription : lead.statusDescription,
         leadAssignedTo: u.userID,
       }));
     });
   }, [users]);
- console.log("all leads : ",allLeads);
-    // ---------------- VIEW DETAILS ----------------
-  const handleViewClick = async (lead) => {
-      console.log("Viewing lead.....:", lead);
-      //API call  to lead details. 
-  
-      debugger;
-      try {
-  
-        let templead = await fetchLeadDetails(lead);
-        setSelectedLead(templead);
-        setMode("view");
-        setModalOpen(true);
-      } catch {
-        showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
-      }
-    };
 
- 
+  const handleViewClick = async (lead) => {
+    setIsLoading(true);
+    try {
+      let templead = await fetchLeadDetails(lead);
+      setSelectedLead(templead);
+      setMode("view");
+      setModalOpen(true);
+    } catch {
+      showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   async function fetchLeadDetails(lead) {
     let res = null;
     try {
-      debugger;
-      console.log("GetLeadsForEditAPI:", GetLeadsForEditAPI);
-      console.log("LEad data to be passed to API", lead);
       res = await axios.post(GetLeadsForEditAPI, lead, {
         headers: {
-          Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
-          "Content-Type": "application/json"
-
+          Authorization: `Bearer ${sessionUser.token}`,
+          "Content-Type": "application/json",
         },
-        // params: {
-        //   lead: lead,
-        // }
       });
-      debugger;
       if (res && res.data) {
-        console.log("Leads details fetched:" + res.data);
         return res.data;
       } else {
         showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
         return null;
       }
-
     } catch (error) {
-      debugger;
-      console.log("Error fetching Lead for edit...", error);
-
       const message =
-        error.response?.data ||
-        error.response?.statusText ||
-        error.message ||
-        "Unknown error";
-
+        error.response?.data || error.response?.statusText || error.message || "Unknown error";
       showMessage("Error fetching Lead for edit." + JSON.stringify(message), MESSAGE_TYPES.ERROR);
       return null;
-
     }
-
   }
-//   async function fetchLeadDetails(lead) {
-//   try {
-//     debugger;
-
-//     const cleanedLead = {
-//       ...lead,
-
-//       // ✅ remove null createdAt from histories
-//       histories: (lead.histories || []).map(h => {
-//         const { createdAt, ...rest } = h;
-//         return {
-//           ...rest,
-//           createdAt: createdAt ?? new Date().toISOString()
-//         };
-//       })
-//     };
-
-//     const res = await axios.post(
-//       GetLeadsForEditAPI,
-//       cleanedLead,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${sessionUser.token}`,
-//           "Content-Type": "application/json"
-//         }
-//       }
-//     );
-
-//     return res.data;
-
-//   } catch (error) {
-//     const message =
-//       error.response?.data ||
-//       error.response?.statusText ||
-//       error.message;
-
-//     showMessage(
-//       "Error fetching Lead for edit: " + JSON.stringify(message),
-//       MESSAGE_TYPES.ERROR
-//     );
-
-//     return null;
-//   }
-// }
 
   React.useEffect(() => {
-    console.log("All leads received in LeadsWithFilters.jsx:", allLeads);
+    console.log("All created leads received:", allLeads);
   }, [allLeads]);
 
   // ---------------- FILTER STATE ----------------
-  const [filters, setFilters] = useState({
-    status: "",
-    customerTypeDescription: "",
-    categoryName: "",
-    createdBy: "",
-    createdAt: "", // ✅ CHANGED
-  });
-
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [nameSearch, setNameSearch] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   // ---------------- UNIQUE FILTER OPTIONS FROM DATA ----------------
-  // ---------------- FILTER OPTIONS ----------------
   const filterOptions = useMemo(() => {
-    const getUnique = (key) =>
-      [...new Set(allLeads.map((l) => l[key]).filter(Boolean))];
+    const getUnique = (key) => [...new Set(allLeads.map((l) => l[key]).filter(Boolean))];
 
     const getUniqueDates = () =>
       [
@@ -262,59 +179,120 @@ const handleTransfer = async (toUserId, leadId) => {
         ),
       ];
 
+    const getUniqueDestinations = () => {
+      const set = new Set();
+      allLeads.forEach((l) => splitDestinations(getDestinations(l)).forEach((d) => set.add(d)));
+      return [...set];
+    };
+
     return {
       categoryName: getUnique("categoryName"),
       createdBy: getUnique("createdBy"),
       status: getUnique("status"),
-      createdAt: getUniqueDates(), // ✅ CHANGED
+      createdAt: getUniqueDates(),
       customerTypeDescription: getUnique("customerTypeDescription"),
+      tripType: [...new Set(allLeads.map(getTripType).filter(Boolean))],
+      leadType: [...new Set(allLeads.map(getLeadType).filter(Boolean))],
+      preferredDestination: getUniqueDestinations(),
     };
   }, [allLeads]);
 
+  // Only surface the Holiday-specific filters when the Category filter is
+  // empty (i.e. "All") or explicitly includes Holiday. Otherwise hide them.
+  const isHolidayRelevant =
+    filters.categoryName.length === 0 ||
+    filters.categoryName.some((c) => c.toUpperCase() === "HOLIDAY");
 
-  const loadTransferUsers = async () => {
-  if (transferUsers.length > 0) return;
+  const visibleFilterKeys = isHolidayRelevant
+    ? [...BASE_FILTER_KEYS, ...HOLIDAY_FILTER_KEYS]
+    : BASE_FILTER_KEYS;
 
-  // setLoadingUsers(true);
-  // const res = await fetch("/api/analytics/user-ids");
-  // const data = await res.json();
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => {
+      if (!ALLOW_MULTI_SELECT) {
+        const isSame = prev[key].length === 1 && prev[key][0] === value;
+        return { ...prev, [key]: isSame ? [] : [value] };
+      }
+      const current = prev[key];
+      const exists = current.includes(value);
+      return {
+        ...prev,
+        [key]: exists ? current.filter((v) => v !== value) : [...current, value],
+      };
+    });
+  };
 
-  // setTransferUsers(data);
-  // setLoadingUsers(false);
-};
-   // ---------------- APPLY FILTERS ----------------
+  const clearFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setNameSearch("");
+  };
+
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  // ---------------- APPLY FILTERS ----------------
   const filteredLeads = useMemo(() => {
-
-    debugger;
     return allLeads.filter((lead) => {
-
       const matchesFilters =
-        (filters.status ? lead.status === filters.status : true) &&
-        (filters.customerTypeDescription ? lead.customerTypeDescription === filters.customerTypeDescription : true) &&
-        (filters.categoryName ? lead.categoryName === filters.categoryName : true) &&
-        (filters.createdBy ? lead.createdBy === filters.createdBy : true) &&
-        (filters.createdAt
-          ? new Date(lead.createdAt).toISOString().split('T')[0] ===
-            new Date(filters.createdAt).toISOString().split('T')[0]
-          : true
-        );
+        (filters.status.length ? filters.status.includes(lead.status) : true) &&
+        (filters.customerTypeDescription.length
+          ? filters.customerTypeDescription.includes(lead.customerTypeDescription)
+          : true) &&
+        (filters.categoryName.length ? filters.categoryName.includes(lead.categoryName) : true) &&
+        (filters.createdBy.length ? filters.createdBy.includes(lead.createdBy) : true) &&
+        (filters.tripType.length ? filters.tripType.includes(getTripType(lead)) : true) &&
+        (filters.leadType.length ? filters.leadType.includes(getLeadType(lead)) : true) &&
+        (filters.preferredDestination.length
+          ? splitDestinations(getDestinations(lead)).some((d) =>
+              filters.preferredDestination.includes(d)
+            )
+          : true) &&
+        (filters.createdAt.length
+          ? filters.createdAt.includes(new Date(lead.createdAt).toISOString().split("T")[0])
+          : true);
 
-      const matchesName =
-        !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
+      const matchesName = !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
 
       return matchesFilters && matchesName;
     });
   }, [allLeads, filters, nameSearch]);
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-  
+  // ---------------- APPLY SORT ----------------
+  const sortedLeads = useMemo(() => {
+    if (!sortConfig.key) return filteredLeads;
+
+    const { key, direction } = sortConfig;
+    const dir = direction === "asc" ? 1 : -1;
+    const dateKeys = ["createdAt", "updatedAt", "latestUpdateAt"];
+
+    return [...filteredLeads].sort((a, b) => {
+      let valA = key === "latestUpdateAt" ? getLatestUpdate(a) : a[key];
+      let valB = key === "latestUpdateAt" ? getLatestUpdate(b) : b[key];
+
+      if (dateKeys.includes(key)) {
+        valA = valA ? new Date(valA).getTime() : 0;
+        valB = valB ? new Date(valB).getTime() : 0;
+        return (valA - valB) * dir;
+      }
+
+      valA = (valA ?? "").toString().toLowerCase();
+      valB = (valB ?? "").toString().toLowerCase();
+      if (valA < valB) return -1 * dir;
+      if (valA > valB) return 1 * dir;
+      return 0;
+    });
+  }, [filteredLeads, sortConfig]);
 
   return (
-    <div className="w-full">
-      {/* ---------------- FILTER BAR ---------------- */}
-      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg">
+    <div className="flex flex-col h-full">
+      <LoadingOverlay visible={isLoading} />
+
+      {/* ---------------- FILTER BAR (never scrolls) ---------------- */}
+      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg flex-shrink-0">
         <div className="flex flex-wrap items-center gap-4 flex-1">
           {/* Name search */}
           <input
@@ -322,113 +300,143 @@ const handleTransfer = async (toUserId, leadId) => {
             placeholder="Search by Name"
             value={nameSearch}
             onChange={(e) => setNameSearch(e.target.value)}
-            // className="border rounded px-2 py-1 text-sm w-40"
-            className='rounded px-2 py-1.5 focus:outline-none focus:ring-2 bg-white border border-gray-300'
+            className="rounded px-2 py-1.5 focus:outline-none focus:ring-2 bg-white border border-gray-300"
           />
 
-          {Object.keys(filterOptions).map((key) => (
-            <select
+          {visibleFilterKeys.map((key) => (
+            <MultiSelectFilter
               key={key}
-              className="border p-2 rounded text-sm flex-1 min-w-[120px]"
-              value={filters[key]}
-              onChange={(e) => handleFilterChange(key, e.target.value)}
-            >
-              <option value="">Filter by {key}</option>
-              {filterOptions[key].map((op) => (
-                <option key={op} value={op}>{op}</option>
-              ))}
-            </select>
+              label={FILTER_LABELS[key] || key}
+              options={filterOptions[key]}
+              selected={filters[key]}
+              onToggle={(value) => handleFilterChange(key, value)}
+            />
           ))}
         </div>
 
         {/* CLEAR FILTER BUTTON */}
         <button
-          //className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
           className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
-          onClick={() => {
-            setFilters({
-              status: "",
-              customerTypeDescription: "",
-              categoryName: "",
-              createdBy: "",
-              createdAt: "",
-            });
-            setNameSearch("");
-          }}
+          onClick={clearFilters}
         >
           Clear Filters
         </button>
       </div>
 
-      {/* ---------------- TABLE ---------------- */}
-      <div className="overflow-auto max-h-[500px] border rounded-lg mt-4">
+      {/* ---------------- TABLE (fills remaining height, only this scrolls) ---------------- */}
+      <div className="overflow-auto flex-1 border rounded-lg mt-4">
         <table className="w-full text-xs border-collapse">
-          {/* <table className="w-full table-fixed border-collapses"> */}
           <thead className="bg-gray-100">
             <tr>
-              <th className="p-2 text-left">Sr. No.</th>
-              <th className="p-2 text-left">Lead Name</th>
-              <th className="p-2 text-left">Category</th>
-              <th className="p-2 text-left">Created By</th>
-              <th className="p-2 text-left">Current Assignee</th>
-              <th className="p-2 text-left">Lead ID</th>
-              <th className="p-2 text-left">Status</th>
-              <th className="p-2 text-left">Created Date</th>
-              <th className="p-2 text-left">Latest Update</th>
-              <th className="p-2 text-left">Customer Type</th>
-              <th className="p-2 text-left">Mobile No</th>
-              <th className="p-2 text-left">TransferTo</th>
-              <th className="p-2 text-left">Details</th>
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Sr. No.</th>
+              <SortableHeader label="Lead Name" sortKey="fName" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Category" sortKey="categoryName" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Created By" sortKey="createdBy" sortConfig={sortConfig} onSort={handleSort} />
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Current Assignee</th>
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Lead ID</th>
+              <SortableHeader label="Status" sortKey="status" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Created Date" sortKey="createdAt" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableHeader label="Latest Update" sortKey="latestUpdateAt" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableHeader
+                label="Customer Type"
+                sortKey="customerTypeDescription"
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Trip Type / Lead Type</th>
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Destinations</th>
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">TransferTo</th>
+              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Details</th>
             </tr>
           </thead>
 
-
           <tbody>
-            {filteredLeads.map((lead, idx) => (
+            {sortedLeads.map((lead, idx) => (
               <tr key={idx} className="border-b hover:bg-gray-50">
                 <td className="p-2">{idx + 1}</td>
-                <td className="p-2">{lead.fName} {lead.lName}</td>
+                <td className="p-2">
+                  {lead.fName} {lead.lName}
+                </td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.leadCreatedByName}</td>
                 <td className="p-2 font-semibold">{lead.leadAssignedToName}</td>
                 <td className="p-2 text-center">{lead.leadID}</td>
 
-                <td className={`p-2 font-semibold ${lead.status === "Lost"
-                  ? "text-lostText"
-                  : lead.status === "Confirmed"
-                    ? "text-confirmedText"
-                    : lead.status === "Postponed"
+                <td
+                  className={`p-2 font-semibold ${
+                    lead.status === "Lost"
+                      ? "text-lostText"
+                      : lead.status === "Confirmed"
+                      ? "text-confirmedText"
+                      : lead.status === "Postponed"
                       ? "text-postponedText"
-                      // : "text-yellow-500"
                       : "text-openText"
-                  }`}>
+                  }`}
+                >
                   {lead.status}
                 </td>
 
-                <td className="p-2">{new Date(lead.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}</td>
-                <td className="p-2">{lead.histories?.[0]?.createdAt || lead.updatedAt ? new Date(lead.histories?.[0]?.createdAt || lead.updatedAt).toLocaleDateString("en-GB").replace(/\//g, "-") : "—"}</td>
-                <td className="p-2">{lead.customerTypeDescription}</td>
-                <td className="p-2">{lead.mobileNo}</td>
                 <td className="p-2">
-                                  <button
-                                    className={`px-3 py-1 rounded ${
-                                      ["lost","confirmed"].includes(
-                                      lead.status?.trim().toLowerCase()
-                                    )? 'bg-gray-400 cursor-not-allowed text-white'
-                                        : 'bg-blue-600 text-white'
-                                    }`}
-                                    onClick={() => openTransferModal(lead)}
-                                      disabled={["lost","confirmed"].includes(
-                                      lead.status?.trim().toLowerCase() )}>
-                                    Transfer To
-                                  </button>
+                  {new Date(lead.createdAt).toLocaleDateString("en-GB").replace(/\//g, "-")}
+                </td>
+
+                <td className="p-2">
+                  {getLatestUpdate(lead)
+                    ? new Date(getLatestUpdate(lead)).toLocaleDateString("en-GB").replace(/\//g, "-")
+                    : "—"}
+                </td>
+                <td className="p-2">{lead.customerTypeDescription}</td>
+
+                {/* Trip Type / Lead Type */}
+                <td className="p-2">
+                  {isHolidayLead(lead) ? (
+                    <div className="flex gap-1 flex-wrap">
+                      {getTripType(lead) && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-700">
+                          {getTripType(lead)}
+                        </span>
+                      )}
+                      {getLeadType(lead) && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-700">
+                          {getLeadType(lead)}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+
+                {/* Destinations — shown in full, not truncated, since managers need it at a glance */}
+                <td className="p-2 max-w-[220px]">
+                  {isHolidayLead(lead) && getDestinations(lead) ? (
+                    <span className="text-[11px] text-gray-700">{getDestinations(lead)}</span>
+                  ) : (
+                    <span className="text-gray-400">—</span>
+                  )}
+                </td>
+
+                <td className="p-2 text-center">
+                  <button
+                    className={`inline-flex items-center justify-center p-1.5 rounded ${
+                      ["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())
+                        ? "bg-gray-300 cursor-not-allowed text-white"
+                        : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                    title="Transfer Lead"
+                    onClick={() => openTransferModal(lead)}
+                    disabled={["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())}
+                  >
+                    <SwapIcon />
+                  </button>
                 </td>
                 <td className="p-2">
                   <button
-                    className="text-blue-700 text-500 underline"
+                    className="p-1.5 rounded text-blue-700 hover:bg-blue-50"
+                    title="View Details"
                     onClick={() => handleViewClick(lead)}
                   >
-                    View Details
+                    <EyeIcon />
                   </button>
                 </td>
               </tr>
@@ -436,31 +444,23 @@ const handleTransfer = async (toUserId, leadId) => {
           </tbody>
         </table>
       </div>
+
       {/* Modal */}
       <UpdateLeadsModal
         parent={"Leads with filters"}
         isOpen={isModalOpen}
         onClose={() => setModalOpen(false)}
         lead={selectedLead}
-        // readOnly={readOnly}
-        mode={"view"}              // you can write {mode} alson at view place 
+        mode={"view"}
       />
-    <LeadTransferModal
-  isOpen={showTransferModal}
-  onClose={() => setShowTransferModal(false)}
-  users={transferUsers}
-  onTransfer={handleTransfer}
-  loadingUsers={loadingUsers}
-  selectedLead={selectedLead}
-/>
+      <LeadTransferModal
+        isOpen={showTransferModal}
+        onClose={() => setShowTransferModal(false)}
+        users={transferUsers}
+        onTransfer={handleTransfer}
+        loadingUsers={loadingUsers}
+        selectedLead={selectedLead}
+      />
     </div>
-
   );
 }
-
-// // -------------------- LEAD LIST TAB --------------------
-// {activeTab === "Lead List" && (
-//   <CardContent>
-//     <LeadListWithFilters users={users} />
-//   </CardContent>
-// )  

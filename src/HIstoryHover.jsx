@@ -42,7 +42,7 @@ const HistoryCollapse = ({ histories = [] }) => {
                   <thead className="sticky top-0 z-10 bg-gray-100">
                     <tr>
                       <th
-                        colSpan={4}
+                        colSpan={5}
                         className="border px-2 py-2 text-center bg-blue-50 text-blue-700 font-semibold"
                       >
                         History Details
@@ -51,9 +51,10 @@ const HistoryCollapse = ({ histories = [] }) => {
                     <tr>
                       {/* Auto-distributed columns */}
                       <th className="border px-2 py-1 text-left">Date</th>
-                      <th className="border px-2 py-1 text-left">User</th>
+                      <th className="border px-2 py-1 text-left">Lead Owner</th>
                       <th className="border px-2 py-1 text-left">Quote</th>
                       <th className="border px-2 py-1 text-left">Notes</th>
+                      <th className="border px-2 py-1 text-left">Updated By</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -72,6 +73,7 @@ const HistoryCollapse = ({ histories = [] }) => {
                         <td className="border px-2 py-1">{h.assigneeTo_UserID || "-"}</td>
                         <td className="border px-2 py-1">{h.quoteGiven || "-"}</td>
                         <td className="border px-2 py-1">{h.notes || "-"}</td>
+                         <td className="border px-2 py-1">{h.created_By || "-"}</td>
                       </tr>
                     ))}
                   </tbody>

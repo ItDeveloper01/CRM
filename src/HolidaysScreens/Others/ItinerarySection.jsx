@@ -10,7 +10,8 @@ import { AUDIENCE_COLORS } from "./IternaryUIStyles";
 export default function ItinerarySection({
     holidayLeadObj = {},
     setHolidayLeadObj,
-    isViewMode = false
+    isViewMode = false,
+    scopeType 
 }) {
 
     const { user: sessionUser } = useGetSessionUser();
@@ -27,7 +28,7 @@ export default function ItinerarySection({
 
     const [audienceList, setAudienceList] = useState([]);
 
-    const [scope, setScope] = useState("International");
+    const [scope, setScope] = useState(scopeType);
 
 
     const formatDate = (date) => {
@@ -550,6 +551,13 @@ export default function ItinerarySection({
         fetchAudience();
 
     }, []);
+
+    useEffect(()=>{
+
+        setScope(scopeType);
+
+    }, [scopeType]);
+
 
     // Rehydrate tabs from selectedGITItinerariesForEdit (used for both
     // edit and view modes — the flag only controls interactivity below,

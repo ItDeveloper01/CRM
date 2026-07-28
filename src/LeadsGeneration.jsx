@@ -34,9 +34,10 @@ import { User } from 'lucide-react';
 import { ViewField, ViewSelect, DateViewField } from './ConstantComponent/ViewComponents';
 import { useLocation } from 'react-router-dom';
 import { useRef } from 'react';
-
+import { useMessageBox } from "./Notification";
 import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
+import { MESSAGE_TYPES } from './Constants';
 console.log("LeadHolidays =", LeadHolidays);
 
 
@@ -46,6 +47,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
   const reminderState = location.state;
+   const { showMessage } = useMessageBox();
 
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
@@ -144,6 +146,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getCountryListMasterEndPoint =config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
+  
+const [isScreenLocked, setIsScreenLocked] = useState(false);
+const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
 
   // const prepareAirTicketPayload = (obj) => {
@@ -512,14 +517,26 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
       console.log("Duplicate mobile check response:", res.data);
 
       if (res.data && res.data.length > 0) {
-        if (value != null)
-          alert("Duplicate mobile number found. Please check the existing leads.");
+        if (value != null) {
+          showMessage(
+            "Duplicate mobile number found. Please check the existing leads.",
+            MESSAGE_TYPES.warning
+          );
+        }
+        console.log("Duplicate mobile number found. Leads:", res.data);
         setISLeadsForPhoneVisible(true);
         setLeadsForPhoneNumber(res.data);
-      }
-      else
+      } else {
         setISLeadsForPhoneVisible(false);
-
+      }
+    } catch (error) {
+      console.error("Error checking duplicate mobile number:", error);
+      showMessage(
+        "Something went wrong while checking the mobile number. Please try again.",
+        MESSAGE_TYPES.error
+      );
+    } finally {
+      setIsScreenLocked(false);
     }
   }
   catch(err)
@@ -900,7 +917,26 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
   };
 
+useEffect(() => {
+  if (isViewMode || isEditMode) return;
 
+  const entries = Object.entries(leadCategoriesByUserIdList);
+
+  if (entries.length === 1 && !leadObj.fK_LeadCategoryID) {
+    const [key] = entries[0];
+
+    handleChangeForCategory({
+      target: {
+        value: key,
+      },
+    });
+  }
+}, [
+  leadCategoriesByUserIdList,
+  leadObj.fK_LeadCategoryID,
+  isViewMode,
+  isEditMode,
+]);
 
   const handleSpecialRequirementsChange = (e) => {
     const { value, checked } = e.target;
@@ -1499,9 +1535,16 @@ if (!validateServiceForm(errs)) {
             {isViewMode ? (
               <ViewField value={leadObj.mobileNo} />
             ) : (
-              <input name='mobileNo' placeholder='Mobile Number' onBlur={onMobileChangeFocus} onChange={handleChange} value={leadObj.mobileNo || ''} maxLength={10}
-                className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""}`}
-              />
+             <input
+                  name='mobileNo'
+                  placeholder='Mobile Number'
+                  onBlur={handleMobileBlur}
+                  onChange={handleChange}
+                  value={leadObj.mobileNo || ''}
+                  maxLength={10}
+                  disabled={isCheckingMobile}
+                  className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""} ${isCheckingMobile ? "cursor-wait opacity-70" : ""}`}
+                />
             )}
             {errors.mobileNo && !isViewMode && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
           </div>
@@ -1666,7 +1709,7 @@ if (!validateServiceForm(errs)) {
           {isGenerateNewLeadAllowed && (
             <div className='text-center my-4'>
               <button
-                onClick={() => setISLeadsForPhoneVisible(false)}
+                 onClick={handleContinueWithNewLead}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                 Continue with New Lead
               </button>
@@ -1878,7 +1921,12 @@ if (!validateServiceForm(errs)) {
       )}
 
       {/* </fieldset> */}
-
+{isScreenLocked && (
+  <div
+    className="fixed inset-0 z-[9999] cursor-wait bg-black/5"
+    aria-hidden="true"
+  />
+)}
     </div>
 
 
