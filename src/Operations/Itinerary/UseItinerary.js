@@ -62,9 +62,13 @@ export function useItinerary() {
 
     // ── CREATE ──────────────────────────────────────────────────────────────
     const createItinerary = async (request) => {
+        debugger;
+        console.log("Create API called");
         request = {
+           
             ...request,
-
+            
+            
             createdBy_UserID: sessionUser.user.userId,
 
             updatedBy_UserID: sessionUser.user.userId,
@@ -73,8 +77,10 @@ export function useItinerary() {
         setError(null);
 
         try {
+            debugger;
 
             const response = await axios.post(
+                
                 `${config.operationsUrl}/Itinerary/CreateItinerary`,
                 request,
                 {
@@ -83,11 +89,14 @@ export function useItinerary() {
                     }
                 }
             );
-
+            
             return response.data;
+            console.log("Create itninerary API Response : ", response.data);
+            console.log("Create itninerary API Response : ", response);
+
 
         } catch (err) {
-
+            console.log("Error While Creating itinerary: ",err);
             setError(
                 err.response?.data?.message ||
                 err.message ||
