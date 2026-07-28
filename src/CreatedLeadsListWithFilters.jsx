@@ -288,11 +288,11 @@ export default function CreatedLeadsListWithFilters({ users }) {
   }, [filteredLeads, sortConfig]);
 
   return (
-    <div className="w-full">
+    <div className="flex flex-col h-full">
       <LoadingOverlay visible={isLoading} />
 
-      {/* ---------------- FILTER BAR ---------------- */}
-      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg">
+      {/* ---------------- FILTER BAR (never scrolls) ---------------- */}
+      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg flex-shrink-0">
         <div className="flex flex-wrap items-center gap-4 flex-1">
           {/* Name search */}
           <input
@@ -323,8 +323,8 @@ export default function CreatedLeadsListWithFilters({ users }) {
         </button>
       </div>
 
-      {/* ---------------- TABLE ---------------- */}
-      <div className="overflow-auto max-h-[500px] border rounded-lg mt-4">
+      {/* ---------------- TABLE (fills remaining height, only this scrolls) ---------------- */}
+      <div className="overflow-auto flex-1 border rounded-lg mt-4">
         <table className="w-full text-xs border-collapse">
           <thead className="bg-gray-100">
             <tr>
