@@ -41,7 +41,11 @@ export default function LeadsAndStats(dataProp) {
 
   React.useEffect(() => {
     console.log("Data prop changed:", dataProp.data);
-    const newData = dataProp.data || sampleData;
+    // Use sampleData only when data prop is null/undefined (initial load before any fetch)
+    // An empty object {} means all users were deselected — show empty state, not sample data
+    const newData = (dataProp.data !== null && dataProp.data !== undefined)
+      ? dataProp.data
+      : sampleData;
     setData(newData);
 
     if (newData && typeof newData === 'object') {
@@ -74,32 +78,40 @@ export default function LeadsAndStats(dataProp) {
       {/* Tab content — fills remaining height; Lead List / Created Leads manage their own internal scroll */}
       <div className="flex-1 overflow-hidden min-h-0 p-3 flex flex-col">
 
-        {activeTab === "Lead List" && (
-          <div className="flex flex-col flex-1 min-h-0">
-            <LeadListWithFilters users={users} />
+        {users.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+            Select users from the left panel to load their lead data.
           </div>
-        )}
+        ) : (
+          <>
+            {activeTab === "Lead List" && (
+              <div className="flex flex-col flex-1 min-h-0">
+                <LeadListWithFilters users={users} />
+              </div>
+            )}
 
-        {activeTab === "Individual Statistics" && (
-          <div className="overflow-auto flex-1"><UserStatsCard users={users} /></div>
-        )}
+            {activeTab === "Individual Statistics" && (
+              <div className="overflow-auto flex-1"><UserStatsCard users={users} /></div>
+            )}
 
-        {activeTab === "Team Overview" && (
-          <div className="overflow-auto flex-1"><UserMetricChart users={users} /></div>
-        )}
+            {activeTab === "Team Overview" && (
+              <div className="overflow-auto flex-1"><UserMetricChart users={users} /></div>
+            )}
 
-        {activeTab === "Stats Table" && (
-          <div className="overflow-auto flex-1"><LeadStatsTable leads={users} /></div>
-        )}
+            {activeTab === "Stats Table" && (
+              <div className="overflow-auto flex-1"><LeadStatsTable leads={users} /></div>
+            )}
 
-        {activeTab === "Reason Stats" && (
-          <div className="overflow-auto flex-1"><ReasonStatsCard data={users} /></div>
-        )}
+            {activeTab === "Reason Stats" && (
+              <div className="overflow-auto flex-1"><ReasonStatsCard data={users} /></div>
+            )}
 
-        {activeTab === "Created Leads" && (
-          <div className="flex flex-col flex-1 min-h-0">
-            <CreatedLeadsListWithFilters users={users} />
-          </div>
+            {activeTab === "Created Leads" && (
+              <div className="flex flex-col flex-1 min-h-0">
+                <CreatedLeadsListWithFilters users={users} />
+              </div>
+            )}
+          </>
         )}
 
       </div>

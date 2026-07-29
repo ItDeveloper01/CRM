@@ -143,7 +143,6 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
-  const getCountryListMasterEndPoint =config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
   
@@ -223,22 +222,22 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
     // })
     // .catch(err => console.error("Error fetching country codes:", err));
 
-  debugger;
-    //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
-    // fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     const formattedCountries = data
-    //       .map((country) => ({
-    //         name: country.name.common,
-    //         value: country.cca2 || country.name.common,
-    //         flag: country.flags?.png
-    //       }))
-    //       .sort((a, b) => a.name.localeCompare(b.name));
 
-    //     setCountries(formattedCountries);
-    //   })
-    //   .catch((err) => console.error("Error fetching countries:", err));
+    //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
+    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
+      .then((res) => res.json())
+      .then((data) => {
+        const formattedCountries = data
+          .map((country) => ({
+            name: country.name.common,
+            value: country.cca2 || country.name.common,
+            flag: country.flags?.png
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+
+        setCountries(formattedCountries);
+      })
+      .catch((err) => console.error("Error fetching countries:", err));
 
     // Fetch Special Requirements for Car Rental
     // const fetchSpecialRequirements = async () => {
@@ -255,7 +254,6 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
     // };
     // fetchSpecialRequirements();
 
-     // Fetch countries from your own API
     fetchCountries();
     fetchCityList();     // for City API
 
@@ -486,21 +484,21 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
   };
 
-  const onMobileChangeFocus = async (value) => {
-    debugger;
-    try{
-    if (isUpdateMode && value != null)
-      return; // if in update mode then return
-    setISLeadsForPhoneVisible(false);
-    //CheckDuplicateMobile
-    const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
-    if (str)
-      return; // if invalid mobile no then return
-    else if (!sessionUser?.token) return; // if no token then return
-    else if (!sessionUser?.user?.userId) return; // if no user id then return
-    else if (!leadObj?.mobileNo) return; // if no mobile no then return
-    else //if(leadObj?.mobileNo !== value) return; // if mobile no not match then return
-    {
+ const onMobileChangeFocus = async (value) => {
+  if (isUpdateMode && value != null)
+    return; // if in update mode then return
+
+  setISLeadsForPhoneVisible(false);
+
+  const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
+  if (str) return; // if invalid mobile no then return
+  else if (!sessionUser?.token) return; // if no token then return
+  else if (!sessionUser?.user?.userId) return; // if no user id then return
+  else if (!leadObj?.mobileNo) return; // if no mobile no then return
+  else {
+    setIsScreenLocked(true);
+
+    try {
       const res = await axios.get(checkDuplicateMobileAPI, {
         headers: {
           Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
@@ -512,8 +510,6 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
         }
       });
 
-      debugger;
-      console.log("Duplicate mobile check response:", res);
       console.log("Duplicate mobile check response:", res.data);
 
       if (res.data && res.data.length > 0) {
@@ -539,12 +535,66 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
       setIsScreenLocked(false);
     }
   }
-  catch(err)
-  {
-    console.log("Failed to Search Lead from Mobile Number : ",err);
+};
+
+const handleMobileBlur = async (e) => {
+  const mobileNo = e.target.value;
+
+  // keep whatever validation you already had before the API call
+  if (!mobileNo || mobileNo.length !== 10) {
+    return;
   }
+
+  setIsCheckingMobile(true);
+  document.body.style.cursor = 'wait';
+
+  try {
+    await onMobileChangeFocus(e); // your existing existing-customer check
+  } catch (error) {
+    console.error('Failed to check existing customer:', error);
+    // surface this to the user however you already do errors —
+    // e.g. setErrors(prev => ({ ...prev, mobileNo: 'Could not verify this number' }))
+  } finally {
+    document.body.style.cursor = 'default';
+    setIsCheckingMobile(false);
   }
-  
+};
+
+  const handleContinueWithNewLead = () => {
+  const mainLead = leadsForPhoneNumber[0]?.mainLead; // DashboardRowDto
+
+  const freshLead = getEmptyLeadObj(); // brand-new lead, no leadID carried over
+  debugger;
+  if (mainLead) {
+    // Only customer-identity fields — adjust names to match your DashboardRowDto exactly
+    freshLead.leadID=mainLead.leadID ||0 ;
+    freshLead.title = mainLead.title || '';
+    freshLead.fName = mainLead.fName || '';
+    freshLead.mName = mainLead.mName || '';
+    freshLead.lName = mainLead.lName || '';
+    freshLead.gender = mainLead.gender || '';
+    freshLead.birthDate = mainLead.birthDate || null;
+    freshLead.mobileNo = mainLead.mobileNo || leadObj.mobileNo || '';
+    freshLead.emailId = mainLead.emailId || '';
+    freshLead.city = mainLead.city || '';
+    freshLead.area = mainLead.area || '';
+    freshLead.customerType = mainLead.customerType || null;
+    freshLead.enquiryMode = mainLead.enquiryMode || null;
+    freshLead.enquirySource = mainLead.enquirySource || null;
+  }
+
+  setLeadObj(freshLead);
+  setIsUpdateMode(false);      // stays a create, not an update
+  setSelectedLeadName("");     // force the user to pick a category for this new lead
+
+  // reset all category objects so nothing bleeds over from the matched lead
+  setVisaObj(getEmptyVisaObj());
+  setAirTicketingLeadObj({ ...getEmptyAirTicketObj(), airTicketType: "Domestic" });
+  setCarLeadObj(getEmptyCarLeadObj());
+  setHolidayLeadObj(getEmptyHolidayLeadObj());
+
+  setISLeadsForPhoneVisible(false);
+};
 
   const fetchEnquiryDetails = async () => {
     debugger;
