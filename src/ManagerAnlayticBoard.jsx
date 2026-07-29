@@ -29,8 +29,14 @@ export default function ManagerAnalyticBoard() {
   const[listOFVerticles,setListOfVerticles]=useState([]);
   const [hierarchyData, setHierarchyData] = useState({}); // State to hold the hierarchy data
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [usersDict, setUsersDict] = useState({}); // key: userID, value: Userdata object});
-   const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [usersDict, setUsersDict] = useState({});
+  const usersDictRef = useRef({});  // always mirrors usersDict synchronously
+  const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const selectedUserIdsRef = useRef([]); // always mirrors selectedUserIds synchronously
+
+  // Keep refs in sync whenever state changes
+  useEffect(() => { usersDictRef.current = usersDict; }, [usersDict]);
+  useEffect(() => { selectedUserIdsRef.current = selectedUserIds; }, [selectedUserIds]);
     const { showMessage } = useMessageBox();
     const [isLoading, setIsLoading] = useState(false); // drives the shared wait-cursor overlay
 
@@ -171,61 +177,70 @@ const fetchUserHierarchy=async()=>{
   }
 };
 
-const onDateChange=()=>{
-  if (didMount.current==true){
-  console.log("Filters Applied:");
-  console.log("Selected Date Range:", selectedDateRange);
-  if(selectedDateRange.from=="" || selectedDateRange.to=="" ){
-    //alert("Please select date range before applying filters.");
-   // showmessage("Please select date range before applying filters.");
+const onDateChange = () => {
+  if (didMount.current === true) {
+    console.log("Selected Date Range:", selectedDateRange);
+    if (!selectedDateRange.from || !selectedDateRange.to) {
       showMessage("Please select date range before applying filters.", MESSAGE_TYPES.INFO);
-    return;
+      return;
+    }
+    // Use ref to get latest selectedUserIds — avoids stale closure
+    const currentSelectedIds = selectedUserIdsRef.current;
+    if (currentSelectedIds.length === 0) {
+      showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
+      return;
+    }
+    // Re-fetch ALL currently selected users with the new date range
+    // (date changed so existing cached data is stale — wipe and re-fetch)
+    setUsersDict({});
+    usersDictRef.current = {};
+    fetchUserData(currentSelectedIds);
   }
-  else if(selectedUserIds.length==0)
-  {
-    //alert("Please select Users before applying filters.");
-    showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
-    return;
-  }
-   fetchUserData(selectedUserIds); //1. Fetch data for selected users with new date range
-}
 };
 
-const handleUserClick = async (selectedIds) => {
-  console.log("Selected User IDs:", selectedIds);
-  console.log("Previous Selected User IDs:", selectedUserIds);
-  console.log("Current usersDict:", usersDict);
+const handleUserClick = async (newSelectedIds) => {
+  console.log("Selected User IDs:", newSelectedIds);
 
-  // 1️⃣ Detect removed/deselected user IDs
-  const removedIds = selectedUserIds.filter(id => !selectedIds.includes(id));
-  console.log("Removed/Deselected IDs:", removedIds);
+  const prevIds = selectedUserIdsRef.current;
+  const removedIds = prevIds.filter(id => !newSelectedIds.includes(id));
 
-  // 2️⃣ Update selectedUserIds state
-  setSelectedUserIds(selectedIds);
+  // Update selection state + ref synchronously
+  setSelectedUserIds(newSelectedIds);
+  selectedUserIdsRef.current = newSelectedIds;
 
-  // 3️⃣ Find IDs that need fresh fetch
-  const idsToFetch = selectedIds.filter(id => !(id in usersDict));
+  // Nothing selected — wipe dict and bail
+  if (newSelectedIds.length === 0) {
+    setUsersDict({});
+    usersDictRef.current = {};
+    return;
+  }
+
+  // Build the new dict synchronously (remove deselected, keep rest)
+  // Update ref immediately so idsToFetch check below sees the right state
+  let currentDict = { ...usersDictRef.current };
+  if (removedIds.length > 0) {
+    removedIds.forEach(id => delete currentDict[id]);
+    usersDictRef.current = currentDict;
+    setUsersDict(currentDict);
+  }
+
+  // No date range — show selection visually but don't fetch
+  if (!selectedDateRange.from || !selectedDateRange.to) {
+    showMessage("Please select a date range to load lead data.", MESSAGE_TYPES.INFO);
+    return;
+  }
+
+  // Fetch only IDs not already in the (now up-to-date) dict
+  const idsToFetch = newSelectedIds.filter(id => !(id in currentDict));
   console.log("Need to fetch:", idsToFetch);
 
-  // If nothing new to fetch
-  if (idsToFetch.length === 0) {
-    console.log("No new users to fetch.");
-  } else {
+  if (idsToFetch.length > 0) {
     try {
       await fetchUserData(idsToFetch);
-      console.log("Fetched and added users: ", idsToFetch);
     } catch (err) {
       console.error("Error fetching users:", err);
     }
   }
-
-  // 4️⃣ Optionally, remove old user data from dictionary
-  //    ONLY if you want to clean memory
-  removedIds.forEach(id => {
-    delete usersDict[id];
-  });
-
-  console.log("Cleaned usersDict:", usersDict);
 };
 const fetchUserData = async (userIdList) => {
           if(selectedDateRange.from=="" || selectedDateRange.to=="" ){
@@ -265,15 +280,13 @@ const fetchUserData = async (userIdList) => {
             // Suppose fetchedUsers is your array
             const fetchedUsers = response.data;
 
-            setUsersDict(prev => {
-              const newDict = { ...prev }; // copy previous state
-
-              fetchedUsers.forEach(user => {
-                newDict[user.userID] = { Userdata: user };
-              });
-              return newDict;
-
+            // Build new dict eagerly and update ref synchronously
+            const newDict = { ...usersDictRef.current };
+            fetchedUsers.forEach(user => {
+              newDict[user.userID] = { Userdata: user };
             });
+            usersDictRef.current = newDict;
+            setUsersDict(newDict);
 
             console.log("Updated usersDict:", usersDict);
           } catch (error) {
@@ -329,6 +342,7 @@ return (
                       data={hierarchyData}
                       onSelectionChange={handleUserClick}
                       isLoading={isLoading}
+                      selectedIds={selectedUserIds}
                     />
                   </div>
                 </>
