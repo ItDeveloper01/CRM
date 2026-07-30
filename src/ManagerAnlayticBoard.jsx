@@ -351,7 +351,7 @@ return (
 
             {/* ------- RIGHT ANALYTICS PANEL ------- */}
             <div className="flex-1 overflow-hidden flex flex-col">
-              <LeadsAndStats data={usersDict} />
+              <LeadsAndStats data={usersDict} dateRange={selectedDateRange} />
             </div>
 
           </div>

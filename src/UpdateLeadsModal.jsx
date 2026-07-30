@@ -38,8 +38,11 @@ export default function UpdateLeadsModal({parent, isOpen, onClose, lead, mode ,v
         </div>
 
         {/* Body (Lead Generation Form) */}
-        <div className="p-4 overflow-y-auto flex-1 max-h-[calc(90vh-60px)]">
-          <Leadgeneration lead={lead}  onClose={onClose}  mode={mode} viewAllLeads={viewAllLeads} isGenerateNewLeadAllowed={isGenerateNewLeadAllowed} />
+        {/* <div className="p-4 overflow-y-auto flex-1 max-h-[calc(90vh-60px)]"> */}
+        <div className="flex-1 w-full h-full p-4 overflow-y-auto">
+          <Leadgeneration lead={lead}  onClose={onClose}  mode={mode} viewAllLeads={viewAllLeads} isGenerateNewLeadAllowed={isGenerateNewLeadAllowed} 
+           fullWidth={true}
+          />
         </div>
       </div>
     </div>

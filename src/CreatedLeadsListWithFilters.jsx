@@ -20,6 +20,8 @@ import {
   getLeadType,
   getDestinations,
   getLatestUpdate,
+  CalendarFilter,
+  LeadsSummaryBar,
 } from "./LeadsSharedTable";
 
 // Flip this one flag to switch every filter back to single-select behaviour.
@@ -51,7 +53,7 @@ const EMPTY_FILTERS = {
   preferredDestination: [],
 };
 
-export default function CreatedLeadsListWithFilters({ users }) {
+export default function CreatedLeadsListWithFilters({ users, dateRange }) {
   const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
   const { user: sessionUser } = useGetSessionUser();
   const { showMessage } = useMessageBox();
@@ -161,6 +163,7 @@ export default function CreatedLeadsListWithFilters({ users }) {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [nameSearch, setNameSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [followUpSels, setFollowUpSels] = useState([]);
 
   // ---------------- UNIQUE FILTER OPTIONS FROM DATA ----------------
   const filterOptions = useMemo(() => {
@@ -225,6 +228,7 @@ export default function CreatedLeadsListWithFilters({ users }) {
   const clearFilters = () => {
     setFilters(EMPTY_FILTERS);
     setNameSearch("");
+    setFollowUpSels([]);
   };
 
   const handleSort = (key) => {
@@ -236,6 +240,17 @@ export default function CreatedLeadsListWithFilters({ users }) {
 
   // ---------------- APPLY FILTERS ----------------
   const filteredLeads = useMemo(() => {
+    const inFollowUp = (lead) => {
+      if (!followUpSels.length) return true;
+      if (!lead.followUpDate) return false;
+      const d = new Date(lead.followUpDate).toISOString().split("T")[0];
+      return followUpSels.some(s => {
+        if (s.type === 'single') return s.date === d;
+        const [a, b] = [s.from, s.to].sort();
+        return d >= a && d <= b;
+      });
+    };
+
     return allLeads.filter((lead) => {
       const matchesFilters =
         (filters.status.length ? filters.status.includes(lead.status) : true) &&
@@ -253,13 +268,14 @@ export default function CreatedLeadsListWithFilters({ users }) {
           : true) &&
         (filters.createdAt.length
           ? filters.createdAt.includes(new Date(lead.createdAt).toISOString().split("T")[0])
-          : true);
+          : true) &&
+        inFollowUp(lead);
 
       const matchesName = !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
 
       return matchesFilters && matchesName;
     });
-  }, [allLeads, filters, nameSearch]);
+  }, [allLeads, filters, nameSearch, followUpSels]);
 
   // ---------------- APPLY SORT ----------------
   const sortedLeads = useMemo(() => {
@@ -267,7 +283,7 @@ export default function CreatedLeadsListWithFilters({ users }) {
 
     const { key, direction } = sortConfig;
     const dir = direction === "asc" ? 1 : -1;
-    const dateKeys = ["createdAt", "updatedAt", "latestUpdateAt"];
+    const dateKeys = ["createdAt", "updatedAt", "latestUpdateAt", "followUpDate"];
 
     return [...filteredLeads].sort((a, b) => {
       let valA = key === "latestUpdateAt" ? getLatestUpdate(a) : a[key];
@@ -312,6 +328,13 @@ export default function CreatedLeadsListWithFilters({ users }) {
               onToggle={(value) => handleFilterChange(key, value)}
             />
           ))}
+
+          <CalendarFilter
+            label="Follow-up Date"
+            selections={followUpSels}
+            onApply={sels => setFollowUpSels(sels)}
+            onClear={() => setFollowUpSels([])}
+          />
         </div>
 
         {/* CLEAR FILTER BUTTON */}
@@ -323,8 +346,11 @@ export default function CreatedLeadsListWithFilters({ users }) {
         </button>
       </div>
 
+      {/* ---------------- SUMMARY BAR ---------------- */}
+      <LeadsSummaryBar dateRange={dateRange} leads={sortedLeads} />
+
       {/* ---------------- TABLE (fills remaining height, only this scrolls) ---------------- */}
-      <div className="overflow-auto flex-1 border rounded-lg mt-4">
+      <div className="overflow-auto flex-1 border rounded-lg mt-2">
         <table className="w-full text-xs border-collapse">
           <thead className="bg-gray-100">
             <tr>
@@ -345,6 +371,7 @@ export default function CreatedLeadsListWithFilters({ users }) {
               />
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Trip Type / Lead Type</th>
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Destinations</th>
+              <SortableHeader label="Follow-up Date" sortKey="followUpDate" sortConfig={sortConfig} onSort={handleSort} />
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">TransferTo</th>
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Details</th>
             </tr>
@@ -414,6 +441,12 @@ export default function CreatedLeadsListWithFilters({ users }) {
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}
+                </td>
+
+                <td className="p-2">
+                  {lead.followUpDate
+                    ? new Date(lead.followUpDate).toLocaleDateString("en-GB").replace(/\//g, "-")
+                    : <span className="text-gray-400">—</span>}
                 </td>
 
                 <td className="p-2 text-center">
