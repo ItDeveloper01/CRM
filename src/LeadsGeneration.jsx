@@ -42,7 +42,7 @@ console.log("LeadHolidays =", LeadHolidays);
 
 
 
-export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true }) {
+export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true, fullWidth=false }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
@@ -143,6 +143,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
+   const getCountryListMasterEndPoint =config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
   
@@ -150,18 +151,7 @@ const [isScreenLocked, setIsScreenLocked] = useState(false);
 const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
 
-  // const prepareAirTicketPayload = (obj) => {
-  //   if (obj.airTicketType?.toLowerCase() === "domestic") {
-  //     // Strip international-only fields
-  //     const { visaStatus, passportValidityDate, overseasInsurance, ...domesticObj } = obj;
-  //     return domesticObj;
-  //   }
-  //   return obj; // International → keep everything
-  // };
-
-
-
-  //useEffect(() => {
+    //useEffect(() => {
   const checkDuplicateFromReminder = async () => {
 
     debugger;
@@ -172,12 +162,7 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
   };
 
-  //   checkDuplicateFromReminder();
-
-  // }, [reminderState, viewAllLeads]); 
-  //Indian city api 
   useEffect(() => {
-
 
     //**************************  Fecth Current User    *********************///////////////
     const loggedInUser = localStorage.getItem("loggedInUser");
@@ -185,43 +170,6 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
       setCurrentUser(JSON.parse(loggedInUser)); // if stored as object
       console.log("Loggend IN user in Lead generation..", loggedInUser);
     }
-
-    // Example API that provides Indian cities
-
-    // *****************************old Country code 25.11.2025*************************
-    // fetch("https://countriesnow.space/api/v0.1/countries/cities", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ country: "India" }),
-    // })
-
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     if (data?.data) {
-    //       setCities(data.data);
-    //       console.log("countries: ", data.data);
-    //     }
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     console.error(Constants.ErrorMessages.ERROR_FETCHING_CITIES, err);
-    //     setLoading(false);
-    //   });
-    // *****************************old Country code 25.11.2025*************************
-
-    //   fetch("https://api.first.org/data/v1/countries")
-    // .then(res => res.json())
-    // .then(data => {
-    //   const formatted = Object.entries(data.data).map(([code, item]) => ({
-    //     name: item.country,
-    //     value: code
-    //   }));
-    //   console.log("countries are :", data);
-    //   console.log("formatted countries are :", formatted);
-    //   setCountryCode(formatted);
-    // })
-    // .catch(err => console.error("Error fetching country codes:", err));
-
 
     //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
     fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
@@ -238,21 +186,6 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
         setCountries(formattedCountries);
       })
       .catch((err) => console.error("Error fetching countries:", err));
-
-    // Fetch Special Requirements for Car Rental
-    // const fetchSpecialRequirements = async () => {
-    //   try {
-    //     // Replace with your actual API endpoint
-    //     const response = await axios.get(config.apiUrl + '/MasterData/GetSpecialRequirements');
-    //     setSpecialRequirements(response.data || []);
-    //     console.log("Special requirements fetched successfully", response.data);
-    //   } catch (err) {
-    //     console.error("Failed to fetch special requirements:", err);
-    //     // For demonstration, using mock data on failure
-    //     setSpecialRequirements(['Child Seat', 'Wheelchair Accessible', 'Pet Friendly', 'GPS Navigation']);
-    //   }
-    // };
-    // fetchSpecialRequirements();
 
     fetchCountries();
     fetchCityList();     // for City API
@@ -282,32 +215,6 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
     console.error("Error fetching countries:", err);
   }
 };
-
-
-  // Fetch List of City from API(Self made)
-// below will work but need to change id and name inside visa not used 
-// const fetchCountries = async () => {
-//     debugger;
-//     const countryList = await axios.get(getCountryListMasterEndPoint)
-//       .then((res) => {
-//         console.log('Fetching City List in Lead Generate Page ...', res.data);
-//         setCountries(res.data || []);
-//       }
-//       ).catch((err) => {
-//         debugger;
-//         console.error("Failed to fetch City List :", err);
-//         console.error("Failed ......... :", err.response.data);
-
-//       })
-//       .finally(() => {
-//         // Always executed, regardless of success or error)
-//         console.log('City List Fetch function finished.')
-//         // alert("City List Fetch function finished.");
-//       })
-
-//   }
-
-  
 
   // Fetch List of City from API(Self made)
   const fetchCityList = async () => {
@@ -1110,60 +1017,48 @@ useEffect(() => {
 
 
 
-const validateServiceForm = (errs) => {
-  try {
+  const validateServiceForm = (errs) => {
+    try {
 
-let isBasicFormValid=true;
-let isServiceFormValid=true;
- if (Object.keys(errs).length > 0) {
-    setErrors(errs);
-    setShowPopup(true);
-    isBasicFormValid=false;
-  }
-
-    switch (selectedLeadName.toLowerCase()) {
-
-      case "holiday": {
-        const isValid = holidayRef.current?.validate();
-
-        if (!isValid) {
-          setShowPopup(true);
-          isServiceFormValid=false;
-        }
-
-        break;
-      }
-
-      // case "visa":
-      //   return visaRef.current?.validate();
-
-      // case "airticket":
-      //   return airTicketRef.current?.validate();
-
-      // case "carrental":
-      //   return carRentalRef.current?.validate();
-
-      default:
-        break;
+  let isBasicFormValid=true;
+  let isServiceFormValid=true;
+  if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      setShowPopup(true);
+      isBasicFormValid=false;
     }
 
-    return (isBasicFormValid && isServiceFormValid);
+      switch (selectedLeadName.toLowerCase()) {
 
-  } catch (error) {
-    console.error("Service validation failed:", error);
-    setShowPopup(true);
-    return false;
-  }
-};
+        case "holiday": {
+          const isValid = holidayRef.current?.validate();
+
+          if (!isValid) {
+            setShowPopup(true);
+            isServiceFormValid=false;
+          }
+
+          break;
+        }
+        
+        default:
+          break;
+      }
+
+      return (isBasicFormValid && isServiceFormValid);
+
+    } catch (error) {
+      console.error("Service validation failed:", error);
+      setShowPopup(true);
+      return false;
+    }
+  };
 
   const handleSubmit = async (e) => {
 
     debugger;
 
     e.preventDefault();
-
-
-
 
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
@@ -1172,17 +1067,6 @@ let isServiceFormValid=true;
     const titleError = validateBeforeSubmit(leadObj.title, "Title");
     const genderError = validateBeforeSubmit(leadObj.gender, "Gender");
     const followUpDateError = validateBeforeSubmit(leadObj.followUpDate, "Follow up Date");
-
-    //    const returnDateError = validateBeforeSubmit(
-    //   airTicketingdObj.returnDate,
-    //   "Return Date",
-    //   {
-    //     airTicketType: airTicketingdObj.airTicketType,
-    //     returnDate: airTicketingdObj.returnDate,
-    //     onwardDate: airTicketingdObj.onwardDate,
-    //   }
-    // );
-
 
     const errs = validate();
     if (fNameError) errs.fName = fNameError;
@@ -1368,7 +1252,6 @@ if (!validateServiceForm(errs)) {
         //   alert("Lead updated successfully!");
         // ******************************************************************************************************
 
-
       } else {
 
         debugger;
@@ -1457,7 +1340,7 @@ if (!validateServiceForm(errs)) {
   };
   return (
 
-    <div className='max-w-6xl mx-auto p-6 bg-white shadow-lg rounded-xl'>
+    <div className={`${fullWidth ? "w-full" : "w-3/4 mx-auto"} p-6 bg-white shadow-lg rounded-xl`}>
       {/* <fieldset disabled={readOnly}> */}
 
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
@@ -1469,42 +1352,6 @@ if (!validateServiceForm(errs)) {
           <h3 className='text-lg font-semibold text-gray-800 my-4 '>Customer Details</h3>
           {/* <div className="flex flex-col items-start gap-1"> */}
           <div className="flex flex-col gap-1">
-
-            {/* Status Row */}
-            {/* <div className="flex items-center gap-2">
-              <label className="font-medium text-gray-700">Status:</label>
-
-              {isViewMode ? (
-                <ViewSelect value={selectedStatus?.statusName || ""} />
-              ) : (
-                <select
-                  name="leadStatus"
-                  value={leadObj.leadStatus || 1}
-                  onChange={handleChangeStatusReason}
-                  disabled={!isUpdateMode || isUncategorised}
-                  className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
-                  ${border} ${ring} ${bg}
-                  ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
-                `}
-                >
-                  {leadStatusMasterList?.map((lStatus) => (
-                    <option key={lStatus.id} value={lStatus.id}>
-                      {lStatus.statusName}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            
-            {isViewMode &&
-              (selectedStatus?.id === Constants.LeadStatus.Lost ||
-                selectedStatus?.id === Constants.LeadStatus.Postponed) && (
-                <div className="font-medium text-gray-700">
-                  Reason: <span className="font-medium">{lead?.reasonDescription}</span>
-                </div>
-              )} */}
-
 
             <div className="grid grid-cols-[120px_1fr] gap-y-2 gap-x-2 items-center">
 
@@ -1521,10 +1368,10 @@ if (!validateServiceForm(errs)) {
                   value={leadObj.leadStatus || 1}
                   onChange={handleChangeStatusReason}
                   disabled={!isUpdateMode || isUncategorised}
-                  className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
-      ${border} ${ring} ${bg}
-      ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
-    `}
+                                    className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+                        ${border} ${ring} ${bg}
+                        ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
+                      `}
                 >
                   {leadStatusMasterList?.map((lStatus) => (
                     <option key={lStatus.id} value={lStatus.id}>
@@ -1562,9 +1409,6 @@ if (!validateServiceForm(errs)) {
             </span>
           </div> */}
 
-
-
-
           <LeadStatusReason
             isOpen={statusReason}
             // onClose={() => setStatusReason(false)}
@@ -1575,7 +1419,6 @@ if (!validateServiceForm(errs)) {
             leadCategory={selectedLeadName}
             statusId={selectedStatusId}   // Pass updated status state for reason list 
           />
-
         </div>
 
         <div className='flex gap-4 mb-4'>
