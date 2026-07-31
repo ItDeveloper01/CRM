@@ -66,9 +66,10 @@ export function EyeIcon() {
 // Flip ALLOW_MULTI_SELECT (imported/used by each page) to switch back to
 // single-select — this component itself doesn't care either way, the
 // page's handleFilterChange decides whether to toggle or replace.
-export function MultiSelectFilter({ label, options, selected, onToggle }) {
+export function MultiSelectFilter({ label, options, selected, onToggle, onClear }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  const isActive = selected.length > 0;
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -83,16 +84,32 @@ export function MultiSelectFilter({ label, options, selected, onToggle }) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="border p-2 rounded text-sm min-w-[130px] bg-white text-left flex justify-between items-center gap-2"
+        className={`border px-2 py-1.5 rounded text-sm min-w-[110px] text-left flex items-center gap-1.5 transition font-medium
+          ${isActive
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "bg-white border-gray-400 text-gray-700 hover:border-gray-600"}`}
       >
-        <span className="truncate">
-          {selected.length ? `${label} (${selected.length})` : `Filter by ${label}`}
+        <span className="truncate flex-1">
+          {isActive ? `${label} (${selected.length})` : label}
         </span>
-        <span className="text-[10px]">{open ? "▲" : "▼"}</span>
+        {isActive ? (
+          <span
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onClear && onClear();
+              setOpen(false);
+            }}
+            title={`Clear ${label} filter`}
+            className="flex-shrink-0 w-4 h-4 rounded-full bg-white text-red-600 flex items-center justify-center text-[11px] font-black leading-none hover:bg-red-100 cursor-pointer"
+          >✕</span>
+        ) : (
+          <span className="text-[10px] text-gray-500 flex-shrink-0">{open ? "▲" : "▼"}</span>
+        )}
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-1 bg-white border rounded shadow-lg max-h-56 overflow-auto min-w-[190px]">
+        <div className="absolute z-20 mt-1 bg-white border border-gray-200 rounded shadow-lg max-h-56 overflow-auto min-w-[190px]">
           {options.length === 0 && (
             <div className="px-2 py-1.5 text-xs text-gray-400">No options</div>
           )}
@@ -275,27 +292,32 @@ export function CalendarFilter({ label, selections = [], onApply, onClear }) {
     pending.map(s => s.type === 'single' ? calFmt(s.date) :
       `${calFmt([s.from,s.to].sort()[0])} → ${calFmt([s.from,s.to].sort()[1])}`).join(" · ");
 
-  const btnLabel = selections.length === 0 ? `${label} ▼` :
-    selections.length === 1 && selections[0].type === 'single' ? `${label}: ${calFmt(selections[0].date)} ▼` :
-    selections.length === 1 ? `${label}: ${calFmt([selections[0].from,selections[0].to].sort()[0])} → ${calFmt([selections[0].from,selections[0].to].sort()[1])} ▼` :
-    `${label} (${selections.length}) ▼`;
-
   const isActive = selections.length > 0;
+
+  const btnLabel = selections.length === 0 ? label :
+    selections.length === 1 && selections[0].type === 'single' ? `${label}: ${calFmt(selections[0].date)}` :
+    selections.length === 1 ? `${label}: ${calFmt([selections[0].from,selections[0].to].sort()[0])} → ${calFmt([selections[0].from,selections[0].to].sort()[1])}` :
+    `${label} (${selections.length})`;
 
   return (
     <div ref={wrapRef} style={{ position:"relative", display:"inline-block" }}>
       <button
         type="button"
         onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
-        className={`border p-2 rounded text-sm min-w-[150px] bg-white text-left flex justify-between items-center gap-2 ${isActive ? "border-blue-400 text-blue-700 bg-blue-50" : ""}`}
+        className={`border px-2 py-1.5 rounded text-sm min-w-[110px] text-left flex items-center gap-1.5 transition font-medium
+          ${isActive
+            ? "bg-blue-600 border-blue-600 text-white"
+            : "bg-white border-gray-400 text-gray-700 hover:border-gray-600"}`}
       >
-        <span className="truncate">{btnLabel}</span>
-        {isActive && (
+        <span className="truncate flex-1">{btnLabel}</span>
+        {isActive ? (
           <span
-            onClick={e => { e.stopPropagation(); setPending([]); onClear(); }}
-            className="text-gray-400 hover:text-red-500 text-xs"
-            title="Clear"
+            onMouseDown={e => { e.stopPropagation(); e.preventDefault(); setPending([]); onClear(); setOpen(false); }}
+            title="Clear filter"
+            className="flex-shrink-0 w-4 h-4 rounded-full bg-white text-red-600 flex items-center justify-center text-[11px] font-black leading-none hover:bg-red-100 cursor-pointer"
           >✕</span>
+        ) : (
+          <span className="text-[10px] text-gray-500 flex-shrink-0">{open ? "▲" : "▼"}</span>
         )}
       </button>
 
