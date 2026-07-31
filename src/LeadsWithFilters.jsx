@@ -267,7 +267,8 @@ export default function LeadListWithFilters({ users, dateRange }) {
           : true) &&
         inFollowUp(lead);
 
-      const matchesName = !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
+      const matchesName = !nameSearch ||
+        `${lead.fName || ""} ${lead.lName || ""}`.toLowerCase().includes(nameSearch.toLowerCase());
 
       return matchesFilters && matchesName;
     });
@@ -303,42 +304,58 @@ export default function LeadListWithFilters({ users, dateRange }) {
     <div className="flex flex-col h-full">
       <LoadingOverlay visible={isLoading} />
 
-      {/* ---------------- FILTER BAR (never scrolls) ---------------- */}
-      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg flex-shrink-0">
-        <div className="flex flex-wrap items-center gap-4 flex-1">
-          {/* Name search */}
-          <input
-            type="text"
-            placeholder="Search by Name"
-            value={nameSearch}
-            onChange={(e) => setNameSearch(e.target.value)}
-            className="rounded px-2 py-1.5 focus:outline-none focus:ring-2 bg-white border border-gray-300"
-          />
+     {/* ---------------- FILTER BAR ---------------- */}
+<div className="bg-gray-50 border rounded-lg p-2">
+  <div className="flex items-start gap-3">
 
-          {visibleFilterKeys.map((key) => (
-            <MultiSelectFilter
-              key={key}
-              label={FILTER_LABELS[key] || key}
-              options={filterOptions[key]}
-              selected={filters[key]}
-              onToggle={(value) => handleFilterChange(key, value)}
-            />
-          ))}
-        </div>
+    {/* Left: All filters */}
+    <div className="flex-1 flex flex-wrap items-center gap-2">
 
-          <CalendarFilter
-            label="Follow-up Date"
-            selections={followUpSels}
-            onApply={sels => setFollowUpSels(sels)}
-            onClear={() => setFollowUpSels([])}
-          />
-        <button
-          className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
-          onClick={clearFilters}
-        >
-          Clear Filters
-        </button>
-      </div>
+      <input
+        type="text"
+        placeholder="Search by Name"
+        value={nameSearch}
+        onChange={(e) => setNameSearch(e.target.value)}
+        className="rounded px-2 py-1.5 text-sm bg-white border border-gray-300 min-w-[160px] focus:outline-none focus:ring-2"
+      />
+
+      {visibleFilterKeys.map((key) => (
+        <MultiSelectFilter
+          key={key}
+          label={FILTER_LABELS[key] || key}
+          options={filterOptions[key]}
+          selected={filters[key]}
+          onToggle={(value) => handleFilterChange(key, value)}
+          onClear={() =>
+            setFilters((f) => ({
+              ...f,
+              [key]: [],
+            }))
+          }
+        />
+      ))}
+
+      <CalendarFilter
+        label="Follow-up Date"
+        selections={followUpSels}
+        onApply={(sels) => setFollowUpSels(sels)}
+        onClear={() => setFollowUpSels([])}
+      />
+
+    </div>
+
+    {/* Right: Fixed button */}
+    <div className="flex-shrink-0">
+      <button
+        className="px-3 py-1.5 text-sm bg-blue-700 text-white rounded hover:bg-blue-800 whitespace-nowrap"
+        onClick={clearFilters}
+      >
+        Clear Filters
+      </button>
+    </div>
+
+  </div>
+</div>
 
       {/* ---------------- SUMMARY BAR ---------------- */}
       <LeadsSummaryBar dateRange={dateRange} leads={sortedLeads} />
@@ -375,7 +392,19 @@ export default function LeadListWithFilters({ users, dateRange }) {
               <tr key={idx} className="border-b hover:bg-gray-50">
                 <td className="p-2">{idx + 1}</td>
                 <td className="p-2">
-                  {lead.fName} {lead.lName}
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                   {lead.title.trim()} {lead.fName} {lead.lName}
+                    </span>
+
+                    {lead.histories &&
+                      lead.histories.length > 0 &&
+                      lead.histories[0].notes && (
+                        <span className="text-xs text-gray-500 mt-0.5 max-w-[225px] break-words">
+                        Notes: {lead.histories[0].notes}
+                        </span>
+                      )}
+                  </div>
                 </td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.assignedTo}</td>

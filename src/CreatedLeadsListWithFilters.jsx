@@ -263,15 +263,16 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
         (filters.leadType.length ? filters.leadType.includes(getLeadType(lead)) : true) &&
         (filters.preferredDestination.length
           ? splitDestinations(getDestinations(lead)).some((d) =>
-              filters.preferredDestination.includes(d)
-            )
+            filters.preferredDestination.includes(d)
+          )
           : true) &&
         (filters.createdAt.length
           ? filters.createdAt.includes(new Date(lead.createdAt).toISOString().split("T")[0])
           : true) &&
         inFollowUp(lead);
 
-      const matchesName = !nameSearch || lead.fName.toLowerCase().includes(nameSearch.toLowerCase());
+      const matchesName = !nameSearch ||
+        `${lead.fName || ""} ${lead.lName || ""}`.toLowerCase().includes(nameSearch.toLowerCase());
 
       return matchesFilters && matchesName;
     });
@@ -308,42 +309,58 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
       <LoadingOverlay visible={isLoading} />
 
       {/* ---------------- FILTER BAR (never scrolls) ---------------- */}
-      <div className="flex flex-wrap items-center gap-4 p-3 bg-gray-50 border rounded-lg flex-shrink-0">
-        <div className="flex flex-wrap items-center gap-4 flex-1">
-          {/* Name search */}
-          <input
-            type="text"
-            placeholder="Search by Name"
-            value={nameSearch}
-            onChange={(e) => setNameSearch(e.target.value)}
-            className="rounded px-2 py-1.5 focus:outline-none focus:ring-2 bg-white border border-gray-300"
-          />
+      <div className="bg-gray-50 border rounded-lg flex-shrink-0 p-2">
 
-          {visibleFilterKeys.map((key) => (
-            <MultiSelectFilter
-              key={key}
-              label={FILTER_LABELS[key] || key}
-              options={filterOptions[key]}
-              selected={filters[key]}
-              onToggle={(value) => handleFilterChange(key, value)}
+        <div className="flex items-start gap-3">
+
+          {/* Left: Search + all filters + Follow-up Date */}
+          <div className="flex-1 flex flex-wrap items-center gap-2">
+
+            <input
+              type="text"
+              placeholder="Search by Name"
+              value={nameSearch}
+              onChange={(e) => setNameSearch(e.target.value)}
+              className="rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 bg-white border border-gray-300 min-w-[160px]"
             />
-          ))}
 
-          <CalendarFilter
-            label="Follow-up Date"
-            selections={followUpSels}
-            onApply={sels => setFollowUpSels(sels)}
-            onClear={() => setFollowUpSels([])}
-          />
+            {visibleFilterKeys.map((key) => (
+              <MultiSelectFilter
+                key={key}
+                label={FILTER_LABELS[key] || key}
+                options={filterOptions[key]}
+                selected={filters[key]}
+                onToggle={(value) => handleFilterChange(key, value)}
+                onClear={() =>
+                  setFilters((f) => ({
+                    ...f,
+                    [key]: [],
+                  }))
+                }
+              />
+            ))}
+
+            <CalendarFilter
+              label="Follow-up Date"
+              selections={followUpSels}
+              onApply={(sels) => setFollowUpSels(sels)}
+              onClear={() => setFollowUpSels([])}
+            />
+
+          </div>
+
+          {/* Right: Clear Filters (always fixed) */}
+          <div className="flex-shrink-0">
+            <button
+              className="px-3 py-1.5 text-sm bg-blue-700 text-white rounded hover:bg-blue-800 whitespace-nowrap"
+              onClick={clearFilters}
+            >
+              Clear Filters
+            </button>
+          </div>
+
         </div>
 
-        {/* CLEAR FILTER BUTTON */}
-        <button
-          className="px-3 py-2 text-sm bg-blue-700 text-white rounded hover:bg-blue-700"
-          onClick={clearFilters}
-        >
-          Clear Filters
-        </button>
       </div>
 
       {/* ---------------- SUMMARY BAR ---------------- */}
@@ -382,7 +399,19 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
               <tr key={idx} className="border-b hover:bg-gray-50">
                 <td className="p-2">{idx + 1}</td>
                 <td className="p-2">
-                  {lead.fName} {lead.lName}
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                   {lead.title.trim()} {lead.fName} {lead.lName}
+                    </span>
+
+                    {lead.histories &&
+                      lead.histories.length > 0 &&
+                      lead.histories[0].notes && (
+                        <span className="text-xs text-gray-500 mt-0.5 max-w-[225px] break-words">
+                        Notes: {lead.histories[0].notes}
+                        </span>
+                      )}
+                  </div>
                 </td>
                 <td className="p-2">{lead.categoryName}</td>
                 <td className="p-2 font-semibold">{lead.leadCreatedByName}</td>
@@ -390,15 +419,14 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                 <td className="p-2 text-center">{lead.leadID}</td>
 
                 <td
-                  className={`p-2 font-semibold ${
-                    lead.status === "Lost"
-                      ? "text-lostText"
-                      : lead.status === "Confirmed"
+                  className={`p-2 font-semibold ${lead.status === "Lost"
+                    ? "text-lostText"
+                    : lead.status === "Confirmed"
                       ? "text-confirmedText"
                       : lead.status === "Postponed"
-                      ? "text-postponedText"
-                      : "text-openText"
-                  }`}
+                        ? "text-postponedText"
+                        : "text-openText"
+                    }`}
                 >
                   {lead.status}
                 </td>
@@ -451,11 +479,10 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
 
                 <td className="p-2 text-center">
                   <button
-                    className={`inline-flex items-center justify-center p-1.5 rounded ${
-                      ["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())
-                        ? "bg-gray-300 cursor-not-allowed text-white"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
-                    }`}
+                    className={`inline-flex items-center justify-center p-1.5 rounded ${["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())
+                      ? "bg-gray-300 cursor-not-allowed text-white"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
                     title="Transfer Lead"
                     onClick={() => openTransferModal(lead)}
                     disabled={["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())}
