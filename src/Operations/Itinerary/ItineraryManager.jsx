@@ -3,12 +3,15 @@ import ManageItineraryForm from "./ItineraryForm";
 import { useItinerary } from "./UseItinerary";
 import axios from "axios";
 import config from "../../config";
+import { ColumnsSettings } from "lucide-react";
 
 //fetchedMonthsCache: Stores only whether a month has already been fetched
-const fetchedMonthsCache = new Set();     // successfully complete ho chuke keys
+const fetchedMonthsCache = new Set();     // to check  which months already fetch to avoid duplicate call 
 // survives re-render but not page refresh
-let dashboardMemory = {};
+let dashboardMemory = {};    //JavaScript variable
 const inFlightRequests = new Map();       // abhi pending requests: key -> Promise
+// Currently visible month cache keys
+//const visibleMonthCache = new Set();    
 // ... STYLES, MONTH_NAMES, badgeClass, etc. same rahenge ...
 const STYLES = {
   pageBg: "bg-[#f0f4f8]",
@@ -112,16 +115,20 @@ const STATUS_FILTERS = [
     name: "Ongoing",
   },
   {
-    id: 3,
+    id: 4,
     name: "Cancelled",
   },
   {
-    id: 4,
+    id: 6,
     name: "Completed",
   },
   {
     id: 5,
     name: "On Hold",
+  },
+  {
+    id: 7,
+    name: "Draft",
   },
 ];
 //---------------------------------------------------
@@ -249,39 +256,55 @@ function FilterPill({ label, active, onClick }) {
 // ─── ITINERARY CARD ───────────────────────────────────────────────────────────
 function ItineraryCard({ card, onDelete, onEdit }) {
   // debugger;
-  const mapToCard = (item) => {
+  // const mapToCard = (item) => {
+  //   debugger;
+  //   return {
 
-    return {
+  //     id: item.variantId,
 
-      id: item.variantId,
+  //     title: item.itName,
 
-      title: item.itName,
+  //     variantName: item.variantsName,
 
-      variantName: item.variantsName,
+  //     status: item.statusName,
 
-      status: item.statusName,
+  //     //to get status Name from id 
+  //     // status:
+  //     //   item.statusName ||
+  //     //   getStatusName(item.status),
 
-      guide: item.guideName,
+  //     guide: item.guideName,
 
-      cities: `${item.startLocation} → ${item.endLocation}`,
 
-      dates: new Date(item.startDate).toLocaleDateString(),
 
-      startDate: item.startDate,
+  //     // Guide name ki requirement nahi hai
+  //   // ID display karna ho toh:
+  //   // guide:
+  //   //     item.guideName ||
+  //   //     (
+  //   //         item.guideId != null
+  //   //             ? `Guide ID: ${item.guideId}`
+  //   //             : ""
+  //   //     ),
+  //     cities: `${item.startLocation} → ${item.endLocation}`,
 
-      endDate: item.endDate,
+  //     dates: new Date(item.startDate).toLocaleDateString(),
 
-      seats: item.occupiedSeats,
+  //     startDate: item.startDate,
 
-      total: item.totalSeats,
+  //     endDate: item.endDate,
 
-      rate: `₹${item.perPaxBaseAmount}`,
+  //     seats: item.occupiedSeats,
 
-      raw: item
+  //     total: item.totalSeats,
 
-    };
+  //     rate: `₹${item.perPaxBaseAmount}`,
 
-  };
+  //     raw: item
+
+  //   };
+
+  // };
 
   return (
     <div className={STYLES.cardBase} onClick={() => onEdit(card)}>
@@ -291,7 +314,7 @@ function ItineraryCard({ card, onDelete, onEdit }) {
         title="Remove itinerary"
         onClick={(e) => {
           e.stopPropagation();
-          onDelete(card.id);
+          onDelete(card.variantId);
         }}
         aria-label="Remove itinerary"
       >
@@ -299,16 +322,17 @@ function ItineraryCard({ card, onDelete, onEdit }) {
       </button>
 
       <div className="flex items-start justify-between gap-2 mb-1.5">
-        <span className={STYLES.cardTitle}>{card.title}</span>
-        <StatusBadge status={card.status} />
+        {/* <span className={STYLES.cardTitle}>{card.title}</span> */}
+        <span className={STYLES.cardTitle}>{card.variantsName}</span>
+        <StatusBadge status={card.statusName} />
       </div>
 
-      <MetaRow icon="📅" text={card.dates} />
-      <MetaRow icon="👤" text={card.guide} />
-      <MetaRow icon="📍" text={card.cities} />
+      <MetaRow icon="📅" text={new Date(card.startDate).toLocaleDateString()} />
+      <MetaRow icon="👤" text={card.guideName} />
+      <MetaRow icon="📍" text={`${card.startLocation} → ${card.endLocation}`} />
 
-      <SeatBar seats={card.seats} total={card.total} />
-      <div className={STYLES.rateText}>{card.rate}/pax</div>
+      <SeatBar seats={card.occupiedSeats} total={card.totalSeats} />
+      <div className={STYLES.rateText}>₹{card.perPaxBaseAmount}/pax</div>
     </div>
   );
 }
@@ -346,11 +370,15 @@ function KanbanColumn({
           scrollbarColor: "#bfdbfe #f0f4f8",
         }}
       >
+        {/* Here we mapping and api data to kanben board to see properly on Itinerary card in card formate */}
+        
         {cards.map((card) => (
           <ItineraryCard
-            key={card.id}
+            // key={card.id}
+            key={card.variantId}
             card={card}
-            onDelete={(id) => onDelete(month, id)}
+            // onDelete={(id) => onDelete(month, id)}
+            onDelete={(variantId) => onDelete(month, variantId)}
             onEdit={onEdit}
           />
         ))}
@@ -462,10 +490,17 @@ const ALL_MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const STATUS_MAPPING = {
   Active: 1,
   Ongoing: 2,
-  Cancelled: 3,
-  Completed: 4,
+  Cancelled: 4,
+  Completed: 6,
+  Draft: 7,
   "On Hold": 5,
 };
+
+const getStatusName = (statusId) => {
+  // return STATUS_MAPPING[statusId] || "Draft";
+  return STATUS_MAPPING[statusId] || "Active";
+};
+
 
 export default function TravelAgencyItineraryManager() {
   const { createItinerary, updateItinerary, loading, error } = useItinerary();
@@ -494,8 +529,16 @@ export default function TravelAgencyItineraryManager() {
   //dashboardCache: Stores the actual month data returned from the API.
   // const [dashboardCache, setDashboardCache] = useState({});
   const [, forceRender] = useState({});
+  //floe of forceRender
+  //   dashboardMemory["2026-1-7"] = rows;
+  // ↓
+  // forceRender({});
+  // ↓
+  // React Render
+  // ↓
+  // UI updated
   // console.log("Monthly itinerary Dashboard Data  : ", dashboardCache);
-   console.log("Monthly itinerary Dashboard Data  : ", dashboardMemory);
+  console.log("Monthly itinerary Dashboard Data  : ", dashboardMemory);
   const [loadingDashboard, setLoadingDashboard] = useState(false);
 
   const getMonthLabel = (month) => `${MONTH_NAMES[month - 1]} ${selectedYear}`;
@@ -528,23 +571,222 @@ export default function TravelAgencyItineraryManager() {
 
   const tlCards = timelineMonth ? data[timelineMonth] || [] : [];
 
-  const mapToCard = (item) => ({
-    id: item.variantId,
-    title: item.itName,
-    variantName: item.variantsName,
-    status: item.statusName,
-    guide: item.guideName,
-    cities: `${item.startLocation} → ${item.endLocation}`,
-    dates: new Date(item.startDate).toLocaleDateString(),
-    startDate: item.startDate,
-    endDate: item.endDate,
-    seats: item.occupiedSeats,
-    total: item.totalSeats,
-    rate: `₹${item.perPaxBaseAmount}`,
-    raw: item,
-  });
+  // const mapToCard = (item) => ({
+  //   id: item.variantId,
+  //   title: item.itName,
+  //   variantName: item.variantsName,
+  //   status: item.statusName,
+  //   guide: item.guideName,
+  //   cities: `${item.startLocation} → ${item.endLocation}`,
+  //   dates: new Date(item.startDate).toLocaleDateString(),
+  //   startDate: item.startDate,
+  //   endDate: item.endDate,
+  //   seats: item.occupiedSeats,
+  //   total: item.totalSeats,
+  //   rate: `₹${item.perPaxBaseAmount}`,
+  //   raw: item,
+  // });
+
+  // const addCreatedItineraryToDashboard = (createdItinerary) => {
+  //   debugger;
+
+  //   if (!createdItinerary?.variantsDetails?.length) {
+  //     console.log("No variants found in created itinerary");
+  //     return;
+  //   }
+
+  //   console.log(
+  //     "Adding created itinerary to dashboard:",
+  //     createdItinerary
+  //   );
+
+  //   createdItinerary.variantsDetails.forEach((variant) => {
+  //     debugger;
+  //     if (!variant.startDate) {
+  //       console.log("StartDate not found for variant:", variant);
+  //       return;
+  //     }
+
+  //     // -----------------------------------------
+  //     // 1. Get Year and Month from StartDate
+  //     // -----------------------------------------
+
+  //     const dateParts = variant.startDate.split("-");
+
+  //     const year = Number(dateParts[0]);
+  //     const month = Number(dateParts[1]);
+
+  //     // -----------------------------------------
+  //     // 2. Variant status
+  //     // -----------------------------------------
+
+  //     const status = variant.status;
+
+  //     // -----------------------------------------
+  //     // 3. Create dashboard cache key
+  //     // year-status-month
+  //     // Example: 2026-1-8
+  //     // -----------------------------------------
+
+  //     const cacheKey = `${year}-${status}-${month}`;
+
+  //     console.log(
+  //       "Created Variant Cache Key:",
+  //       cacheKey
+  //     );
+
+  //     // -----------------------------------------
+  //     // 4. Check whether this month/status
+  //     // is already fetched in dashboard
+  //     // -----------------------------------------
+  //     debugger;
+  //     if (dashboardMemory[cacheKey] == null) {
+
+  //       console.log(
+  //         `Dashboard cache ${cacheKey} not loaded yet.`
+  //       );
+
+  //       return;
+  //     }
+
+  //     // -----------------------------------------
+  //     // 5. Create object compatible with
+  //     // ItineraryVariantFlatDto / mapToCard
+  //     // -----------------------------------------
+  //     debugger;
+  //     const newDashboardItem = {
+
+  //       // Itinerary ID
+  //       // itineraryId: createdItinerary.itineraryId,
+
+  //       // Variant ID
+  //       variantId: variant.id,
+
+  //       // Basic itinerary details
+  //       itName:
+  //         createdItinerary.itineraryBasicDetails?.itName || "",
+
+  //       // Variant details
+  //       variantsName: variant.variantsName,
+
+  //       startLocation: variant.startLocation,
+
+  //       endLocation: variant.endLocation,
+
+  //       startDate: variant.startDate,
+
+  //       endDate: variant.endDate,
+
+  //       totalSeats: variant.totalSeats ?? 0,
+
+  //       occupiedSeats: variant.occupiedSeats ?? 0,
+
+  //       perPaxBaseAmount:
+  //         variant.perPaxBaseAmount ?? 0,
+
+  //       // IDs only — names not required
+  //       guideId: variant.guideId,
+        
+
+  //       targetAudienceId: variant.targetAudienceId,
+
+  //       // Status ID
+  //       status: variant.status,
+
+  //       // Frontend UI ke liye locally generated
+  //       statusName: getStatusName(variant.status),
+
+  //       // Names ki requirement nahi hai
+  //       guideName: "",
+
+  //       targetAudienceName: ""
+  //     };
+
+  //     // -----------------------------------------
+  //     // 6. Duplicate check
+  //     // -----------------------------------------
+
+  //     const alreadyExists =
+  //       dashboardMemory[cacheKey].some(
+
+  //         item =>
+  //           item.variantId === newDashboardItem.variantId
+  //       );
+
+  //     if (alreadyExists) {
+
+  //       console.log(
+  //         "Created variant already exists:",
+  //         newDashboardItem.variantId
+  //       );
+
+  //       return;
+  //     }
+
+  //     // -----------------------------------------
+  //     // 7. Existing fetched array mein add karo
+  //     // -----------------------------------------
+
+  //     dashboardMemory[cacheKey] = [
+  //       newDashboardItem,
+  //       ...dashboardMemory[cacheKey]
+  //     ];
+
+  //     console.log(
+  //       `Created itinerary added to dashboardMemory[${cacheKey}]`,
+  //       dashboardMemory[cacheKey]
+  //     );
+  //   });
+
+  //   // -----------------------------------------
+  //   // 8. Force React re-render
+  //   // -----------------------------------------
+  //   debugger;
+  //   forceRender({});
+  // };
 
   // Debug ke liye — sirf tracing, logic same
+  
+  //used to update DashboardMemory data 
+  const mergeVariantsIntoDashboard = (variants) => {
+
+  if (!variants?.length) return;
+
+  variants.forEach((variant) => {
+
+    // Current variant ka key
+    const newCacheKey = `${variant.year}-${variant.statusId}-${variant.month}`;
+
+    // ----------------------------
+    // STEP 1 : Remove Old Variant from all places
+    // ----------------------------
+    Object.keys(dashboardMemory).forEach((key) => {
+
+      dashboardMemory[key] = dashboardMemory[key].filter(
+        item => item.variantId !== variant.variantId
+      );
+
+    });
+
+    // ----------------------------
+    // STEP 2 :If new Month Not LOaded then skip
+    // ----------------------------
+    if (!dashboardMemory[newCacheKey]) {
+      return;
+    }
+
+    // ----------------------------
+    // STEP 3 : Add into New place 
+    // ----------------------------
+    dashboardMemory[newCacheKey].unshift(variant);
+
+  });
+
+  // React re-render
+  forceRender({});
+};
+
+  
   let callCounter = 0;
   // ── fetchMonth: ab ref se hi check karta hai, state se nahi ──
   // const fetchMonth = async (year, month, status, forceRefresh = false) => {
@@ -583,58 +825,62 @@ export default function TravelAgencyItineraryManager() {
   //   }
   // };
   const fetchMonth = (year, month, status, forceRefresh = false) => {
-  const cacheKey = `${year}-${status}-${month}`;
+    const cacheKey = `${year}-${status}-${month}`;
+    debugger;
 
-  //Used to refresh after Create,Update,Delete 
-  if (!forceRefresh) {
-    // Remembers which year-status-month combinations have already been successfully fetched.
-    if (fetchedMonthsCache.has(cacheKey)) {
-      console.log(`[SKIP - already done] ${cacheKey}`);
-      return Promise.resolve(); //Do not call api for already fetch Data 
+
+    //Used to refresh after Create,Update,Delete 
+    if (!forceRefresh) {
+      // Remembers which year-status-month combinations have already been successfully fetched.
+      if (fetchedMonthsCache.has(cacheKey)) {
+        console.log(`[SKIP - already done] ${cacheKey}`);
+        return Promise.resolve(); //Do not call api for already fetch Data 
+      }
+      //Prevents multiple simultaneous requests for the same year-status-month.
+      if (inFlightRequests.has(cacheKey)) {
+        console.log(`[SKIP - in flight] ${cacheKey}`);
+        return inFlightRequests.get(cacheKey); //to prevent two api call for same month
+      }
     }
-    //Prevents multiple simultaneous requests for the same year-status-month.
-    if (inFlightRequests.has(cacheKey)) {
-      console.log(`[SKIP - in flight] ${cacheKey}`);
-      return inFlightRequests.get(cacheKey); //to prevent two api call for same month
-    }
-  }
 
-  // console.log(`[REQUEST SENT] month=${month} key=${cacheKey} at ${Date.now()}`);
-  console.log("Request Send :",cacheKey)
+    // console.log(`[REQUEST SENT] month=${month} key=${cacheKey} at ${Date.now()}`);
+    console.log("Request Send :", cacheKey)
 
-  // IMPORTANT: axios.get() call se pehle hi Map mein daal do —
-  // taaki isi tick mein doosri call aaye toh turant SKIP mile
-  const requestPromise = axios
-    .get(`${config.operationsUrl}/Itinerary/GetItineraryDashboard`, {
-      params: { Year: year, Month: month, Status: status },
-    })
-    .then((response) => {
-      const rows = response.data.data || [];
-      fetchedMonthsCache.add(cacheKey);
-      // console.log(`[RESPONSE RECEIVED] month=${month} key=${cacheKey} at ${Date.now()}`);
-      console.log("Fetch Dashboard Response : ",response);
-      //setDashboardCache((prev) => ({ ...prev, [cacheKey]: rows }));
-      dashboardMemory[cacheKey] = rows;
+    // IMPORTANT: axios.get() call se pehle hi Map mein daal do —
+    // taaki isi tick mein doosri call aaye toh turant SKIP mile
+    const requestPromise = axios
+      .get(`${config.operationsUrl}/Itinerary/GetItineraryDashboard`, {
+        params: { Year: year, Month: month, Status: status },
+      })
+      .then((response) => {
+        debugger;
+        const rows = response.data.data || [];
+        fetchedMonthsCache.add(cacheKey);
+        // console.log(`[RESPONSE RECEIVED] month=${month} key=${cacheKey} at ${Date.now()}`);
+        console.log("Fetch Dashboard Response : ", response);
+        //setDashboardCache((prev) => ({ ...prev, [cacheKey]: rows }));
+        dashboardMemory[cacheKey] = rows;
 
-      forceRender({});
-      return rows;
-    })
-    .catch((err) => {
-      console.error(`[ERROR] month=${month} key=${cacheKey}`, err);
-      fetchedMonthsCache.delete(cacheKey);
-    })
-    .finally(() => {
-      inFlightRequests.delete(cacheKey);
-    });
+        forceRender({});
+        return rows;
+      })
+      .catch((err) => {
+        console.error(`[ERROR] month=${month} key=${cacheKey}`, err);
+        fetchedMonthsCache.delete(cacheKey);
+      })
+      .finally(() => {
+        inFlightRequests.delete(cacheKey);
+      });
 
-  // Ye line axios.get() ke turant baad, SYNCHRONOUSLY chalti hai —
-  // isse pehle koi await nahi hai, isliye race-condition-proof hai
-  inFlightRequests.set(cacheKey, requestPromise);
+    // Ye line axios.get() ke turant baad, SYNCHRONOUSLY chalti hai —
+    // isse pehle koi await nahi hai, isliye race-condition-proof hai
+    inFlightRequests.set(cacheKey, requestPromise);
 
-  return requestPromise;
-};
+    return requestPromise;
+  };
 
   const refreshDashboard = async () => {
+    debugger;
     setLoadingDashboard(true);
     const statusId = STATUS_MAPPING[activeFilter];
 
@@ -642,7 +888,11 @@ export default function TravelAgencyItineraryManager() {
     // maujood maan ke fresh fetch karao (delete+add taaki turant re-trigger na ho)
     const requests = ALL_MONTHS.map((month) => {
       const cacheKey = getCacheKey(selectedYear, statusId, month);
-      if (fetchedKeysRef.current.has(cacheKey)) {
+      // if (fetchedKeysRef.current.has(cacheKey)) {
+      //   return fetchMonth(selectedYear, month, statusId, true);
+      // }
+      // Sirf already fetched months ko refresh karo
+      if (fetchedMonthsCache.has(cacheKey)) {
         return fetchMonth(selectedYear, month, statusId, true);
       }
       return Promise.resolve();
@@ -654,17 +904,36 @@ export default function TravelAgencyItineraryManager() {
 
   const handleSave = async (request) => {
     try {
-      debugger ;
+      debugger;
       let response;
       if (request.id) {
+
+        //=================Update Itinerary===================
         response = await updateItinerary(request);
+        console.log("Updated Itinerary Data is :", response);
+
+         // it will merge Updated Variant array into Dashboard memroy
+        mergeVariantsIntoDashboard(response);
+        debugger;
+
       } else {
+        // ===============Create Itinerary===================
         response = await createItinerary(request);
-        console.log("create Itinerary Data is :",response);
+        console.log("create Itinerary Data is :", response);
+
+        // it will merge newly created Variant array into Dashboard memroy
+        mergeVariantsIntoDashboard(response);
+        debugger;
       }
 
       console.log("API Response:", response);
-      await refreshDashboard();
+      //await refreshDashboard();  // used to refresh Dashboard it refresh whole fetch data 
+      // IMPORTANT:
+      // Full dashboard refresh nahi karna.
+      // Sirf already fetched month mein new object add karna.
+      // addCreatedItineraryToDashboard(response);
+      mergeVariantsIntoDashboard(response);
+      // =============close itinerary from
 
       setShowItineraryModal(false);
       setEditingItinerary(null);
@@ -680,25 +949,27 @@ export default function TravelAgencyItineraryManager() {
   //   setDashboardCache({});
   // }, [selectedYear, activeFilter]);
   useEffect(() => {
-
+    debugger;
     fetchedKeysRef.current = new Set();
 
-}, [selectedYear, activeFilter]);
+  }, [selectedYear, activeFilter]);
   useEffect(() => {
-
+    debugger;
+    console.log("Dashboard Mounted");
     return () => {
 
-        dashboardMemory = {};
+      console.log("Memory Clear");
+      dashboardMemory = {};
 
-        fetchedMonthsCache.clear();
+      fetchedMonthsCache.clear();
 
-        inFlightRequests.clear();
+      inFlightRequests.clear();
 
-        fetchedKeysRef.current.clear();
+      fetchedKeysRef.current.clear();
 
     };
 
-}, []);
+  }, []);
 
   // ── Initial window fetch: current month ke pichle 1 + agle 6 (total 7) ──
   // useEffect(() => {
@@ -744,6 +1015,7 @@ export default function TravelAgencyItineraryManager() {
             const month = Number(entry.target.dataset.month);
             fetchMonth(selectedYear, month, statusId);
           }
+
         });
       },
       {
@@ -810,11 +1082,25 @@ export default function TravelAgencyItineraryManager() {
             // const isLoaded = Object.prototype.hasOwnProperty.call(dashboardCache, cacheKey);
             // const cards = isLoaded ? dashboardCache[cacheKey].map(mapToCard) : [];
             const isLoaded = dashboardMemory[cacheKey] != null;
+            //it checks is data available for cahekey  isLoaded = true; 
 
-const cards = isLoaded
-? dashboardMemory[cacheKey].map(mapToCard)
-: [];
+            const cards = isLoaded
+              ? dashboardMemory[cacheKey]
+              : [];
+              // console.log("Cards details :",cards);
+            //	If isLoaded is true
+            //		   ↓
+            //	take dashboardMemory[cacheKey]
+            //		   ↓
+            //	convert each API item using mapToCard
+            //		   ↓
+            //	store result in cards
 
+            //	Otherwise
+            //		   ↓
+            //	cards = []     it stores whole fecth data and we map it to Kanben
+
+            //if isLoaded = true; condition is true 
             return (
               <div
                 key={month}
