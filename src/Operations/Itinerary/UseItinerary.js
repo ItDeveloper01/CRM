@@ -90,9 +90,12 @@ export function useItinerary() {
                 }
             );
             
+            // console.log("Create itninerary API Response : ", response.data);
             return response.data;
-            console.log("Create itninerary API Response : ", response.data);
-            console.log("Create itninerary API Response : ", response);
+            
+            console.log("Create itninerary Data is  : ", response);
+
+            debugger;
 
 
         } catch (err) {

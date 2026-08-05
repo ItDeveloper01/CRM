@@ -27,7 +27,7 @@ export default function ItineraryDetailsSection({
   updateNumDays,
 }) {
   debugger;
-  console.log("Itinerary:", itineraryObj);
+  // console.log("Itinerary:", itineraryObj);
   const basic = itineraryObj.itineraryBasicDetails;
   const handleChange = (field, value) => {
 

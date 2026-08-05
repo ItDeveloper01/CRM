@@ -88,20 +88,20 @@ export default function TrainBookingForm({ data, onChange, travelScope }) {
     let mounted = true;
     setCountriesLoading(true);
 
-    fetchCountries()
-      .then((list) => {
-        if (!mounted) return;
-        setCountries(Array.isArray(list) ? list : []);
-      })
-      .catch((err) => {
-        console.error("Failed to load countries:", err);
-        if (!mounted) return;
-        setCountries([]);
-      })
-      .finally(() => {
-        if (!mounted) return;
-        setCountriesLoading(false);
-      });
+    // fetchCountries()
+    //   .then((list) => {
+    //     if (!mounted) return;
+    //     setCountries(Array.isArray(list) ? list : []);
+    //   })
+    //   .catch((err) => {
+    //     console.error("Failed to load countries:", err);
+    //     if (!mounted) return;
+    //     setCountries([]);
+    //   })
+    //   .finally(() => {
+    //     if (!mounted) return;
+    //     setCountriesLoading(false);
+    //   });
 
     return () => {
       mounted = false;
