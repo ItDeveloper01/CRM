@@ -209,3 +209,105 @@ export const NOTIFICATION_COLORS = {
 //     color: "bg-blue-500 hover:bg-blue-600",
 //   },
 // };
+// USER_FORM.js
+
+export const USER_FORM = {
+
+    // Main Layout
+    container:
+        "max-w-8xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6",
+
+    section:
+        "bg-gray-50 border border-gray-200 rounded-xl p-5",
+
+    sectionTitle:
+        "text-sm font-semibold uppercase tracking-wider text-gray-700 border-b border-gray-200 pb-2 mb-4",
+
+    divider:
+        "border-t border-gray-200 my-5",
+
+    grid3:
+        "grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-3",
+
+    grid2:
+        "grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-3",
+
+    grid4:
+        "grid grid-cols-1 md:grid-cols-4 gap-x-4 gap-y-3",
+
+    fullWidth:
+        "md:col-span-3",
+
+    // Labels
+    label:
+        "block text-xs font-semibold text-gray-600 mb-1",
+
+    required:
+        "text-red-500 ml-0.5",
+
+    // Inputs
+    input:
+        "w-full h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
+
+    inputDisabled:
+        "w-full h-10 rounded-lg border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed px-3",
+
+    textarea:
+        "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
+
+    checkbox:
+        "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500",
+
+    radio:
+        "h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500",
+
+    // Validation
+    error:
+        "text-xs text-red-500 mt-1",
+
+    // Buttons
+    primaryButton:
+        "h-10 px-5 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium",
+
+    secondaryButton:
+        "h-10 px-5 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 transition font-medium",
+
+    dangerButton:
+        "h-10 px-5 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium",
+
+    outlineButton:
+        "h-10 px-5 rounded-lg border border-blue-500 text-blue-600 hover:bg-blue-50 transition font-medium",
+
+    // Assignment Card
+    assignmentCard:
+        "bg-white border border-gray-200 rounded-xl shadow-sm p-4",
+
+    assignmentHeader:
+        "flex items-center justify-between pb-3 mb-3 border-b border-gray-100",
+
+    assignmentGrid:
+        "grid grid-cols-1 md:grid-cols-6 gap-3 items-end",
+
+    assignmentAction:
+        "flex items-center justify-center",
+
+    assignmentDefault:
+        "flex items-center justify-center",
+
+    // Footer
+    footer:
+        "flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6",
+
+    // Small UI
+    badge:
+        "inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-2 py-1 text-xs font-semibold",
+
+    muted:
+        "text-gray-500",
+
+    title:
+        "text-2xl font-bold text-gray-800",
+
+    subtitle:
+        "text-sm text-gray-500"
+};
