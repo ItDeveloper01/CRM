@@ -5,7 +5,7 @@ import config from './config';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { cloneDeep, get, has, set, update } from 'lodash';
-import { getEmptyUserObj, UserObject } from './Model/UserModel';
+import { getEmptyUserObj, UserObject ,getEmptyAssignment } from './Model/UserModel';
 import { useLocation } from 'react-router-dom';
 import React from 'react';
 import { useGetSessionUser } from './SessionContext';
@@ -18,8 +18,9 @@ import { PasswordField } from './PasswordConfirmationComponent';
 import qs from 'qs';
 import { emphasize } from '@mui/material/styles';
 import { useMessageBox } from "./Notification";
-import { MESSAGE_TYPES } from './Constants';
+import { MESSAGE_TYPES ,USER_FORM} from './Constants';
 import { mapObject } from './Model/MappingObjectFunction';
+import DepartmentAssignmentCard from './DepartmentAssignmentCard';
 
 export default function UserCreate({ }) {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export default function UserCreate({ }) {
   const [cancelBtnText, setCancelBtnText] = useState("Cancel");
   const { showMessage } = useMessageBox();
   const apiUrl = config.apiUrl;
-  const getDeptartmentsEndpoint = apiUrl + '/Users/GetDepartmentList';
+  //const getDeptartmentsEndpoint = apiUrl + '/Users/GetDepartmentList';
   const getUserRolesListEndPoint = apiUrl + '/Users/GetRolesList';
   const getbranchListEndPoint = apiUrl + '/Users/GetBranchList';
   const updateUserAPI = apiUrl + '/Users/UpdateUser';
@@ -40,6 +41,9 @@ export default function UserCreate({ }) {
   const fetchManagerListAPI = apiUrl + '/Users/GetManagerList';
   const checkUserIdEndpoint = apiUrl + '/Users/CheckIfUserIdExists';
   const checkEmpIdEndpoint=apiUrl+ '/users/CheckIfEmpIdIdExists';
+  const getDepartmentmasterListEndpoint = apiUrl + '/MasterData/GetDepartmentMasterList'; //Sales,Operations,TeleCalling
+  const getVerticalmasterListEndpoint = apiUrl + '/MasterData/GetLeadCategoryMasterList';  //VISA, HOLIDAY, AIR Ticketing
+  const getCategorymasterListEndpoint = "";//apiUrl + '/MasterData/GetLeadCategoryMasterList';
 
   const location = useLocation(); // ✅ get location here
 
@@ -55,8 +59,17 @@ export default function UserCreate({ }) {
   const [photoPreview, setPhotoPreview] = useState(null); // store base64 for UI preview
   const [selectedDepartments, setSelectedDepartments] = useState([]);
   const [isDepartmentMultiselect, setIsDepartmentMultiselect] = useState(true);
+ 
+const [verticals, setVerticals] = useState([]);
+const [categories, setCategories] = useState([]);
   const hasFetchedManagers = useRef(false); // ✅ to avoid multiple fetches
-
+// const getEmptyAssignment = () => ({
+//     departmentId: "",
+//     verticalId: "",
+//     roleId: "",
+//     reportingManagerId: "",
+//     isDefaultView: false
+// });
   
   const { user: sessionUser } = useGetSessionUser();
 
@@ -65,6 +78,7 @@ export default function UserCreate({ }) {
 debugger;
 
     fetchDepartments(); // ✅ Fetch dropdown data on component load
+    fetchMasters(); // ✅ Fetch master data on component load
 debugger;
     if (location.state?.user) {
       // --- EDIT MODE ---
@@ -93,7 +107,18 @@ debugger;
     } else {
       // --- CREATE MODE ---
       setIsUpdate(false);
-      setUserObjects(getEmptyUserObj());
+     setUserObjects({
+    ...getEmptyUserObj(),
+    assignments: [
+        {
+            departmentId: "",
+            verticalId: "",
+            roleId: "",
+            reportingManagerId: "",
+            isDefaultView: true
+        }
+    ]
+});
     }
   }, []); // Rerun if the user being edited changes
 
@@ -215,13 +240,48 @@ debugger;
     }
   };
 
+  const fetchMasters = async () => {
+    try {
+
+        const [
+            deptRes,
+            verticalRes,
+           // categoryRes
+        ] = await Promise.all([
+
+            axios.get(getDepartmentmasterListEndpoint),
+
+            axios.get(getVerticalmasterListEndpoint),
+
+            //axios.get(getCategorymasterListEndpoint)
+
+        ]);
+
+        setDepartments(deptRes.data);
+
+        setVerticals(verticalRes.data);
+
+        console.log("Departments received:", deptRes.data.length, deptRes.data);
+        console.log("Verticals received:", verticalRes.data.length, verticalRes.data);
+
+       // setCategories(categoryRes.data);
+
+    } catch (err) {
+
+        console.error(err);
+
+    }
+};
+
+
+
   const fetchDepartments = async () => {
     try {
 
 
       console.log("Entry into fetchDepartments....");
       console.log("Token being sent:", sessionUser.token);
-      const res = await axios.get(getDeptartmentsEndpoint,
+      const res = await axios.get(getDepartmentmasterListEndpoint,
         {
           headers: { Authorization: `Bearer ${sessionUser.token}` }
         }
@@ -486,6 +546,13 @@ debugger;
 
   }
 
+  useEffect(() => {
+    // fetchMasters();
+}, []);
+
+
+
+
   return (
     <div className='max-w-8xl mx-auto bg-white p-6 shadow rounded-lg'>
       <div className="relative">
@@ -702,7 +769,7 @@ debugger;
 
            
             {/* Role */}
-            <div>
+            {/* <div>
               <label className='text-sm font-medium text-gray-700'>Role
                 <span className="text-red-500 text-lg leading-none"> *</span>
               </label>
@@ -719,93 +786,82 @@ debugger;
                 ))}
               </select>
               {errors.role && <p className='text-red-500 text-sm'>{errors.role}</p>}
-            </div>
+            </div> */}
 
 
 
-            {/* Department */}
-            <div>
-              <label className='text-sm font-medium text-gray-700'>Select  Department
-                <span className="text-red-500 text-lg leading-none"> *</span>
-              </label>
-              {/* Passing props to the DepartmentMultiSelectDropdown component */}
-              {/* <MultiSelectDropdown
-              departments={dummyDepartments}
-              selectedDepartmentList={userObjects.selectedDepartmentList}
-              setSelectedDepartmentList={(list) => setUserObjects({ ...userObjects, selectedDepartmentList: list })}
-              errors={dummyErrors}
-            /> */}
-              {/* <MultiSelectDropdown
-        options={departments} // assuming departments are objects with a 'name' property
-        selected={userObjects.selectedDepartmentList || []} // ensure it's always an array
-        setSelected={setSelectedDepartments}
-        errors={dummyErrors}
-             
-            /> */}
+            {/* Department Assignments */}
 
-              <MultiSelectDropdown setUserObjects={setUserObjects}
-                name="selectedDepartmentListCustomBox"
-                userObjects={userObjects}
-                departmentList={departments}
-                selectedDepartmentList={userObjects.selectedDepartmentList || []} // ensure it's always an array
-                setSelectedDepartmentList={(list) => setUserObjects({ ...userObjects, selectedDepartmentList: list })}
-                errors={errors}
-                multiSelect={isDepartmentMultiselect}
-                onDropDownClosed={handleChangeDropDown}
-              />
+<div className="md:col-span-3">
 
-              {/* <MultiSelectDropdown
+    {(userObjects.assignments || []).map((assignment, index) => (
+    <DepartmentAssignmentCard
+        key={index}
+        index={index}
+        assignment={assignment}
+
         departments={departments}
-        selectedDepartmentList={userObjects.selectedDepartmentList}
-        setSelectedDepartmentList={setSelectedDepartments}
-        errors={{}}
-        /> */}
+      verticals={verticals}
 
 
-              {/* <select
-                name='department'
-                value={userObjects.department}
-                onChange={handleChange}
-                className={`border p-2 rounded w-full ${errors.department ? 'border-red-500' : ''}`}>
-                <option value=''>Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={(dept.id)}>
-                    {dept.departmentName}
-                  </option>
-                ))}
-              </select> */}
+    roles={userRoles}
+        apiUrl={apiUrl}
+        token={sessionUser.token}
+       onChange={(updated) => {
 
-              {errors.reportingManager && (
-                <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
-              )}
-            </div>
-            {/* Reporting Manager */}
-            <div>
-              <label className='text-sm font-medium text-gray-700'>Reporting Manager
-                <span className="text-red-500 text-lg leading-none"> *</span>
-              </label>
-              <select
-                name='reportingManager'
-                value={userObjects.reportingManager}
-                onChange={handleChange}
-                onFocus={handleChangeDropDown} // ✅ triggers only when dropdown opens
-                onMouseDown={handleChangeDropDown} // ✅ triggers only when dropdown opens
-                disabled={
-                  !userObjects.role || userObjects.selectedDepartmentList.length === 0
-                }
-                className={`border-highlight`}>
-                <option value="">Select Manager</option>
-                {userObjects.reportingManagerList.map((mgr) => (
-                  <option key={mgr.userId} value={(mgr.userId)}>
-                    {mgr.firstName} {mgr.lastName}
-                  </option>
-                ))}
-              </select>
+    setUserObjects(prev => {
 
-              {errors.reportingManager && (
-                <p className='text-red-500 text-sm'>{errors.reportingManager}</p>
-              )}
-            </div>
+        const arr = [...prev.assignments];
+
+        arr[index] = updated;
+
+        return {
+            ...prev,
+            assignments: arr
+        };
+
+    });
+
+}}
+       onDelete={() => {
+
+    setUserObjects(prev => ({
+
+        ...prev,
+
+        assignments: prev.assignments.filter((_, i) => i !== index)
+
+    }));
+
+}}
+    />
+))}
+
+<button
+    type="button"
+    className="mt-3 bg-blue-500 text-white px-4 py-2 rounded"
+    onClick={() => {
+
+        setUserObjects(prev => ({
+
+            ...prev,
+
+            assignments: [
+
+                ...(prev.assignments || []),
+
+                getEmptyAssignment()
+
+            ]
+
+        }));
+
+    }}
+>
+    + Add Assignment
+</button>
+
+</div>
              
             {/* Designation */}
             <div>
@@ -901,4 +957,10 @@ debugger;
       </div>
     </div>
   );
+
+
+
+                       
+
+                   
 }
