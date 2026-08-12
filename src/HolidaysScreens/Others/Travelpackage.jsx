@@ -910,7 +910,7 @@ export default function TravelPackage({
                                             <div>
                                                 <textarea
                                                     rows={3}
-                                                    maxLength={300}
+                                                    maxLengthssm={300}
                                                     value={pkg.notes || ""}
                                                     onChange={(e) =>
                                                         updatePackage(index, "notes", e.target.value)

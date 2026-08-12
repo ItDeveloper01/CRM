@@ -43,6 +43,15 @@ export const getTripType = (lead) => lead.category?.tripType || null;
 export const getLeadType = (lead) => lead.category?.leadType || null;
 export const getDestinations = (lead) => lead.category?.requestedDestinations || "";
 export const getLatestUpdate = (lead) => lead.histories?.[0]?.createdAt || lead.updatedAt || null;
+export const getTravelDate = (lead) => {
+    const date = lead.category?.preferredTravelDate;
+
+    if (!date) return "-";
+
+    const [year, month, day] = date.split("-");
+
+    return `${day}-${month}-${year}`;
+};
 
 // ---------------- Small inline icons (no extra dependency) ----------------
 export function SwapIcon() {
