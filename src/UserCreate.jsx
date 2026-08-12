@@ -369,7 +369,7 @@ debugger;
     if (!userObjects.mobileNo.match(/^[0-9]{10}$/)) errs.mobileNo = 'Enter valid 10-digit mobile number';
     if (!userObjects.emailId.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))
       errs.emailId = 'Enter valid email address';
-    if (!userObjects.role) errs.role = 'Select a role';
+    //if (!userObjects.role) errs.role = 'Select a role';
     //   if (!form.reportingManager) errs.reportingManager = 'Select a reportingManager';
     if (userObjects.isUpdatepasword) {
       if (!userObjects.password)

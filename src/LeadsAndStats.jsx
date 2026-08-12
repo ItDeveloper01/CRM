@@ -38,6 +38,8 @@ export default function LeadsAndStats(dataProp) {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [data, setData] = useState(dataProp.data || []);
   const [users, setUSers] = useState([]);
+  // dateRange passed from ManagerAnalyticBoard via dataProp
+  const dateRange = dataProp.dateRange || null;
 
   React.useEffect(() => {
     console.log("Data prop changed:", dataProp.data);
@@ -86,12 +88,12 @@ export default function LeadsAndStats(dataProp) {
           <>
             {activeTab === "Lead List" && (
               <div className="flex flex-col flex-1 min-h-0">
-                <LeadListWithFilters users={users} />
+                <LeadListWithFilters users={users} dateRange={dateRange} />
               </div>
             )}
 
             {activeTab === "Individual Statistics" && (
-              <div className="overflow-auto flex-1"><UserStatsCard users={users} /></div>
+              <div className="overflow-auto flex-1"><UserStatsCard users={users} dateRange={dateRange}/></div>
             )}
 
             {activeTab === "Team Overview" && (
@@ -108,7 +110,7 @@ export default function LeadsAndStats(dataProp) {
 
             {activeTab === "Created Leads" && (
               <div className="flex flex-col flex-1 min-h-0">
-                <CreatedLeadsListWithFilters users={users} />
+                <CreatedLeadsListWithFilters users={users} dateRange={dateRange} />
               </div>
             )}
           </>

@@ -94,9 +94,9 @@ export default function App() {
                  />
                  <Route
                   path='/teamStatistics/managerAnalyticBoard'
-                  element={<ManagerAnalyticBoard/>}
-                 />
-                  <Route
+                  element={<AnalyticsBoardWrapper />}
+                />
+                <Route
                   path='/businessAnalysis'
                   element={<OLAPDashboardTabs />}
                  />

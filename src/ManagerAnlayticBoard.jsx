@@ -168,7 +168,7 @@ const fetchUserHierarchy=async()=>{
 
     //setListOfVerticles(response.data);
     setHierarchyData(response.data);
-    console.log(response.data);
+    console.log("Analytics Tree hierrachy :",response.data);
     // setSubordinates(response.data);
   } catch (error) {
     console.error(error);
@@ -187,7 +187,7 @@ const onDateChange = () => {
     // Use ref to get latest selectedUserIds — avoids stale closure
     const currentSelectedIds = selectedUserIdsRef.current;
     if (currentSelectedIds.length === 0) {
-      showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
+      //showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
       return;
     }
     // Re-fetch ALL currently selected users with the new date range
