@@ -3877,7 +3877,8 @@ export default function UserTree({
                             text-slate-500
                             mr-1
                         ">
-                            Categories:
+                           Team 
+                           Categories:
                         </span>
 
 
