@@ -518,7 +518,7 @@ const LeadHolidays = forwardRef(({
                 "Please type at least one destination.";
         }
 
-         // Requested Travel Date
+        // Requested Travel Date
         if (
             !holidayLeadObj.preferredTravelDate ||
             holidayLeadObj.preferredTravelDate.length === 0
@@ -710,9 +710,8 @@ const LeadHolidays = forwardRef(({
         selectedConfig?.values?.tripType ||
         "Holiday";
 
-    const isGIT =
-        (holidayLeadObj?.leadType ||
-            selectedConfig?.values?.leadType) === "GIT";
+    const isGIT = false;
+
 
 
 
@@ -829,135 +828,135 @@ const LeadHolidays = forwardRef(({
 
 
 
-               <div>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-        Travel Date <span className="text-red-500">*</span>
-    </label>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Travel Date <span className="text-red-500">*</span>
+                    </label>
 
-    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-2">
 
-        {/* Travel Date */}
-        <div className="flex-1">
+                        {/* Travel Date */}
+                        <div className="flex-1">
 
-            {/* Input + Calendar */}
-            <div className="relative">
+                            {/* Input + Calendar */}
+                            <div className="relative">
 
-                <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={10}
-                    placeholder="DD-MM-YYYY"
-                    value={holidayLeadObj.preferredTravelDate || ""}
-                    onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, "");
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    placeholder="DD-MM-YYYY"
+                                    value={holidayLeadObj.preferredTravelDate || ""}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, "");
 
-                        // Maximum 8 digits: DDMMYYYY
-                        value = value.slice(0, 8);
+                                        // Maximum 8 digits: DDMMYYYY
+                                        value = value.slice(0, 8);
 
-                        if (value.length > 4) {
-                            value =
-                                value.slice(0, 2) +
-                                "-" +
-                                value.slice(2, 4) +
-                                "-" +
-                                value.slice(4);
-                        } else if (value.length > 2) {
-                            value =
-                                value.slice(0, 2) +
-                                "-" +
-                                value.slice(2);
-                        }
+                                        if (value.length > 4) {
+                                            value =
+                                                value.slice(0, 2) +
+                                                "-" +
+                                                value.slice(2, 4) +
+                                                "-" +
+                                                value.slice(4);
+                                        } else if (value.length > 2) {
+                                            value =
+                                                value.slice(0, 2) +
+                                                "-" +
+                                                value.slice(2);
+                                        }
 
-                        setHolidayLeadObj(prev => ({
-                            ...prev,
-                            preferredTravelDate: value
-                        }));
+                                        setHolidayLeadObj(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: value
+                                        }));
 
-                        if (errors.preferredTravelDate) {
-                            setErrors(prev => ({
-                                ...prev,
-                                preferredTravelDate: ""
-                            }));
-                        }
-                    }}
+                                        if (errors.preferredTravelDate) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate: ""
+                                            }));
+                                        }
+                                    }}
 
-                    onBlur={(e) => {
-                        const value = e.target.value.trim();
+                                    onBlur={(e) => {
+                                        const value = e.target.value.trim();
 
-                        if (!value) {
-                            setErrors(prev => ({
-                                ...prev,
-                                preferredTravelDate:
-                                    "Travel date is required."
-                            }));
-                            return;
-                        }
+                                        if (!value) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Travel date is required."
+                                            }));
+                                            return;
+                                        }
 
-                        const parts = value.split("-");
+                                        const parts = value.split("-");
 
-                        if (
-                            parts.length !== 3 ||
-                            parts[0].length !== 2 ||
-                            parts[1].length !== 2 ||
-                            parts[2].length !== 4
-                        ) {
-                            setErrors(prev => ({
-                                ...prev,
-                                preferredTravelDate:
-                                    "Enter date in DD-MM-YYYY format."
-                            }));
-                            return;
-                        }
+                                        if (
+                                            parts.length !== 3 ||
+                                            parts[0].length !== 2 ||
+                                            parts[1].length !== 2 ||
+                                            parts[2].length !== 4
+                                        ) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Enter date in DD-MM-YYYY format."
+                                            }));
+                                            return;
+                                        }
 
-                        const [day, month, year] = parts.map(Number);
+                                        const [day, month, year] = parts.map(Number);
 
-                        const enteredDate = new Date(
-                            year,
-                            month - 1,
-                            day
-                        );
+                                        const enteredDate = new Date(
+                                            year,
+                                            month - 1,
+                                            day
+                                        );
 
-                        enteredDate.setHours(0, 0, 0, 0);
+                                        enteredDate.setHours(0, 0, 0, 0);
 
-                        // Validate actual calendar date
-                        if (
-                            !day ||
-                            !month ||
-                            !year ||
-                            enteredDate.getFullYear() !== year ||
-                            enteredDate.getMonth() !== month - 1 ||
-                            enteredDate.getDate() !== day
-                        ) {
-                            setErrors(prev => ({
-                                ...prev,
-                                preferredTravelDate:
-                                    "Please enter a valid date."
-                            }));
-                            return;
-                        }
+                                        // Validate actual calendar date
+                                        if (
+                                            !day ||
+                                            !month ||
+                                            !year ||
+                                            enteredDate.getFullYear() !== year ||
+                                            enteredDate.getMonth() !== month - 1 ||
+                                            enteredDate.getDate() !== day
+                                        ) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Please enter a valid date."
+                                            }));
+                                            return;
+                                        }
 
-                        // Must be after today
-                        const today = new Date();
-                        today.setHours(0, 0, 0, 0);
+                                        // Must be after today
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
 
-                        if (enteredDate <= today) {
-                            setErrors(prev => ({
-                                ...prev,
-                                preferredTravelDate:
-                                    "Travel date must be after today."
-                            }));
-                            return;
-                        }
+                                        if (enteredDate <= today) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Travel date must be after today."
+                                            }));
+                                            return;
+                                        }
 
-                        setErrors(prev => ({
-                            ...prev,
-                            preferredTravelDate: ""
-                        }));
-                    }}
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: ""
+                                        }));
+                                    }}
 
-                    disabled={isViewMode}
+                                    disabled={isViewMode}
 
-                    className={`
+                                    className={`
                         w-full
                         px-3
                         py-2
@@ -969,54 +968,53 @@ const LeadHolidays = forwardRef(({
                         placeholder-gray-400
                         focus:outline-none
                         focus:ring-2
-                        ${
-                            errors.preferredTravelDate
-                                ? "border-red-400 focus:ring-red-100"
-                                : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"
-                        }
+                        ${errors.preferredTravelDate
+                                            ? "border-red-400 focus:ring-red-100"
+                                            : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"
+                                        }
                         ${isViewMode ? "bg-gray-50 cursor-not-allowed" : ""}
                     `}
-                />
+                                />
 
-                {/* Actual calendar picker */}
-                <input
-                    type="date"
-                    disabled={isViewMode}
+                                {/* Actual calendar picker */}
+                                <input
+                                    type="date"
+                                    disabled={isViewMode}
 
-                    min={(() => {
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
+                                    min={(() => {
+                                        const tomorrow = new Date();
+                                        tomorrow.setDate(tomorrow.getDate() + 1);
 
-                        const year = tomorrow.getFullYear();
-                        const month = String(
-                            tomorrow.getMonth() + 1
-                        ).padStart(2, "0");
-                        const day = String(
-                            tomorrow.getDate()
-                        ).padStart(2, "0");
+                                        const year = tomorrow.getFullYear();
+                                        const month = String(
+                                            tomorrow.getMonth() + 1
+                                        ).padStart(2, "0");
+                                        const day = String(
+                                            tomorrow.getDate()
+                                        ).padStart(2, "0");
 
-                        return `${year}-${month}-${day}`;
-                    })()}
+                                        return `${year}-${month}-${day}`;
+                                    })()}
 
-                    onChange={(e) => {
-                        if (!e.target.value) return;
+                                    onChange={(e) => {
+                                        if (!e.target.value) return;
 
-                        const [year, month, day] =
-                            e.target.value.split("-");
+                                        const [year, month, day] =
+                                            e.target.value.split("-");
 
-                        setHolidayLeadObj(prev => ({
-                            ...prev,
-                            preferredTravelDate:
-                                `${day}-${month}-${year}`
-                        }));
+                                        setHolidayLeadObj(prev => ({
+                                            ...prev,
+                                            preferredTravelDate:
+                                                `${day}-${month}-${year}`
+                                        }));
 
-                        setErrors(prev => ({
-                            ...prev,
-                            preferredTravelDate: ""
-                        }));
-                    }}
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: ""
+                                        }));
+                                    }}
 
-                    className="
+                                    className="
                         absolute
                         right-2
                         top-1/2
@@ -1027,11 +1025,11 @@ const LeadHolidays = forwardRef(({
                         cursor-pointer
                         z-10
                     "
-                />
+                                />
 
-                {/* Calendar icon */}
-                <span
-                    className="
+                                {/* Calendar icon */}
+                                <span
+                                    className="
                         absolute
                         right-3
                         top-1/2
@@ -1040,29 +1038,29 @@ const LeadHolidays = forwardRef(({
                         pointer-events-none
                         z-0
                     "
-                >
-                    📅
-                </span>
-            </div>
+                                >
+                                    📅
+                                </span>
+                            </div>
 
-            {/* Error BELOW input only */}
-            {errors.preferredTravelDate && (
-                <p className="text-red-500 text-sm mt-1">
-                    {errors.preferredTravelDate}
-                </p>
-            )}
-        </div>
+                            {/* Error BELOW input only */}
+                            {errors.preferredTravelDate && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.preferredTravelDate}
+                                </p>
+                            )}
+                        </div>
 
-        {/* Flexibility */}
-        <div className="relative">
+                        {/* Flexibility */}
+                        <div className="relative">
 
-            <button
-                type="button"
-                disabled={isViewMode}
-                onClick={() =>
-                    setShowFlexibility(prev => !prev)
-                }
-                className={`
+                            <button
+                                type="button"
+                                disabled={isViewMode}
+                                onClick={() =>
+                                    setShowFlexibility(prev => !prev)
+                                }
+                                className={`
                     h-[38px]
                     px-3
                     rounded-full
@@ -1074,37 +1072,34 @@ const LeadHolidays = forwardRef(({
                     gap-1.5
                     transition-all
                     duration-150
-                    ${
-                        holidayLeadObj.preferredTravelDateFlexibilityDays
-                            ? "bg-blue-50 border-blue-200 text-blue-600"
-                            : "bg-gray-50 border-gray-200 text-gray-500"
-                    }
-                    ${
-                        isViewMode
-                            ? "cursor-not-allowed opacity-70"
-                            : "hover:bg-blue-100 hover:border-blue-300"
-                    }
+                    ${holidayLeadObj.preferredTravelDateFlexibilityDays
+                                        ? "bg-blue-50 border-blue-200 text-blue-600"
+                                        : "bg-gray-50 border-gray-200 text-gray-500"
+                                    }
+                    ${isViewMode
+                                        ? "cursor-not-allowed opacity-70"
+                                        : "hover:bg-blue-100 hover:border-blue-300"
+                                    }
                 `}
-            >
-                <span className="text-xs">±</span>
+                            >
+                                <span className="text-xs">±</span>
 
-                <span>
-                    {holidayLeadObj.preferredTravelDateFlexibilityDays
-                        ? `${holidayLeadObj.preferredTravelDateFlexibilityDays} Days`
-                        : "Flexibility"}
-                </span>
+                                <span>
+                                    {holidayLeadObj.preferredTravelDateFlexibilityDays
+                                        ? `${holidayLeadObj.preferredTravelDateFlexibilityDays} Days`
+                                        : "Flexibility"}
+                                </span>
 
-                <ChevronDown
-                    size={14}
-                    className={`transition-transform ${
-                        showFlexibility ? "rotate-180" : ""
-                    }`}
-                />
-            </button>
+                                <ChevronDown
+                                    size={14}
+                                    className={`transition-transform ${showFlexibility ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
 
-            {showFlexibility && !isViewMode && (
-                <div
-                    className="
+                            {showFlexibility && !isViewMode && (
+                                <div
+                                    className="
                         absolute
                         right-0
                         top-full
@@ -1118,32 +1113,32 @@ const LeadHolidays = forwardRef(({
                         shadow-lg
                         p-1.5
                     "
-                >
-                    {[
-                        { value: 0, label: "Exact Date" },
-                        { value: 1, label: "± 1 Day" },
-                        { value: 2, label: "± 2 Days" },
-                        { value: 3, label: "± 3 Days" },
-                        { value: 5, label: "± 5 Days" },
-                        { value: 7, label: "± 7 Days" },
-                        { value: 9, label: "± 9 Days" },
-                        { value: 11, label: "± 11 Days" },
-                        { value: 13, label: "± 13 Days" },
-                        { value: 15, label: "± 15 Days" }
-                    ].map(option => (
-                        <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => {
-                                setHolidayLeadObj(prev => ({
-                                    ...prev,
-                                    preferredTravelDateFlexibilityDays:
-                                        option.value
-                                }));
+                                >
+                                    {[
+                                        { value: 0, label: "Exact Date" },
+                                        { value: 1, label: "± 1 Day" },
+                                        { value: 2, label: "± 2 Days" },
+                                        { value: 3, label: "± 3 Days" },
+                                        { value: 5, label: "± 5 Days" },
+                                        { value: 7, label: "± 7 Days" },
+                                        { value: 9, label: "± 9 Days" },
+                                        { value: 11, label: "± 11 Days" },
+                                        { value: 13, label: "± 13 Days" },
+                                        { value: 15, label: "± 15 Days" }
+                                    ].map(option => (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setHolidayLeadObj(prev => ({
+                                                    ...prev,
+                                                    preferredTravelDateFlexibilityDays:
+                                                        option.value
+                                                }));
 
-                                setShowFlexibility(false);
-                            }}
-                            className={`
+                                                setShowFlexibility(false);
+                                            }}
+                                            className={`
                                 w-full
                                 text-left
                                 px-3
@@ -1151,23 +1146,22 @@ const LeadHolidays = forwardRef(({
                                 rounded-lg
                                 text-sm
                                 transition
-                                ${
-                                    holidayLeadObj
-                                        .preferredTravelDateFlexibilityDays ===
-                                    option.value
-                                        ? "bg-blue-50 text-blue-600 font-medium"
-                                        : "text-gray-600 hover:bg-gray-50"
-                                }
+                                ${holidayLeadObj
+                                                    .preferredTravelDateFlexibilityDays ===
+                                                    option.value
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : "text-gray-600 hover:bg-gray-50"
+                                                }
                             `}
-                        >
-                            {option.label}
-                        </button>
-                    ))}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-            )}
-        </div>
-    </div>
-</div>
 
 
             </div>

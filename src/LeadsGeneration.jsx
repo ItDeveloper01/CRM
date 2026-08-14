@@ -37,17 +37,18 @@ import { useRef } from 'react';
 import { useMessageBox } from "./Notification";
 import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
+import { formatHolidayDateForApi, formatHolidayDateForDisplay } from "./Model/HolidayLeadObj";
 import { MESSAGE_TYPES } from './Constants';
 console.log("LeadHolidays =", LeadHolidays);
 
 
 
-export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true, fullWidth=false }) {
+export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true, fullWidth = false }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
   const reminderState = location.state;
-   const { showMessage } = useMessageBox();
+  const { showMessage } = useMessageBox();
 
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
@@ -143,15 +144,15 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
-   const getCountryListMasterEndPoint =config.apiUrl + '/MasterData/GetCountryList';
+  const getCountryListMasterEndPoint = config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
-  
-const [isScreenLocked, setIsScreenLocked] = useState(false);
-const [isCheckingMobile, setIsCheckingMobile] = useState(false);
+
+  const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
 
-    //useEffect(() => {
+  //useEffect(() => {
   const checkDuplicateFromReminder = async () => {
 
     debugger;
@@ -193,28 +194,28 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
   }, []);
 
   const fetchCountries = async () => {
-  try {
-    debugger;
-    const response = await axios.get(
-      getCountryListMasterEndPoint
-    );
+    try {
+      debugger;
+      const response = await axios.get(
+        getCountryListMasterEndPoint
+      );
 
-    const formattedCountries = response.data
-      .filter(country => country.isActive)
-      .map(country => ({
-        id: country.id,
-        name: country.countryName
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      const formattedCountries = response.data
+        .filter(country => country.isActive)
+        .map(country => ({
+          id: country.id,
+          name: country.countryName
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-    setCountries(formattedCountries);
+      setCountries(formattedCountries);
 
-    console.log("Countries:", formattedCountries);
+      console.log("Countries:", formattedCountries);
 
-  } catch (err) {
-    console.error("Error fetching countries:", err);
-  }
-};
+    } catch (err) {
+      console.error("Error fetching countries:", err);
+    }
+  };
 
   // Fetch List of City from API(Self made)
   const fetchCityList = async () => {
@@ -361,6 +362,7 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
         case "holiday": {
           const mappedHolidayLead = mapObject(incomingLead.category, getEmptyHolidayLeadObj());
           newLead.category = mappedHolidayLead;
+          mappedHolidayLead.preferredTravelDate = formatHolidayDateForDisplay(mappedHolidayLead.preferredTravelDate);
           setHolidayLeadObj(mappedHolidayLead);
           setSelectedLeadName(incomingLead.category.categoryName || "Holiday");
           break;
@@ -391,117 +393,117 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
 
   };
 
- const onMobileChangeFocus = async (value) => {
-  if (isUpdateMode && value != null)
-    return; // if in update mode then return
+  const onMobileChangeFocus = async (value) => {
+    if (isUpdateMode && value != null)
+      return; // if in update mode then return
 
-  setISLeadsForPhoneVisible(false);
+    setISLeadsForPhoneVisible(false);
 
-  const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
-  if (str) return; // if invalid mobile no then return
-  else if (!sessionUser?.token) return; // if no token then return
-  else if (!sessionUser?.user?.userId) return; // if no user id then return
-  else if (!leadObj?.mobileNo) return; // if no mobile no then return
-  else {
-    setIsScreenLocked(true);
+    const str = validMobileNoLive(leadObj.mobileNo, "Mobile No");
+    if (str) return; // if invalid mobile no then return
+    else if (!sessionUser?.token) return; // if no token then return
+    else if (!sessionUser?.user?.userId) return; // if no user id then return
+    else if (!leadObj?.mobileNo) return; // if no mobile no then return
+    else {
+      setIsScreenLocked(true);
+
+      try {
+        const res = await axios.get(checkDuplicateMobileAPI, {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
+            "Content-Type": "application/json"
+          },
+          params: {
+            assigneeUserID: sessionUser.user.userId,
+            mobile: leadObj.mobileNo
+          }
+        });
+
+        console.log("Duplicate mobile check response:", res.data);
+
+        if (res.data && res.data.length > 0) {
+          if (value != null) {
+            showMessage(
+              "Duplicate mobile number found. Please check the existing leads.",
+              MESSAGE_TYPES.warning
+            );
+          }
+          console.log("Duplicate mobile number found. Leads:", res.data);
+          setISLeadsForPhoneVisible(true);
+          setLeadsForPhoneNumber(res.data);
+        } else {
+          setISLeadsForPhoneVisible(false);
+        }
+      } catch (error) {
+        console.error("Error checking duplicate mobile number:", error);
+        showMessage(
+          "Something went wrong while checking the mobile number. Please try again.",
+          MESSAGE_TYPES.error
+        );
+      } finally {
+        setIsScreenLocked(false);
+      }
+    }
+  };
+
+  const handleMobileBlur = async (e) => {
+    const mobileNo = e.target.value;
+
+    // keep whatever validation you already had before the API call
+    if (!mobileNo || mobileNo.length !== 10) {
+      return;
+    }
+
+    setIsCheckingMobile(true);
+    document.body.style.cursor = 'wait';
 
     try {
-      const res = await axios.get(checkDuplicateMobileAPI, {
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
-          "Content-Type": "application/json"
-        },
-        params: {
-          assigneeUserID: sessionUser.user.userId,
-          mobile: leadObj.mobileNo
-        }
-      });
-
-      console.log("Duplicate mobile check response:", res.data);
-
-      if (res.data && res.data.length > 0) {
-        if (value != null) {
-          showMessage(
-            "Duplicate mobile number found. Please check the existing leads.",
-            MESSAGE_TYPES.warning
-          );
-        }
-        console.log("Duplicate mobile number found. Leads:", res.data);
-        setISLeadsForPhoneVisible(true);
-        setLeadsForPhoneNumber(res.data);
-      } else {
-        setISLeadsForPhoneVisible(false);
-      }
+      await onMobileChangeFocus(e); // your existing existing-customer check
     } catch (error) {
-      console.error("Error checking duplicate mobile number:", error);
-      showMessage(
-        "Something went wrong while checking the mobile number. Please try again.",
-        MESSAGE_TYPES.error
-      );
+      console.error('Failed to check existing customer:', error);
+      // surface this to the user however you already do errors —
+      // e.g. setErrors(prev => ({ ...prev, mobileNo: 'Could not verify this number' }))
     } finally {
-      setIsScreenLocked(false);
+      document.body.style.cursor = 'default';
+      setIsCheckingMobile(false);
     }
-  }
-};
-
-const handleMobileBlur = async (e) => {
-  const mobileNo = e.target.value;
-
-  // keep whatever validation you already had before the API call
-  if (!mobileNo || mobileNo.length !== 10) {
-    return;
-  }
-
-  setIsCheckingMobile(true);
-  document.body.style.cursor = 'wait';
-
-  try {
-    await onMobileChangeFocus(e); // your existing existing-customer check
-  } catch (error) {
-    console.error('Failed to check existing customer:', error);
-    // surface this to the user however you already do errors —
-    // e.g. setErrors(prev => ({ ...prev, mobileNo: 'Could not verify this number' }))
-  } finally {
-    document.body.style.cursor = 'default';
-    setIsCheckingMobile(false);
-  }
-};
+  };
 
   const handleContinueWithNewLead = () => {
-  const mainLead = leadsForPhoneNumber[0]?.mainLead; // DashboardRowDto
+    const mainLead = leadsForPhoneNumber[0]?.mainLead; // DashboardRowDto
 
-  const freshLead = getEmptyLeadObj(); // brand-new lead, no leadID carried over
-  debugger;
-  if (mainLead) {
-    // Only customer-identity fields — adjust names to match your DashboardRowDto exactly
-    freshLead.leadID=mainLead.leadID ||0 ;
-    freshLead.title = mainLead.title || '';
-    freshLead.fName = mainLead.fName || '';
-    freshLead.mName = mainLead.mName || '';
-    freshLead.lName = mainLead.lName || '';
-    freshLead.gender = mainLead.gender || '';
-    freshLead.birthDate = mainLead.birthDate || null;
-    freshLead.mobileNo = mainLead.mobileNo || leadObj.mobileNo || '';
-    freshLead.emailId = mainLead.emailId || '';
-    freshLead.city = mainLead.city || '';
-    freshLead.area = mainLead.area || '';
-    freshLead.customerType = mainLead.customerType || null;
-    freshLead.enquiryMode = mainLead.enquiryMode || null;
-    freshLead.enquirySource = mainLead.enquirySource || null;
-  }
+    const freshLead = getEmptyLeadObj(); // brand-new lead, no leadID carried over
+    debugger;
+    if (mainLead) {
+      // Only customer-identity fields — adjust names to match your DashboardRowDto exactly
+      freshLead.leadID = mainLead.leadID || 0;
+      freshLead.title = mainLead.title || '';
+      freshLead.fName = mainLead.fName || '';
+      freshLead.mName = mainLead.mName || '';
+      freshLead.lName = mainLead.lName || '';
+      freshLead.gender = mainLead.gender || '';
+      freshLead.birthDate = mainLead.birthDate || null;
+      freshLead.mobileNo = mainLead.mobileNo || leadObj.mobileNo || '';
+      freshLead.emailId = mainLead.emailId || '';
+      freshLead.city = mainLead.city || '';
+      freshLead.area = mainLead.area || '';
+      freshLead.customerType = mainLead.customerType || null;
+      freshLead.enquiryMode = mainLead.enquiryMode || null;
+      freshLead.enquirySource = mainLead.enquirySource || null;
+    }
 
-  setLeadObj(freshLead);
-  setIsUpdateMode(false);      // stays a create, not an update
-  setSelectedLeadName("");     // force the user to pick a category for this new lead
+    setLeadObj(freshLead);
+    setIsUpdateMode(false);      // stays a create, not an update
+    setSelectedLeadName("");     // force the user to pick a category for this new lead
 
-  // reset all category objects so nothing bleeds over from the matched lead
-  setVisaObj(getEmptyVisaObj());
-  setAirTicketingLeadObj({ ...getEmptyAirTicketObj(), airTicketType: "Domestic" });
-  setCarLeadObj(getEmptyCarLeadObj());
-  setHolidayLeadObj(getEmptyHolidayLeadObj());
+    // reset all category objects so nothing bleeds over from the matched lead
+    setVisaObj(getEmptyVisaObj());
+    setAirTicketingLeadObj({ ...getEmptyAirTicketObj(), airTicketType: "Domestic" });
+    setCarLeadObj(getEmptyCarLeadObj());
+    setHolidayLeadObj(getEmptyHolidayLeadObj());
 
-  setISLeadsForPhoneVisible(false);
-};
+    setISLeadsForPhoneVisible(false);
+  };
 
   const fetchEnquiryDetails = async () => {
     debugger;
@@ -874,26 +876,26 @@ const handleMobileBlur = async (e) => {
 
   };
 
-useEffect(() => {
-  if (isViewMode || isEditMode) return;
+  useEffect(() => {
+    if (isViewMode || isEditMode) return;
 
-  const entries = Object.entries(leadCategoriesByUserIdList);
+    const entries = Object.entries(leadCategoriesByUserIdList);
 
-  if (entries.length === 1 && !leadObj.fK_LeadCategoryID) {
-    const [key] = entries[0];
+    if (entries.length === 1 && !leadObj.fK_LeadCategoryID) {
+      const [key] = entries[0];
 
-    handleChangeForCategory({
-      target: {
-        value: key,
-      },
-    });
-  }
-}, [
-  leadCategoriesByUserIdList,
-  leadObj.fK_LeadCategoryID,
-  isViewMode,
-  isEditMode,
-]);
+      handleChangeForCategory({
+        target: {
+          value: key,
+        },
+      });
+    }
+  }, [
+    leadCategoriesByUserIdList,
+    leadObj.fK_LeadCategoryID,
+    isViewMode,
+    isEditMode,
+  ]);
 
   const handleSpecialRequirementsChange = (e) => {
     const { value, checked } = e.target;
@@ -986,14 +988,21 @@ useEffect(() => {
         );
 
       case 'holiday':
+
+        const holidayLeadForDisplay = {
+          ...holidayLeadObj,
+          preferredTravelDate:
+            formatHolidayDateForDisplay(
+              holidayLeadObj.preferredTravelDate
+            )
+        };
         return (
           <>
             {(
               console.log("History to pass to HistoryHover:", LeadObj.histories),
-
               <LeadHolidays
                 ref={holidayRef}
-                holidayLeadObj={holidayLeadObj}
+                holidayLeadObj={holidayLeadForDisplay}
                 setHolidayLeadObj={setHolidayLeadObj}
                 cities={cities}
                 handleChange={handleChange}
@@ -1020,13 +1029,13 @@ useEffect(() => {
   const validateServiceForm = (errs) => {
     try {
 
-  let isBasicFormValid=true;
-  let isServiceFormValid=true;
-  if (Object.keys(errs).length > 0) {
-      setErrors(errs);
-      setShowPopup(true);
-      isBasicFormValid=false;
-    }
+      let isBasicFormValid = true;
+      let isServiceFormValid = true;
+      if (Object.keys(errs).length > 0) {
+        setErrors(errs);
+        setShowPopup(true);
+        isBasicFormValid = false;
+      }
 
       switch (selectedLeadName.toLowerCase()) {
 
@@ -1035,12 +1044,12 @@ useEffect(() => {
 
           if (!isValid) {
             setShowPopup(true);
-            isServiceFormValid=false;
+            isServiceFormValid = false;
           }
 
           break;
         }
-        
+
         default:
           break;
       }
@@ -1078,10 +1087,10 @@ useEffect(() => {
     if (followUpDateError) errs.followUpDate = followUpDateError;
     // if (returnDateError) errs.returnDate = returnDateError;
 
-// Validate the selected service form
-if (!validateServiceForm(errs)) {
-  return;
-}
+    // Validate the selected service form
+    if (!validateServiceForm(errs)) {
+      return;
+    }
 
     // Remove empty errors (fields without error)
     Object.keys(errs).forEach((key) => {
@@ -1096,28 +1105,17 @@ if (!validateServiceForm(errs)) {
 
     try {
       // written by Priyanka
-      if (isUpdateMode) {
-
-        if (!leadObj.createdBy_UserID) {
-          leadObj.createdBy_UserID = currentUser?.user?.userId;
-        }
-
-        if (!leadObj.assigneeTo_UserID) {
-          leadObj.assigneeTo_UserID = currentUser?.user?.userId;
-        }
+     
+      if (isUpdateMode) {   //Update mode 
 
         const deepLeadCopy = cloneDeep(leadObj);
 
         switch (selectedLeadName.toLowerCase()) {
           case "visa":
             debugger;
-            if (!visadObj.createdBy_UserID) {
-              visadObj.createdBy_UserID = currentUser?.user?.userId;
-            }
-
-            if (!visadObj.assigneeTo_UserID) {
-              visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-            }
+          
+               visadObj.updatedBy_UserID = currentUser?.user?.userId;
+            
             debugger;
             const deepVisaCopy = cloneDeep(visadObj);
             deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
@@ -1125,13 +1123,9 @@ if (!validateServiceForm(errs)) {
 
           case "air ticketing":
             debugger;
-            if (!airTicketingdObj.createdBy_UserID) {
-              airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
-            }
-
-            if (!airTicketingdObj.assigneeTo_UserID) {
-              airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
-            }
+         
+               airTicketingdObj.updatedBy_UserID = currentUser?.user?.userId;
+             
 
             const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
             deepLeadCopy.category = { ...deepAirTicketingCopy };;
@@ -1139,17 +1133,9 @@ if (!validateServiceForm(errs)) {
 
           case "car rentals":
             debugger;
-            if (!carLeaddObj.createdBy_UserID) {
-              carLeaddObj.createdBy_UserID = currentUser?.user?.userId;
-            }
-
-            if (!carLeaddObj.assigneeTo_UserID) {
-              carLeaddObj.assigneeTo_UserID = currentUser?.user?.userId;
-            }
-
-            // if (!carLeaddObj.updatedBy_UserID) {
-            //   carLeaddObj.updatedBy_UserID = currentUser?.user?.userId;
-            // }
+       
+              carLeaddObj.updatedBy_UserID = currentUser?.user?.userId;
+           
             const deepCarRentalsCopy = cloneDeep(carLeaddObj);
             deepLeadCopy.category = { ...deepCarRentalsCopy };;
             break;
@@ -1157,17 +1143,10 @@ if (!validateServiceForm(errs)) {
           case "holiday":
 
             debugger;
-            if (!holidayLeadObj.createdBy_UserID) {
-              holidayLeadObj.createdBy_UserID = currentUser?.user?.userId;
-            }
+            holidayLeadObj.preferredTravelDate = formatHolidayDateForApi(holidayLeadObj.preferredTravelDate);
 
-            if (!holidayLeadObj.assignee_UserID) {
-              holidayLeadObj.assignee_UserID = currentUser?.user?.userId;
-            }
-
-            // if (!carLeaddObj.updatedBy_UserID) {
-            //   carLeaddObj.updatedBy_UserID = currentUser?.user?.userId;
-            // }
+            holidayLeadObj.updatedBy_UserID = currentUser?.user?.userId;
+            
             const deepHolidayLeadObj = cloneDeep(holidayLeadObj);
             deepLeadCopy.category = { ...deepHolidayLeadObj };;
             break;
@@ -1197,68 +1176,9 @@ if (!validateServiceForm(errs)) {
         onClose();
         navigate("/dashboard"); // Navigate after operation
 
-
-        // *************** old update lead system before switch condition and its working fine for single lead type ************
-        // if (isUpdateMode) {
-
-
-        //   // old component for air ticket and visa its working proper for each visa or air ticketing 
-        //   if (!visadObj.createdBy_UserID) {
-        //     visadObj.createdBy_UserID = currentUser?.user?.userId;
-        //   }
-
-        //   if (!visadObj.assigneeTo_UserID) {
-        //     visadObj.assigneeTo_UserID = currentUser?.user?.userId;
-        //   }
-
-        //   // For Air Ticketing 
-        //   if (!airTicketingdObj.createdBy_UserID) {
-        //     airTicketingdObj.createdBy_UserID = currentUser?.user?.userId;
-        //   }
-
-        //   if (!airTicketingdObj.assigneeTo_UserID) {
-        //     airTicketingdObj.assigneeTo_UserID = currentUser?.user?.userId;
-        //   }
-
-
-        //   if (!leadObj.createdBy_UserID) {
-        //     leadObj.createdBy_UserID = currentUser?.user?.userId;
-        //   }
-
-        //   if (!leadObj.assigneeTo_UserID) {
-        //     leadObj.assigneeTo_UserID = currentUser?.user?.userId;
-        //   }
-
-        //   const deepLeadCopy = cloneDeep(leadObj);
-        //   const deepVisaCopy = cloneDeep(visadObj);
-        //   const deepAirTicketingCopy = cloneDeep(airTicketingdObj);
-
-
-
-        //   deepLeadCopy.category = { ...deepVisaCopy }; //  attach visa data
-        //   deepLeadCopy.category = { ...deepAirTicketingCopy }; //  attach Air Ticketing  data
-        //   debugger;
-
-        //   console.log("Final Lead Obj to Update:", deepLeadCopy);
-        //   console.log("upate api...", `${updateLeadApi}/${deepLeadCopy.leadID}`);
-
-        //   debugger;
-        //   const response = await axios.put(updateLeadApi, deepLeadCopy, { headers: { "Content-Type": "application/json" } });
-
-
-        //   console.log("Updated lead:", response.data);
-
-
-        //   alert("Lead updated successfully!");
-        // ******************************************************************************************************
-
-      } else {
+      } else {  //New lead Created mode
 
         debugger;
-
-
-
-
         leadObj.createdBy_UserID ||= currentUser?.user?.userId;
         leadObj.assigneeTo_UserID ||= currentUser?.user?.userId;
 
@@ -1299,6 +1219,7 @@ if (!validateServiceForm(errs)) {
             holidayLeadObj.createdBy_UserID ||= currentUser?.user?.userId;
             holidayLeadObj.assignee_UserID ||= currentUser?.user?.userId;
             // holidayLeadObj.updatedBy_UserID ||= currentUser?.user?.userId;
+            holidayLeadObj.preferredTravelDate = formatHolidayDateForApi(holidayLeadObj.preferredTravelDate);
             const deepHolidayLeadCopy = cloneDeep(holidayLeadObj);
             deepCopy.category = { ...deepHolidayLeadCopy };
             console.log("Holiday Lead Obj to be sent...", deepCopy.category);
@@ -1368,7 +1289,7 @@ if (!validateServiceForm(errs)) {
                   value={leadObj.leadStatus || 1}
                   onChange={handleChangeStatusReason}
                   disabled={!isUpdateMode || isUncategorised}
-                                    className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
+                  className={`border-2 rounded-lg px-3 py-2 focus:outline-none transition-all duration-200
                         ${border} ${ring} ${bg}
                         ${!isUpdateMode || isUncategorised ? "bg-gray-100 cursor-not-allowed" : ""}
                       `}
@@ -1428,16 +1349,16 @@ if (!validateServiceForm(errs)) {
             {isViewMode ? (
               <ViewField value={leadObj.mobileNo} />
             ) : (
-             <input
-                  name='mobileNo'
-                  placeholder='Mobile Number'
-                  onBlur={handleMobileBlur}
-                  onChange={handleChange}
-                  value={leadObj.mobileNo || ''}
-                  maxLength={10}
-                  disabled={isCheckingMobile}
-                  className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""} ${isCheckingMobile ? "cursor-wait opacity-70" : ""}`}
-                />
+              <input
+                name='mobileNo'
+                placeholder='Mobile Number'
+                onBlur={handleMobileBlur}
+                onChange={handleChange}
+                value={leadObj.mobileNo || ''}
+                maxLength={10}
+                disabled={isCheckingMobile}
+                className={`border-highlight ${errors.mobileNo ? "border-red-500" : ""} ${isCheckingMobile ? "cursor-wait opacity-70" : ""}`}
+              />
             )}
             {errors.mobileNo && !isViewMode && <p className="text-red-500 text-sm">{errors.mobileNo}</p>}
           </div>
@@ -1602,7 +1523,7 @@ if (!validateServiceForm(errs)) {
           {isGenerateNewLeadAllowed && (
             <div className='text-center my-4'>
               <button
-                 onClick={handleContinueWithNewLead}
+                onClick={handleContinueWithNewLead}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
                 Continue with New Lead
               </button>
@@ -1814,12 +1735,12 @@ if (!validateServiceForm(errs)) {
       )}
 
       {/* </fieldset> */}
-{isScreenLocked && (
-  <div
-    className="fixed inset-0 z-[9999] cursor-wait bg-black/5"
-    aria-hidden="true"
-  />
-)}
+      {isScreenLocked && (
+        <div
+          className="fixed inset-0 z-[9999] cursor-wait bg-black/5"
+          aria-hidden="true"
+        />
+      )}
     </div>
 
 
