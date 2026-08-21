@@ -106,9 +106,11 @@ export default function App() {
                  />
                  <Route
                   path ='/operations/ItineraryManager'  
-                  element={<TravelAgencyItineraryManager/>}               
-                 />
-
+                  element={<TravelAgencyItineraryManager />}
+                />
+                <Route path='/DashboardV2'
+                  element={<DashboardWrapper />}
+                />
               {/* ✅ Users List */}
               <Route
                 path='/users'
