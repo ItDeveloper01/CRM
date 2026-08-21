@@ -4,8 +4,10 @@ import React, {
 } from "react";
 import axios from "axios";
 import { getEmptyPackagePreferenceObj } from "./Model/HolidayLeadObj";
+import { formatHolidayDateForDisplay, formatHolidayDateForApi } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayItineraryObj } from "./Model/HolidayLeadObj";
 import { getEmptyHolidayServiceObj } from "./Model/HolidayServicesModel";
+import { ChevronDown } from "lucide-react";
 
 import SpecialRequirementsSection from "./HolidaysScreens/Others/SpecialRequirementSection";
 
@@ -96,6 +98,16 @@ const LeadHolidays = forwardRef(({
         setPassportDetails(updated);
     };
 
+    const toApiDateOnly = (date) => {
+        if (!date) return null;
+
+        const [day, month, year] = date.split("-");
+
+        if (!day || !month || !year) return null;
+
+        return `${year}-${month}-${day}`;
+    };
+
     const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
     const masterRequirements = [
         { id: 1, name: "Visa Assistance" },
@@ -148,7 +160,7 @@ const LeadHolidays = forwardRef(({
         holidayLeadObj?.holidayOpt ?? ""
     );
 
-
+    const [showFlexibility, setShowFlexibility] = useState(false);
 
 
     const holidayOptions = [
@@ -385,7 +397,6 @@ const LeadHolidays = forwardRef(({
                         getEmptyPassportDetailsObj();
                 }
             }
-
             return updated;
         });
 
@@ -506,6 +517,16 @@ const LeadHolidays = forwardRef(({
             newErrors.requestedDestinations =
                 "Please type at least one destination.";
         }
+
+        // Requested Travel Date
+        if (
+            !holidayLeadObj.preferredTravelDate ||
+            holidayLeadObj.preferredTravelDate.length === 0
+        ) {
+            newErrors.preferredTravelDate =
+                "Please select travel date.";
+        }
+
 
         setErrors(newErrors);
 
@@ -689,9 +710,8 @@ const LeadHolidays = forwardRef(({
         selectedConfig?.values?.tripType ||
         "Holiday";
 
-    const isGIT =
-        (holidayLeadObj?.leadType ||
-            selectedConfig?.values?.leadType) === "GIT";
+    const isGIT = false;
+
 
 
 
@@ -708,7 +728,7 @@ const LeadHolidays = forwardRef(({
 
         <div className="space-y-3">
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
                 {/* ===================================== */}
                 {/* HOLIDAY TYPE */}
@@ -801,6 +821,349 @@ const LeadHolidays = forwardRef(({
                         </p>
                     }
                 </div>
+
+                {/* ===================================== */}
+                {/* PREFERRED Travel Date */}
+                {/* ===================================== */}
+
+
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Travel Date <span className="text-red-500">*</span>
+                    </label>
+
+                    <div className="flex items-start gap-2">
+
+                        {/* Travel Date */}
+                        <div className="flex-1">
+
+                            {/* Input + Calendar */}
+                            <div className="relative">
+
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    maxLength={10}
+                                    placeholder="DD-MM-YYYY"
+                                    value={holidayLeadObj.preferredTravelDate || ""}
+                                    onChange={(e) => {
+                                        let value = e.target.value.replace(/\D/g, "");
+
+                                        // Maximum 8 digits: DDMMYYYY
+                                        value = value.slice(0, 8);
+
+                                        if (value.length > 4) {
+                                            value =
+                                                value.slice(0, 2) +
+                                                "-" +
+                                                value.slice(2, 4) +
+                                                "-" +
+                                                value.slice(4);
+                                        } else if (value.length > 2) {
+                                            value =
+                                                value.slice(0, 2) +
+                                                "-" +
+                                                value.slice(2);
+                                        }
+
+                                        setHolidayLeadObj(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: value
+                                        }));
+
+                                        if (errors.preferredTravelDate) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate: ""
+                                            }));
+                                        }
+                                    }}
+
+                                    onBlur={(e) => {
+                                        const value = e.target.value.trim();
+
+                                        if (!value) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Travel date is required."
+                                            }));
+                                            return;
+                                        }
+
+                                        const parts = value.split("-");
+
+                                        if (
+                                            parts.length !== 3 ||
+                                            parts[0].length !== 2 ||
+                                            parts[1].length !== 2 ||
+                                            parts[2].length !== 4
+                                        ) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Enter date in DD-MM-YYYY format."
+                                            }));
+                                            return;
+                                        }
+
+                                        const [day, month, year] = parts.map(Number);
+
+                                        const enteredDate = new Date(
+                                            year,
+                                            month - 1,
+                                            day
+                                        );
+
+                                        enteredDate.setHours(0, 0, 0, 0);
+
+                                        // Validate actual calendar date
+                                        if (
+                                            !day ||
+                                            !month ||
+                                            !year ||
+                                            enteredDate.getFullYear() !== year ||
+                                            enteredDate.getMonth() !== month - 1 ||
+                                            enteredDate.getDate() !== day
+                                        ) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Please enter a valid date."
+                                            }));
+                                            return;
+                                        }
+
+                                        // Must be after today
+                                        const today = new Date();
+                                        today.setHours(0, 0, 0, 0);
+
+                                        if (enteredDate <= today) {
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                preferredTravelDate:
+                                                    "Travel date must be after today."
+                                            }));
+                                            return;
+                                        }
+
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: ""
+                                        }));
+                                    }}
+
+                                    disabled={isViewMode}
+
+                                    className={`
+                        w-full
+                        px-3
+                        py-2
+                        text-sm
+                        rounded-lg
+                        border
+                        bg-white
+                        text-gray-700
+                        placeholder-gray-400
+                        focus:outline-none
+                        focus:ring-2
+                        ${errors.preferredTravelDate
+                                            ? "border-red-400 focus:ring-red-100"
+                                            : "border-gray-300 focus:ring-blue-100 focus:border-blue-400"
+                                        }
+                        ${isViewMode ? "bg-gray-50 cursor-not-allowed" : ""}
+                    `}
+                                />
+
+                                {/* Actual calendar picker */}
+                                <input
+                                    type="date"
+                                    disabled={isViewMode}
+
+                                    min={(() => {
+                                        const tomorrow = new Date();
+                                        tomorrow.setDate(tomorrow.getDate() + 1);
+
+                                        const year = tomorrow.getFullYear();
+                                        const month = String(
+                                            tomorrow.getMonth() + 1
+                                        ).padStart(2, "0");
+                                        const day = String(
+                                            tomorrow.getDate()
+                                        ).padStart(2, "0");
+
+                                        return `${year}-${month}-${day}`;
+                                    })()}
+
+                                    onChange={(e) => {
+                                        if (!e.target.value) return;
+
+                                        const [year, month, day] =
+                                            e.target.value.split("-");
+
+                                        setHolidayLeadObj(prev => ({
+                                            ...prev,
+                                            preferredTravelDate:
+                                                `${day}-${month}-${year}`
+                                        }));
+
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            preferredTravelDate: ""
+                                        }));
+                                    }}
+
+                                    className="
+                        absolute
+                        right-2
+                        top-1/2
+                        -translate-y-1/2
+                        w-7
+                        h-7
+                        opacity-0
+                        cursor-pointer
+                        z-10
+                    "
+                                />
+
+                                {/* Calendar icon */}
+                                <span
+                                    className="
+                        absolute
+                        right-3
+                        top-1/2
+                        -translate-y-1/2
+                        text-gray-400
+                        pointer-events-none
+                        z-0
+                    "
+                                >
+                                    📅
+                                </span>
+                            </div>
+
+                            {/* Error BELOW input only */}
+                            {errors.preferredTravelDate && (
+                                <p className="text-red-500 text-sm mt-1">
+                                    {errors.preferredTravelDate}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Flexibility */}
+                        <div className="relative">
+
+                            <button
+                                type="button"
+                                disabled={isViewMode}
+                                onClick={() =>
+                                    setShowFlexibility(prev => !prev)
+                                }
+                                className={`
+                    h-[38px]
+                    px-3
+                    rounded-full
+                    border
+                    text-sm
+                    font-medium
+                    flex
+                    items-center
+                    gap-1.5
+                    transition-all
+                    duration-150
+                    ${holidayLeadObj.preferredTravelDateFlexibilityDays
+                                        ? "bg-blue-50 border-blue-200 text-blue-600"
+                                        : "bg-gray-50 border-gray-200 text-gray-500"
+                                    }
+                    ${isViewMode
+                                        ? "cursor-not-allowed opacity-70"
+                                        : "hover:bg-blue-100 hover:border-blue-300"
+                                    }
+                `}
+                            >
+                                <span className="text-xs">±</span>
+
+                                <span>
+                                    {holidayLeadObj.preferredTravelDateFlexibilityDays
+                                        ? `${holidayLeadObj.preferredTravelDateFlexibilityDays} Days`
+                                        : "Flexibility"}
+                                </span>
+
+                                <ChevronDown
+                                    size={14}
+                                    className={`transition-transform ${showFlexibility ? "rotate-180" : ""
+                                        }`}
+                                />
+                            </button>
+
+                            {showFlexibility && !isViewMode && (
+                                <div
+                                    className="
+                        absolute
+                        right-0
+                        top-full
+                        mt-2
+                        z-50
+                        w-32
+                        bg-white
+                        border
+                        border-gray-200
+                        rounded-xl
+                        shadow-lg
+                        p-1.5
+                    "
+                                >
+                                    {[
+                                        { value: 0, label: "Exact Date" },
+                                        { value: 1, label: "± 1 Day" },
+                                        { value: 2, label: "± 2 Days" },
+                                        { value: 3, label: "± 3 Days" },
+                                        { value: 5, label: "± 5 Days" },
+                                        { value: 7, label: "± 7 Days" },
+                                        { value: 9, label: "± 9 Days" },
+                                        { value: 11, label: "± 11 Days" },
+                                        { value: 13, label: "± 13 Days" },
+                                        { value: 15, label: "± 15 Days" }
+                                    ].map(option => (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setHolidayLeadObj(prev => ({
+                                                    ...prev,
+                                                    preferredTravelDateFlexibilityDays:
+                                                        option.value
+                                                }));
+
+                                                setShowFlexibility(false);
+                                            }}
+                                            className={`
+                                w-full
+                                text-left
+                                px-3
+                                py-2
+                                rounded-lg
+                                text-sm
+                                transition
+                                ${holidayLeadObj
+                                                    .preferredTravelDateFlexibilityDays ===
+                                                    option.value
+                                                    ? "bg-blue-50 text-blue-600 font-medium"
+                                                    : "text-gray-600 hover:bg-gray-50"
+                                                }
+                            `}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
 
             {/* ===================================== */}
@@ -956,11 +1319,12 @@ const LeadHolidays = forwardRef(({
 
                     {selectedConfig?.features?.itinerary && (
 
+                        console.log("itinerary section is coming soon selected Type : ", selectedConfig?.values?.tripType),
                         <ItinerarySection
                             holidayLeadObj={holidayLeadObj}
                             setHolidayLeadObj={setHolidayLeadObj}
                             isViewMode={isViewMode}
-                            scopeType={ selectedConfig?.values?.tripType }
+                            scopeType={selectedConfig?.values?.tripType}
                         />
 
                     )}

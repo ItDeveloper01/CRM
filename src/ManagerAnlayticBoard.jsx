@@ -16,8 +16,12 @@ import { useRef } from 'react';
 import { useMessageBox } from "./Notification";
 import { MESSAGE_TYPES } from './Constants';
 import { LoadingOverlay } from './LeadsSharedTable';
-
-export default function ManagerAnalyticBoard() {
+export default function ManagerAnalyticBoard({
+    department,
+    apiUrl,
+    token,
+    onLoadingChange
+}) {
   const { user: sessionUser } = useGetSessionUser();
   const fetchSubordinateRolesAPI = config.apiUrl + "/Reporting/GetSubordinateList"
   const fetchSubordinateRoleListAPI = config.apiUrl + "/Reporting/GetSubordinateranksByUserId"
@@ -148,6 +152,8 @@ const fetchUserHierarchy=async()=>{
   console.log("Fetching hierarchy with  UserID:" , sessionUser.user.id);
 
   setIsLoading(true);
+  onLoadingChange(true);
+  onLoadingChange?.(true);
   try {
     const response = await axios.post(
         fetchDataWithFiltersAPI,
@@ -168,12 +174,13 @@ const fetchUserHierarchy=async()=>{
 
     //setListOfVerticles(response.data);
     setHierarchyData(response.data);
-    console.log(response.data);
+    console.log("Analytics Tree hierrachy :",response.data);
     // setSubordinates(response.data);
   } catch (error) {
     console.error(error);
   } finally {
     setIsLoading(false);
+    onLoadingChange?.(false);
   }
 };
 
@@ -187,7 +194,7 @@ const onDateChange = () => {
     // Use ref to get latest selectedUserIds — avoids stale closure
     const currentSelectedIds = selectedUserIdsRef.current;
     if (currentSelectedIds.length === 0) {
-      showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
+      //showMessage("Please select Users before applying filters.", MESSAGE_TYPES.INFO);
       return;
     }
     // Re-fetch ALL currently selected users with the new date range
@@ -256,6 +263,7 @@ const fetchUserData = async (userIdList) => {
           }
 
           setIsLoading(true);
+          onLoadingChange(true);
           try {
             const response = await axios.post(config.apiUrl +
             "/Reporting/GetRequestedAnalyticsForSubordinates",
@@ -294,6 +302,7 @@ const fetchUserData = async (userIdList) => {
             showMessage("Error fetching user data.", MESSAGE_TYPES.ERROR);
           } finally {
             setIsLoading(false);
+            onLoadingChange(false);
           }
       }
 

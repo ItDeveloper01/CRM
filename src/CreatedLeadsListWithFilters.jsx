@@ -19,6 +19,7 @@ import {
   getTripType,
   getLeadType,
   getDestinations,
+  getTravelDate,
   getLatestUpdate,
   CalendarFilter,
   LeadsSummaryBar,
@@ -39,8 +40,305 @@ const FILTER_LABELS = {
   preferredDestination: "Destination",
 };
 
-const BASE_FILTER_KEYS = ["status", "customerTypeDescription", "categoryName", "createdBy", "createdAt"];
+// Base filters ordered to match the table's column sequence:
+// Category, Created By, Status, Created Date, Customer Type.
+const BASE_FILTER_KEYS = ["categoryName", "createdBy", "status", "createdAt", "customerTypeDescription"];
 const HOLIDAY_FILTER_KEYS = ["tripType", "leadType", "preferredDestination"];
+
+// Same markup/classes as the shared MultiSelectFilter (so the pill, the
+// ▲/▼ arrow, and the white-circle red-✕ clear badge all look identical),
+// plus a search box at the top of the dropdown for filtering a long
+// option list by typing. Kept local to this file rather than editing the
+// shared LeadsSharedTable component.
+function SearchableMultiSelectFilter({
+  label,
+  options,
+  selected,
+  onToggle,
+  onClear
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const wrapperRef = React.useRef(null);
+  const isActive = selected.length > 0;
+
+  React.useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () =>
+      document.removeEventListener(
+        "mousedown",
+        handleClickOutside
+      );
+  }, []);
+
+  const filteredOptions = useMemo(
+    () =>
+      options.filter((o) =>
+        o.toLowerCase().includes(search.toLowerCase())
+      ),
+    [options, search]
+  );
+
+  return (
+    <div
+      className="relative w-full min-w-0"
+      ref={wrapperRef}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`
+          w-full
+          min-w-0
+          border
+          px-2
+          py-1.5
+          rounded
+          text-sm
+          text-left
+          flex
+          items-center
+          gap-1.5
+          transition
+          font-medium
+
+          ${
+            isActive
+              ? "bg-blue-600 border-blue-600 text-white"
+              : "bg-white border-gray-400 text-gray-700 hover:border-gray-600"
+          }
+        `}
+      >
+
+        {/* =====================================================
+            LABEL + DATE-STYLE TOOLTIP
+        ===================================================== */}
+
+        <div className="relative flex-1 min-w-0 group">
+
+          <span className="truncate block">
+            {isActive
+              ? `${label} (${selected.length})`
+              : label}
+          </span>
+
+          {isActive && (
+            <div
+              className="
+                absolute
+                left-0
+                top-[calc(100%+6px)]
+                z-[9999]
+
+                hidden
+                group-hover:block
+
+                bg-white
+                border
+                border-gray-300
+                rounded-xl
+
+                px-3.5
+                py-2.5
+
+                shadow-[0_12px_40px_rgba(0,0,0,0.20)]
+
+                min-w-[220px]
+                max-w-[300px]
+
+                text-left
+                text-xs
+                text-gray-700
+                whitespace-normal
+              "
+            >
+
+              {/* Tooltip heading */}
+              <div
+               className="
+                font-semibold
+                text-gray-600
+                mb-1.5
+              "
+              >
+                Selected Destination:
+              </div>
+
+              {/* Selected destinations */}
+              <div className="space-y-1">
+                {selected.map((destination) => (
+                  <div
+                    key={destination}
+                    className="
+                    flex
+                    items-start
+                    gap-1.5
+                    text-xs
+                    text-gray-600
+                  "
+                  >
+                      <span className="w-[5px] h-[5px] rounded-full bg-blue-500 flex-shrink-0 mt-1"></span>
+                 <span className="break-words"></span>
+                    {destination}
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          )}
+
+        </div>
+
+
+        {/* =====================================================
+            CLEAR / ARROW
+        ===================================================== */}
+
+        {isActive ? (
+          <span
+            onMouseDown={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onClear && onClear();
+              setOpen(false);
+            }}
+            title={`Clear ${label} filter`}
+            className="
+              flex-shrink-0
+              w-4
+              h-4
+              rounded-full
+              bg-white
+              text-red-600
+              flex
+              items-center
+              justify-center
+              text-[11px]
+              font-black
+              leading-none
+              hover:bg-red-100
+              cursor-pointer
+            "
+          >
+            ✕
+          </span>
+        ) : (
+          <span className="text-[10px] text-gray-500 flex-shrink-0">
+            {open ? "▲" : "▼"}
+          </span>
+        )}
+
+      </button>
+
+
+      {/* =====================================================
+          DROPDOWN
+      ===================================================== */}
+
+      {open && (
+        <div
+          className="
+            absolute
+            z-20
+            left-0
+            mt-1
+            bg-white
+            border
+            border-gray-200
+            rounded
+            shadow-lg
+            max-h-56
+            overflow-auto
+            w-full
+            min-w-[190px]
+          "
+        >
+
+          <div
+            className="
+              p-2
+              border-b
+              border-gray-100
+              sticky
+              top-0
+              bg-white
+            "
+          >
+            <input
+              type="text"
+              autoFocus
+              placeholder={`Search ${label}...`}
+              value={search}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              className="
+                w-full
+                text-sm
+                px-2
+                py-1
+                border
+                border-gray-300
+                rounded
+                focus:outline-none
+                focus:ring-2
+              "
+            />
+          </div>
+
+          {filteredOptions.length === 0 && (
+            <div className="
+              px-2
+              py-1.5
+              text-xs
+              text-gray-400
+            ">
+              No matches
+            </div>
+          )}
+
+          {filteredOptions.map((opt) => (
+            <label
+              key={opt}
+              className="
+                flex
+                items-center
+                gap-2
+                px-2
+                py-1.5
+                text-sm
+                hover:bg-gray-50
+                cursor-pointer
+              "
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(opt)}
+                onChange={() => onToggle(opt)}
+              />
+
+              <span className="truncate">
+                {opt}
+              </span>
+            </label>
+          ))}
+
+        </div>
+      )}
+
+    </div>
+  );
+}
 
 const EMPTY_FILTERS = {
   status: [],
@@ -164,15 +462,89 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
   const [nameSearch, setNameSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [followUpSels, setFollowUpSels] = useState([]);
+  const [travelDateSels, setTravelDateSel] = useState([]); // CalendarFilter selections for Preferred Travel Date
 
-  // ---------------- UNIQUE FILTER OPTIONS FROM DATA ----------------
+  // ---------------- SHARED FILTER-MATCH LOGIC ----------------
+  // One predicate, reused for (a) the final table rows and (b) each
+  // dropdown's own option list. `excludeKey` lets a filter ignore its own
+  // current selection when computing what to offer, so e.g. picking a Trip
+  // Type narrows the Destination list, but the Destination filter doesn't
+  // narrow itself out of existence. Date filters (Follow-up, Travel Date)
+  // still participate as normal filters here — they can be excluded too,
+  // for symmetry, even though their own control isn't a dropdown.
+  const inFollowUp = (lead) => {
+    if (!followUpSels.length) return true;
+    if (!lead.followUpDate) return false;
+    const d = new Date(lead.followUpDate).toISOString().split("T")[0];
+    return followUpSels.some(s => {
+      if (s.type === 'single') return s.date === d;
+      const [a, b] = [s.from, s.to].sort();
+      return d >= a && d <= b;
+    });
+  };
+
+  const inTravelDate = (lead) => {
+    if (!travelDateSels.length) return true;
+    if (!lead.category?.preferredTravelDate) return false;
+    const d = new Date(lead.category.preferredTravelDate).toISOString().split("T")[0];
+    return travelDateSels.some(s => {
+      if (s.type === 'single') return s.date === d;
+      const [a, b] = [s.from, s.to].sort();
+      return d >= a && d <= b;
+    });
+  };
+
+  const matchesName = (lead) =>
+    !nameSearch ||
+    `${lead.fName || ""} ${lead.lName || ""}`.toLowerCase().includes(nameSearch.toLowerCase());
+
+  const leadMatchesFilters = (lead, excludeKey = null) => {
+    const active = (key) => key !== excludeKey;
+
+    return (
+      (active("status") && filters.status.length ? filters.status.includes(lead.status) : true) &&
+      (active("customerTypeDescription") && filters.customerTypeDescription.length
+        ? filters.customerTypeDescription.includes(lead.customerTypeDescription)
+        : true) &&
+      (active("categoryName") && filters.categoryName.length
+        ? filters.categoryName.includes(lead.categoryName)
+        : true) &&
+      (active("createdBy") && filters.createdBy.length
+        ? filters.createdBy.includes(lead.createdBy)
+        : true) &&
+      (active("createdAt") && filters.createdAt.length
+        ? filters.createdAt.includes(new Date(lead.createdAt).toISOString().split("T")[0])
+        : true) &&
+      (active("tripType") && filters.tripType.length
+        ? filters.tripType.includes(getTripType(lead))
+        : true) &&
+      (active("leadType") && filters.leadType.length
+        ? filters.leadType.includes(getLeadType(lead))
+        : true) &&
+      (active("preferredDestination") && filters.preferredDestination.length
+        ? splitDestinations(getDestinations(lead)).some((d) => filters.preferredDestination.includes(d))
+        : true) &&
+      (active("followUpDate") ? inFollowUp(lead) : true) &&
+      (active("travelDate") ? inTravelDate(lead) : true)
+    );
+  };
+
+  // ---------------- CASCADING FILTER OPTIONS ----------------
+  // Each key's option list is built from leads matching every OTHER active
+  // filter (leadMatchesFilters(lead, key) excludes that key itself) — so a
+  // dropdown never offers a value that would produce zero rows given what's
+  // already selected elsewhere.
   const filterOptions = useMemo(() => {
-    const getUnique = (key) => [...new Set(allLeads.map((l) => l[key]).filter(Boolean))];
+    const poolFor = (excludeKey) =>
+      allLeads.filter((l) => leadMatchesFilters(l, excludeKey) && matchesName(l));
 
-    const getUniqueDates = () =>
+    const getUnique = (key, excludeKey) =>
+      [...new Set(poolFor(excludeKey).map((l) => l[key]).filter(Boolean))];
+
+    const getUniqueDates = (excludeKey) =>
       [
         ...new Set(
-          allLeads
+          poolFor(excludeKey)
             .map((l) => {
               if (!l.createdAt) return null;
               const d = new Date(l.createdAt);
@@ -182,33 +554,23 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
         ),
       ];
 
-    const getUniqueDestinations = () => {
+    const getUniqueDestinations = (excludeKey) => {
       const set = new Set();
-      allLeads.forEach((l) => splitDestinations(getDestinations(l)).forEach((d) => set.add(d)));
+      poolFor(excludeKey).forEach((l) => splitDestinations(getDestinations(l)).forEach((d) => set.add(d)));
       return [...set];
     };
 
     return {
-      categoryName: getUnique("categoryName"),
-      createdBy: getUnique("createdBy"),
-      status: getUnique("status"),
-      createdAt: getUniqueDates(),
-      customerTypeDescription: getUnique("customerTypeDescription"),
-      tripType: [...new Set(allLeads.map(getTripType).filter(Boolean))],
-      leadType: [...new Set(allLeads.map(getLeadType).filter(Boolean))],
-      preferredDestination: getUniqueDestinations(),
+      categoryName: getUnique("categoryName", "categoryName"),
+      createdBy: getUnique("createdBy", "createdBy"),
+      status: getUnique("status", "status"),
+      createdAt: getUniqueDates("createdAt"),
+      customerTypeDescription: getUnique("customerTypeDescription", "customerTypeDescription"),
+      tripType: [...new Set(poolFor("tripType").map(getTripType).filter(Boolean))],
+      leadType: [...new Set(poolFor("leadType").map(getLeadType).filter(Boolean))],
+      preferredDestination: getUniqueDestinations("preferredDestination"),
     };
-  }, [allLeads]);
-
-  // Only surface the Holiday-specific filters when the Category filter is
-  // empty (i.e. "All") or explicitly includes Holiday. Otherwise hide them.
-  const isHolidayRelevant =
-    filters.categoryName.length === 0 ||
-    filters.categoryName.some((c) => c.toUpperCase() === "HOLIDAY");
-
-  const visibleFilterKeys = isHolidayRelevant
-    ? [...BASE_FILTER_KEYS, ...HOLIDAY_FILTER_KEYS]
-    : BASE_FILTER_KEYS;
+  }, [allLeads, filters, nameSearch, followUpSels, travelDateSels]);
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => {
@@ -229,6 +591,7 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
     setFilters(EMPTY_FILTERS);
     setNameSearch("");
     setFollowUpSels([]);
+    setTravelDateSel([]);
   };
 
   const handleSort = (key) => {
@@ -240,43 +603,8 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
 
   // ---------------- APPLY FILTERS ----------------
   const filteredLeads = useMemo(() => {
-    const inFollowUp = (lead) => {
-      if (!followUpSels.length) return true;
-      if (!lead.followUpDate) return false;
-      const d = new Date(lead.followUpDate).toISOString().split("T")[0];
-      return followUpSels.some(s => {
-        if (s.type === 'single') return s.date === d;
-        const [a, b] = [s.from, s.to].sort();
-        return d >= a && d <= b;
-      });
-    };
-
-    return allLeads.filter((lead) => {
-      const matchesFilters =
-        (filters.status.length ? filters.status.includes(lead.status) : true) &&
-        (filters.customerTypeDescription.length
-          ? filters.customerTypeDescription.includes(lead.customerTypeDescription)
-          : true) &&
-        (filters.categoryName.length ? filters.categoryName.includes(lead.categoryName) : true) &&
-        (filters.createdBy.length ? filters.createdBy.includes(lead.createdBy) : true) &&
-        (filters.tripType.length ? filters.tripType.includes(getTripType(lead)) : true) &&
-        (filters.leadType.length ? filters.leadType.includes(getLeadType(lead)) : true) &&
-        (filters.preferredDestination.length
-          ? splitDestinations(getDestinations(lead)).some((d) =>
-            filters.preferredDestination.includes(d)
-          )
-          : true) &&
-        (filters.createdAt.length
-          ? filters.createdAt.includes(new Date(lead.createdAt).toISOString().split("T")[0])
-          : true) &&
-        inFollowUp(lead);
-
-      const matchesName = !nameSearch ||
-        `${lead.fName || ""} ${lead.lName || ""}`.toLowerCase().includes(nameSearch.toLowerCase());
-
-      return matchesFilters && matchesName;
-    });
-  }, [allLeads, filters, nameSearch, followUpSels]);
+    return allLeads.filter((lead) => leadMatchesFilters(lead) && matchesName(lead));
+  }, [allLeads, filters, nameSearch, followUpSels, travelDateSels]);
 
   // ---------------- APPLY SORT ----------------
   const sortedLeads = useMemo(() => {
@@ -284,11 +612,17 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
 
     const { key, direction } = sortConfig;
     const dir = direction === "asc" ? 1 : -1;
-    const dateKeys = ["createdAt", "updatedAt", "latestUpdateAt", "followUpDate"];
+    const dateKeys = ["createdAt", "updatedAt", "latestUpdateAt", "followUpDate", "travelDate"];
 
     return [...filteredLeads].sort((a, b) => {
-      let valA = key === "latestUpdateAt" ? getLatestUpdate(a) : a[key];
-      let valB = key === "latestUpdateAt" ? getLatestUpdate(b) : b[key];
+      let valA =
+        key === "latestUpdateAt" ? getLatestUpdate(a)
+        : key === "travelDate" ? a.category?.preferredTravelDate
+        : a[key];
+      let valB =
+        key === "latestUpdateAt" ? getLatestUpdate(b)
+        : key === "travelDate" ? b.category?.preferredTravelDate
+        : b[key];
 
       if (dateKeys.includes(key)) {
         valA = valA ? new Date(valA).getTime() : 0;
@@ -304,65 +638,269 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
     });
   }, [filteredLeads, sortConfig]);
 
+  // Data-driven, not selection-driven, and deliberately dependent on
+  // *nothing but the Category filter*: are there Holiday leads among
+  // whatever categories are currently selected (or all leads, if Category
+  // is untouched)? isHolidayLead already normalizes casing/variants
+  // (Holiday, HOLIDAY, HOLIDAYS, Holidays, etc.). Keeping this independent
+  // of every other filter — including Created Date, Follow-up Date, and
+  // Travel Date — means no combination of filters that happens to match
+  // zero rows can ever hide/reset the Holiday-specific controls.
+  const categoryFilteredLeads = useMemo(
+    () =>
+      filters.categoryName.length
+        ? allLeads.filter((l) => filters.categoryName.includes(l.categoryName))
+        : allLeads,
+    [allLeads, filters.categoryName]
+  );
+
+  const isHolidayRelevant = useMemo(
+    () => categoryFilteredLeads.some(isHolidayLead),
+    [categoryFilteredLeads]
+  );
+
+  const visibleFilterKeys = isHolidayRelevant
+    ? [...BASE_FILTER_KEYS, ...HOLIDAY_FILTER_KEYS]
+    : BASE_FILTER_KEYS;
+
+  // Once no Holiday leads remain in view, clear the Holiday-only filter
+  // values too — otherwise a filter set while its control was visible
+  // keeps silently narrowing the list after the control disappears. Also
+  // reset sort if it was on the now-hidden Preferred Travel Date column.
+  React.useEffect(() => {
+    if (!isHolidayRelevant) {
+      setFilters((prev) =>
+        prev.tripType.length || prev.leadType.length || prev.preferredDestination.length
+          ? { ...prev, tripType: [], leadType: [], preferredDestination: [] }
+          : prev
+      );
+      setTravelDateSel((prev) => (prev.length ? [] : prev));
+      setSortConfig((prev) =>
+        prev.key === "travelDate" ? { key: null, direction: "asc" } : prev
+      );
+    }
+  }, [isHolidayRelevant]);
+
   return (
     <div className="flex flex-col h-full">
       <LoadingOverlay visible={isLoading} />
 
       {/* ---------------- FILTER BAR (never scrolls) ---------------- */}
-      <div className="bg-gray-50 border rounded-lg flex-shrink-0 p-2">
+ <div className="bg-gray-50 border rounded-lg flex-shrink-0 p-2">
 
-        <div className="flex items-start gap-3">
+    <div
+        className="
+            grid
+            grid-cols-[15fr_15fr_15fr_15fr_15fr_33fr_10fr]
+            grid-rows-[38px_38px]
+            gap-x-2
+            gap-y-2
+            items-center
+            w-full
+        "
+    >
 
-          {/* Left: Search + all filters + Follow-up Date */}
-          <div className="flex-1 flex flex-wrap items-center gap-2">
+        {/* =====================================================
+            SEARCH BY NAME
+            COLUMN 1
+            ROW SPAN 2
+        ===================================================== */}
 
+        <div
+            className="
+                col-start-1
+                row-start-1
+                row-span-2
+                flex
+                items-center
+                w-full
+                min-w-0
+            "
+        >
             <input
-              type="text"
-              placeholder="Search by Name"
-              value={nameSearch}
-              onChange={(e) => setNameSearch(e.target.value)}
-              className="rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 bg-white border border-gray-300 min-w-[160px]"
-            />
-
-            {visibleFilterKeys.map((key) => (
-              <MultiSelectFilter
-                key={key}
-                label={FILTER_LABELS[key] || key}
-                options={filterOptions[key]}
-                selected={filters[key]}
-                onToggle={(value) => handleFilterChange(key, value)}
-                onClear={() =>
-                  setFilters((f) => ({
-                    ...f,
-                    [key]: [],
-                  }))
+                type="text"
+                placeholder="Search by Name"
+                value={nameSearch}
+                onChange={(e) =>
+                    setNameSearch(e.target.value)
                 }
-              />
-            ))}
-
-            <CalendarFilter
-              label="Follow-up Date"
-              selections={followUpSels}
-              onApply={(sels) => setFollowUpSels(sels)}
-              onClear={() => setFollowUpSels([])}
+                className="
+                    w-full
+                    min-w-0
+                    rounded
+                    px-2
+                    py-1.5
+                    text-sm
+                    focus:outline-none
+                    focus:ring-2
+                    bg-white
+                    border
+                    border-gray-300
+                "
             />
-
-          </div>
-
-          {/* Right: Clear Filters (always fixed) */}
-          <div className="flex-shrink-0">
-            <button
-              className="px-3 py-1.5 text-sm bg-blue-700 text-white rounded hover:bg-blue-800 whitespace-nowrap"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </button>
-          </div>
-
         </div>
 
-      </div>
 
+        {/* =====================================================
+            NORMAL FILTERS
+            4 PER ROW
+        ===================================================== */}
+
+        {visibleFilterKeys.map((key, index) => {
+
+            const FilterComponent =
+                key === "preferredDestination"
+                    ? SearchableMultiSelectFilter
+                    : MultiSelectFilter;
+
+            const row =
+                index < 4
+                    ? 1
+                    : 2;
+
+            const col =
+                2 + (index % 4);
+
+            return (
+                <div
+                    key={key}
+                    style={{
+                        gridColumn: col,
+                        gridRow: row
+                    }}
+                    className="
+                        flex
+                        items-center
+                        w-full
+                        min-w-0
+                    "
+                >
+                    <FilterComponent
+                        label={
+                            FILTER_LABELS[key] || key
+                        }
+                        options={
+                            filterOptions[key]
+                        }
+                        selected={
+                            filters[key]
+                        }
+                        onToggle={(value) =>
+                            handleFilterChange(
+                                key,
+                                value
+                            )
+                        }
+                        onClear={() =>
+                            setFilters((f) => ({
+                                ...f,
+                                [key]: [],
+                            }))
+                        }
+                    />
+                </div>
+            );
+        })}
+
+
+        {/* =====================================================
+            PREFERRED TRAVEL DATE
+            COLUMN 6 / ROW 1
+        ===================================================== */}
+
+        {isHolidayRelevant && (
+            <div
+                className="
+                    col-start-6
+                    row-start-1
+                    w-full
+                    min-w-0
+                    flex
+                    items-center
+                "
+            >
+                <CalendarFilter
+                    label="Preferred Travel Date"
+                    selections={travelDateSels}
+                    onApply={(sels) =>
+                        setTravelDateSel(sels)
+                    }
+                    onClear={() =>
+                        setTravelDateSel([])
+                    }
+                />
+            </div>
+        )}
+
+
+        {/* =====================================================
+            FOLLOW-UP DATE
+            COLUMN 6 / ROW 2
+        ===================================================== */}
+
+        <div
+            className="
+                col-start-6
+                row-start-2
+                w-full
+                min-w-0
+                flex
+                items-center
+            "
+        >
+            <CalendarFilter
+                label="Follow-up Date"
+                selections={followUpSels}
+                onApply={(sels) =>
+                    setFollowUpSels(sels)
+                }
+                onClear={() =>
+                    setFollowUpSels([])
+                }
+            />
+        </div>
+
+
+        {/* =====================================================
+            CLEAR FILTERS
+            COLUMN 7
+            ROW SPAN 2
+        ===================================================== */}
+
+        <div
+            className="
+                col-start-7
+                row-start-1
+                row-span-2
+                flex
+                items-center
+                justify-end
+                w-full
+                h-full
+                min-w-0
+            "
+        >
+            <button
+                type="button"
+                onClick={clearFilters}
+                className="
+                    px-3
+                    py-1.5
+                    text-sm
+                    bg-blue-700
+                    text-white
+                    rounded
+                    hover:bg-blue-800
+                    whitespace-nowrap
+                "
+            >
+                Clear Filters
+            </button>
+        </div>
+
+    </div>
+
+</div>
       {/* ---------------- SUMMARY BAR ---------------- */}
       <LeadsSummaryBar dateRange={dateRange} leads={sortedLeads} />
 
@@ -386,8 +924,20 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                 sortConfig={sortConfig}
                 onSort={handleSort}
               />
-              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Trip Type / Lead Type</th>
-              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Destinations</th>
+              {isHolidayRelevant && (
+                <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Trip Type / Lead Type</th>
+              )}
+              {isHolidayRelevant && (
+                <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Destinations</th>
+              )}
+              {isHolidayRelevant && (
+                <SortableHeader
+                  label="Preferred Travel Date"
+                  sortKey="travelDate"
+                  sortConfig={sortConfig}
+                  onSort={handleSort}
+                />
+              )}
               <SortableHeader label="Follow-up Date" sortKey="followUpDate" sortConfig={sortConfig} onSort={handleSort} />
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">TransferTo</th>
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Details</th>
@@ -401,14 +951,14 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                 <td className="p-2">
                   <div className="flex flex-col">
                     <span className="font-medium">
-                   {lead.title.trim()} {lead.fName} {lead.lName}
+                      {lead.title.trim()} {lead.fName} {lead.lName}
                     </span>
 
                     {lead.histories &&
                       lead.histories.length > 0 &&
                       lead.histories[0].notes && (
                         <span className="text-xs text-gray-500 mt-0.5 max-w-[225px] break-words">
-                        Notes: {lead.histories[0].notes}
+                          Notes: {lead.histories[0].notes}
                         </span>
                       )}
                   </div>
@@ -443,34 +993,47 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                 <td className="p-2">{lead.customerTypeDescription}</td>
 
                 {/* Trip Type / Lead Type */}
-                <td className="p-2">
-                  {isHolidayLead(lead) ? (
-                    <div className="flex gap-1 flex-wrap">
-                      {getTripType(lead) && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-700">
-                          {getTripType(lead)}
-                        </span>
-                      )}
-                      {getLeadType(lead) && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-700">
-                          {getLeadType(lead)}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
-                </td>
+                {isHolidayRelevant && (
+                  <td className="p-2">
+                    {isHolidayLead(lead) ? (
+                      <div className="flex gap-1 flex-wrap">
+                        {getTripType(lead) && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-700">
+                            {getTripType(lead)}
+                          </span>
+                        )}
+                        {getLeadType(lead) && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-100 text-purple-700">
+                            {getLeadType(lead)}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                )}
 
                 {/* Destinations — shown in full, not truncated, since managers need it at a glance */}
-                <td className="p-2 max-w-[220px]">
-                  {isHolidayLead(lead) && getDestinations(lead) ? (
-                    <span className="text-[11px] text-gray-700">{getDestinations(lead)}</span>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
-                </td>
+                {isHolidayRelevant && (
+                  <td className="p-2 max-w-[220px]">
+                    {isHolidayLead(lead) && getDestinations(lead) ? (
+                      <span className="text-[11px] text-gray-700">{getDestinations(lead)}</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                )}
 
+                {isHolidayRelevant && (
+                  <td className="p-2 max-w-[220px]">
+                    {isHolidayLead(lead) && getTravelDate(lead) ? (
+                      <span className="text-[11px] text-gray-700">{getTravelDate(lead)}</span>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
+                )}
                 <td className="p-2">
                   {lead.followUpDate
                     ? new Date(lead.followUpDate).toLocaleDateString("en-GB").replace(/\//g, "-")

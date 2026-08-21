@@ -464,6 +464,10 @@ export const HolidayLeadObject = {
 
     requestedDestinations: "", // New field for preferred destinations
 
+    preferredTravelDate:null, // New field for preferred travel date
+
+    preferredTravelDateFlexibilityDays:null, // New field for travel date flexibility in days
+
     // =====================================================
     // PAX
     // =====================================================
@@ -549,4 +553,37 @@ export const getEmptyHolidayLeadObj = () => {
 
         updatedAt: dayjs().toISOString()
     };
+};
+
+// ======================================================
+// DATE CONVERSION
+// ======================================================
+
+export const formatHolidayDateForApi = (date) => {
+    if (!date) return null;
+
+    // Already in API format
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return date;
+    }
+
+    // Convert DD-MM-YYYY → YYYY-MM-DD
+    const [day, month, year] = date.split("-");
+
+    if (!day || !month || !year) return null;
+
+    return `${year}-${month}-${day}`;
+};
+
+export const formatHolidayDateForDisplay = (date) => {
+    if (!date) return "";
+
+    // Convert YYYY-MM-DD → DD-MM-YYYY
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        const [year, month, day] = date.split("-");
+
+        return `${day}-${month}-${year}`;
+    }
+
+    return date;
 };
