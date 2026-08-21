@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { colors, labelStyle, inputStyle } from "../itineraryStyles";
+import { useItinerary } from "./UseItinerary";
+import { da } from "intl-tel-input/i18n";
 
 /**
  * ItineraryDetailsSection
@@ -27,6 +30,8 @@ export default function ItineraryDetailsSection({
   updateNumDays,
 }) {
   debugger;
+  const{getSectorTypeList} = useItinerary();
+  const[travelScope,setTravelScope] = useState([]);
   // console.log("Itinerary:", itineraryObj);
   const basic = itineraryObj.itineraryBasicDetails;
   const handleChange = (field, value) => {
@@ -46,12 +51,30 @@ export default function ItineraryDetailsSection({
     }));
 
   };
-  const travScope = [
-    { id: 1, travelScope: "Domestic" },
-    { id: 2, travelScope: "International" },
-  ]
 
-  
+ useEffect(()=> {
+  const fetchSectorType =async ()=>{
+    debugger;
+    try
+    { debugger;
+      const data = await getSectorTypeList();
+       console.log("Sector Type Api Response:", data);
+       setTravelScope(data);
+      
+    }
+    catch(error)
+    {
+      console.error("Failed to fetch Sector List: ",error);
+    }
+  }
+  fetchSectorType();
+ },[]);
+  // const travScope = [
+  //   { id: 1, travelScope: "Domestic" },
+  //   { id: 2, travelScope: "International" },
+  // ]
+
+
   return (
     <div
       style={{
@@ -106,9 +129,9 @@ export default function ItineraryDetailsSection({
           <input
             value={basic.itName}
             // onChange={(e) => setItName(e.target.value)}
-            onChange={(e)=>
-    handleChange("itName",e.target.value)
-}
+            onChange={(e) =>
+              handleChange("itName", e.target.value)
+            }
             style={inputStyle}
             placeholder="e.g. Kerala Backwaters Escape"
           />
@@ -121,10 +144,10 @@ export default function ItineraryDetailsSection({
             // value={description}
             // onChange={(e) => setDesc(e.target.value)}
             value={basic.description}
-
-onChange={(e)=>
-    handleChange("description",e.target.value)
-}
+            maxLength={100}
+            onChange={(e) =>
+              handleChange("description", e.target.value)
+            }
             style={inputStyle}
             placeholder="e.g. Explore the beautiful backwaters…"
           />
@@ -171,25 +194,25 @@ onChange={(e)=>
             //   )
             // }
             value={basic.travelScope ?? ""}
-            onChange={(e)=>
+            onChange={(e) =>
 
-handleChange(
+              handleChange(
 
-"travelScope",
+                "travelScope",
 
-e.target.value === ""
-? null
-: Number(e.target.value)
+                e.target.value === ""
+                  ? null
+                  : Number(e.target.value)
 
-)
+              )
 
-}
+            }
             style={inputStyle}
           >
             <option value=""> Select Sector</option>
-            {travScope.map((travSect) => (
+            {travelScope.map((travSect) => (
               <option key={travSect.id} value={travSect.id}>
-                {travSect.travelScope}
+                {travSect.sectorTypeName}
               </option>
             ))}
           </select>
