@@ -1,5 +1,6 @@
-import React from "react";
-import { useState } from "react";
+
+
+import React, { useState } from "react";
 import BucketCard from "./BucketCard";
 
 const DashboardTimeline = ({
@@ -15,60 +16,100 @@ const DashboardTimeline = ({
 
     onSaveNote,
     onSaveReschedule,
+    onRescheduleSuccess,
     onCancelInline
 }) => {
 
     const [expandedBucket, setExpandedBucket] = useState(null);
+
     const bucketOrder = [
         "overdue",
         "today",
-        "tomorrow",
-        "next7"
+        "created",
+        "upcoming"
     ];
 
-    return (
-
-        <div
-            className={`grid flex-1 grid-cols-1 gap-3 ${
-                expandedBucket ? "" : "md:grid-cols-2"
-            }`}
-        >
-
-            {bucketOrder
-                .filter(bucket => !expandedBucket || expandedBucket === bucket)
-                .map(bucket => (
-<BucketCard
-    key={bucket}
-    bucket={bucket}
-    leads={timeline[bucket] || []}
-    showOwner={false}
-
-    expanded={expandedBucket === bucket}
-    onToggleExpand={() =>
-        setExpandedBucket(current =>
-            current === bucket ? null : bucket
-        )
-    }
-
-    onCall={onCall}
-    onNote={onNote}
-    onReschedule={onReschedule}
-    onOpen={onOpen}
-
-    noteOpen={noteOpen}
-    rescheduleOpen={rescheduleOpen}
-
-    onSaveNote={onSaveNote}
-    onSaveReschedule={onSaveReschedule}
-    onCancelInline={onCancelInline}
-/>
-
-                ))}
-
-        </div>
-
+    // Always have a valid object
+    const safeTimeline = timeline || {};
+    console.log(
+        "🔥 DASHBOARD TIMELINE CALLBACK:",
+        onRescheduleSuccess
     );
+    return (
+        <div className="flex min-h-0 flex-1 flex-col">
+            <div
+                className={`grid min-h-0 flex-1 grid-cols-1 gap-3 ${expandedBucket ? "" : "md:grid-cols-2"
+                    }`}
+            >
 
+                {bucketOrder
+                    .filter(
+                        bucket =>
+                            !expandedBucket ||
+                            expandedBucket === bucket
+                    )
+                    .map(bucket => (
+
+                        <BucketCard
+                            key={bucket}
+
+                            bucket={bucket}
+
+                            leads={
+                                Array.isArray(
+                                    safeTimeline[bucket]
+                                )
+                                    ? safeTimeline[bucket]
+                                    : []
+                            }
+
+                            showOwner={false}
+
+                            expanded={
+                                expandedBucket === bucket
+                            }
+
+                            onToggleExpand={() =>
+                                setExpandedBucket(current =>
+                                    current === bucket
+                                        ? null
+                                        : bucket
+                                )
+                            }
+
+                            onCall={onCall}
+                            onNote={onNote}
+                            onReschedule={onReschedule}
+                            onOpen={onOpen}
+
+                            noteOpen={noteOpen}
+                            rescheduleOpen={rescheduleOpen}
+
+                            onSaveNote={onSaveNote}
+                            onSaveReschedule={
+                                onSaveReschedule
+                            }
+
+                            onCancelInline={
+                                onCancelInline
+                            }
+                            onRescheduleSuccess={(lead, newDate) => {
+
+                                console.log(
+                                    "🔥 CALLBACK PASSED FROM TIMELINE TO BUCKET:",
+                                    lead,
+                                    newDate
+                                );
+
+                                onRescheduleSuccess(lead, newDate);
+
+                            }}
+                        />
+
+                    ))}
+            </div>
+        </div>
+    );
 };
 
 export default DashboardTimeline;

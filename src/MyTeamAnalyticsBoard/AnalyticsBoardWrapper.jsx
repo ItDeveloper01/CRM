@@ -3,6 +3,7 @@ import axios from "axios";
 import config from "../config";
 import { useGetSessionUser } from '../SessionContext';
 import ManagerAnalyticBoard from "../ManagerAnlayticBoard";
+import { LoadingOverlay } from "../LeadsSharedTable";
 // import OperationsAnalyticBoard from "./OperationsAnalyticBoard";
 // import TeleCallingAnalyticBoard from "./TeleCallingAnalyticBoard";
 
@@ -17,6 +18,7 @@ export default function AnalyticsBoardWrapper({
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const currentUser = sessionUser?.user;
+    const [dashboardLoading, setDashboardLoading] = useState(false);
 
     const analyticsAPIURL = config.apiUrl + '/AnalyticsBoardWrapper/';
     const getUserAnalyticsContexURL = analyticsAPIURL + "GetUserAnalyticsContext";
@@ -208,6 +210,7 @@ export default function AnalyticsBoardWrapper({
                         department={selectedDepartment}
                         apiUrl={apiUrl}
                         token={token}
+                        onLoadingChange={setDashboardLoading}
                     />
                 );
 
@@ -250,6 +253,7 @@ export default function AnalyticsBoardWrapper({
     return (
         <div className="w-full h-full flex flex-col">
 
+            <LoadingOverlay visible={dashboardLoading} />
             {/* Department Switcher */}
 
             {departments.length > 1 && (
