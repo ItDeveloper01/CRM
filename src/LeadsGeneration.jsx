@@ -39,6 +39,7 @@ import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
 import { formatHolidayDateForApi, formatHolidayDateForDisplay } from "./Model/HolidayLeadObj";
 import { MESSAGE_TYPES } from './Constants';
+import { LoadingOverlay } from "./LeadsSharedTable";
 console.log("LeadHolidays =", LeadHolidays);
 
 
@@ -100,6 +101,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const { user: sessionUser } = useGetSessionUser();
   const [isLeadsForPhoneVisible, setISLeadsForPhoneVisible] = useState(false);
   const [leadsForPhoneNumber, setLeadsForPhoneNumber] = useState([]);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const navigate = useNavigate();
   const status = leadObj.leadStatus || 1;
   const [statusText, setStatusText] = useState("Open");
@@ -332,7 +334,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
 
     const newLead = mapObject(lead, getEmptyLeadObj())
-
+console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLowerCase());
     if (incomingLead.category) {
       switch (incomingLead.category.$type?.toLowerCase()) {
         case "visa": {
@@ -360,6 +362,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
         }
 
         case "holiday": {
+          debugger;
           const mappedHolidayLead = mapObject(incomingLead.category, getEmptyHolidayLeadObj());
           newLead.category = mappedHolidayLead;
           mappedHolidayLead.preferredTravelDate = formatHolidayDateForDisplay(mappedHolidayLead.preferredTravelDate);
@@ -1067,6 +1070,8 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
     debugger;
 
+    setIsDashboardLoading(true);
+     
     e.preventDefault();
 
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
@@ -1241,12 +1246,14 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
           console.log("Lead created successfully:", response.data);
-
+           setIsDashboardLoading(false);
           alert("Lead saved successfully!");
         }).catch((error) => {
           console.error("Error saving lead:", error);
           alert("Error while saving lead.");
         }).finally(() => {
+
+          setIsDashboardLoading(false);
           // Any cleanup or final actions
           navigate("/dashboard"); // Navigate after operation
         });
@@ -1254,6 +1261,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
       }
     } catch (error) {
+        setIsDashboardLoading(false);
       debugger;
       console.error("Error saving lead:", error);
       alert("Error while saving lead.");
@@ -1263,6 +1271,8 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
     <div className={`${fullWidth ? "w-full" : "w-3/4 mx-auto"} p-6 bg-white shadow-lg rounded-xl`}>
       {/* <fieldset disabled={readOnly}> */}
+
+     <LoadingOverlay visible={isDashboardLoading}/>
 
       <h2 className='text-2xl font-bold mb-6 text-center text-blue-600'>{formHeader}</h2>
 

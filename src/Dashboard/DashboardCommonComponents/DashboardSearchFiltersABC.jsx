@@ -26,7 +26,7 @@ const DashboardSearchFiltersABC = ({
 
     return (
 
-        <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className=" rounded-xl border border-slate-200 bg-white  shadow-sm">
 
             <div className="flex flex-wrap items-center gap-2">
 
@@ -40,12 +40,12 @@ const DashboardSearchFiltersABC = ({
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                         placeholder="Search customer..."
-                        className="w-full rounded-lg border border-slate-200 py-2 pl-10 pr-3 text-sm focus:border-blue-500 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-200 py-3.5 pl-10 pr-3 text-sm focus:border-blue-500 focus:outline-none"
                     />
 
                 </div>
 
-                <FilterSelect
+                {/* <FilterSelect
                     value={destination}
                     onChange={setDestination}
                     options={destinations}
@@ -79,7 +79,7 @@ const DashboardSearchFiltersABC = ({
                 >
                     <RotateCcw className="h-4 w-4" />
                     Clear
-                </button>
+                </button> */}
 
             </div>
 
