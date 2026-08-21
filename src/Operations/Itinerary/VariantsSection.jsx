@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   colors,
   STATUS_CFG,
@@ -16,9 +16,13 @@ import {
 } from "../itineraryStyles";
 // import { STATUS_OPTIONS } from "../ItineraryStyle";
 import {
-    getEmptyVariantObj,
-    getEmptyPickupPointObj
+  getEmptyVariantObj,
+  getEmptyPickupPointObj
 } from "../Model/ItineraryModel";
+import { useItinerary } from "./UseItinerary";
+import { da } from "intl-tel-input/i18n";
+
+
 
 // ── helpers ───────────────────────────────────────────────────────────────
 function addDays(ds, n) {
@@ -53,15 +57,15 @@ function addDays(ds, n) {
 // }
 export function mkVariant(n) {
 
-    const obj = getEmptyVariantObj();
+  const obj = getEmptyVariantObj();
 
-    obj.variantsName = `Variant ${n}`;
+  obj.variantsName = `Variant ${n}`;
 
-    obj.pickupPoints = [
-        getEmptyPickupPointObj()
-    ];
+  obj.pickupPoints = [
+    getEmptyPickupPointObj()
+  ];
 
-    return obj;
+  return obj;
 }
 
 // const guides = [
@@ -163,19 +167,19 @@ function PickupTable({ pickups = [], onChange }) {
     const arr = [...pickups];
 
     arr[index] = {
-        ...arr[index],
-        [field]: value
+      ...arr[index],
+      [field]: value
     };
 
     onChange(arr);
 
-};
+  };
   // const add = () =>
   //   onChange([...pickups, { id: uid(), pickupPoint: "", pickupCity: "", ratePerPax: 0 }]);
   const add = () =>
     onChange([
-        ...pickups,
-        getEmptyPickupPointObj()
+      ...pickups,
+      getEmptyPickupPointObj()
     ]);
   // , total: 0, occupied: 0
   // const del = (id) => {
@@ -184,13 +188,13 @@ function PickupTable({ pickups = [], onChange }) {
   const del = (index) => {
 
     if (pickups.length <= 1)
-        return;
+      return;
 
     onChange(
-        pickups.filter((_, i) => i !== index)
+      pickups.filter((_, i) => i !== index)
     );
 
-};
+  };
 
   return (
     <div style={{ marginTop: 12 }}>
@@ -216,7 +220,7 @@ function PickupTable({ pickups = [], onChange }) {
                 <input
                   value={p.pickupPoint}
                   // onChange={(e) => upd(p.id, "pickupPoint", e.target.value)}
-                  onChange={(e)=>upd(i,"pickupPoint",e.target.value)}
+                  onChange={(e) => upd(i, "pickupPoint", e.target.value)}
                   placeholder="e.g. Kochi Airport"
                   style={inputStyle}
                 />
@@ -225,7 +229,7 @@ function PickupTable({ pickups = [], onChange }) {
                 <input
                   value={p.pickupCity}
                   // onChange={(e) => upd(p.id, "pickupCity", e.target.value)}
-                  onChange={(e)=>upd(i,"pickupCity",e.target.value)}
+                  onChange={(e) => upd(i, "pickupCity", e.target.value)}
                   placeholder="e.g. Kochi, Kerala"
                   style={inputStyle}
                 />
@@ -235,11 +239,11 @@ function PickupTable({ pickups = [], onChange }) {
                   value={p.ratePerPax || ""}
                   // onChange={(e) => upd(p.id, "ratePerPax", e.target.value)}
                   // onChange={(e) => upd(p.id, "ratePerPax", e.target.value === "" ? null : Number(e.target.value))}
-                   onChange={(e)=>upd(
-i,
-"ratePerPax",
-e.target.value===""?null:Number(e.target.value)
-)}
+                  onChange={(e) => upd(
+                    i,
+                    "ratePerPax",
+                    e.target.value === "" ? null : Number(e.target.value)
+                  )}
                   placeholder="25,000"
                   style={{ ...inputStyle, width: 90 }}
                 />
@@ -266,6 +270,11 @@ e.target.value===""?null:Number(e.target.value)
 // ── VariantPanel ──────────────────────────────────────────────────────────
 function VariantPanel({ variant, numDays, onChange }) {
   debugger;
+  const { getGuidesList, getTargetAudienceList, fetchStatuses } = useItinerary();
+  const [guides, setGuides] = useState([]);
+  const [targetAudiences, setTargetAudiences] = useState([]);
+  const [status, setStatus] = useState([]);
+
   const set = (k, v) => {
     const upd = { ...variant, [k]: v };
     if (k === "startDate") upd.endDate = addDays(v, numDays);
@@ -282,18 +291,56 @@ function VariantPanel({ variant, numDays, onChange }) {
     (Number(variant.perPaxBaseAmount) || 0) -
     ((Number(variant.perPaxBaseAmount) || 0) * (Number(variant.discountPercent) || 0)) / 100;
 
-  const targetAudiences = [
-    { id: 1, audiencename: "Family" },
-    { id: 2, audiencename: "Couple" },
-    { id: 3, audiencename: "Friends" },
-    { id: 4, audiencename: "Solo Traveller" },
-  ];
-  //  console.log("Target audiemce list ", targetAudiences);
-  const guides = [
-    { id: 1, guidename: "Priya Mishra" },
-    { id: 2, guidename: "Diya Mirza" },
-    { id: 3, guidename: "Shantanu Naidu" },
-  ];
+
+  useEffect(() => {
+    debugger;
+    //Call Guide Api from UseItinerary
+    const fetchGuides = async () => {
+      try {
+        debugger;
+        const data = await getGuidesList();
+        console.log("Guides Api Response:", data);
+
+        setGuides(data);
+      }
+      catch (error) {
+        console.error("Failed to fetch guides:", error);
+      }
+
+    }
+
+    //Call Target Audiences from UseItinerary
+    const fetchTargetAudience = async () => {
+      debugger;
+      try {
+        const data = await getTargetAudienceList();
+
+        console.log("Target Audience Api Response:", data);
+        setTargetAudiences(data);
+
+      }
+      catch (error) {
+        console.log("Failed to fetch target audience: ", error);
+      }
+    }
+
+    //Call Status Api 
+    const fetchStatus = async () => {
+      debugger;
+      try {
+        const data = await fetchStatuses();
+        console.log("Itinerary Variant Status Api Response:", data);
+        setStatus(data);
+      }
+      catch (error) {
+        console.log("Failed to fetch variant Status:", error);
+      }
+    }
+
+    fetchGuides();
+    fetchTargetAudience();
+    fetchStatus();
+  }, []);
 
   return (
     <div
@@ -345,9 +392,9 @@ function VariantPanel({ variant, numDays, onChange }) {
           >
             <option value="">Select Status</option>
 
-            {STATUS_OPTIONS.map((status) => (
-              <option key={status.value} value={status.value}>
-                {status.label}
+            {status.map((status) => (
+              <option key={status.id} value={status.id}>
+                {status.statusName}
               </option>
             ))}
           </select>
@@ -386,7 +433,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             <option value="">Select Audience</option>
             {targetAudiences.map((aud) => (
               <option key={aud.id} value={aud.id}>
-                {aud.audiencename}
+                {aud.targetAudienceName}
               </option>
             ))}
           </select>
@@ -479,7 +526,7 @@ function VariantPanel({ variant, numDays, onChange }) {
           <select
             value={variant.guideId || ""}
             // onChange={(e) => set("guideId", e.target.value)}
-             onChange={(e) =>
+            onChange={(e) =>
               set(
                 "guideId",
                 e.target.value === "" ? null : Number(e.target.value)
@@ -496,7 +543,7 @@ function VariantPanel({ variant, numDays, onChange }) {
             <option value="">Select Guide</option>
             {guides.map((guide) => (
               <option key={guide.id} value={guide.id}>
-                {guide.guidename}
+                {guide.guideName}
               </option>
             ))}
           </select>
@@ -557,49 +604,49 @@ function VariantPanel({ variant, numDays, onChange }) {
  */
 // export default function VariantsSection({ variants, setVariants, numDays }) {
 export default function VariantsSection({
-    itineraryObj,
-    setItineraryObj
+  itineraryObj,
+  setItineraryObj
 }) {
 
-    const variants = itineraryObj.variantsDetails;
+  const variants = itineraryObj.variantsDetails;
 
-    const numDays = itineraryObj.itineraryBasicDetails.numDays;
+  const numDays = itineraryObj.itineraryBasicDetails.numDays;
   debugger;
   const [activeTab, setActiveTab] = useState(null);
 
   // const tabId = activeTab || variants[0]?.id;
   const activeIndexFromTab = activeTab ?? 0;
 
-const activeVariant = variants[activeIndexFromTab];
+  const activeVariant = variants[activeIndexFromTab];
   // const activeVariant = variants.find((v) => v.id === tabId) || variants[0];
   const activeIndex = variants.findIndex(
     v => v.id === activeVariant?.id
-);
-// ===============Temp
-// const activeIndex = variants.findIndex(
-//     (v) => v === activeVariant
-// );
+  );
+  // ===============Temp
+  // const activeIndex = variants.findIndex(
+  //     (v) => v === activeVariant
+  // );
   // const updVariant = (id, v) =>
   //   setVariants((prev) => prev.map((x) => (x.id === id ? v : x)));
   const updVariant = (index, newVariant) => {
 
     setItineraryObj(prev => {
 
-        const arr = [...prev.variantsDetails];
+      const arr = [...prev.variantsDetails];
 
-        arr[index] = newVariant;
+      arr[index] = newVariant;
 
-        return {
+      return {
 
-            ...prev,
+        ...prev,
 
-            variantsDetails: arr
+        variantsDetails: arr
 
-        };
+      };
 
     });
 
-};
+  };
 
   // const addVariant = () => {
   //   const v = mkVariant(variants.length + 1);
@@ -613,21 +660,21 @@ const activeVariant = variants[activeIndexFromTab];
 
     setItineraryObj(prev => ({
 
-        ...prev,
+      ...prev,
 
-        variantsDetails: [
+      variantsDetails: [
 
-            ...prev.variantsDetails,
+        ...prev.variantsDetails,
 
-            v
+        v
 
-        ]
+      ]
 
     }));
 
     setActiveTab(v.id);
 
-};
+  };
 
   // const removeVariant = (id) => {
   //   if (variants.length === 1) return;
@@ -638,33 +685,33 @@ const activeVariant = variants[activeIndexFromTab];
   const removeVariant = (index) => {
 
     if (variants.length <= 1)
-        return;
+      return;
 
     setItineraryObj(prev => {
 
-        const arr = prev.variantsDetails.filter((_, i) => i !== index);
+      const arr = prev.variantsDetails.filter((_, i) => i !== index);
 
-        return {
+      return {
 
-            ...prev,
+        ...prev,
 
-            variantsDetails: arr
+        variantsDetails: arr
 
-        };
+      };
 
     });
 
     if (activeIndexFromTab === index) {
 
-        setActiveTab(0);
+      setActiveTab(0);
 
     } else if (activeIndexFromTab > index) {
 
-        setActiveTab(activeIndexFromTab - 1);
+      setActiveTab(activeIndexFromTab - 1);
 
     }
 
-};
+  };
 
   return (
     <div
@@ -710,22 +757,22 @@ const activeVariant = variants[activeIndexFromTab];
           flexWrap: "wrap",
         }}
       >
-        {variants.map((v,index) => {
+        {variants.map((v, index) => {
           // const act = v.id === tabId;
           const act = index === activeIndexFromTab;
           return (
             // <div key={v.id} onClick={() => setActiveTab(variants.length)} style={variantTabStyle(act)}>
-             <div key={v.id ?? index} onClick={() => setActiveTab(index)} style={variantTabStyle(act)}> 
-             {/* confirm BOVE LINE   */}
-             
+            <div key={v.id ?? index} onClick={() => setActiveTab(index)} style={variantTabStyle(act)}>
+              {/* confirm BOVE LINE   */}
+
               {v.variantsName}
               {variants.length > 1 && (
                 <span
                   // onClick={(e) => { e.stopPropagation(); removeVariant(v.id); }}
-                  onClick={(e)=>{
-    e.stopPropagation();
-    removeVariant(index);
-}}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeVariant(index);
+                  }}
                   style={{ marginLeft: 4, color: colors.textSubtle, fontSize: 14, lineHeight: 1 }}
                 >
                   ×
@@ -751,10 +798,10 @@ const activeVariant = variants[activeIndexFromTab];
         //   onChange={(v) => updVariant(activeVariant.id, v)}
         // />
         <VariantPanel
-    variant={activeVariant}
-    numDays={numDays}
-    onChange={(v)=>updVariant(activeIndexFromTab,v)}
-/>
+          variant={activeVariant}
+          numDays={numDays}
+          onChange={(v) => updVariant(activeIndexFromTab, v)}
+        />
       )}
     </div>
   );

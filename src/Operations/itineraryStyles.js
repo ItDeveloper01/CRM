@@ -56,12 +56,12 @@ export const STATUS_CFG = {
   },
 };
 
-export const STATUS_OPTIONS = [
-  { value: 1, label: "Active" },
-  { value: 2, label: "Ongoing" },
-  { value: 3, label: "Completed" },
-  { value: 4, label: "Cancelled" },
-];
+// export const STATUS_OPTIONS = [
+//   { value: 1, label: "Active" },
+//   { value: 2, label: "Ongoing" },
+//   { value: 3, label: "Completed" },
+//   { value: 4, label: "Cancelled" },
+// ];
 
 export const DAY_COLORS = [
   "#8b5cf6", "#3b82f6", "#22c55e", "#f59e0b",
@@ -244,4 +244,86 @@ export const addActivityButtonStyle = {
   cursor: "pointer",
   fontSize: 13,
   fontFamily: "inherit",
+};
+
+
+
+// ==========================Dashboard Style===========================
+export const DASHBOARDSTYLES = {
+  pageBg: "bg-[#f0f4f8]",
+  pagePadding: "p-5",
+
+  colWidth: "min-w-[238px] max-w-[238px]",
+  colWrapper:
+    "flex flex-col bg-white border-[1.5px] border-blue-100 rounded-2xl shrink-0 shadow-sm self-start",
+
+  colHeader:
+    "flex items-center justify-between px-3 py-2.5 bg-blue-700 hover:bg-blue-800 cursor-pointer rounded-t-2xl transition-colors",
+  colHeaderText: "text-[13px] font-semibold text-white flex items-center gap-1.5",
+  colCount: "bg-white/25 text-white text-[11px] font-semibold px-2 py-0.5 rounded-full",
+
+  colBody: "flex flex-col gap-2 p-2.5 overflow-y-auto scrollbar-thin",
+
+  cardBase:
+    "bg-white border-[1.5px] border-gray-200 rounded-xl p-3 cursor-pointer group relative transition-all duration-150 hover:border-blue-500 hover:shadow-[0_0_0_3px_rgba(59,130,246,0.15)] hover:bg-blue-50/50",
+  cardTitle: "text-[12px] font-semibold leading-snug text-gray-800 pr-5",
+  metaRow: "text-[11px] text-gray-600 flex items-center gap-1 mt-1",
+  seatSection: "mt-2.5 pt-2 border-t border-gray-100",
+  seatRow: "flex items-center justify-between text-[11px] text-gray-600 mb-1.5",
+  seatTrack: "h-[5px] bg-gray-200 rounded-full overflow-hidden",
+  seatFill: "h-full bg-blue-500 rounded-full transition-all",
+  rateText: "text-[11px] text-gray-600 text-right mt-1",
+
+  badgeConfirmed: "bg-green-100 text-green-800",
+  badgeActive: "bg-blue-100 text-blue-800",
+  badgeDraft: "bg-slate-100 text-slate-600",
+  badgeOngoing: "bg-amber-100 text-amber-800",
+
+  deleteBtn:
+    "absolute top-2 right-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md w-[22px] h-[22px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity",
+
+  addBtn:
+    "w-full border-[1.5px] border-dashed border-blue-200 hover:border-blue-500 hover:bg-blue-50 rounded-xl py-2 text-[12px] text-blue-600 font-medium flex items-center justify-center gap-1 transition-colors mt-0.5",
+
+  filterBtn:
+    "flex items-center gap-1.5 border border-gray-300 bg-white rounded-xl px-3.5 py-2 text-sm hover:bg-gray-50",
+  newBtn:
+    "flex items-center gap-1.5 bg-blue-700 text-white rounded-xl px-4 py-2 text-sm font-medium hover:bg-blue-800 transition-colors",
+
+  // pill: "px-3.5 py-1.5 rounded-full border border-gray-200 text-xs text-gray-500 bg-white cursor-pointer hover:bg-gray-50 transition-colors",
+  // pillActive: "bg-blue-700 text-white border-blue-700",
+  pill: "px-3.5 py-1.5 rounded-full border text-xs cursor-pointer transition-colors",
+  
+  pillInactive:
+    "bg-white text-gray-500 border-gray-200 hover:bg-gray-50",
+
+  pillActive:
+    "bg-blue-700 text-white border-blue-700",
+
+  modalOverlay: "fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4",
+  modalBox: "bg-white rounded-2xl shadow-xl w-full max-w-[640px] max-h-[90vh] overflow-y-auto",
+  modalHeader: "flex items-center justify-between px-5 py-4 border-b border-gray-100",
+  modalTitle: "text-base font-semibold text-gray-800",
+  closeBtn:
+    "bg-slate-100 hover:bg-slate-200 border-none rounded-lg w-8 h-8 flex items-center justify-center text-gray-500 text-lg cursor-pointer",
+
+  tlStatGrid: "grid grid-cols-3 gap-3 px-5 pt-4 pb-3",
+  tlStatBox: "bg-blue-50 rounded-xl p-3 text-center",
+  tlStatNum: "text-2xl font-bold text-blue-700",
+  tlStatLabel: "text-xs text-gray-400 mt-0.5",
+  tlTrack: "h-5 bg-slate-100 rounded-md relative overflow-hidden",
+  tlBar:
+    "h-full rounded-md absolute flex items-center px-2 text-[10px] font-semibold text-white whitespace-nowrap overflow-hidden",
+
+  formLabel: "block text-xs font-semibold text-gray-600 mb-1",
+  formInput:
+    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition",
+  formSelect:
+    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition bg-white",
+  formGrid2: "grid grid-cols-2 gap-3",
+  formSection: "px-5 py-4 flex flex-col gap-3",
+  primaryBtn: "bg-blue-700 text-white rounded-lg px-5 py-2 text-sm font-medium hover:bg-blue-800 transition-colors",
+  secondaryBtn:
+    "border border-gray-200 text-gray-600 rounded-lg px-5 py-2 text-sm font-medium hover:bg-gray-50 transition-colors",
+  dangerBtn: "border border-red-200 text-red-500 rounded-lg px-5 py-2 text-sm font-medium hover:bg-red-50 transition-colors",
 };

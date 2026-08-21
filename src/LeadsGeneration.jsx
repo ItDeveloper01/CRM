@@ -38,6 +38,7 @@ import { useMessageBox } from "./Notification";
 import LeadHolidays from './LeadHolidays';
 import { getEmptyHolidayLeadObj } from './Model/HolidayLeadObj';
 import { MESSAGE_TYPES } from './Constants';
+import { ConsoleLogger } from '@microsoft/signalr/dist/esm/Utils';
 console.log("LeadHolidays =", LeadHolidays);
 
 
@@ -198,6 +199,7 @@ const [isCheckingMobile, setIsCheckingMobile] = useState(false);
     const response = await axios.get(
       getCountryListMasterEndPoint
     );
+    console.log("Fetch Country API endpoint:",getCountryListMasterEndPoint);
 
     const formattedCountries = response.data
       .filter(country => country.isActive)

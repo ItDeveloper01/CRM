@@ -247,9 +247,10 @@ export default function ItinerarySection({
     //---------------------------------------------------------
 
     const fetchAudience = async () => {
-
+        debugger;
         try {
-
+            debugger;
+            console.log("GetTargetAudience URL :",config.apiUrl + "/MasterData/GetTargetAudienceMaster");
             const res = await axios.get(
                 config.apiUrl + "/MasterData/GetTargetAudienceMaster",
                 {
@@ -258,7 +259,8 @@ export default function ItinerarySection({
                     }
                 }
             );
-
+            debugger;
+            console.log("Fetch Audience Api response: ", res);
             setAudienceList(res.data);
 
         }
