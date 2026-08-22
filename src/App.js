@@ -22,14 +22,13 @@ import ManagerAnalytics from './ManagerAnalytics';
 import ManagerTeamAnalytics from './ManagerTeamAnalytics';
 import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
-import SignalRService from './SignalRService';
+// import SignalRService from './SignalRService';
 import DashboardWrapper from './Dashboard/DashboardCommonComponents/DashboardWrapper';
 
 
 import MasterSettings from './MasterSettingsBoard';
 import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManager';
 import AnalyticsBoardWrapper from './MyTeamAnalyticsBoard/AnalyticsBoardWrapper';
-
 
 export default function App() {
    const { user, setUser } = useGetSessionUser(); // ✅ using user now
@@ -63,7 +62,8 @@ export default function App() {
               }>
               <Route
                 path='/dashboard'
-                element={<UserDashboardTemp />}
+                // element={<UserDashboardTemp />}    //replace with => DashboardWrapper
+                element={<DashboardWrapper />} 
               />
               <Route
                 path='/leads'
@@ -114,7 +114,7 @@ export default function App() {
                   element={<TravelAgencyItineraryManager />}
                 />
                 <Route path='/DashboardV2'
-                  element={<DashboardWrapper />}
+                  element={<UserDashboardTemp />}
                 />
               {/* ✅ Users List */}
               <Route
