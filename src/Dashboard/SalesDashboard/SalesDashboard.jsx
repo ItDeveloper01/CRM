@@ -1,1476 +1,3 @@
-// import React, {
-//     useEffect,
-//     useMemo,
-//     useState
-// } from "react";
-// import axios from "axios";
-// import { useGetSessionUser } from "../../SessionContext"
-
-// import DashboardStats from "../DashboardCommonComponents/DashboardStats";
-// import DashboardTimeline from "../DashboardCommonComponents/DashboardTimeline";
-// import MiniCharts from "../DashboardCommonComponents/MiniCharts";
-// import DashboardKPIStrip from "../DashboardCommonComponents/DashboardKPIStrip";
-// import LeadDetailsModal from "../DashboardCommonComponents/LeadDetailsModal";
-// import TeamPerformanceSidebar from "../DashboardCommonComponents/TeamPerformanceSidebar";
-// import DashboardToast from "../DashboardCommonComponents/DashboardToast";
-// import DashboardSearchFiltersABC from "../DashboardCommonComponents/DashboardSearchFiltersABC";
-// import DashboardViewToggle from "../DashboardCommonComponents/DashboardViewToggle";
-// import DashboardTeamSelector from "../DashboardCommonComponents/DashboardTeamSelector";
-
-// import config from "../../config";
-
-
-// const SalesDashboard = ({
-//     department,
-//     category,
-//     currentUser
-// }) => {
-
-//     // =========================================================
-//     // VIEW MODE
-//     // =========================================================
-
-//     const [viewMode, setViewMode] = useState("mine");
-
-//     const [selectedTeamMember, setSelectedTeamMember] = useState(null);
-//     const [selectedMemberPhoto, setSelectedMemberPhoto] = useState(null);
-//     const [loadingMemberPhoto, setLoadingMemberPhoto] = useState(false);
-//     const { user: sessionUser } = useGetSessionUser();
-
-//     // =========================================================
-//     // DASHBOARD DATA
-//     // =========================================================
-
-//     const [leads, setLeads] = useState([]);
-
-//     const [timeline, setTimeline] = useState({
-//         overdue: [],
-//         today: [],
-//         created: [],
-//         next7: []
-//     });
-
-//     const [summaryCards, setSummaryCards] = useState([]);
-
-//     const [statusChart, setStatusChart] = useState([]);
-
-//     const [conversionChart, setConversionChart] = useState([]);
-
-//     const [conversionRate, setConversionRate] = useState(0);
-
-//     const [kpis, setKpis] = useState([]);
-
-
-//     // =========================================================
-//     // UI STATE
-//     // =========================================================
-
-//     const [activeNoteId, setActiveNoteId] = useState(null);
-
-//     const [activeRescheduleId, setActiveRescheduleId] = useState(null);
-
-//     const [openLead, setOpenLead] = useState(null);
-
-//     const [toast, setToast] = useState("");
-
-
-//     // =========================================================
-//     // FILTERS
-//     // =========================================================
-
-//     const [searchText, setSearchText] = useState("");
-
-//     const [destination, setDestination] = useState("");
-
-//     const [status, setStatus] = useState("");
-
-//     const [priority, setPriority] = useState("");
-
-//     const [filterCategory, setFilterCategory] = useState("");
-
-
-//     // =========================================================
-//     // API
-//     // =========================================================
-
-//     const LEADAPIURL1 =
-//         config.apiUrl + "/SalesDashboard/";
-
-//     const GetFollowUpLeads =
-//         LEADAPIURL1 + "GetFollowUpLeads";
-
-//     const GetTodaysLeads =
-//         LEADAPIURL1 + "GetTodaysLeads";
-
-//     const GetLeadsDashboardCounts =
-//         LEADAPIURL1 + "GetLeadsDashboardCounts";
-
-//     const USERAPIURL = config.apiUrl + "/Users/";
-//     const GetUserPhoto = USERAPIURL + "GetPhotoForUserID";
-//     const GetSalesDashboard = LEADAPIURL1 + "GetSalesDashboard";
-
-
-//     // =========================================================
-//     // SELECTED CATEGORY / VERTICAL
-//     // =========================================================
-
-//     /*
-//         category is the selected vertical/category from the
-//         DashboardContext.
-
-//         Example:
-
-//         {
-//             verticalId: 3,
-//             verticalName: "Holiday",
-//             roleId: 4,
-//             roleName: "Manager",
-//             canViewTeamDashboard: true,
-//             teamMembers: [...]
-//         }
-//     */
-
-//     const canViewTeam =
-//         category?.canViewTeamDashboard ?? false;
-
-
-//     // =========================================================
-//     // TEAM MEMBERS
-//     // =========================================================
-
-//     const teamMembers = useMemo(() => {
-
-//         return category?.teamMembers ?? [];
-
-//     }, [category]);
-
-
-//     // =========================================================
-//     // RESET TEAM SELECTION WHEN CATEGORY CHANGES
-//     // =========================================================
-
-//     useEffect(() => {
-
-//         setViewMode("mine");
-
-//         setSelectedTeamMember(null);
-
-//     }, [category?.verticalId]);
-
-
-//     // =========================================================
-//     // STATIC FILTER OPTIONS
-//     // =========================================================
-
-//     const destinations = [
-//         "Japan",
-//         "Dubai",
-//         "Bali",
-//         "Singapore"
-//     ];
-
-//     const statuses = [
-//         "Open",
-//         "Follow-up",
-//         "Quote Sent",
-//         "Confirmed",
-//         "Lost"
-//     ];
-
-//     const priorities = [
-//         "High",
-//         "Medium",
-//         "Low"
-//     ];
-
-//     const categories = [
-//         "FIT",
-//         "GIT",
-//         "Corporate",
-//         "Honeymoon"
-//     ];
-
-
-//     // =========================================================
-//     // CLEAR FILTERS
-//     // =========================================================
-
-//     const clearFilters = () => {
-
-//         setSearchText("");
-
-//         setDestination("");
-
-//         setStatus("");
-
-//         setPriority("");
-
-//         setFilterCategory("");
-
-//     };
-
-
-//     // =========================================================
-//     // TOAST
-//     // =========================================================
-
-//     const showToast = (message) => {
-
-//         setToast(message);
-
-//         setTimeout(() => {
-
-//             setToast("");
-
-//         }, 2200);
-
-//     };
-
-
-//     // =========================================================
-//     // ACTIONS
-//     // =========================================================
-
-//     const handleCall = (lead) => {
-
-//         console.log("Call", lead);
-
-//     };
-
-
-//     const handleNote = (lead) => {
-
-//         setActiveRescheduleId(null);
-
-//         setActiveNoteId(
-//             activeNoteId === lead.id
-//                 ? null
-//                 : lead.id
-//         );
-
-//     };
-
-
-//     const handleReschedule = (lead) => {
-
-//         setActiveNoteId(null);
-
-//         setActiveRescheduleId(
-//             activeRescheduleId === lead.id
-//                 ? null
-//                 : lead.id
-//         );
-
-//     };
-
-
-//     const handleSaveNote = (lead, note) => {
-
-//         console.log(
-//             "Save Note",
-//             lead,
-//             note
-//         );
-
-//         setActiveNoteId(null);
-
-//     };
-
-
-//     const handleSaveReschedule = (lead, date) => {
-
-//         console.log(
-//             "Reschedule",
-//             lead,
-//             date
-//         );
-
-//         setActiveRescheduleId(null);
-
-//     };
-
-
-//     // =========================================================
-//     // KPIs
-//     // =========================================================
-
-//     const loadKPIs = async () => {
-
-//         setKpis([
-
-//             {
-//                 id: 1,
-//                 icon: "phone",
-//                 title: "Calls Today",
-//                 value: 27
-//             },
-
-//             {
-//                 id: 2,
-//                 icon: "file",
-//                 title: "Pending Quotes",
-//                 value: 14
-//             },
-
-//             {
-//                 id: 3,
-//                 icon: "check",
-//                 title: "Completed",
-//                 value: 19
-//             },
-
-//             {
-//                 id: 4,
-//                 icon: "clock",
-//                 title: "Avg Response",
-//                 value: "18 min"
-//             }
-
-//         ]);
-
-//     };
-
-
-
-//     // =========================================================
-//     // SUMMARY CARDS
-//     // =========================================================
-
-//     const loadDashboardSummary = async (timeLine) => {
-
-//         const todaysCreated =
-//             timeLine?.todaysCreatedLeads || [];
-
-//         const overdue =
-//             timeLine?.overdueLeads || [];
-
-//         const todaysFollowup =
-//             timeLine?.todaysLeads || [];
-
-//         const next7Days =
-//             timeLine?.next7DaysLeads || [];
-
-
-//         const CARD_DEFS = [
-
-//             {
-//                 id: 1,
-//                 key: "Created",
-//                 title: "Today's Created",
-//                 color: "blue",
-//                 value: todaysCreated.length
-//             },
-
-//             {
-//                 id: 2,
-//                 key: "Overdue",
-//                 title: "Overdue Followup",
-//                 color: "red",
-//                 value: overdue.length
-//             },
-
-//             {
-//                 id: 3,
-//                 key: "Today",
-//                 title: "Today's Due Followup",
-//                 color: "green",
-//                 value: todaysFollowup.length
-//             },
-
-//             {
-//                 id: 4,
-//                 key: "Next7",
-//                 title: "Next 7 Days Followup",
-//                 color: "gray",
-//                 value: next7Days.length
-//             }
-
-//         ];
-
-//         setSummaryCards(CARD_DEFS);
-
-//     };
-
-
-//     // =========================================================
-//     // TIMELINE
-//     // =========================================================
-
-//     const loadTimeline = async (
-//         data
-//     ) => {
-
-//         console.log(
-//             "Timeline user:",
-//             data
-//         );
-
-
-//         // const allTimeline = {
-
-//         //     overdue: [
-
-//         //         {
-//         //             id: 1,
-//         //             customerName: "John Smith",
-//         //             days: "5 days overdue",
-//         //             executive: "Rahul"
-//         //         },
-
-//         //         {
-//         //             id: 2,
-//         //             customerName: "ABC Travels",
-//         //             days: "Yesterday",
-//         //             executive: "Sneha"
-//         //         }
-
-//         //     ],
-
-//         //     today: [
-
-//         //         {
-//         //             id: 3,
-//         //             customerName: "Amit Shah",
-//         //             days: "10:00 AM",
-//         //             executive: "Kunal"
-//         //         },
-
-//         //         {
-//         //             id: 4,
-//         //             customerName: "Rahul Patel",
-//         //             days: "2:30 PM",
-//         //             executive: "Priya"
-//         //         }
-
-//         //     ],
-
-//         //     tomorrow: [
-
-//         //         {
-//         //             id: 5,
-//         //             customerName: "XYZ Holidays",
-//         //             days: "Tomorrow",
-//         //             executive: "Rahul"
-//         //         }
-
-//         //     ]
-
-//         // };
-
-
-//         const timeline = {
-//             overdue: data.overdueLeads || [],
-//             today: data.todaysLeads || [],
-//             next7: data.next7DaysLeads || [],
-//             created: data.todaysCreatedLeads || []
-//         };
-//         setTimeline(timeline);
-
-//     };
-
-
-//     // =========================================================
-//     // LEADS
-//     // =========================================================
-
-//     const loadLeads = async (
-//         dashboardUserId
-//     ) => {
-
-//         console.log(
-//             "Leads user:",
-//             dashboardUserId
-//         );
-
-
-//         const allLeads = [
-
-//             {
-//                 id: 1,
-//                 customerName: "John Smith",
-//                 notes: "Passport pending",
-//                 followUpDate: "Today",
-//                 status: "Open",
-//                 priority: "High",
-//                 executive: "Rahul"
-//             },
-
-//             {
-//                 id: 2,
-//                 customerName: "ABC Travels",
-//                 notes: "Waiting for payment",
-//                 followUpDate: "Tomorrow",
-//                 status: "Postponed",
-//                 priority: "Medium",
-//                 executive: "Sneha"
-//             }
-
-//         ];
-
-
-//         setLeads(allLeads);
-
-//     };
-
-
-//     // =========================================================
-//     // MINI CHARTS
-//     // =========================================================
-
-//     const loadMiniCharts = async (
-//         dashboardUserId
-//     ) => {
-
-//         console.log(
-//             "Charts user:",
-//             dashboardUserId
-//         );
-
-
-//         setStatusChart([
-
-//             {
-//                 status: "Follow-up",
-//                 count: 18,
-//                 color: "#3b82f6"
-//             },
-
-//             {
-//                 status: "Open",
-//                 count: 12,
-//                 color: "#f59e0b"
-//             },
-
-//             {
-//                 status: "Quote Sent",
-//                 count: 9,
-//                 color: "#9333ea"
-//             },
-
-//             {
-//                 status: "Confirmed",
-//                 count: 6,
-//                 color: "#10b981"
-//             },
-
-//             {
-//                 status: "Lost",
-//                 count: 2,
-//                 color: "#ef4444"
-//             }
-
-//         ]);
-
-
-//         setConversionChart([
-
-//             {
-//                 name: "Confirmed",
-//                 value: 20,
-//                 color: "#10b981"
-//             },
-
-//             {
-//                 name: "In Progress",
-//                 value: 60,
-//                 color: "#3b82f6"
-//             },
-
-//             {
-//                 name: "Lost",
-//                 value: 20,
-//                 color: "#ef4444"
-//             }
-
-//         ]);
-
-
-//         setConversionRate(20);
-
-//     };
-
-
-//     // =========================================================
-//     // LOAD INITIAL KPIs
-//     // =========================================================
-
-//     useEffect(() => {
-
-//         loadKPIs();
-
-//     }, []);
-
-
-//     // =========================================================
-//     // LOAD DASHBOARD DATA
-//     // =========================================================
-//     //
-//     // userIds will ALWAYS be an array:
-//     //
-//     // My Dashboard:
-//     //      ["loggedInUserId"]
-//     //
-//     // All Team:
-//     //      ["userId1", "userId2", "userId3"]
-//     //
-//     // Single Team Member:
-//     //      ["userId2"]
-//     // =========================================================
-
-//     const loadDashboardData = async (dashboardUserIds) => {
-
-//         console.log(
-//             "Loading Sales Dashboard for User IDs:",
-//             dashboardUserIds
-//         );
-
-//         // -------------------------------------------------
-//         // DEMO API CALL
-//         // -------------------------------------------------
-
-//         try {
-
-//             const request = {
-//                 userIds: dashboardUserIds,
-//                 departmentId: department?.departmentId,
-//                 verticalId: category?.verticalId
-//             };
-
-//             console.log(
-//                 "Sales Dashboard Request:",
-//                 request
-//             );
-
-//             const response = await axios.post(
-//                 GetSalesDashboard,
-//                 request,
-//                 {
-//                     headers: {
-//                         Authorization: `Bearer ${currentUser?.token}`
-//                     }
-//                 }
-//             );
-
-//             console.log("Sales Dshboard Data : ", response);
-
-//             const data = response.data;
-
-//             // setSummaryCards(data.summaryCards || []);
-//             // setLeads(data.leads || []);
-//             // setTimeline(data.timeline || []);
-//             // setStatusChart(data.statusChart || []);
-//             // setConversionChart(data.conversionChart || []);
-//             // setConversionRate(data.conversionRate || 0);
-//             // setKpis(data.kpis || []);
-
-//             // -------------------------------------------------
-//             // DEMO DATA FOR NOW
-//             // -------------------------------------------------
-
-
-
-//             await loadLeads(dashboardUserIds);
-
-//             await loadTimeline(data);
-
-//             await loadDashboardSummary(data);
-
-//             await loadMiniCharts(dashboardUserIds);
-
-//             // ⭐ KEEP KPI CARDS
-//             await loadKPIs();
-
-//         }
-//         catch (error) {
-
-//             console.error(
-//                 "Error loading Sales Dashboard:",
-//                 error
-//             );
-
-//         }
-
-//     };
-
-//     // =========================================================
-//     // DETERMINE DASHBOARD USER
-//     // =========================================================
-
-//     // =========================================================
-//     // DASHBOARD USER IDS
-//     //
-//     // My Dashboard
-//     //      -> [loggedInUserId]
-//     //
-//     // Team Dashboard + All Team
-//     //      -> [all team member ids]
-//     //
-//     // Team Dashboard + selected member
-//     //      -> [selected member id]
-//     // =========================================================
-
-//     const dashboardUserIds = useMemo(() => {
-
-//         // -----------------------------------------------------
-//         // MY DASHBOARD
-//         // -----------------------------------------------------
-
-//         if (viewMode === "mine") {
-
-//             return currentUser?.userId
-//                 ? [currentUser.userId]
-//                 : [];
-
-//         }
-
-//         // -----------------------------------------------------
-//         // TEAM DASHBOARD
-//         // -----------------------------------------------------
-
-//         if (viewMode === "team") {
-
-//             // One selected team member
-//             if (selectedTeamMember?.userId) {
-
-//                 return [
-//                     selectedTeamMember.userId
-//                 ];
-
-//             }
-
-//             // All Team
-//             return teamMembers
-//                 .map(member => member.userId)
-//                 .filter(Boolean);
-
-//         }
-
-//         return [];
-
-//     }, [
-//         viewMode,
-//         selectedTeamMember,
-//         teamMembers,
-//         currentUser?.userId
-//     ]);
-
-//     // =========================================================
-//     // LOAD DASHBOARD WHEN USER / CATEGORY CHANGES
-//     // =========================================================
-
-//     useEffect(() => {
-
-//         if (dashboardUserIds.length === 0) {
-//             return;
-//         }
-
-//         console.log("================================");
-//         console.log("Dashboard User IDs:", dashboardUserIds);
-//         console.log("Selected Category:", category?.verticalName);
-//         console.log("Category ID:", category?.verticalId);
-//         console.log("Role:", category?.roleName);
-//         console.log("View Mode:", viewMode);
-//         console.log("================================");
-
-//         console.log(
-//             "🚨 DASHBOARD API EFFECT FIRED",
-//             {
-//                 dashboardUserIds,
-//                 verticalId: category?.verticalId,
-//                 departmentId: department?.departmentId
-//             }
-//         );
-
-//         if (dashboardUserIds.length === 0) {
-//             return;
-//         }
-
-//         loadDashboardData(
-//             dashboardUserIds
-//         );
-
-//     }, [
-//         dashboardUserIds,
-//         category?.verticalId,
-//         department?.departmentId
-//     ]);
-
-
-//     // =========================================================
-//     // TEAM MEMBER CHANGE
-//     // =========================================================
-
-//     const handleTeamMemberChange = (
-//         member
-//     ) => {
-
-//         setSelectedTeamMember(member);
-
-//     };
-
-
-//     // =========================================================
-//     // VIEW CHANGE
-//     // =========================================================
-
-//     const handleViewChange = (
-//         mode
-//     ) => {
-
-//         setViewMode(mode);
-
-//         /*
-//             Whenever switching back to My Dashboard,
-//             clear selected team member.
-//         */
-
-//         if (mode === "mine") {
-
-//             setSelectedTeamMember(null);
-
-//         }
-
-//     };
-
-//     //---------------------------------------------------
-//     // Fetch selected team member photo
-//     //---------------------------------------------------
-
-//     useEffect(() => {
-
-//         // All Team selected
-//         if (!selectedTeamMember?.userId) {
-
-//             setSelectedMemberPhoto(null);
-//             return;
-
-//         }
-
-//         const fetchMemberPhoto = async () => {
-
-//             try {
-
-//                 setLoadingMemberPhoto(true);
-
-//                 const response = await axios.get(
-//                     GetUserPhoto,
-//                     {
-//                         headers: {
-//                             Authorization: `Bearer ${sessionUser.token}`, // ✅ JWT token
-//                             "Content-Type": "application/json"
-//                         },
-//                         params: {
-//                             userId: selectedTeamMember.userId
-//                         }
-//                     }
-//                 );
-
-//                 const photo =
-//                     response.data?.photoBase64 ||
-//                     response.data?.photo ||
-//                     null;
-
-//                 setSelectedMemberPhoto(photo);
-
-//             }
-//             catch (error) {
-
-//                 console.error(
-//                     "Error fetching team member photo:",
-//                     error
-//                 );
-
-//                 // If photo is unavailable,
-//                 // simply show the empty placeholder.
-//                 setSelectedMemberPhoto(null);
-
-//             }
-//             finally {
-
-//                 setLoadingMemberPhoto(false);
-
-//             }
-
-//         };
-
-//         fetchMemberPhoto();
-
-//     }, [selectedTeamMember]);
-
-
-//     const handleRescheduleSuccess = (lead, newDate) => {
-
-//         console.log("In side Rebucketing Logic.");
-//         const leadId = Number(
-//             lead?.LeadID ?? lead?.leadID
-//         );
-
-//         if (!leadId || !newDate) {
-//             console.log("Re-bucket failed - missing LeadID/date", {
-//                 lead,
-//                 newDate
-//             });
-//             return;
-//         }
-
-//         console.log("RE-BUCKETING LEAD:", {
-//             leadId,
-//             newDate
-//         });
-
-//         // =====================================================
-//         // DETERMINE NEW BUCKET
-//         // =====================================================
-
-//         const getBucket = (followUpDate) => {
-
-//             if (!followUpDate) {
-//                 return null;
-//             }
-
-//             const date = new Date(followUpDate);
-//             date.setHours(0, 0, 0, 0);
-
-//             const today = new Date();
-//             today.setHours(0, 0, 0, 0);
-
-//             const next7 = new Date(today);
-//             next7.setDate(today.getDate() + 7);
-
-//             console.log("Bucket calculation:", {
-//                 followUpDate,
-//                 date,
-//                 today,
-//                 next7
-//             });
-
-//             if (date < today) {
-//                 return "overdue";
-//             }
-
-//             if (date.getTime() === today.getTime()) {
-//                 return "today";
-//             }
-
-//             if (date <= next7) {
-//                 return "next7";
-//             }
-
-//             return null;
-//         };
-
-
-//         const newBucket = getBucket(newDate);
-
-//         console.log(
-//             "NEW BUCKET:",
-//             newBucket
-//         );
-
-
-//         // =====================================================
-//         // UPDATED LEAD OBJECT
-//         // =====================================================
-
-//         const updatedLead = {
-//             ...lead,
-
-//             // Keep both because your API objects have
-//             // different casing in different places.
-//             LeadID: leadId,
-//             leadID: leadId,
-
-//             FollowUpDate: newDate,
-//             followUpDate: newDate
-//         };
-
-
-//         // =====================================================
-//         // UPDATE TIMELINE
-//         // =====================================================
-
-//         setTimeline(currentTimeline => {
-
-//             console.log(
-//                 "OLD TIMELINE:",
-//                 currentTimeline
-//             );
-
-//             const newTimeline = {
-//                 overdue: [...(currentTimeline.overdue || [])],
-//                 today: [...(currentTimeline.today || [])],
-//                 created: [...(currentTimeline.created || [])],
-//                 next7: [...(currentTimeline.next7 || [])]
-//             };
-
-
-//             // -------------------------------------------------
-//             // REMOVE LEAD FROM ALL FOLLOW-UP BUCKETS
-//             // -------------------------------------------------
-
-//             ["overdue", "today", "next7"].forEach(bucket => {
-
-//                 newTimeline[bucket] =
-//                     newTimeline[bucket].filter(item => {
-
-//                         const itemId = Number(
-//                             item?.LeadID ??
-//                             item?.leadID
-//                         );
-
-//                         return itemId !== leadId;
-
-//                     });
-
-//             });
-
-
-//             // -------------------------------------------------
-//             // ADD TO NEW BUCKET
-//             // -------------------------------------------------
-
-//             if (newBucket) {
-
-//                 newTimeline[newBucket].push(
-//                     updatedLead
-//                 );
-
-//             }
-
-
-//             // -------------------------------------------------
-//             // CREATED BUCKET
-//             // -------------------------------------------------
-//             // Don't move/remove it from Created.
-//             // If the lead was created today, it should
-//             // remain in Today's Created as well.
-
-//             newTimeline.created =
-//                 newTimeline.created.map(item => {
-
-//                     const itemId = Number(
-//                         item?.LeadID ??
-//                         item?.leadID
-//                     );
-
-//                     if (itemId === leadId) {
-
-//                         return {
-//                             ...item,
-//                             LeadID: leadId,
-//                             leadID: leadId,
-//                             FollowUpDate: newDate,
-//                             followUpDate: newDate
-//                         };
-
-//                     }
-
-//                     return item;
-
-//                 });
-
-
-//             console.log(
-//                 "UPDATED TIMELINE:",
-//                 newTimeline
-//             );
-
-//             return newTimeline;
-
-//         });
-
-//         console.log("Load Timeline dasboard:" , timeline)
-//         loadDashboardSummary(timeline);
-
-//     };
-
-//     // =========================================================
-//     // UI
-//     // =========================================================
-
-//     return (
-
-//         <div className="flex-1 min-h-0">
-
-//             <div className="mx-auto p-1 space-y-2">
-
-
-//                 {/* =================================================
-//                     VIEW TOGGLE + TEAM SELECTOR
-//                 ================================================= */}
-
-//                 {canViewTeam && (
-
-//                     <div className="
-//                         flex
-//                         items-center
-//                         gap-3
-//                         bg-white
-//                         border
-//                         border-slate-200
-//                         rounded-xl
-//                         shadow-sm
-//                         p-3
-//                     ">
-
-//                         <DashboardViewToggle
-//                             canViewTeamDashboard={
-//                                 canViewTeam
-//                             }
-//                             viewMode={
-//                                 viewMode
-//                             }
-//                             setViewMode={
-//                                 handleViewChange
-//                             }
-//                         />
-
-
-//                         {viewMode === "team" && (
-
-//                             <div className="flex items-center gap-3">
-
-//                                 <DashboardTeamSelector
-//                                     teamMembers={teamMembers}
-//                                     selectedTeamMember={selectedTeamMember}
-//                                     onTeamMemberChange={setSelectedTeamMember}
-//                                 />
-
-//                                 {selectedTeamMember && (
-
-//                                     <div className="flex items-center gap-2">
-
-//                                         {/* Photo */}
-
-//                                         {selectedMemberPhoto ? (
-
-//                                             <img
-//                                                 src={
-//                                                     selectedMemberPhoto.startsWith("data:")
-//                                                         ? selectedMemberPhoto
-//                                                         : `data:image/jpeg;base64,${selectedMemberPhoto}`
-//                                                 }
-//                                                 alt={selectedTeamMember.userName}
-//                                                 className="
-//                             h-9
-//                             w-9
-//                             rounded-full
-//                             border
-//                             border-slate-200
-//                             object-cover
-//                         "
-//                                             />
-
-//                                         ) : (
-
-//                                             <div
-//                                                 className="
-//                             h-9
-//                             w-9
-//                             rounded-full
-//                             border
-//                             border-slate-200
-//                             bg-slate-100
-//                         "
-//                                             />
-
-//                                         )}
-
-//                                         {/* Name + Role */}
-
-//                                         <div className="leading-tight">
-
-//                                             <div className="text-sm font-medium text-slate-700">
-//                                                 {selectedTeamMember.userName}
-//                                             </div>
-
-//                                             <div className="text-xs text-slate-400">
-//                                                 {selectedTeamMember.roleName}
-//                                             </div>
-
-//                                         </div>
-
-//                                     </div>
-
-//                                 )}
-
-//                             </div>
-
-//                         )}
-
-//                     </div>
-
-//                 )}
-
-
-//                 {/* =================================================
-//                     SUMMARY
-//                 ================================================= */}
-
-//                 <DashboardStats
-//                     cards={summaryCards}
-//                 />
-
-
-//                 {/* =================================================
-//                     KPI + FILTERS
-//                 ================================================= */}
-
-//                 <div className="
-//                     bg-white
-//                     border
-//                     border-slate-200
-//                     rounded-xl
-//                     shadow-sm
-//                     p-1
-//                 ">
-//                     {/* 
-//                     <DashboardKPIStrip
-//                         kpis={kpis}
-//                     /> */}
-
-
-//                     <DashboardSearchFiltersABC
-
-//                         searchText={
-//                             searchText
-//                         }
-
-//                         setSearchText={
-//                             setSearchText
-//                         }
-
-//                         destination={
-//                             destination
-//                         }
-
-//                         setDestination={
-//                             setDestination
-//                         }
-
-//                         destinations={
-//                             destinations
-//                         }
-
-//                         status={
-//                             status
-//                         }
-
-//                         setStatus={
-//                             setStatus
-//                         }
-
-//                         statuses={
-//                             statuses
-//                         }
-
-//                         priority={
-//                             priority
-//                         }
-
-//                         setPriority={
-//                             setPriority
-//                         }
-
-//                         priorities={
-//                             priorities
-//                         }
-
-//                         category={
-//                             filterCategory
-//                         }
-
-//                         setCategory={
-//                             setFilterCategory
-//                         }
-
-//                         categories={
-//                             categories
-//                         }
-
-//                         onClear={
-//                             clearFilters
-//                         }
-
-//                     />
-
-//                 </div>
-
-
-//                 {/* =================================================
-//                     TIMELINE + SIDEBAR
-//                 ================================================= */}
-
-//                 <div className="
-//                     flex
-//                     flex-col
-//                     lg:flex-row
-//                     gap-4
-//                 ">
-
-
-//                     {/* TIMELINE */}
-
-//                     <div className="
-//                         flex-1
-//                         min-w-0
-//                         bg-white
-//                         border
-//                         border-slate-200
-//                         rounded-xl
-//                         shadow-sm
-//                     ">
-
-//                         <DashboardTimeline
-
-//                             timeline={timeline}
-
-//                             onCall={handleCall}
-
-//                             onNote={handleNote}
-
-//                             onReschedule={handleReschedule}
-
-//                             onOpen={setOpenLead}
-
-//                             noteOpen={activeNoteId}
-
-//                             rescheduleOpen={activeRescheduleId}
-
-//                             onSaveNote={handleSaveNote}
-
-//                             onSaveReschedule={handleSaveReschedule}
-
-//                             onRescheduleSuccess={handleRescheduleSuccess}
-
-//                             onCancelInline={() => {
-
-//                                 setActiveNoteId(null);
-
-//                                 setActiveRescheduleId(null);
-
-//                             }}
-
-//                         />
-
-//                     </div>
-
-
-//                     {/* SIDEBAR */}
-
-//                     {/* <div className="
-//                         w-full
-//                         lg:w-80
-//                         flex
-//                         flex-col
-//                         gap-4
-//                     ">
-
-
-//                         {viewMode === "team" && (
-
-//                             <div className="
-//                                 bg-white
-//                                 border
-//                                 border-slate-200
-//                                 rounded-xl
-//                                 shadow-sm
-//                                 p-4
-//                             ">
-
-//                                 <TeamPerformanceSidebar
-
-//                                     executives={
-//                                         teamMembers
-//                                     }
-
-//                                     selectedExecutive={
-//                                         selectedTeamMember?.userId
-//                                     }
-
-//                                     setSelectedExecutive={
-//                                         (userId) => {
-
-//                                             const member =
-//                                                 teamMembers.find(
-//                                                     x =>
-//                                                         x.userId === userId
-//                                                 );
-
-//                                             setSelectedTeamMember(
-//                                                 member || null
-//                                             );
-
-//                                         }
-//                                     }
-
-//                                 />
-
-//                             </div>
-
-//                         )}
-
-
-//                         <div className="
-//                             bg-white
-//                             border
-//                             border-slate-200
-//                             rounded-xl
-//                             shadow-sm
-//                             p-4
-//                         ">
-
-//                             <MiniCharts
-//                                 leads={
-//                                     leads
-//                                 }
-//                             />
-
-//                         </div>
-
-//                     </div> */}
-
-//                 </div>
-
-//             </div>
-
-
-//             {/* =================================================
-//                 MODAL
-//             ================================================= */}
-
-//             <LeadDetailsModal
-
-//                 lead={
-//                     openLead
-//                 }
-
-//                 onClose={() =>
-//                     setOpenLead(null)
-//                 }
-
-//             />
-
-
-//             {/* =================================================
-//                 TOAST
-//             ================================================= */}
-
-//             <DashboardToast
-//                 message={
-//                     toast
-//                 }
-//             />
-
-//         </div>
-
-//     );
-
-// };
-
-
-// export default SalesDashboard;
-
 import React, {
     useEffect,
     useMemo,
@@ -1478,6 +5,7 @@ import React, {
 } from "react";
 import axios from "axios";
 import { useGetSessionUser } from "../../SessionContext";
+import { RefreshCw } from "lucide-react";
 
 import DashboardStats from "../DashboardCommonComponents/DashboardStats";
 import DashboardTimeline from "../DashboardCommonComponents/DashboardTimeline";
@@ -1550,6 +78,10 @@ const SalesDashboard = ({
     const [openLead, setOpenLead] = useState(null);
 
     const [toast, setToast] = useState("");
+
+    // Separate loading flag for the manual refresh button,
+    // so it can spin independently of the global page loader.
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     //const [dashboardLoading, setDashboardLoading] = useState(false);
 
@@ -2116,6 +648,12 @@ const SalesDashboard = ({
                 error
             );
 
+            showToast("Failed to load dashboard data");
+
+            // Re-throw so refreshDashboard (or any other caller)
+            // knows the load failed and can react accordingly.
+            throw error;
+
         }
         finally {
 
@@ -2192,6 +730,68 @@ const SalesDashboard = ({
 
 
     // =========================================================
+    // FETCH SELECTED TEAM MEMBER PHOTO
+    // (extracted so both the effect and manual refresh can call it)
+    // =========================================================
+
+    const fetchMemberPhoto = async (member) => {
+
+        if (!member?.userId) {
+
+            setSelectedMemberPhoto(null);
+
+            return;
+
+        }
+
+        try {
+
+            setLoadingMemberPhoto(true);
+
+            const response = await axios.get(
+                GetUserPhoto,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${sessionUser.token}`,
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    params: {
+                        userId: member.userId
+                    }
+                }
+            );
+
+            const photo =
+                response.data?.photoBase64 ||
+                response.data?.photo ||
+                null;
+
+            setSelectedMemberPhoto(photo);
+
+        }
+        catch (error) {
+
+            console.error(
+                "Error fetching team member photo:",
+                error
+            );
+
+            setSelectedMemberPhoto(null);
+
+        }
+        finally {
+
+            setLoadingMemberPhoto(false);
+
+        }
+
+    };
+
+
+    // =========================================================
     // LOAD DASHBOARD WHEN USER / CATEGORY CHANGES
     // =========================================================
 
@@ -2256,7 +856,9 @@ const SalesDashboard = ({
 
         loadDashboardData(
             dashboardUserIds
-        );
+        ).catch(() => {
+            // errors already handled/toasted inside loadDashboardData
+        });
 
     }, [
 
@@ -2309,93 +911,55 @@ const SalesDashboard = ({
 
 
     // =========================================================
-    // FETCH SELECTED TEAM MEMBER PHOTO
+    // FETCH PHOTO WHEN SELECTED TEAM MEMBER CHANGES
     // =========================================================
 
     useEffect(() => {
 
-        if (
-            !selectedTeamMember?.userId
-        ) {
-
-            setSelectedMemberPhoto(
-                null
-            );
-
-            return;
-
-        }
-
-
-        const fetchMemberPhoto =
-            async () => {
-
-                try {
-
-                    setLoadingMemberPhoto(
-                        true
-                    );
-
-
-                    const response =
-                        await axios.get(
-                            GetUserPhoto,
-                            {
-                                headers: {
-                                    Authorization:
-                                        `Bearer ${sessionUser.token}`,
-                                    "Content-Type":
-                                        "application/json"
-                                },
-
-                                params: {
-                                    userId:
-                                        selectedTeamMember.userId
-                                }
-                            }
-                        );
-
-
-                    const photo =
-                        response.data?.photoBase64 ||
-                        response.data?.photo ||
-                        null;
-
-
-                    setSelectedMemberPhoto(
-                        photo
-                    );
-
-                }
-                catch (error) {
-
-                    console.error(
-                        "Error fetching team member photo:",
-                        error
-                    );
-
-
-                    setSelectedMemberPhoto(
-                        null
-                    );
-
-                }
-                finally {
-
-                    setLoadingMemberPhoto(
-                        false
-                    );
-
-                }
-
-            };
-
-
-        fetchMemberPhoto();
+        fetchMemberPhoto(selectedTeamMember);
 
     }, [
         selectedTeamMember
     ]);
+
+
+    // =========================================================
+    // MANUAL REFRESH
+    //
+    // Re-fetches everything the dashboard currently shows:
+    // leads, timeline/cards, mini charts, KPIs, and the
+    // selected team member's photo (if any).
+    // =========================================================
+
+    const refreshDashboard = async () => {
+
+        if (dashboardUserIds.length === 0) {
+            return;
+        }
+
+        setIsRefreshing(true);
+
+        try {
+
+            await loadDashboardData(dashboardUserIds);
+
+            await fetchMemberPhoto(selectedTeamMember);
+
+            showToast("Dashboard refreshed");
+
+        }
+        catch (error) {
+
+            // loadDashboardData already logs + toasts the failure
+
+        }
+        finally {
+
+            setIsRefreshing(false);
+
+        }
+
+    };
 
 
     // =========================================================
@@ -2872,143 +1436,99 @@ const SalesDashboard = ({
 
 
                 {/* =================================================
-                    SUMMARY
-                ================================================= */}
-                {/* 
-                <DashboardStats
-                    cards={
-                        summaryCards
-                    }
-                /> */}
+    SUMMARY + FILTERS + REFRESH
+================================================= */}
 
+                <div className="flex w-full items-center justify-between gap-2">
 
-                {/* =================================================
-                                    KPI + FILTERS
-                                ================================================= */}
+                    <div className="flex items-center gap-2">
 
-                {/* <div
+                        {/* SUMMARY */}
+                        <div className="flex-shrink-0">
+                            <DashboardStats
+                                cards={summaryCards}
+                            />
+                        </div>
+
+                        {/* FILTERS - disabled for now */}
+                        {/*
+        <div className="flex-shrink-0">
+            <DashboardSearchFiltersABC
+                searchText={searchText}
+                setSearchText={setSearchText}
+                destination={destination}
+                setDestination={setDestination}
+                destinations={destinations}
+                status={status}
+                setStatus={setStatus}
+                statuses={statuses}
+                priority={priority}
+                setPriority={setPriority}
+                priorities={priorities}
+                category={filterCategory}
+                setCategory={setFilterCategory}
+                categories={categories}
+                onClear={clearFilters}
+            />
+        </div>
+        */}
+
+                        {/* POINTER */}
+                        {/* <img
+                            src={pointerImg}
+                            alt=""
+                            className="h-11 w-11 flex-shrink-0 -scale-x-100"
+                        /> */}
+
+                    </div>
+
+                    {/* REFRESH - pushed to extreme right */}
+                     <button
+                        onClick={refreshDashboard}
+                        disabled={isRefreshing}
+                        title="Refresh dashboard"
                                     className="
-                                        bg-white
-                                        border
-                                        border-slate-200
-                                        rounded-xl
-                                        shadow-sm
-                                        p-1
-                                    "
-                                > */}
-
-                {/* 
-                                    <DashboardKPIStrip
-                                        kpis={
-                                            kpis
-                                        }
-                                    />
-                                    */}
-
-                {/* 
-                    <DashboardSearchFiltersABC
-
-                        searchText={
-                            searchText
-                        }
-
-                        setSearchText={
-                            setSearchText
-                        }
-
-                        destination={
-                            destination
-                        }
-
-                        setDestination={
-                            setDestination
-                        }
-
-                        destinations={
-                            destinations
-                        }
-
-                        status={
-                            status
-                        }
-
-                        setStatus={
-                            setStatus
-                        }
-
-                        statuses={
-                            statuses
-                        }
-
-                        priority={
-                            priority
-                        }
-
-                        setPriority={
-                            setPriority
-                        }
-
-                        priorities={
-                            priorities
-                        }
-
-                        category={
-                            filterCategory
-                        }
-
-                        setCategory={
-                            setFilterCategory
-                        }
-
-                        categories={
-                            categories
-                        }
-
-                        onClear={
-                            clearFilters
-                        }
-
-                    /> */}
-
-
-      <div className="flex w-full items-center justify-start gap-2">
-
-    {/* SUMMARY */}
-    <div className="flex-shrink-0">
-        <DashboardStats
-            cards={summaryCards}
-        />
-    </div>
-
-    {/* FILTERS */}
-    <div className="flex-shrink-0">
-        <DashboardSearchFiltersABC
-            searchText={searchText}
-            setSearchText={setSearchText}
-            destination={destination}
-            setDestination={setDestination}
-            destinations={destinations}
-            status={status}
-            setStatus={setStatus}
-            statuses={statuses}
-            priority={priority}
-            setPriority={setPriority}
-            priorities={priorities}
-            category={filterCategory}
-            setCategory={setFilterCategory}
-            categories={categories}
-            onClear={clearFilters}
-        />
-    </div>
-
-    {/* POINTER */}
-    <img
-        src={pointerImg}
-        alt=""
-        className="h-11 w-11 flex-shrink-0 -scale-x-100"
+                        flex-shrink-0
+                        flex items-center gap-1.5
+                        h-9 px-3
+                        text-sm font-medium text-slate-600
+                        bg-white border border-slate-200
+                        rounded-lg shadow-sm
+                        hover:bg-slate-50
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                    "
+                    >
+                        {/* <svg
+                            className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                        </svg> */}
+                        <svg
+    className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+>
+    <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
     />
-</div>
+</svg>
+                        {isRefreshing ? "Refreshing..." : "Refresh"}
+                    </button> 
 
+
+                </div>
                 {/* =================================================
                     TIMELINE + SIDEBAR
                 ================================================= */}
@@ -3093,88 +1613,6 @@ const SalesDashboard = ({
                         />
 
                     </div>
-
-
-                    {/* SIDEBAR */}
-
-                    {/* 
-                    <div
-                        className="
-                            w-full
-                            lg:w-80
-                            flex
-                            flex-col
-                            gap-4
-                        "
-                    >
-
-                        {viewMode === "team" && (
-
-                            <div
-                                className="
-                                    bg-white
-                                    border
-                                    border-slate-200
-                                    rounded-xl
-                                    shadow-sm
-                                    p-4
-                                "
-                            >
-
-                                <TeamPerformanceSidebar
-
-                                    executives={
-                                        teamMembers
-                                    }
-
-                                    selectedExecutive={
-                                        selectedTeamMember?.userId
-                                    }
-
-                                    setSelectedExecutive={
-                                        (userId) => {
-
-                                            const member =
-                                                teamMembers.find(
-                                                    x =>
-                                                        x.userId === userId
-                                                );
-
-                                            setSelectedTeamMember(
-                                                member || null
-                                            );
-
-                                        }
-                                    }
-
-                                />
-
-                            </div>
-
-                        )}
-
-
-                        <div
-                            className="
-                                bg-white
-                                border
-                                border-slate-200
-                                rounded-xl
-                                shadow-sm
-                                p-4
-                            "
-                        >
-
-                            <MiniCharts
-                                leads={
-                                    leads
-                                }
-                            />
-
-                        </div>
-
-                    </div>
-                    */}
 
                 </div>
 

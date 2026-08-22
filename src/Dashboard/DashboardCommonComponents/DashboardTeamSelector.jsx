@@ -109,11 +109,12 @@ const DashboardTeamSelector = ({
                 <Combobox.Input
                     className="
                         w-full
-                        rounded-xl
+                        rounded-lg
                         border
                         border-slate-200
                         bg-white
-                        py-2
+                        pt-1.5
+                        pb-1
                         pl-9
                         pr-10
                         text-sm
