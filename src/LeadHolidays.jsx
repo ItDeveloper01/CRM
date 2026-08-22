@@ -710,7 +710,10 @@ const LeadHolidays = forwardRef(({
         selectedConfig?.values?.tripType ||
         "Holiday";
 
-    const isGIT = false;
+    // const isGIT = false;
+     const isGIT =
+        (holidayLeadObj?.leadType ||
+            selectedConfig?.values?.leadType) === "GIT";
 
 
 
