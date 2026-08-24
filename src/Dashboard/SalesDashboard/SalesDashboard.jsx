@@ -388,13 +388,13 @@ const SalesDashboard = ({
     // =========================================================
 
     const loadTimeline = (data) => {
-
+        debugger;
         console.log(
             "Timeline API data:",
             data
         );
 
-
+        debugger;
         const newTimeline = {
 
             overdue:
@@ -567,7 +567,7 @@ const SalesDashboard = ({
     const loadDashboardData = async (
         dashboardUserIds
     ) => {
-
+        debugger;
         console.log(
             "Loading Sales Dashboard for User IDs:",
             dashboardUserIds
@@ -617,8 +617,10 @@ const SalesDashboard = ({
 
             const data =
                 response.data;
+            debugger;
+           
 
-
+           
             // -------------------------------------------------
             // LOAD DATA
             // -------------------------------------------------
@@ -1483,11 +1485,11 @@ const SalesDashboard = ({
                     </div>
 
                     {/* REFRESH - pushed to extreme right */}
-                     <button
+                    <button
                         onClick={refreshDashboard}
                         disabled={isRefreshing}
                         title="Refresh dashboard"
-                                    className="
+                        className="
                         flex-shrink-0
                         flex items-center gap-1.5
                         h-9 px-3
@@ -1512,20 +1514,20 @@ const SalesDashboard = ({
                             />
                         </svg> */}
                         <svg
-    className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
->
-    <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-    />
-</svg>
+                            className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                            />
+                        </svg>
                         {isRefreshing ? "Refreshing..." : "Refresh"}
-                    </button> 
+                    </button>
 
 
                 </div>
