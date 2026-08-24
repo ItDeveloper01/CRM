@@ -75,7 +75,12 @@ const LeadRow = ({
     onSaveReschedule,
     onCancelInline
 }) => {
-
+//     debugger;
+//     console.log(
+//     "🔥 LEADROW RENDER:",
+//     lead?.LeadID ?? lead?.leadID,
+//     lead
+// );
     const [noteText, setNoteText] = useState("");
     const [showContact, setShowContact] = useState(false);
     const [contactPos, setContactPos] = useState(null);
@@ -263,13 +268,13 @@ const LeadRow = ({
                         <span
                             className="truncate text-xs text-slate-500"
                             title={String(
-                                lead?.LeadID ??
-                                lead?.leadID ??
+                                lead?.categoryLeadId ??      //categoryLeadId
+                                lead?.categoryLeadId ??
                                 ""
                             )}
                         >
-                            {lead?.LeadID ??
-                                lead?.leadID ??
+                            {lead?.categoryLeadId ??
+                                lead?.categoryLeadId ??
                                 "-"}
                         </span>
                     </div>

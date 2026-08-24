@@ -1038,8 +1038,10 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
       let isServiceFormValid = true;
       if (Object.keys(errs).length > 0) {
         setErrors(errs);
+        setIsDashboardLoading(false);
         setShowPopup(true);
         isBasicFormValid = false;
+        
       }
 
       switch (selectedLeadName.toLowerCase()) {
@@ -1048,6 +1050,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           const isValid = holidayRef.current?.validate();
 
           if (!isValid) {
+            setIsDashboardLoading(false);
             setShowPopup(true);
             isServiceFormValid = false;
           }

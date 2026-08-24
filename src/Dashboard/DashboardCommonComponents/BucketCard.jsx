@@ -985,11 +985,12 @@ const BucketCard = ({
                             (lead, index) => (
 
                                 <LeadRow
-                                    key={
-                                        lead?.LeadID ??
-                                        lead?.leadID ??
-                                        index
-                                    }
+                                    // key={
+                                    //     lead?.LeadID ??
+                                    //     lead?.leadID ??
+                                    //     index
+                                    // }
+                                    key={`${lead?.LeadID ?? lead?.leadID}-${index}`}
 
                                     lead={lead}
                                     index={index}
