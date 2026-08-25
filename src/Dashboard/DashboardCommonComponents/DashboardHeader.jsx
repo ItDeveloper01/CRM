@@ -30,7 +30,7 @@ const DashboardHeader = ({ title, subtitle, user }) => {
 
                     <button
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-md
-                                   border border-slate-200 text-slate-600
+                                   border border-slate-200 text-slate-600   
                                    hover:bg-slate-50 hover:text-slate-900
                                    text-sm font-medium transition"
                     >

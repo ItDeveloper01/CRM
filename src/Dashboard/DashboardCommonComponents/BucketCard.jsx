@@ -620,19 +620,20 @@ const BucketCard = ({
             ===================================================== */}
 
             <div
+            // h-full
                 className={`
                     flex flex-col
                     min-w-0
                     w-full
-                    h-full
+                    
                     overflow-hidden
                     rounded-xl
                     border border-slate-200
                     bg-white
                     shadow-sm
                     ${expanded
-                        ? "col-span-full row-span-full"
-                        : ""
+                        ? "col-span-full row-span-full  h-full"
+                         : "h-[300px]"
                     }
                 `}
             >

@@ -1494,9 +1494,10 @@ const SalesDashboard = ({
                         flex items-center gap-1.5
                         h-9 px-3
                         text-sm font-medium text-slate-600
-                        bg-white border border-slate-200
+                        bg-blue-600 border border-slate-200
                         rounded-lg shadow-sm
-                        hover:bg-slate-50
+                        hover:bg-blue-700
+                        text-white
                         disabled:opacity-50 disabled:cursor-not-allowed
                     "
                     >
