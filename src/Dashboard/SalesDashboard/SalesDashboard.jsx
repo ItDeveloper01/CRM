@@ -38,6 +38,9 @@ const SalesDashboard = ({
     const [selectedTeamMember, setSelectedTeamMember] = useState(null);
     const [selectedMemberPhoto, setSelectedMemberPhoto] = useState(null);
     const [loadingMemberPhoto, setLoadingMemberPhoto] = useState(false);
+    const [activeBranch, setActiveBranch] = useState(null);
+    const [activeBranchMembers, setActiveBranchMembers] = useState(null); // null = no branch selected
+
 
     const { user: sessionUser } = useGetSessionUser();
 
@@ -99,6 +102,8 @@ const SalesDashboard = ({
     const [priority, setPriority] = useState("");
 
     const [filterCategory, setFilterCategory] = useState("");
+
+
 
 
     // =========================================================
@@ -227,6 +232,24 @@ const SalesDashboard = ({
 
     };
 
+    const leadsToShow = useMemo(() => {
+
+        if (selectedTeamMember) {
+            return leads.filter(l => l.assignedTo === selectedTeamMember.userId);
+        }
+
+        if (activeBranch) {
+            // Branch selected, no specific member chosen.
+            // Empty activeBranchMembers correctly yields an empty result
+            // instead of silently falling back to all leads.
+            const memberIds = activeBranchMembers.map(m => m.userId);
+            return leads.filter(l => memberIds.includes(l.assignedTo));
+        }
+
+        // No branch selected at all → show everything.
+        return leads;
+
+    }, [leads, selectedTeamMember, activeBranch, activeBranchMembers]);
 
     // =========================================================
     // ACTIONS
@@ -237,6 +260,8 @@ const SalesDashboard = ({
         console.log("Call", lead);
 
     };
+
+
 
 
     const handleNote = (lead) => {
@@ -618,9 +643,9 @@ const SalesDashboard = ({
             const data =
                 response.data;
             debugger;
-           
 
-           
+
+
             // -------------------------------------------------
             // LOAD DATA
             // -------------------------------------------------
@@ -691,10 +716,11 @@ const SalesDashboard = ({
 
         if (viewMode === "team") {
 
-            // Selected team member
-            if (
-                selectedTeamMember?.userId
-            ) {
+            // -------------------------------------------------
+            // Specific team member selected
+            // -------------------------------------------------
+
+            if (selectedTeamMember?.userId) {
 
                 return [
                     selectedTeamMember.userId
@@ -703,14 +729,26 @@ const SalesDashboard = ({
             }
 
 
-            // All Team
+            // -------------------------------------------------
+            // Branch selected
+            // -------------------------------------------------
+
+            if (activeBranch) {
+
+                return (activeBranchMembers || [])
+                    .map(member => member.userId)
+                    .filter(Boolean);
+
+            }
+
+
+            // -------------------------------------------------
+            // No branch selected
+            // → All Team
+            // -------------------------------------------------
+
             return teamMembers
-
-                .map(
-                    member =>
-                        member.userId
-                )
-
+                .map(member => member.userId)
                 .filter(Boolean);
 
         }
@@ -719,16 +757,37 @@ const SalesDashboard = ({
         return [];
 
     }, [
-
         viewMode,
-
         selectedTeamMember,
-
         teamMembers,
-
-        currentUser?.userId
-
+        currentUser?.userId,
+        activeBranch,
+        activeBranchMembers
     ]);
+
+        const clearDashboard = () => {
+            setLeads([]);
+
+            setTimeline({
+                overdue: [],
+                today: [],
+                created: [],
+                upcoming: []
+            });
+
+            setSummaryCards([]);
+
+            setStatusChart([]);
+            setConversionChart([]);
+            setConversionRate(0);
+
+            setKpis([]);
+
+            setActiveNoteId(null);
+            setActiveRescheduleId(null);
+            setOpenLead(null);
+        };
+
 
 
     // =========================================================
@@ -799,14 +858,40 @@ const SalesDashboard = ({
 
     useEffect(() => {
 
+        // =====================================================
+        // TEAM + BRANCH SELECTED + NO MEMBERS
+        // =====================================================
+
+        if (
+            viewMode === "team" &&
+            activeBranch &&
+            (!activeBranchMembers ||
+                activeBranchMembers.length === 0)
+        ) {
+
+            clearDashboard();
+
+            return;
+        }
+
+
+        // =====================================================
+        // NO USERS AVAILABLE
+        // =====================================================
+
         if (
             dashboardUserIds.length === 0
         ) {
 
-            return;
+            clearDashboard();
 
+            return;
         }
 
+
+        // =====================================================
+        // LOAD DASHBOARD
+        // =====================================================
 
         console.log(
             "================================"
@@ -818,23 +903,13 @@ const SalesDashboard = ({
         );
 
         console.log(
-            "Selected Category:",
-            category?.verticalName
+            "Selected Branch:",
+            activeBranch
         );
 
         console.log(
-            "Category ID:",
-            category?.verticalId
-        );
-
-        console.log(
-            "Role:",
-            category?.roleName
-        );
-
-        console.log(
-            "View Mode:",
-            viewMode
+            "Branch Members:",
+            activeBranchMembers
         );
 
         console.log(
@@ -842,34 +917,21 @@ const SalesDashboard = ({
         );
 
 
-        console.log(
-            "🚨 DASHBOARD API EFFECT FIRED",
-            {
-                dashboardUserIds,
-
-                verticalId:
-                    category?.verticalId,
-
-                departmentId:
-                    department?.departmentId
-            }
-        );
-
-
         loadDashboardData(
             dashboardUserIds
         ).catch(() => {
-            // errors already handled/toasted inside loadDashboardData
+            // Error already handled
+            // inside loadDashboardData
         });
 
+
     }, [
-
         dashboardUserIds,
-
         category?.verticalId,
-
-        department?.departmentId
-
+        department?.departmentId,
+        viewMode,
+        activeBranch,
+        activeBranchMembers
     ]);
 
 
@@ -1247,7 +1309,7 @@ const SalesDashboard = ({
 
         });
 
-
+    
         // =====================================================
         // CLOSE RESCHEDULE UI
         // =====================================================
@@ -1331,6 +1393,26 @@ const SalesDashboard = ({
                                     onTeamMemberChange={
                                         setSelectedTeamMember
                                     }
+
+                                    onBranchChange={(branch, members) => {
+
+                                        setActiveBranch(branch);
+
+                                        setActiveBranchMembers(
+                                            branch ? members : null
+                                        );
+
+                                        // Branch selected but no members
+                                        if (
+                                            branch &&
+                                            (!members || members.length === 0)
+                                        ) {
+
+                                            clearDashboard();
+
+                                        }
+
+                                    }}
 
                                 />
 

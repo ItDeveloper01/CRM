@@ -75,12 +75,12 @@ const LeadRow = ({
     onSaveReschedule,
     onCancelInline
 }) => {
-//     debugger;
-//     console.log(
-//     "🔥 LEADROW RENDER:",
-//     lead?.LeadID ?? lead?.leadID,
-//     lead
-// );
+    //     debugger;
+    //     console.log(
+    //     "🔥 LEADROW RENDER:",
+    //     lead?.LeadID ?? lead?.leadID,
+    //     lead
+    // );
     const [noteText, setNoteText] = useState("");
     const [showContact, setShowContact] = useState(false);
     const [contactPos, setContactPos] = useState(null);
@@ -279,13 +279,27 @@ const LeadRow = ({
                         </span>
                     </div>
                     {/* CUSTOMER — always visible */}
+                    {/* CUSTOMER + NOTES — same grid cell */}
                     <div className="min-w-0 overflow-hidden px-2">
+
+                        {/* CUSTOMER NAME */}
                         <span
                             className="block min-w-0 break-words text-[13px] font-semibold leading-4 text-slate-800 line-clamp-2"
                             title={customerName || "Unnamed Lead"}
                         >
                             {customerName || "Unnamed Lead"}
                         </span>
+
+                        {/* NOTES — directly below customer name */}
+                        {notes && (
+                            <span
+                                className="mt-0.5 block min-w-0 whitespace-normal break-words text-[11px] leading-4 text-slate-500"
+                                title={notes}
+                            >
+                                {notes}
+                            </span>
+                        )}
+
                     </div>
                     {/* =================================================
                         COLLAPSED: Follow-up, Enquiry only
@@ -314,14 +328,14 @@ const LeadRow = ({
                     {expanded && (
                         <>
                             {/* NOTES — only in expanded view now */}
-                            <div className="min-w-0 px-2">
+                            {/* <div className="min-w-0 px-2">
                                 <span
                                     className="block whitespace-normal break-words text-[12px] leading-4 text-slate-500"
                                     title={notes}
                                 >
                                     {notes}
                                 </span>
-                            </div>
+                            </div> */}
 
                             {/* DESTINATION */}
                             {/* <div className="min-w-0 px-2">
