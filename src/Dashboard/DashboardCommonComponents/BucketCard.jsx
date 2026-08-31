@@ -1,7 +1,7 @@
 // BucketCard.jsx
 import React, { useState } from "react";
 import axios from "axios";
-import { Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2, Search, X } from "lucide-react";
 import LeadRow from "./LeadRow";
 import UpdateLeadsModal from "../../UpdateLeadsModal";
 import { getEmptyLeadObj } from "../../Model/LeadModel";
@@ -52,7 +52,91 @@ const EXPANDED_COLUMNS = {
 
 const EXPANDED_HOLIDAY_COLUMNS = {
     gridTemplateColumns:
-        "2% 5% 15% 8% 8% 8% 7% 7% 8% 8% 11% 5% 10%"
+        "2% 5% 20%  8% 8% 7% 7% 8% 8% 11% 5% 10%"
+};
+
+
+/* =========================================================
+   SEARCH HELPERS
+   Broad fallback so this keeps working even if a field name
+   below doesn't exactly match your DTO — it scans every
+   shallow string/number field on the lead (or lead.category)
+   as a last resort.
+========================================================= */
+
+const flattenSearchableText = (obj, depth = 0) => {
+    if (!obj || typeof obj !== "object" || depth > 1) {
+        return "";
+    }
+
+    return Object.values(obj)
+        .map((v) => {
+            if (v === null || v === undefined) return "";
+            if (typeof v === "string" || typeof v === "number") return String(v);
+            if (typeof v === "object") return flattenSearchableText(v, depth + 1);
+            return "";
+        })
+        .join(" ");
+};
+
+const getLeadNameText = (lead) => {
+    // Individual name parts, checked explicitly so a search for
+    // just a middle or last name still matches even if there's
+    // also a combined "Name" field.
+    const nameParts = [
+        lead?.FirstName,
+        lead?.firstName,
+        lead?.MiddleName,
+        lead?.middleName,
+        lead?.LastName,
+        lead?.lastName,
+        lead?.Name,
+        lead?.name,
+        lead?.CustomerName,
+        lead?.customerName,
+        lead?.LeadName,
+        lead?.leadName,
+        lead?.FullName,
+        lead?.fullName,
+        lead?.customer?.FirstName,
+        lead?.customer?.MiddleName,
+        lead?.customer?.LastName,
+        lead?.customer?.Name,
+        lead?.customer?.name,
+        lead?.Customer?.FirstName,
+        lead?.Customer?.MiddleName,
+        lead?.Customer?.LastName,
+        lead?.Customer?.Name
+    ].filter(Boolean);
+
+    if (nameParts.length > 0) {
+        return nameParts.join(" ");
+    }
+
+    // Fallback: nothing matched a known field name, so scan
+    // everything shallow on the lead itself.
+    const { category, histories, ...rest } = lead || {};
+    return flattenSearchableText(rest);
+};
+
+const getLeadDestinationText = (lead) => {
+    const candidates = [
+        lead?.category?.preferredDestinations,
+        lead?.category?.PreferredDestinations,
+        lead?.category?.requestedDestinations,
+        lead?.category?.RequestedDestinations,
+        lead?.category?.destination,
+        lead?.category?.Destination,
+        lead?.PreferredDestination,
+        lead?.preferredDestination
+    ].filter(Boolean);
+
+    if (candidates.length > 0) {
+        return candidates.join(" ");
+    }
+
+    // Fallback: scan everything shallow on lead.category.
+    return flattenSearchableText(lead?.category);
 };
 
 
@@ -168,6 +252,73 @@ const SortableHeader = ({
 };
 
 
+/* =========================================================
+   IN-COLUMN SEARCH INPUT
+   Lives INSIDE a column-header cell so it lines up exactly
+   with the data column it filters, instead of floating off
+   in the card header.
+========================================================= */
+
+const ColumnSearchInput = ({ value, onChange, placeholder }) => (
+    <div className="relative h-full w-full min-w-0">
+        <Search
+            className="
+                pointer-events-none
+                absolute left-1 top-1/2
+                h-3 w-3
+                -translate-y-1/2
+                text-slate-400
+            "
+        />
+
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            title={placeholder}
+            className="
+                h-6
+                w-full
+                min-w-0
+                rounded
+                border border-slate-200
+                bg-white
+                pl-5 pr-5
+                text-[10px]
+                normal-case
+                font-normal
+                tracking-normal
+                text-slate-700
+                placeholder:text-slate-400
+                focus:outline-none
+                focus:ring-1
+                focus:ring-slate-300
+            "
+        />
+
+        {value && (
+            <button
+                type="button"
+                onClick={() => onChange("")}
+                className="
+                    absolute right-1 top-1/2
+                    flex h-3.5 w-3.5
+                    -translate-y-1/2
+                    items-center justify-center
+                    rounded-full
+                    text-slate-400
+                    hover:text-slate-600
+                "
+                title="Clear"
+            >
+                <X className="h-2.5 w-2.5" />
+            </button>
+        )}
+    </div>
+);
+
+
 const BucketCard = ({
     bucket,
     leads = [],
@@ -201,6 +352,13 @@ const BucketCard = ({
     const { user: sessionUser } = useGetSessionUser();
     const { showMessage } = useMessageBox();
     const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+    /* =========================================================
+       SEARCH STATE
+    ========================================================= */
+
+    const [searchName, setSearchName] = useState("");
+    const [searchDestination, setSearchDestination] = useState("");
 
 
     const handleSort = (key) => {
@@ -250,7 +408,50 @@ const BucketCard = ({
         }
     };
 
-    const sortedLeads = [...safeLeads].sort((a, b) => {
+    /* =========================================================
+       HOLIDAY
+    ========================================================= */
+
+    const isHoliday =
+        safeLeads.length > 0 &&
+        String(
+            safeLeads[0]?.categoryName ??
+            safeLeads[0]?.CategoryName ??
+            ""
+        ).toUpperCase() === "HOLIDAY";
+
+
+    /* =========================================================
+       SEARCH FILTER — Name (first/middle/last, substring) +
+       Preferred Destination (holiday buckets only)
+    ========================================================= */
+
+    const normalizedNameQuery = searchName.trim().toLowerCase();
+    const normalizedDestinationQuery = isHoliday
+        ? searchDestination.trim().toLowerCase()
+        : "";
+
+    const searchedLeads = safeLeads.filter((lead) => {
+        const nameMatch =
+            !normalizedNameQuery ||
+            getLeadNameText(lead).toLowerCase().includes(normalizedNameQuery);
+
+        if (!nameMatch) {
+            return false;
+        }
+
+        const destinationMatch =
+            !normalizedDestinationQuery ||
+            getLeadDestinationText(lead).toLowerCase().includes(normalizedDestinationQuery);
+
+        return destinationMatch;
+    });
+
+    const isSearching =
+        normalizedNameQuery.length > 0 ||
+        normalizedDestinationQuery.length > 0;
+
+    const sortedLeads = [...searchedLeads].sort((a, b) => {
         if (!sortConfig.key) {
             return 0;
         }
@@ -279,17 +480,6 @@ const BucketCard = ({
             ? comparison
             : -comparison;
     });
-    /* =========================================================
-       HOLIDAY
-    ========================================================= */
-
-    const isHoliday =
-        safeLeads.length > 0 &&
-        String(
-            safeLeads[0]?.categoryName ??
-            safeLeads[0]?.CategoryName ??
-            ""
-        ).toUpperCase() === "HOLIDAY";
 
 
     /* =========================================================
@@ -639,7 +829,7 @@ const BucketCard = ({
             >
 
                 {/* =====================================================
-                    BUCKET HEADER
+                    BUCKET HEADER (back to its original, uncluttered form)
                 ===================================================== */}
 
                 <div
@@ -676,7 +866,9 @@ const BucketCard = ({
                             text-slate-500
                         "
                     >
-                        {safeLeads.length}
+                        {isSearching
+                            ? `${sortedLeads.length} / ${safeLeads.length}`
+                            : safeLeads.length}
                     </span>
 
 
@@ -718,6 +910,9 @@ const BucketCard = ({
 
                 {/* =====================================================
                     COLUMN HEADER
+                    Name / Preferred Destination cells now hold the
+                    search inputs directly, so they line up with the
+                    actual data column below them.
                 ===================================================== */}
 
                 <div
@@ -737,6 +932,7 @@ const BucketCard = ({
                             h-8
                             min-w-0
                             w-full
+                            items-center
                         "
                         style={columnStyle}
                     >
@@ -756,14 +952,14 @@ const BucketCard = ({
                             />
                         </div>
 
-                        {/* NAME */}
+                        {/* NAME — search input replaces the plain label */}
 
                         <div className="min-w-0 px-2">
-
-                            <HeaderText
-                                text="Name"
+                            <ColumnSearchInput
+                                value={searchName}
+                                onChange={setSearchName}
+                                placeholder="Search name..."
                             />
-
                         </div>
 
 
@@ -809,14 +1005,14 @@ const BucketCard = ({
 
                                 {/* NOTES */}
 
-                                <div className="min-w-0 px-2">
+                                {/* <div className="min-w-0 px-2">
 
                                     <HeaderText
                                         text="Notes"
                                         wrap
                                     />
 
-                                </div>
+                                </div> */}
 
 
                                 {/* =================================================
@@ -826,15 +1022,17 @@ const BucketCard = ({
                                 {isHoliday && (
                                     <>
 
-                                        {/* PREFERRED DESTINATION */}
+                                        {/* PREFERRED DESTINATION — search input
+                                            replaces the plain label; only exists
+                                            for holiday buckets since that's the
+                                            only place this column renders */}
 
                                         <div className="min-w-0 px-2">
-
-                                            <HeaderText
-                                                text="Preferred Destination"
-                                                wrap
+                                            <ColumnSearchInput
+                                                value={searchDestination}
+                                                onChange={setSearchDestination}
+                                                placeholder="Search destination..."
                                             />
-
                                         </div>
 
 
@@ -964,7 +1162,7 @@ const BucketCard = ({
                     "
                 >
 
-                    {safeLeads.length === 0 ? (
+                    {sortedLeads.length === 0 ? (
 
                         <div
                             className="
@@ -977,7 +1175,9 @@ const BucketCard = ({
                                 text-slate-400
                             "
                         >
-                            No follow-ups
+                            {isSearching
+                                ? "No leads match your search"
+                                : "No follow-ups"}
                         </div>
 
                     ) : (

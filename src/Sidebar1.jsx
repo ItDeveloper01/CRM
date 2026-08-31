@@ -33,7 +33,7 @@ debugger;
         </Link>
 
         <Link
-          to='/LeadsGeneration'
+          to='/LeadsGeneration/create'
           className='flex items-center gap-3 p-2 rounded hover:bg-blue-100'>
           <UserPlus size={20} />
           
