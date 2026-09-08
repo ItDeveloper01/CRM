@@ -811,20 +811,33 @@ const BucketCard = ({
 
             <div
             // h-full
-                className={`
+                // className={`
+                //     flex flex-col
+                //     min-w-0
+                //     w-full
+                    
+                //     overflow-hidden
+                //     rounded-xl
+                //     border border-slate-200
+                //     bg-white
+                //     shadow-sm
+                //     ${expanded
+                //         ? "col-span-full row-span-full  h-full"
+                //          : "h-[300px]"
+                //     }
+                // `}
+                  className={`
                     flex flex-col
                     min-w-0
                     w-full
-                    
+                    h-full
+                    min-h-0
                     overflow-hidden
                     rounded-xl
                     border border-slate-200
                     bg-white
                     shadow-sm
-                    ${expanded
-                        ? "col-span-full row-span-full  h-full"
-                         : "h-[300px]"
-                    }
+                    ${expanded ? "col-span-full row-span-full" : ""}
                 `}
             >
 

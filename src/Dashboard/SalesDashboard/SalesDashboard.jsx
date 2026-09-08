@@ -765,28 +765,28 @@ const SalesDashboard = ({
         activeBranchMembers
     ]);
 
-        const clearDashboard = () => {
-            setLeads([]);
+    const clearDashboard = () => {
+        setLeads([]);
 
-            setTimeline({
-                overdue: [],
-                today: [],
-                created: [],
-                upcoming: []
-            });
+        setTimeline({
+            overdue: [],
+            today: [],
+            created: [],
+            upcoming: []
+        });
 
-            setSummaryCards([]);
+        setSummaryCards([]);
 
-            setStatusChart([]);
-            setConversionChart([]);
-            setConversionRate(0);
+        setStatusChart([]);
+        setConversionChart([]);
+        setConversionRate(0);
 
-            setKpis([]);
+        setKpis([]);
 
-            setActiveNoteId(null);
-            setActiveRescheduleId(null);
-            setOpenLead(null);
-        };
+        setActiveNoteId(null);
+        setActiveRescheduleId(null);
+        setOpenLead(null);
+    };
 
 
 
@@ -1309,7 +1309,7 @@ const SalesDashboard = ({
 
         });
 
-    
+
         // =====================================================
         // CLOSE RESCHEDULE UI
         // =====================================================
@@ -1328,10 +1328,13 @@ const SalesDashboard = ({
     // =========================================================
 
     return (
-        <div className="flex-1 min-h-0">
+        // <div className="flex-1 min-h-0">
 
-            <div className=" p-1 space-y-2">
+        //     <div className=" p-1 space-y-2">
 
+        <div className="flex-1 min-h-0 flex flex-col">
+
+            <div className="p-1 space-y-2 flex-1 min-h-0 flex flex-col">
 
                 {/* =================================================
                     VIEW TOGGLE + TEAM SELECTOR
@@ -1624,6 +1627,8 @@ const SalesDashboard = ({
                         flex-col
                         lg:flex-row
                         gap-4
+                        flex-1
+                        min-h-0
                     "
                 >
 
@@ -1633,6 +1638,9 @@ const SalesDashboard = ({
                         className="
                             flex-1
                             min-w-0
+                            min-h-0
+                            flex
+                            flex-col
                             bg-white
                             border
                             border-slate-200
