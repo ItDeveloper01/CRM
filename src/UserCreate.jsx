@@ -26,6 +26,7 @@ export default function UserCreate({ }) {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
+  const [contextList, setContextList] = useState([]);
   const [userRoles, setUserRoles] = useState([]);
   const [branch,setBranch]=useState([]);
   const [btnText, setbtnText] = useState("Creat User");
@@ -43,6 +44,7 @@ export default function UserCreate({ }) {
   const checkEmpIdEndpoint=apiUrl+ '/users/CheckIfEmpIdIdExists';
   const getDepartmentmasterListEndpoint = apiUrl + '/MasterData/GetDepartmentMasterList'; //Sales,Operations,TeleCalling
   const getVerticalmasterListEndpoint = apiUrl + '/MasterData/GetLeadCategoryMasterList';  //VISA, HOLIDAY, AIR Ticketing
+  const getContextListEndPoint = apiUrl + '/MasterData/GetContextTypeList';  //EXECUTIVE,FUNCTIONAL,ADMINISTRATIVE
   const getCategorymasterListEndpoint = "";//apiUrl + '/MasterData/GetLeadCategoryMasterList';
 
   const location = useLocation(); // ✅ get location here
@@ -246,12 +248,15 @@ debugger;
         const [
             deptRes,
             verticalRes,
+            constextRes
            // categoryRes
         ] = await Promise.all([
 
             axios.get(getDepartmentmasterListEndpoint),
 
             axios.get(getVerticalmasterListEndpoint),
+
+            axios .get(getContextListEndPoint)
 
             //axios.get(getCategorymasterListEndpoint)
 
@@ -261,8 +266,11 @@ debugger;
 
         setVerticals(verticalRes.data);
 
-        console.log("Departments received:", deptRes.data.length, deptRes.data);
-        console.log("Verticals received:", verticalRes.data.length, verticalRes.data);
+        setContextList(constextRes.data);
+            
+        console.log("Departments fetched:", deptRes.data.length, deptRes.data);
+        console.log("Verticals fetched:", verticalRes.data.length, verticalRes.data);
+        console.log("Context fetched:", constextRes.data.length, constextRes.data);
 
        // setCategories(categoryRes.data);
 
@@ -799,7 +807,8 @@ debugger;
         key={index}
         index={index}
         assignment={assignment}
-
+     
+        contextList={contextList}
         departments={departments}
       verticals={verticals}
 

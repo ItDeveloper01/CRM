@@ -5,10 +5,11 @@ export function getEmptyUserObj() {
 }
 
 export const getEmptyAssignment = () => ({
+  contextTypeId:0,
   departmentId: 0,
   verticalId: 0,
   roleId: 0,
-
+  
   // NEW
   reportingManagerIds: [],
 
