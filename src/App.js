@@ -24,6 +24,7 @@ import ManagerAnalyticBoard from './ManagerAnlayticBoard';
 import OLAPDashboardTabs from './OLAPScreens/OLAPDashboardTabs';
 // import SignalRService from './SignalRService';
 import DashboardWrapper from './Dashboard/DashboardCommonComponents/DashboardWrapper';
+import RoleMenuMapping from './RBACSystemScreens/RoleMenuMapping';
 
 
 import MasterSettings from './MasterSettingsBoard';
@@ -115,6 +116,10 @@ export default function App() {
                 />
                 <Route path='/DashboardV2'
                   element={<UserDashboardTemp />}
+                />
+                <Route
+                  path='/RBAC/RoleMenuMappings'
+                  element={<RoleMenuMapping/>}
                 />
               {/* ✅ Users List */}
               <Route

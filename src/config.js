@@ -8,12 +8,14 @@
 
 // END
 
+const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const config = {
-  apiUrl: 'http://192.168.1.141:5015/oltp',
-  socketUrl: 'http://192.168.1.141:5015/appreciationHub',
-  notificationUrl: 'http://192.168.1.141:5015/notificationHub',
-  olapUrl: 'http://192.168.1.141:5015/olap',
+  apiUrl: `${BASE_URL}/oltp`,
+  socketUrl: `${BASE_URL}/appreciationHub`,
+  notificationUrl: `${BASE_URL}/notificationHub`,
+  olapUrl: `${BASE_URL}/olap`,
+  operationsUrl: `${BASE_URL}/operations`,
 };
 
 
