@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Autocomplete, TextField } from "@mui/material";
 import { useGetSessionUser } from "./SessionContext";
@@ -6,64 +7,15 @@ import {
     Trash2
 } from "lucide-react";
 
-/* =========================================================
-   TEMPORARY DUMMY ROLES
-   Later these can come from RoleMaster / API
-   ========================================================= */
-
-const DUMMY_EXECUTIVE_ROLES = [
-    {
-        id: 9001,
-        roleName: "CEO",
-        contextTypeId: 1
-    },
-    {
-        id: 9002,
-        roleName: "COO",
-        contextTypeId: 1
-    },
-    {
-        id: 9003,
-        roleName: "Director",
-        contextTypeId: 1
-    },
-    {
-        id: 9004,
-        roleName: "VP",
-        contextTypeId: 1
-    }
-];
-
-const DUMMY_ADMINISTRATIVE_ROLES = [
-    {
-        id: 9101,
-        roleName: "Super Admin",
-        contextTypeId: 3
-    },
-    {
-        id: 9102,
-        roleName: "System Admin",
-        contextTypeId: 3
-    },
-    {
-        id: 9103,
-        roleName: "Admin",
-        contextTypeId: 3
-    }
-];
-
-
 export default function DepartmentAssignmentCard({
     index,
     assignment,
     onChange,
     onDelete,
-
     contextList,
     departments,
     verticals,
     roles,
-
     apiUrl,
     token
 }) {
@@ -116,9 +68,29 @@ export default function DepartmentAssignmentCard({
 
 
     /* =========================================================
+       FILTER DEPARTMENTS BY CONTEXT
+
+       Department is now available for:
+       Functional
+       Executive
+       Administrative
+
+       The department list is still scoped by contextTypeId.
+       ========================================================= */
+
+    const filteredDepartments = Array.isArray(departments)
+        ? departments.filter(
+            d =>
+                Number(d.contextTypeId) ===
+                Number(assignment?.contextTypeId)
+        )
+        : [];
+
+
+    /* =========================================================
        FILTER VERTICALS BY DEPARTMENT
-       
-       THIS IS THE OLD BEHAVIOUR
+
+       Vertical is applicable only to Functional context.
        ========================================================= */
 
     const filteredVerticals = Array.isArray(verticals)
@@ -135,15 +107,13 @@ export default function DepartmentAssignmentCard({
 
     /* =========================================================
        FILTER ROLES
-       
+
        Functional:
            Department + Vertical → Roles
 
-       Executive:
-           Dummy Executive Roles
+       Executive / Administrative:
+           Department → Roles
 
-       Administrative:
-           Dummy Administrative Roles
        ========================================================= */
 
     let availableRoles = [];
@@ -152,17 +122,22 @@ export default function DepartmentAssignmentCard({
     if (isFunctional) {
 
         /*
-         * Existing real roles.
-         *
-         * Your previous component displayed roles
-         * from the API.
-         *
-         * We now additionally filter them based on
-         * Department + Vertical.
+         * Existing real roles, scoped to:
+         * Context + Department + Vertical
          */
-
+    console.log("Available Roles:", roles);
         availableRoles = Array.isArray(roles)
             ? roles.filter(role => {
+
+                const hasContext =
+                    role?.contextTypeId !== undefined &&
+                    role?.contextTypeId !== null;
+
+                const contextMatches =
+                    !hasContext ||
+                    Number(role.contextTypeId) ===
+                    Number(assignment?.contextTypeId);
+
 
                 /*
                  * Some APIs may not yet return
@@ -179,21 +154,26 @@ export default function DepartmentAssignmentCard({
                     role?.verticalId !== undefined ||
                     role?.verticleId !== undefined;
 
+
                 const departmentMatches =
                     !hasDepartment ||
                     Number(role.departmentId) ===
                     Number(assignment?.departmentId);
 
+
                 const roleVerticalId =
                     role?.verticalId ??
                     role?.verticleId;
+
 
                 const verticalMatches =
                     !hasVertical ||
                     Number(roleVerticalId) ===
                     Number(assignment?.verticalId);
 
+
                 return (
+                    contextMatches &&
                     departmentMatches &&
                     verticalMatches
                 );
@@ -201,15 +181,47 @@ export default function DepartmentAssignmentCard({
             })
             : [];
 
-    } else if (isExecutive) {
+    } else if (isExecutive || isAdministrative) {
 
-        availableRoles =
-            DUMMY_EXECUTIVE_ROLES;
+        /*
+         * Executive / Administrative:
+         *
+         * Context + Department → Role
+         *
+         * These contexts do not use Vertical.
+         */
 
-    } else if (isAdministrative) {
+        availableRoles = Array.isArray(roles)
+            ? roles.filter(role => {
 
-        availableRoles =
-            DUMMY_ADMINISTRATIVE_ROLES;
+                const hasContext =
+                    role?.contextTypeId !== undefined &&
+                    role?.contextTypeId !== null;
+
+                const contextMatches =
+                    !hasContext ||
+                    Number(role.contextTypeId) ===
+                    Number(assignment?.contextTypeId);
+
+
+                const hasDepartment =
+                    role?.departmentId !== undefined &&
+                    role?.departmentId !== null;
+
+
+                const departmentMatches =
+                    !hasDepartment ||
+                    Number(role.departmentId) ===
+                    Number(assignment?.departmentId);
+
+
+                return (
+                    contextMatches &&
+                    departmentMatches
+                );
+
+            })
+            : [];
 
     }
 
@@ -228,6 +240,7 @@ export default function DepartmentAssignmentCard({
             isExecutive,
             isAdministrative,
             departments,
+            filteredDepartments,
             verticals,
             filteredVerticals,
             roles,
@@ -294,6 +307,25 @@ export default function DepartmentAssignmentCard({
         }
 
 
+        /*
+         * Executive / Administrative:
+         *
+         * Context
+         * Department
+         * Role
+         */
+
+        if (
+            (isExecutive || isAdministrative) &&
+            !assignment?.departmentId
+        ) {
+
+            setManagerList([]);
+
+            return;
+        }
+
+
         try {
 
             const response = await axios.get(
@@ -308,15 +340,16 @@ export default function DepartmentAssignmentCard({
                             ),
 
                         departmentId:
-                            isFunctional
-                                ? Number(
-                                    assignment.departmentId
-                                )
-                                : 0,
+                            Number(
+                                assignment.departmentId
+                            ),
 
                         /*
                          * Keep your existing backend spelling.
+                         *
+                         * Vertical is only sent for Functional.
                          */
+
                         verticleId:
                             isFunctional
                                 ? Number(
@@ -335,8 +368,7 @@ export default function DepartmentAssignmentCard({
                         Authorization:
                             `Bearer ${sessionUser?.token ||
                             token ||
-                            ""
-                            }`,
+                            ""}`,
 
                         "Content-Type":
                             "application/json"
@@ -388,6 +420,7 @@ export default function DepartmentAssignmentCard({
 
         };
 
+
         console.log(
             "Field:",
             field
@@ -403,6 +436,7 @@ export default function DepartmentAssignmentCard({
             updatedAssignment
         );
 
+
         onChange(
             updatedAssignment
         );
@@ -412,13 +446,13 @@ export default function DepartmentAssignmentCard({
 
     /* =========================================================
        CONTEXT CHANGE
-       
+
        Context changes:
        Department
        Vertical
        Role
        Managers
-       
+
        ALL RESET
        ========================================================= */
 
@@ -452,24 +486,35 @@ export default function DepartmentAssignmentCard({
 
     /* =========================================================
        DEPARTMENT CHANGE
-       
+
        Department changes:
        Vertical RESET
        Role RESET
        Manager RESET
-       
-       This restores old behaviour.
        ========================================================= */
 
     const handleDepartmentChange = e => {
 
-        debugger;
-
         console.log("Is Department Change.");
-        console.log("Department List: ", departments);
-        console.log("Selected Department: ", e.target.value);
-        console.log("IsFunctional Flag :", isFunctional);
-        console.log("IsExecutive Flag :", isExecutive);
+        console.log(
+            "Department List: ",
+            filteredDepartments
+        );
+
+        console.log(
+            "Selected Department: ",
+            e.target.value
+        );
+
+        console.log(
+            "IsFunctional Flag :",
+            isFunctional
+        );
+
+        console.log(
+            "IsExecutive Flag :",
+            isExecutive
+        );
 
         const departmentId =
             Number(e.target.value) || 0;
@@ -497,7 +542,7 @@ export default function DepartmentAssignmentCard({
 
     /* =========================================================
        VERTICAL CHANGE
-       
+
        Vertical changes:
        Role RESET
        Manager RESET
@@ -505,7 +550,6 @@ export default function DepartmentAssignmentCard({
 
     const handleVerticalChange = e => {
 
-        debugger;
         const verticalId =
             Number(e.target.value) || 0;
 
@@ -757,7 +801,7 @@ export default function DepartmentAssignmentCard({
                         }
 
                         disabled={
-                            !isFunctional
+                            !assignment?.contextTypeId
                         }
 
                         className={`
@@ -770,14 +814,15 @@ export default function DepartmentAssignmentCard({
                             outline-none
                             transition
 
-                            ${!isFunctional
-                                ? `
+                            ${
+                                !assignment?.contextTypeId
+                                    ? `
                                         cursor-not-allowed
                                         border-slate-200
                                         bg-slate-100
                                         text-slate-400
                                       `
-                                : `
+                                    : `
                                         border-slate-300
                                         bg-white
                                         text-slate-700
@@ -792,37 +837,35 @@ export default function DepartmentAssignmentCard({
                         <option value="">
 
                             {
-                                isFunctional
+                                assignment?.contextTypeId
                                     ? "Select Department"
-                                    : "Not Applicable"
+                                    : "Select Context"
                             }
 
                         </option>
 
 
-                        {isFunctional &&
-                            (departments || [])
-                                .map(
-                                    department => (
+                        {filteredDepartments.map(
+                            department => (
 
-                                        <option
-                                            key={
-                                                department.id
-                                            }
+                                <option
+                                    key={
+                                        department.id
+                                    }
 
-                                            value={
-                                                department.id
-                                            }
-                                        >
+                                    value={
+                                        department.id
+                                    }
+                                >
 
-                                            {
-                                                department.departmentName
-                                            }
+                                    {
+                                        department.departmentName
+                                    }
 
-                                        </option>
+                                </option>
 
-                                    )
-                                )}
+                            )
+                        )}
 
                     </select>
 
@@ -874,16 +917,17 @@ export default function DepartmentAssignmentCard({
                             outline-none
                             transition
 
-                            ${!isFunctional ||
+                            ${
+                                !isFunctional ||
                                 !assignment?.departmentId ||
                                 filteredVerticals.length === 0
-                                ? `
+                                    ? `
                                         cursor-not-allowed
                                         border-slate-200
                                         bg-slate-100
                                         text-slate-400
                                       `
-                                : `
+                                    : `
                                         border-slate-300
                                         bg-white
                                         text-slate-700
@@ -978,12 +1022,10 @@ export default function DepartmentAssignmentCard({
 
                         disabled={
                             !assignment?.contextTypeId ||
+                            !assignment?.departmentId ||
                             (
                                 isFunctional &&
-                                (
-                                    !assignment?.departmentId ||
-                                    !assignment?.verticalId
-                                )
+                                !assignment?.verticalId
                             )
                         }
 
@@ -997,21 +1039,20 @@ export default function DepartmentAssignmentCard({
                             outline-none
                             transition
 
-                            ${!assignment?.contextTypeId ||
+                            ${
+                                !assignment?.contextTypeId ||
+                                !assignment?.departmentId ||
                                 (
                                     isFunctional &&
-                                    (
-                                        !assignment?.departmentId ||
-                                        !assignment?.verticalId
-                                    )
+                                    !assignment?.verticalId
                                 )
-                                ? `
+                                    ? `
                                         cursor-not-allowed
                                         border-slate-200
                                         bg-slate-100
                                         text-slate-400
                                       `
-                                : `
+                                    : `
                                         border-slate-300
                                         bg-white
                                         text-slate-700
@@ -1055,9 +1096,28 @@ export default function DepartmentAssignmentCard({
                         Number(assignment?.departmentId) > 0 &&
                         Number(assignment?.verticalId) > 0 &&
                         availableRoles.length === 0 && (
+
                             <div className="mt-1 text-[10px] text-red-500">
-                                No roles available for this Department / Vertical
+
+                                No roles available for this
+                                Department / Vertical
+
                             </div>
+
+                        )}
+
+
+                    {(isExecutive || isAdministrative) &&
+                        Number(assignment?.departmentId) > 0 &&
+                        availableRoles.length === 0 && (
+
+                            <div className="mt-1 text-[10px] text-red-500">
+
+                                No roles available for this
+                                Department
+
+                            </div>
+
                         )}
 
                 </div>
@@ -1102,8 +1162,8 @@ export default function DepartmentAssignmentCard({
 
                         getOptionLabel={
                             option =>
-                                `${option.firstName ?? ""} ${option.lastName ?? ""
-                                    }`.trim()
+                                `${option.firstName ?? ""} ${option.lastName ?? ""}`
+                                    .trim()
                         }
 
                         isOptionEqualToValue={
@@ -1148,9 +1208,10 @@ export default function DepartmentAssignmentCard({
                                         rounded-lg
                                         transition-colors
 
-                                        ${selected
-                                            ? "bg-blue-50 hover:bg-blue-100"
-                                            : "hover:bg-slate-100"
+                                        ${
+                                            selected
+                                                ? "bg-blue-50 hover:bg-blue-100"
+                                                : "hover:bg-slate-100"
                                         }
                                     `}
                                 >
@@ -1215,6 +1276,7 @@ export default function DepartmentAssignmentCard({
                                                 alt={
                                                     option.firstName
                                                 }
+
                                                 className="
                                                     w-14
                                                     h-14
@@ -1268,9 +1330,10 @@ export default function DepartmentAssignmentCard({
                                                 text-lg
                                                 transition-opacity
 
-                                                ${selected
-                                                    ? "opacity-100"
-                                                    : "opacity-0"
+                                                ${
+                                                    selected
+                                                        ? "opacity-100"
+                                                        : "opacity-0"
                                                 }
                                             `}
                                         >
@@ -1602,26 +1665,6 @@ export default function DepartmentAssignmentCard({
 
                     </span>
 
-
-                    {isExecutive && (
-
-                        <span>
-                            Executive roles are currently
-                            using temporary dummy data.
-                        </span>
-
-                    )}
-
-
-                    {isAdministrative && (
-
-                        <span>
-                            Administrative roles are currently
-                            using temporary dummy data.
-                        </span>
-
-                    )}
-
                 </div>
 
             )}
@@ -1631,3 +1674,4 @@ export default function DepartmentAssignmentCard({
     );
 
 }
+

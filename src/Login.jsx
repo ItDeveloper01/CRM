@@ -17,71 +17,173 @@ export default function Login() {
   //const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    console.log('user', username);
-    console.log('pass:', password);
+    console.log("user", username);
+    console.log("pass:", password);
+
     e.preventDefault();
 
-    debugger;
-    setError('');
+    setError("");
+    setErrorMsg("");
+
     const formdata = {
       userId: username,
       password: password,
     };
+
     try {
-      console.log('config APIURL ', config.API_URL);
-      const APIURL = config.apiUrl + '/users/login';
-      console.log("Connection String to User ...." + APIURL);
+      console.log("config APIURL ", config.API_URL);
 
-      console.log('formdata....:', formdata);
+      const APIURL = config.apiUrl + "/users/login";
 
-      debugger;
+      console.log(
+        "Connection String to User ...." + APIURL
+      );
 
+      console.log("formdata....:", formdata);
 
       const response = await axios.post(APIURL, formdata);
-      console.log('Login response with menu:', response);
 
-      // Save userId to localStorage for later API calls
+      console.log(
+        "Login response with menu:",
+        response
+      );
 
-      // ✅ Save full user details in localStorage
-      localStorage.setItem("loggedInUser", JSON.stringify(response.data));
+      localStorage.removeItem("currentContext");
+      localStorage.removeItem("menu");
 
-      debugger
-      localStorage.setItem("menu", JSON.stringify(response.data.menu || [])); // Save menu too
+      // -------------------------------------------------------
+      // Save user details
+      // -------------------------------------------------------
 
-      // ✅ Update global auth context
+      localStorage.setItem(
+        "loggedInUser",
+        JSON.stringify(response.data)
+      );
+
+
+      // -------------------------------------------------------
+      // Get user menu
+      // -------------------------------------------------------
+
+      const responseMenus =
+        response.data.menu ??
+        response.data.menus;
+
+      const userMenus = Array.isArray(responseMenus)
+        ? responseMenus
+        : [];
+
+      console.log(
+        "User menus:",
+        userMenus
+      );
+
+
+      localStorage.setItem(
+        "menu",
+        JSON.stringify(userMenus)
+      );
+
+
+      // -------------------------------------------------------
+      // Update global auth context
+      // -------------------------------------------------------
 
       const authData = {
         isLoggedIn: true,
+
         role: response.data.user.role,
+
         user: {
           id: response.data.user.userId,
           name: response.data.user.firstName,
           ...response.data.user,
         },
-        token: response.data.token, // ✅ also save JWT
+
+        token: response.data.token,
       };
 
-      setUser(authData); // update global auth context
-      setMenu(response.data.menu || []); // update menu context
 
-      navigate('/dashboard');
+      localStorage.setItem(
+        "auth",
+        JSON.stringify(authData)
+      );
+
+      setUser(authData);
+
+      setMenu(userMenus);
 
 
+      console.log(
+        "User Logged with following Menu:",
+        JSON.stringify(userMenus)
+      );
 
+
+      navigate("/context");
+      // -------------------------------------------------------
+      // Navigate
+      // -------------------------------------------------------
+
+      // if (firstMenu) {
+
+      //   console.log(
+      //     "Navigating to first menu:",
+      //     firstMenu.menuName,
+      //     firstMenu.route
+      //   );
+
+      //   navigate(firstMenu.route);
+
+      // } else {
+
+      //   // -----------------------------------------------------
+      //   // User has no usable menu
+      //   // -----------------------------------------------------
+
+      //   console.warn(
+      //     "User has no navigable menus."
+      //   );
+
+      //   // You can change this to an access-denied page
+      //   // if you have one.
+      //   navigate("/access-denied");
+      // }
 
     } catch (err) {
-      debugger;
 
+      console.log("Login error:", err);
 
       if (err.response && err.response.data) {
-        console.log("Status:", err.response.status);
-        console.log("Error message:", err.response);
-        setErrorMsg(err.response.data.error);
-        setError(err.response.data);
+
+        console.log(
+          "Status:",
+          err.response.status
+        );
+
+        console.log(
+          "Error message:",
+          err.response
+        );
+
+        setErrorMsg(
+          err.response.data.error
+        );
+
+        setError(
+          err.response.data
+        );
+
       } else {
-        setError('Invalid credentials');
-        setErrorMsg('Invalid credentials');
-        console.log("Error:", err);
+
+        setError("Invalid credentials");
+
+        setErrorMsg("Invalid credentials");
+
+        console.log(
+          "Error:",
+          err
+        );
 
         alert("Server unreachable");
       }
@@ -103,10 +205,10 @@ export default function Login() {
     >
       <div className="relative flex flex-col items-center bg-opacity-90">
         <h1
-  className="relative text-6xl font-extrabold text-[#0056b3] mb-10 tracking-wider drop-shadow-xl"
->
-  Girikand CRM
-</h1>
+          className="relative text-6xl font-extrabold text-[#0056b3] mb-10 tracking-wider drop-shadow-xl"
+        >
+          Girikand CRM
+        </h1>
 
 
         <form

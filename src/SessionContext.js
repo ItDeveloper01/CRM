@@ -46,7 +46,7 @@
 //   return useContext(UserContext);
 // }
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useCallback, useState } from "react";
 
 const UserContext = createContext();
 
@@ -64,17 +64,18 @@ export function UserProvider({ children }) {
     return savedMenu ? JSON.parse(savedMenu) : [];
   });
 
-   //Optional: logout helper
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser({ isLoggedIn: false, role: null, user: null });
     localStorage.removeItem("auth");
     localStorage.removeItem("menu");
+    localStorage.removeItem("loggedInUser");
+    localStorage.removeItem("currentContext");
     setMenu([]);
-  };
+  }, []);
 
 
   return (
-    <UserContext.Provider value={{ user, setUser, menu, setMenu }}>
+    <UserContext.Provider value={{ user, setUser, menu, setMenu, logout }}>
       {children}
     </UserContext.Provider>
   );
