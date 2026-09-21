@@ -2820,7 +2820,7 @@ export function LeadsSummaryBar({
                 border
                 border-blue-100
                 rounded-lg
-                mb-2
+               
                 text-xs
             "
     >

@@ -307,7 +307,7 @@ debugger;
           headers: { Authorization: `Bearer ${sessionUser.token}` }
         });
 
-      console.log('Fetching User roles  in user  registration page ...Fdepartment', rol.data);
+      console.log('Fetching User roles  in user  registration page ...department', rol.data);
       // Assuming the API returns an array of department names
       // If it returns objects, adjust accordingly
       setUserRoles(rol.data);

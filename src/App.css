@@ -49,7 +49,18 @@
   to {
     transform: rotate(360deg);
   }
-
-
   
+}
+
+/* Sidebar Flyout Animation */
+@keyframes sidebarFlyout {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
