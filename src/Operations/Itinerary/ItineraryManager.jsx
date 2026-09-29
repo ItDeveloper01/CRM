@@ -166,7 +166,15 @@ export default function TravelAgencyItineraryManager() {
     setShowItineraryModal(true);
   };
 
+  debugger;
   const handleEditCard = (card) => {
+    debugger;
+    // console.log("Handle edit card details:",card);
+
+     console.log("Selected Kanban Card:", card);
+
+    console.log("Itinerary ID:", card.itineraryId);
+    console.log("Variant ID:", card.variantId);
     setEditingItinerary(card);
     setShowItineraryModal(true);
   };
@@ -177,6 +185,7 @@ export default function TravelAgencyItineraryManager() {
 
   const handleSave = async (request) => {
     try {
+      debugger;
       const response = request.id
         ? await updateItinerary(request)        //Update Itinerary Api 
         : await createItinerary(request);       //Create Itginerary Api 

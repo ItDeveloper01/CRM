@@ -197,12 +197,9 @@ export function useItinerary() {
   const [, forceRender] = useState({});
   const fetchedKeysRef = useRef(new Set());
 
-  const getStatusListEndPoint =
-    config.operationsUrl + "/SharedMaster/ItineraryStatusList";
-  const getTourGuideListEndPoint =
-    config.operationsUrl + "/SharedMaster/TourGuideList";
-  const getTargetAudienceListEndPoint =
-    config.operationsUrl + "/SharedMaster/TargetAudienceList";
+  const getStatusListEndPoint =config.operationsUrl + "/SharedMaster/ItineraryStatusList";
+  const getTourGuideListEndPoint =config.operationsUrl + "/SharedMaster/TourGuideList";
+  const getTargetAudienceListEndPoint =config.operationsUrl + "/SharedMaster/TargetAudienceList";
   const getSectorTypeListEndPoint =config.operationsUrl+'/SharedMaster/SectorTypeList';
 
   // ── CREATE ──────────────────────────────────────────────────────────────
@@ -217,6 +214,7 @@ export function useItinerary() {
     };
     setLoading(true);
     setError(null);
+    console.log("***Creating Itinerary for following object***",request);
     try {
       debugger;
       const response = await axios.post(
@@ -254,6 +252,7 @@ export function useItinerary() {
     setLoading(true);
     setError(null);
     try {
+      debugger;
       const response = await axios.put(
         `${config.operationsUrl}/Itinerary/UpdateItinerary`,
         request,
@@ -263,6 +262,7 @@ export function useItinerary() {
           },
         },
       );
+      debugger;
       return response.data;
     } catch (err) {
       console.log("Error while updating Itinerary: ", err);
@@ -479,7 +479,7 @@ export function useItinerary() {
   };
 
   const getSectorTypeList =async ()=> {
-    debugger;
+    // debugger;
     try 
     {
       var response = await axios.get(getSectorTypeListEndPoint,{

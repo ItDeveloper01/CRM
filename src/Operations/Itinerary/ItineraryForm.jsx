@@ -122,7 +122,7 @@ export default function ManageItineraryForm({ open, onClose, onSave, initialData
   // };
   const updateNumDays = (value) => {
 
-    const nn = Math.max(1, Math.min(30, Number(value) || 1));
+    const nn = Math.max(0, Math.min(31, Number(value) || 0));
 
     setItineraryObj(prev => {
 
