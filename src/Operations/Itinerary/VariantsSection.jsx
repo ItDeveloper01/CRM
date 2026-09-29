@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   colors,
   STATUS_CFG,
@@ -14,47 +14,34 @@ import {
   statValueStyle,
   STATUS_OPTIONS,
 } from "../itineraryStyles";
-// import { STATUS_OPTIONS } from "../ItineraryStyle";
+
 import {
   getEmptyVariantObj,
   getEmptyPickupPointObj
 } from "../Model/ItineraryModel";
-import { useItinerary } from "./UseItinerary";
-import { da } from "intl-tel-input/i18n";
 
+import { useItinerary } from "./UseItinerary";
+
+// IMPORTANT:
+// Change this path if your BulkVariantModal.jsx is in another folder.
+import BulkVariantModal from "./BulkVariantModal";
 
 
 // ── helpers ───────────────────────────────────────────────────────────────
 function addDays(ds, n) {
   if (!ds || !n) return "";
+
   const d = new Date(ds);
+
   if (isNaN(d)) return "";
+
   d.setDate(d.getDate() + Number(n) - 1);
-  // return d.toLocaleDateString("en-GB");
-  return d.toISOString().split("T")[0]; // ✅ FIX
+
+  return d.toISOString().split("T")[0];
 }
 
-// let _id = 100;
-// const uid = () => String(++_id);
 
-// export function mkVariant(n) {
-//   return {
-//     id: uid(),
-//     variantsName: `Variant ${n}`,
-//     // status: "Active",
-//     status: null,
-//     startLocation: "",
-//     endLocation: "",
-//     startDate: null,
-//     endDate: null,
-//     totalSeats: 0,
-//     occupiedSeats: 0,
-//     targetAudienceId: null,
-//     // pickups:[]
-//     // pickups: [{ id: uid(), point: "", location: "", rate: "" }],
-//     // , total: 0, occupied: 0
-//   };
-// }
+// ── Create Empty Variant ──────────────────────────────────────────────────
 export function mkVariant(n) {
 
   const obj = getEmptyVariantObj();
@@ -68,21 +55,19 @@ export function mkVariant(n) {
   return obj;
 }
 
-// const guides = [
-//   { id: 1, guidename: "Priya Mishra" },
-//   { id: 2, guidename: "Diya Mirza" },
-//   { id: 3, guidename: "Shantanu Naidu" },
-// ];
 
 // ── StatusDropdown ────────────────────────────────────────────────────────
 function StatusDropdown({ value, onChange }) {
 
   const [open, setOpen] = useState(false);
+
   const cfg = STATUS_CFG[value] || STATUS_CFG.Active;
 
   return (
     <div style={{ position: "relative" }}>
+
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
         style={{
           display: "flex",
@@ -101,7 +86,15 @@ function StatusDropdown({ value, onChange }) {
           fontFamily: "inherit",
         }}
       >
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6
+          }}
+        >
+
           <span
             style={{
               width: 8,
@@ -111,12 +104,20 @@ function StatusDropdown({ value, onChange }) {
               display: "inline-block",
             }}
           />
+
           {value}
+
         </span>
-        <span style={{ fontSize: 10 }}>▾</span>
+
+        <span style={{ fontSize: 10 }}>
+          ▾
+        </span>
+
       </button>
 
+
       {open && (
+
         <div
           style={{
             position: "absolute",
@@ -131,37 +132,68 @@ function StatusDropdown({ value, onChange }) {
             overflow: "hidden",
           }}
         >
+
           {Object.keys(STATUS_CFG).map((s) => {
+
             const c = STATUS_CFG[s];
+
             return (
+
               <div
                 key={s}
-                onClick={() => { onChange(s); setOpen(false); }}
+                onClick={() => {
+                  onChange(s);
+                  setOpen(false);
+                }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
                   padding: "9px 14px",
                   cursor: "pointer",
-                  background: s === value ? "#f8f9ff" : colors.white,
+                  background:
+                    s === value
+                      ? "#f8f9ff"
+                      : colors.white,
                 }}
               >
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: c.dot }} />
-                <span style={{ color: c.text, fontWeight: 500 }}>{s}</span>
+
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: c.dot
+                  }}
+                />
+
+                <span
+                  style={{
+                    color: c.text,
+                    fontWeight: 500
+                  }}
+                >
+                  {s}
+                </span>
+
               </div>
+
             );
+
           })}
+
         </div>
+
       )}
+
     </div>
   );
 }
 
+
 // ── PickupTable ───────────────────────────────────────────────────────────
 function PickupTable({ pickups = [], onChange }) {
-  debugger;
-  // const upd = (id, k, v) =>
-  //   onChange(pickups.map((p) => (p.id === id ? { ...p, [k]: v } : p)));
+  const [editingPickupId, setEditingPickupId] = useState(null);
   const upd = (index, field, value) => {
 
     const arr = [...pickups];
@@ -172,177 +204,491 @@ function PickupTable({ pickups = [], onChange }) {
     };
 
     onChange(arr);
-
   };
-  // const add = () =>
-  //   onChange([...pickups, { id: uid(), pickupPoint: "", pickupCity: "", ratePerPax: 0 }]);
-  const add = () =>
+
+  // ============================================================
+  // ADD PICKUP POINT
+  // ============================================================
+  // const add = () => {
+
+  //   onChange([
+  //     ...pickups,
+  //     getEmptyPickupPointObj()
+  //   ]);
+
+  // };
+  const add = () => {
+    const newPickup = getEmptyPickupPointObj();
+
+    // temporary id only for frontend edit tracking
+    newPickup.id =
+      newPickup.id ?? Date.now() + Math.random();
+
     onChange([
       ...pickups,
-      getEmptyPickupPointObj()
+      newPickup,
     ]);
-  // , total: 0, occupied: 0
-  // const del = (id) => {
-  //   if (pickups.length > 1) onChange(pickups.filter((p) => p.id !== id));
-  // };
-  const del = (index) => {
 
-    if (pickups.length <= 1)
-      return;
-
-    onChange(
-      pickups.filter((_, i) => i !== index)
-    );
-
+    // Newly added pickup automatically opens in edit mode
+    setEditingPickupId(newPickup.id);
   };
 
+  // ============================================================
+  // EDIT PICKUP POINT
+  // ============================================================
+
+  const editPickup = (id) => {
+    setEditingPickupId(id);
+  };
+
+  // ============================================================
+  // SAVE PICKUP POINT
+  // ============================================================
+
+  const savePickup = () => {
+    setEditingPickupId(null);
+  };
+
+  // const del = (index) => {
+
+  //   if (pickups.length <= 1)
+  //     return;
+
+  //   onChange(
+  //     pickups.filter((_, i) => i !== index)
+  //   );
+
+  // };
+
+  // ============================================================
+  // DELETE PICKUP POINT
+  // ============================================================
+
+  const del = (id) => {
+    const updatedPickups = pickups.filter(
+      (item) => item.id !== id
+    );
+
+    onChange(updatedPickups);
+
+    if (editingPickupId === id) {
+      setEditingPickupId(null);
+    }
+  };
+
+
   return (
+
     <div style={{ marginTop: 12 }}>
-      <div style={{ color: colors.primary, fontWeight: 600, fontSize: 12, marginBottom: 8 }}>
+
+      <div
+        style={{
+          color: colors.primary,
+          fontWeight: 600,
+          fontSize: 12,
+          marginBottom: 8
+        }}
+      >
         Pickup Points &amp; Pricing
       </div>
 
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: 12
+        }}
+      >
+
         <thead>
+
           <tr style={{ background: "#f8f9ff" }}>
-            {["#", "Pickup Point", "Pickup City", "Per Pax Rate (₹)", "Actions"].map((h) => (
-              <th key={h} style={tableHeaderCellStyle}>{h}</th>
+
+            {[
+              "#",
+              "Pickup Point",
+              "Pickup City",
+              "Per Pax Rate (₹)",
+              "Desc%",
+              "Actions"
+            ].map((h) => (
+
+              <th
+                key={h}
+                style={tableHeaderCellStyle}
+              >
+                {h}
+              </th>
+
             ))}
+
           </tr>
+
         </thead>
+
+
         <tbody>
-          {pickups?.map((p, i) => (
-            <tr key={p.id ?? i} style={{ borderBottom: `1px solid ${colors.borderLight}` }}>
-              <td style={{ padding: "8px 10px", color: colors.textSubtle, fontWeight: 500 }}>
-                {i + 1}.
-              </td>
-              <td style={tableCellStyle}>
-                <input
-                  value={p.pickupPoint}
-                  // onChange={(e) => upd(p.id, "pickupPoint", e.target.value)}
-                  onChange={(e) => upd(i, "pickupPoint", e.target.value)}
-                  placeholder="e.g. Kochi Airport"
-                  style={inputStyle}
-                />
-              </td>
-              <td style={tableCellStyle}>
-                <input
-                  value={p.pickupCity}
-                  // onChange={(e) => upd(p.id, "pickupCity", e.target.value)}
-                  onChange={(e) => upd(i, "pickupCity", e.target.value)}
-                  placeholder="e.g. Kochi, Kerala"
-                  style={inputStyle}
-                />
-              </td>
-              <td style={tableCellStyle}>
-                <input
-                  value={p.ratePerPax || ""}
-                  // onChange={(e) => upd(p.id, "ratePerPax", e.target.value)}
-                  // onChange={(e) => upd(p.id, "ratePerPax", e.target.value === "" ? null : Number(e.target.value))}
-                  onChange={(e) => upd(
-                    i,
-                    "ratePerPax",
-                    e.target.value === "" ? null : Number(e.target.value)
-                  )}
-                  placeholder="25,000"
-                  style={{ ...inputStyle, width: 90 }}
-                />
-              </td>
-              <td style={{ padding: "4px 10px" }}>
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button style={iconButtonStyle("edit")}>✏️</button>
-                  {/* <button onClick={() => del(p.id)} style={iconButtonStyle("delete")}>🗑️</button> */}
-                  <button onClick={() => del(i)} style={iconButtonStyle("delete")}>🗑️</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+
+          {pickups?.map((p, i) => {
+
+            const isEditing =
+              editingPickupId === p.id;
+
+            return (
+              <tr
+                key={p.id ?? i}
+                style={{
+                  borderBottom:
+                    `1px solid ${colors.borderLight}`,
+                }}
+              >
+
+                {/* NUMBER */}
+                <td
+                  style={{
+                    padding: "8px 10px",
+                    color: colors.textSubtle,
+                    fontWeight: 500,
+                    textAlign: "center",
+                  }}
+                >
+                  {i + 1}
+                </td>
+
+                {/* PICKUP POINT */}
+                <td style={tableCellStyle}>
+
+                  <input
+                    value={p.pickupPoint ?? ""}
+                    onChange={(e) =>
+                      upd(
+                        i,
+                        "pickupPoint",
+                        e.target.value
+                      )
+                    }
+                    placeholder="e.g. Kochi Airport"
+                    style={inputStyle}
+                    disabled={
+                      !isEditing &&
+                      pickups.length > 1
+                    }
+                  />
+
+                </td>
+
+                {/* PICKUP CITY */}
+                <td style={tableCellStyle}>
+
+                  <input
+                    value={p.pickupCity ?? ""}
+                    onChange={(e) =>
+                      upd(
+                        i,
+                        "pickupCity",
+                        e.target.value
+                      )
+                    }
+                    placeholder="e.g. Kochi, Kerala"
+                    style={inputStyle}
+                    disabled={
+                      !isEditing &&
+                      pickups.length > 1
+                    }
+                  />
+
+                </td>
+
+                {/* RATE */}
+                <td style={tableCellStyle}>
+
+                  <input
+                    type="number"
+                    min="0"
+                    value={
+                      p.ratePerPax === null ||
+                        p.ratePerPax === undefined
+                        ? ""
+                        : p.ratePerPax
+                    }
+                    onChange={(e) =>
+                      upd(
+                        i,
+                        "ratePerPax",
+                        e.target.value === ""
+                          ? null
+                          : Number(e.target.value)
+                      )
+                    }
+                    placeholder="25,000"
+                    style={{
+                      ...inputStyle,
+                      width: 90,
+                    }}
+                    disabled={
+                      !isEditing &&
+                      pickups.length > 1
+                    }
+                  />
+
+                </td>
+
+                {/* DISCOUNT % */}
+                <td style={tableCellStyle}>
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={
+                      p.discountPercent === null ||
+                        p.discountPercent === undefined
+                        ? ""
+                        : p.discountPercent
+                    }
+                    onChange={(e) =>
+                      upd(
+                        i,
+                        "discountPercent",
+                        e.target.value === ""
+                          ? null
+                          : Number(e.target.value)
+                      )
+                    }
+                    placeholder="0"
+                    style={{
+                      ...inputStyle,
+                      width: 70,
+                    }}
+                    disabled={
+                      !isEditing &&
+                      pickups.length > 1
+                    }
+                  />
+
+                </td>
+
+                {/* ACTIONS */}
+                <td
+                  style={{
+                    ...tableCellStyle,
+                    whiteSpace: "nowrap",
+                    textAlign: "center",
+                  }}
+                >
+
+                  {/* EDIT / SAVE */}
+                  <button
+                    type="button"
+                    onClick={() => {
+
+                      if (isEditing) {
+                        savePickup();
+                      } else {
+                        editPickup(p.id);
+                      }
+
+                    }}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      padding: "4px 5px",
+                    }}
+                    title={
+                      isEditing
+                        ? "Save"
+                        : "Edit"
+                    }
+                  >
+                    {isEditing ? "✓" : "✏️"}
+                  </button>
+
+                  {/* DELETE */}
+                  <button
+                    type="button"
+                    onClick={() => del(p.id)}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      cursor: "pointer",
+                      fontSize: 14,
+                      padding: "4px 5px",
+                    }}
+                    title="Delete"
+                  >
+                    🗑️
+                  </button>
+
+                </td>
+
+              </tr>
+            );
+          })}
+
+
         </tbody>
+
       </table>
 
-      <button onClick={add} style={{ ...dashedAddButtonStyle, marginTop: 10 }}>
+
+      <button
+        type="button"
+        onClick={add}
+        style={{
+          ...dashedAddButtonStyle,
+          marginTop: 10
+        }}
+      >
         + Add Pickup Point
       </button>
+
     </div>
+
   );
 }
 
+
 // ── VariantPanel ──────────────────────────────────────────────────────────
-function VariantPanel({ variant, numDays, onChange }) {
-  debugger;
-  const { getGuidesList, getTargetAudienceList, fetchStatuses } = useItinerary();
+function VariantPanel({
+  variant,
+  numDays,
+  onChange
+}) {
+
+  const {
+    getGuidesList,
+    getTargetAudienceList,
+    fetchStatuses
+  } = useItinerary();
+
+
   const [guides, setGuides] = useState([]);
   const [targetAudiences, setTargetAudiences] = useState([]);
   const [status, setStatus] = useState([]);
 
+
   const set = (k, v) => {
-    const upd = { ...variant, [k]: v };
-    if (k === "startDate") upd.endDate = addDays(v, numDays);
-    onChange(upd);
-  };
 
-  const pct =
-    variant.totalSeats > 0
-      ? Math.round((variant.occupiedSeats / variant.totalSeats) * 100)
-      : 0;
-  const avail = Math.max(0, variant.totalSeats - variant.occupiedSeats);
+    const upd = {
+      ...variant,
+      [k]: v
+    };
 
-  const totalAmountAfterDiscount =
-    (Number(variant.perPaxBaseAmount) || 0) -
-    ((Number(variant.perPaxBaseAmount) || 0) * (Number(variant.discountPercent) || 0)) / 100;
+    if (k === "startDate") {
 
-
-  useEffect(() => {
-    debugger;
-    //Call Guide Api from UseItinerary
-    const fetchGuides = async () => {
-      try {
-        debugger;
-        const data = await getGuidesList();
-        console.log("Guides Api Response:", data);
-
-        setGuides(data);
-      }
-      catch (error) {
-        console.error("Failed to fetch guides:", error);
-      }
+      upd.endDate = addDays(v, numDays);
 
     }
 
-    //Call Target Audiences from UseItinerary
-    const fetchTargetAudience = async () => {
-      debugger;
-      try {
-        const data = await getTargetAudienceList();
+    onChange(upd);
 
-        console.log("Target Audience Api Response:", data);
+  };
+
+
+  const pct =
+    variant.totalSeats > 0
+      ? Math.round(
+        (variant.occupiedSeats /
+          variant.totalSeats) *
+        100
+      )
+      : 0;
+
+
+  const avail = Math.max(
+    0,
+    variant.totalSeats -
+    variant.occupiedSeats
+  );
+
+
+  const totalAmountAfterDiscount =
+    (Number(variant.perPaxBaseAmount) || 0) -
+    (
+      (Number(variant.perPaxBaseAmount) || 0) *
+      (Number(variant.discountPercent) || 0)
+    ) / 100;
+
+
+  useEffect(() => {
+
+    const fetchGuides = async () => {
+
+      try {
+
+        const data = await getGuidesList();
+
+        setGuides(data);
+
+      }
+      catch (error) {
+
+        console.error(
+          "Failed to fetch guides:",
+          error
+        );
+
+      }
+
+    };
+
+
+    const fetchTargetAudience = async () => {
+
+      try {
+
+        const data =
+          await getTargetAudienceList();
+
         setTargetAudiences(data);
 
       }
       catch (error) {
-        console.log("Failed to fetch target audience: ", error);
-      }
-    }
 
-    //Call Status Api 
+        console.error(
+          "Failed to fetch target audience:",
+          error
+        );
+
+      }
+
+    };
+
+
     const fetchStatus = async () => {
-      debugger;
+
       try {
-        const data = await fetchStatuses();
-        console.log("Itinerary Variant Status Api Response:", data);
+
+        const data =
+          await fetchStatuses();
+
         setStatus(data);
+
       }
       catch (error) {
-        console.log("Failed to fetch variant Status:", error);
+
+        console.error(
+          "Failed to fetch variant Status:",
+          error
+        );
+
       }
-    }
+
+    };
+
 
     fetchGuides();
     fetchTargetAudience();
     fetchStatus();
+
   }, []);
 
+
   return (
+
     <div
       style={{
         border: "1.5px solid #6366f1",
@@ -351,230 +697,496 @@ function VariantPanel({ variant, numDays, onChange }) {
         background: colors.white,
       }}
     >
-      {/* Row 1: name, status, locations */}
+
+      {/* Row 1 */}
+
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 160px 1fr 1fr 180px",
+          gridTemplateColumns:
+            "1fr 160px 1fr 1fr 180px",
           gap: 12,
           marginBottom: 12,
         }}
       >
+
         <div>
-          <label style={labelStyle}>Variant Name *</label>
+
+          <label style={labelStyle}>
+            Variant Name *
+          </label>
+
           <input
-            value={variant.variantsName}
-            onChange={(e) => set("variantsName", e.target.value)}
+            value={variant.variantsName ?? ""}
+            onChange={(e) =>
+              set(
+                "variantsName",
+                e.target.value
+              )
+            }
             style={inputStyle}
             placeholder="Standard Package"
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Status *</label>
-          {/* <StatusDropdown value={variant.status} onChange={(v) => set("status", v)} /> */}
+
+          <label style={labelStyle}>
+            Status *
+          </label>
+
           <select
             value={variant.status ?? ""}
-            // onChange={(e) =>
-            //     handleVariantChange(
-            //         index,
-            //         "status",
-            //         Number(e.target.value) // converts string to integer
-            //     )
-            // }
-            // onChange={(e) => set("status", e.target.value)}
             onChange={(e) =>
               set(
                 "status",
-                e.target.value === "" ? null : Number(e.target.value)
+                e.target.value === ""
+                  ? null
+                  : Number(e.target.value)
               )
             }
-            style={{ ...inputStyle, width: 160 }}
+            style={{
+              ...inputStyle,
+              width: 160
+            }}
           >
-            <option value="">Select Status</option>
 
-            {status.map((status) => (
-              <option key={status.id} value={status.id}>
-                {status.statusName}
+            <option value="">
+              Select Status
+            </option>
+
+            {status.map((s) => (
+
+              <option
+                key={s.id}
+                value={s.id}
+              >
+                {s.statusName}
               </option>
+
             ))}
+
           </select>
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Start City *</label>
+
+          <label style={labelStyle}>
+            Start City *
+          </label>
+
           <input
-            value={variant.startLocation}
-            onChange={(e) => set("startLocation", e.target.value)}
+            value={variant.startLocation ?? ""}
+            onChange={(e) =>
+              set(
+                "startLocation",
+                e.target.value
+              )
+            }
             style={inputStyle}
             placeholder="Kochi"
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>End City *</label>
+
+          <label style={labelStyle}>
+            End City *
+          </label>
+
           <input
-            value={variant.endLocation}
-            onChange={(e) => set("endLocation", e.target.value)}
+            value={variant.endLocation ?? ""}
+            onChange={(e) =>
+              set(
+                "endLocation",
+                e.target.value
+              )
+            }
             style={inputStyle}
             placeholder="Alleppey"
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Target Audience *</label>
+
+          <label style={labelStyle}>
+            Target Audience *
+          </label>
+
           <select
-            value={variant.targetAudienceId ?? ""}
-            // onChange={(e) => set("targetAudienceId", Number(e.target.value))}
+            value={
+              variant.targetAudienceId ?? ""
+            }
             onChange={(e) =>
               set(
                 "targetAudienceId",
-                e.target.value === "" ? null : Number(e.target.value)
+                e.target.value === ""
+                  ? null
+                  : Number(e.target.value)
               )
             }
             style={inputStyle}
           >
-            <option value="">Select Audience</option>
+
+            <option value="">
+              Select Audience
+            </option>
+
             {targetAudiences.map((aud) => (
-              <option key={aud.id} value={aud.id}>
+
+              <option
+                key={aud.id}
+                value={aud.id}
+              >
                 {aud.targetAudienceName}
               </option>
+
             ))}
+
           </select>
+
         </div>
+
       </div>
 
-      {/* Row 2: dates + occupancy stats */}
+
+      {/* Row 2 */}
+
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "auto auto 1fr",
+          gridTemplateColumns:
+            "auto auto 1fr",
           gap: 16,
           alignItems: "center",
           marginBottom: 12,
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 10 }}>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            gap: 10
+          }}
+        >
+
           <div>
-            <label style={labelStyle}>Start Date *</label>
+
+            <label style={labelStyle}>
+              Start Date *
+            </label>
+
             <input
               type="date"
-              value={variant.startDate}
-              onChange={(e) => set("startDate", e.target.value)}
-              style={{ ...inputStyle, width: 145 }}
+              value={
+                variant.startDate ?? ""
+              }
+              onChange={(e) =>
+                set(
+                  "startDate",
+                  e.target.value
+                )
+              }
+              style={{
+                ...inputStyle,
+                width: 145
+              }}
             />
+
           </div>
-          <div style={{ paddingBottom: 2, color: colors.primary, fontSize: 18 }}>→</div>
+
+
+          <div
+            style={{
+              paddingBottom: 2,
+              color: colors.primary,
+              fontSize: 18
+            }}
+          >
+            →
+          </div>
+
+
           <div>
-            <label style={labelStyle}>End Date (Auto)</label>
+
+            <label style={labelStyle}>
+              End Date (Auto)
+            </label>
+
             <input
-              value={variant.endDate}
+              value={
+                variant.endDate ?? ""
+              }
               readOnly
-              style={{ ...readonlyInputStyle, width: 115 }}
+              style={{
+                ...readonlyInputStyle,
+                width: 115
+              }}
               placeholder="Auto"
             />
+
           </div>
+
         </div>
 
-        <div style={{ width: 1, height: 50, background: colors.border }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)" }}>
+        <div
+          style={{
+            width: 1,
+            height: 50,
+            background: colors.border
+          }}
+        />
+
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns:
+              "repeat(4,1fr)"
+          }}
+        >
+
           {[
-            { label: "Total Seats", val: variant.totalSeats, color: colors.text },
-            { label: "Occupied Seats", val: variant.occupiedSeats, color: colors.text },
-            { label: "Available Seats", val: avail, color: colors.success },
-            { label: "Occupancy Rate", val: pct + "%", color: colors.primary },
-          ].map(({ label, val, color }, i, arr) => (
-            <div
-              key={label}
-              style={{
-                textAlign: "center",
-                borderRight: i < arr.length - 1 ? `1px solid ${colors.border}` : "none",
-                padding: "4px 8px",
-              }}
-            >
-              <div style={statLabelStyle}>{label}</div>
-              <div style={statValueStyle(color)}>{val}</div>
-            </div>
-          ))}
+            {
+              label: "Total Seats",
+              val: variant.totalSeats,
+              color: colors.text
+            },
+            {
+              label: "Occupied Seats",
+              val: variant.occupiedSeats,
+              color: colors.text
+            },
+            {
+              label: "Available Seats",
+              val: avail,
+              color: colors.success
+            },
+            {
+              label: "Occupancy Rate",
+              val: pct + "%",
+              color: colors.primary
+            }
+          ].map(
+            ({ label, val, color }, i, arr) => (
+
+              <div
+                key={label}
+                style={{
+                  textAlign: "center",
+                  borderRight:
+                    i < arr.length - 1
+                      ? `1px solid ${colors.border}`
+                      : "none",
+                  padding: "4px 8px",
+                }}
+              >
+
+                <div style={statLabelStyle}>
+                  {label}
+                </div>
+
+                <div
+                  style={statValueStyle(color)}
+                >
+                  {val}
+                </div>
+
+              </div>
+
+            )
+          )}
+
         </div>
+
       </div>
 
-      {/* Row 3: seats, guide, pricing */}
-      <div style={{ display: "flex", gap: 12, marginBottom: 4 }}>
+
+      {/* Row 3 */}
+
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginBottom: 4
+        }}
+      >
+
         <div>
-          <label style={labelStyle}>Total Seats</label>
+
+          <label style={labelStyle}>
+            Total Seats
+          </label>
+
           <input
             type="number"
             min="0"
-            value={variant.totalSeats}
-            onChange={(e) => set("totalSeats", Number(e.target.value))}
-            style={{ ...inputStyle, width: 100 }}
+            value={variant.totalSeats ?? 0}
+            onChange={(e) =>
+              set(
+                "totalSeats",
+                Number(e.target.value)
+              )
+            }
+            style={{
+              ...inputStyle,
+              width: 100
+            }}
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Occupied Seats</label>
+
+          <label style={labelStyle}>
+            Occupied Seats
+          </label>
+
           <input
             type="number"
             min="0"
             max={variant.totalSeats}
-            value={variant.occupiedSeats}
-            onChange={(e) =>
-              set("occupiedSeats", Math.min(Number(e.target.value), variant.totalSeats))
+            value={
+              variant.occupiedSeats ?? 0
             }
-            style={{ ...inputStyle, width: 100 }}
+            onChange={(e) =>
+              set(
+                "occupiedSeats",
+                Math.min(
+                  Number(e.target.value),
+                  variant.totalSeats
+                )
+              )
+            }
+            style={{
+              ...inputStyle,
+              width: 100
+            }}
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Guide *</label>
+
+          <label style={labelStyle}>
+            Guide *
+          </label>
+
           <select
-            value={variant.guideId || ""}
-            // onChange={(e) => set("guideId", e.target.value)}
+            value={variant.guideId ?? ""}
             onChange={(e) =>
               set(
                 "guideId",
-                e.target.value === "" ? null : Number(e.target.value)
+                e.target.value === ""
+                  ? null
+                  : Number(e.target.value)
               )
             }
-            // uncomment below code to pass null or int value to backend  adjust set for guide
-            //            onChange={(e) =>
-            //   setGuide(
-            //     e.target.value === "" ? null : Number(e.target.value)
-            //   )
-            // }
-            style={{ ...inputStyle, width: 180 }}
+            style={{
+              ...inputStyle,
+              width: 180
+            }}
           >
-            <option value="">Select Guide</option>
+
+            <option value="">
+              Select Guide
+            </option>
+
             {guides.map((guide) => (
-              <option key={guide.id} value={guide.id}>
+
+              <option
+                key={guide.id}
+                value={guide.id}
+              >
                 {guide.guideName}
               </option>
+
             ))}
+
           </select>
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Base Amount</label>
+
+          <label style={labelStyle}>
+            Base Amount
+          </label>
+
           <input
             type="number"
             min="0"
-            value={variant.perPaxBaseAmount || ""}
-            onChange={(e) => set("perPaxBaseAmount", Number(e.target.value))}
-            style={{ ...inputStyle, width: 140 }}
+            value={
+              variant.perPaxBaseAmount ?? ""
+            }
+            onChange={(e) =>
+              set(
+                "perPaxBaseAmount",
+                Number(e.target.value)
+              )
+            }
+            style={{
+              ...inputStyle,
+              width: 140
+            }}
             placeholder="0.00"
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Discount (%)</label>
+
+          <label style={labelStyle}>
+            Discount (%)
+          </label>
+
           <input
             type="number"
             min="0"
             max="100"
-            value={variant.discountPercent || ""}
-            onChange={(e) => set("discountPercent", Number(e.target.value))}
-            style={{ ...inputStyle, width: 120 }}
+            value={
+              variant.discountPercent ?? ""
+            }
+            onChange={(e) =>
+              set(
+                "discountPercent",
+                Number(e.target.value)
+              )
+            }
+            style={{
+              ...inputStyle,
+              width: 120
+            }}
             placeholder="0"
           />
+
         </div>
+
+
         <div>
-          <label style={labelStyle}>Total Amount</label>
+
+          <label style={labelStyle}>
+            Total Amount
+          </label>
+
           <input
-            value={totalAmountAfterDiscount.toFixed(2)}
+            value={
+              totalAmountAfterDiscount.toFixed(2)
+            }
             readOnly
             style={{
               ...inputStyle,
@@ -584,146 +1196,513 @@ function VariantPanel({ variant, numDays, onChange }) {
               fontWeight: 600,
             }}
           />
+
         </div>
+
       </div>
 
+
       <PickupTable
-        pickups={variant.pickupPoints}
-        onChange={(pts) => onChange({ ...variant, pickupPoints: pts })}
+        pickups={
+          variant.pickupPoints ?? []
+        }
+        onChange={(pts) =>
+          onChange({
+            ...variant,
+            pickupPoints: pts
+          })
+        }
       />
+
     </div>
+
   );
 }
 
+
 // ── VariantsSection ───────────────────────────────────────────────────────
-/**
- * Props:
- *   variants      {Array}    – array of variant objects
- *   setVariants   {Function} – state setter from parent
- *   numDays       {number}   – used to auto-calculate end date
- */
-// export default function VariantsSection({ variants, setVariants, numDays }) {
 export default function VariantsSection({
   itineraryObj,
   setItineraryObj
 }) {
+  const {
+    getGuidesList,
+    getTargetAudienceList,
+    fetchStatuses
+  } = useItinerary();
 
-  const variants = itineraryObj.variantsDetails;
+  const variants =
+    itineraryObj.variantsDetails ?? [];
 
-  const numDays = itineraryObj.itineraryBasicDetails.numDays;
-  debugger;
-  const [activeTab, setActiveTab] = useState(null);
+  const numDays =
+    itineraryObj.itineraryBasicDetails.numDays;
 
-  // const tabId = activeTab || variants[0]?.id;
-  const activeIndexFromTab = activeTab ?? 0;
+  // ============================================================
+  // CHECK WHETHER NO. OF DAYS IS SELECTED
+  // ============================================================
+  const hasNumDays =
+    numDays !== null &&
+    numDays !== undefined &&
+    Number(numDays) > 0;
 
-  const activeVariant = variants[activeIndexFromTab];
-  // const activeVariant = variants.find((v) => v.id === tabId) || variants[0];
-  const activeIndex = variants.findIndex(
-    v => v.id === activeVariant?.id
+  // ============================================================
+  // VARIANT FORM VISIBILITY
+  //
+  // Initially false.
+  // It becomes true only when:
+  // 1. Generate Variant is clicked
+  // 2. Bulk Variant is generated
+  // 3. Add Variant is clicked
+  // ============================================================
+  const [showVariantForm, setShowVariantForm] =
+    useState(false);
+
+  const [activeTab, setActiveTab] =
+    useState(0);
+
+  // Tracks whether the user has changed any variant data.
+  // Adding blank variants does NOT make the form dirty.
+  const [variantFormDirty, setVariantFormDirty] =
+    useState(false);
+
+  // Last valid No. of Days, used when the user chooses
+  // "No, Keep Form" in the confirmation.
+  const previousValidNumDaysRef = useRef(
+    hasNumDays ? numDays : null
   );
-  // ===============Temp
-  // const activeIndex = variants.findIndex(
-  //     (v) => v === activeVariant
-  // );
-  // const updVariant = (id, v) =>
-  //   setVariants((prev) => prev.map((x) => (x.id === id ? v : x)));
-  const updVariant = (index, newVariant) => {
+
+  const [showDaysWarning, setShowDaysWarning] =
+    useState(false);
+
+
+  // ── BULK MODAL STATE ────────────────────────────────────────────────────
+  const [showBulkModal, setShowBulkModal] =
+    useState(false);
+  const [guides, setGuides] = useState([]);
+  const [targetAudiences, setTargetAudiences] = useState([]);
+  const [status, setStatus] = useState([]);
+
+  const activeIndexFromTab =
+    Math.min(
+      activeTab,
+      Math.max(variants.length - 1, 0)
+    );
+
+
+  const activeVariant =
+    variants[activeIndexFromTab];
+
+
+  const activeIndex =
+    activeIndexFromTab;
+
+
+  // ============================================================
+  // HANDLE NO. OF DAYS CHANGED TO 0
+  // ============================================================
+  useEffect(() => {
+
+    if (hasNumDays) {
+      previousValidNumDaysRef.current = numDays;
+      setShowDaysWarning(false);
+      return;
+    }
+
+    if (!showVariantForm || Number(numDays) !== 0) {
+      return;
+    }
+
+    // If the user only added empty variant tabs and entered nothing,
+    // close the form and CLEAR ALL variants immediately.
+    if (!variantFormDirty) {
+      setShowVariantForm(false);
+      setShowDaysWarning(false);
+      setActiveTab(0);
+
+      setItineraryObj(prev => ({
+        ...prev,
+        variantsDetails: []
+      }));
+
+      return;
+    }
+
+    // There is entered data, so ask before clearing it.
+    setShowDaysWarning(true);
+
+  }, [
+    numDays,
+    hasNumDays,
+    showVariantForm,
+    variantFormDirty,
+    setItineraryObj
+  ]);
+
+
+  // ── Update Variant ─────────────────────────────────────────────────────
+  const updVariant = (
+    index,
+    newVariant
+  ) => {
+
+    // Called by VariantPanel/PickupTable when the user edits data.
+    setVariantFormDirty(true);
 
     setItineraryObj(prev => {
 
-      const arr = [...prev.variantsDetails];
+      const arr = [
+        ...prev.variantsDetails
+      ];
 
       arr[index] = newVariant;
 
       return {
-
         ...prev,
-
         variantsDetails: arr
-
       };
 
     });
 
   };
 
-  // const addVariant = () => {
-  //   const v = mkVariant(variants.length + 1);
-  //   setVariants((prev) => [...prev, v]);
-  //   setActiveTab(v.id);
-  // };
+  // ============================================================
+  // GENERATE SINGLE VARIANT
+  // ============================================================
+  const generateVariant = () => {
 
-  const addVariant = () => {
+    // Safety check
+    if (!hasNumDays) {
+      return;
+    }
 
-    const v = mkVariant(variants.length + 1);
+
+    // const v =
+    //   mkVariant(
+    //     variants.length + 1
+    //   );
+
+    // If a variant already exists, simply show it.
+    // DO NOT create another variant.
+    if (variants.length > 0) {
+      setShowVariantForm(true);
+      setActiveTab(0);
+      return;
+    }
+
+    // Create first variant only when there are no variants
+    const v = mkVariant(1);
+
 
     setItineraryObj(prev => ({
 
       ...prev,
 
       variantsDetails: [
-
-        ...prev.variantsDetails,
-
+        ...(prev.variantsDetails ?? []),
         v
-
       ]
 
     }));
 
-    setActiveTab(v.id);
+
+    // Fresh blank variant starts clean.
+    setVariantFormDirty(false);
+    setShowDaysWarning(false);
+
+    // Show variant form
+    setShowVariantForm(true);
+
+
+    // Open newly created variant
+    setActiveTab(
+      variants.length
+    );
+  };
+
+
+
+
+  // ── Add Single Variant ─────────────────────────────────────────────────
+  // const addVariant = () => {
+
+  //   const v =
+  //     mkVariant(
+  //       variants.length + 1
+  //     );
+
+
+  //   setItineraryObj(prev => ({
+
+  //     ...prev,
+
+  //     variantsDetails: [
+  //       ...prev.variantsDetails,
+  //       v
+  //     ]
+
+  //   }));
+
+
+  //   setActiveTab(
+  //     variants.length
+  //   );
+
+  // };
+  // ── Add Single Variant ─────────────────────────────────────────────────
+  const addVariant = () => {
+
+    // Safety check
+    if (!hasNumDays) {
+      return;
+    }
+
+
+    const v =
+      mkVariant(
+        variants.length + 1
+      );
+
+
+    setItineraryObj(prev => ({
+
+      ...prev,
+
+      variantsDetails: [
+        ...(prev.variantsDetails ?? []),
+        v
+      ]
+
+    }));
+
+
+    // Show variant form
+    setShowVariantForm(true);
+
+
+    setActiveTab(
+      variants.length
+    );
 
   };
 
-  // const removeVariant = (id) => {
-  //   if (variants.length === 1) return;
-  //   const rest = variants.filter((v) => v.id !== id);
-  //   setVariants(rest);
-  //   if (tabId === id) setActiveTab(rest[0].id);
-  // };
+
+
+
+  // ── Remove Variant ─────────────────────────────────────────────────────
   const removeVariant = (index) => {
 
     if (variants.length <= 1)
       return;
 
+
     setItineraryObj(prev => {
 
-      const arr = prev.variantsDetails.filter((_, i) => i !== index);
+      const arr =
+        prev.variantsDetails.filter(
+          (_, i) => i !== index
+        );
+
 
       return {
-
         ...prev,
-
         variantsDetails: arr
-
       };
 
     });
 
-    if (activeIndexFromTab === index) {
 
-      setActiveTab(0);
+    if (activeTab === index) {
 
-    } else if (activeIndexFromTab > index) {
+      setActiveTab(
+        Math.max(0, index - 1)
+      );
 
-      setActiveTab(activeIndexFromTab - 1);
+    }
+    else if (activeTab > index) {
+
+      setActiveTab(
+        activeTab - 1
+      );
 
     }
 
   };
 
+
+  // ── BULK GENERATE ──────────────────────────────────────────────────────
+  const handleBulkGenerate = (
+    newVariants
+  ) => {
+
+    if (
+      !newVariants ||
+      newVariants.length === 0
+    ) {
+      return;
+    }
+
+
+    setItineraryObj(prev => {
+
+      const existingVariants =
+        prev.variantsDetails ?? [];
+
+
+      /*
+       * Add bulk variants after existing variants.
+       *
+       * Every object inside newVariants already contains:
+       *
+       * startDate
+       * endDate
+       * startLocation
+       * endLocation
+       * targetAudienceId
+       * totalSeats
+       * guideId
+       * perPaxBaseAmount
+       * discountPercent
+       * season
+       * pickupPoints
+       *
+       * So the same bulk-form details automatically
+       * exist in every generated variant.
+       */
+
+      const variantsToAdd =
+        newVariants.map(
+          (variant, index) => ({
+
+            ...variant,
+
+            /*
+             * Keep id null for newly generated
+             * variants.
+             */
+            id: null,
+
+            /*
+             * Ensure pickupPoints is always present.
+             */
+            pickupPoints:
+              variant.pickupPoints?.length
+                ? variant.pickupPoints
+                : [
+                  getEmptyPickupPointObj()
+                ],
+
+            /*
+             * Make sure variant name is unique/readable.
+             */
+            variantsName:
+              variant.variantsName ||
+              `Variant ${existingVariants.length +
+              index +
+              1
+              }`
+
+          })
+        );
+
+
+      return {
+
+        ...prev,
+
+        variantsDetails: [
+          ...existingVariants,
+          ...variantsToAdd
+        ]
+
+      };
+
+    });
+
+    // ============================================================
+    // SHOW VARIANT FORM AFTER BULK GENERATION
+    // ============================================================
+    setShowVariantForm(true);
+
+
+    /*
+     * Open the first newly-created
+     * variant tab.
+     *
+     * Existing count becomes the index
+     * of the first bulk variant.
+     */
+    setActiveTab(
+      variants.length
+    );
+
+  };
+
+  // ============================================================
+  // LOAD BULK DROPDOWN DATA
+  // ============================================================
+  useEffect(() => {
+
+    const loadBulkDropdownData = async () => {
+
+      try {
+
+        const guideData =
+          await getGuidesList();
+
+        const audienceData =
+          await getTargetAudienceList();
+
+        const statusData =
+          await fetchStatuses();
+        debugger;
+        console.log("GUIDES:", guideData);
+        console.log("TARGET AUDIENCES:", audienceData);
+        console.log("Status List : ", statusData);
+
+        setGuides(guideData || []);
+        setTargetAudiences(audienceData || []);
+        setStatus(statusData || []);
+
+      } catch (error) {
+
+        console.error(
+          "Failed to load bulk variant dropdown data:",
+          error
+        );
+
+      }
+
+    };
+
+    loadBulkDropdownData();
+
+  }, []);
+
   return (
+
     <div
       style={{
         background: colors.white,
-        border: `1px solid ${colors.border}`,
+        border:
+          `1px solid ${colors.border}`,
         borderRadius: 12,
         padding: 20,
       }}
     >
-      {/* Section heading */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+
+      {/* ────────────────────────────────────────────────────────────────
+          SECTION HEADER
+      ──────────────────────────────────────────────────────────────── */}
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 14,
+        }}
+      >
+
         <span
           style={{
             background: colors.primary,
@@ -740,69 +1719,399 @@ export default function VariantsSection({
         >
           2
         </span>
-        <span style={{ fontWeight: 700, fontSize: 15, color: colors.primary }}>Variants</span>
-        <span style={{ fontSize: 11, color: colors.textSubtle }}>
+
+
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: 15,
+            color: colors.primary
+          }}
+        >
+          Variants
+        </span>
+
+
+        <span
+          style={{
+            fontSize: 11,
+            color: colors.textSubtle
+          }}
+        >
           ⓘ Add multiple variants for this itinerary
         </span>
-      </div>
 
-      {/* Tab row */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 0,
-          borderBottom: `2px solid ${colors.border}`,
-          marginBottom: 14,
-          flexWrap: "wrap",
-        }}
-      >
-        {variants.map((v, index) => {
-          // const act = v.id === tabId;
-          const act = index === activeIndexFromTab;
-          return (
-            // <div key={v.id} onClick={() => setActiveTab(variants.length)} style={variantTabStyle(act)}>
-            <div key={v.id ?? index} onClick={() => setActiveTab(index)} style={variantTabStyle(act)}>
-              {/* confirm BOVE LINE   */}
+        {/* ============================================================
+            GENERATE BUTTONS
+        ============================================================ */}
 
-              {v.variantsName}
-              {variants.length > 1 && (
-                <span
-                  // onClick={(e) => { e.stopPropagation(); removeVariant(v.id); }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeVariant(index);
-                  }}
-                  style={{ marginLeft: 4, color: colors.textSubtle, fontSize: 14, lineHeight: 1 }}
-                >
-                  ×
-                </span>
-              )}
-            </div>
-          );
-        })}
-
-        <button
-          onClick={addVariant}
-          style={{ ...dashedAddButtonStyle, marginLeft: 6, marginBottom: 4 }}
+        <div
+          style={{
+            marginLeft: "auto",
+            display: "flex",
+            gap: 8,
+          }}
         >
-          + Add Variant
-        </button>
+
+          {/* ─────────────────────────────────────────────────────
+              GENERATE VARIANT
+          ───────────────────────────────────────────────────── */}
+
+          <button
+            type="button"
+            onClick={generateVariant}
+            disabled={!hasNumDays}
+            style={{
+              border: "none",
+              background:
+                hasNumDays
+                  ? colors.primary
+                  : "#d1d5db",
+              color: colors.white,
+              borderRadius: 6,
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor:
+                hasNumDays
+                  ? "pointer"
+                  : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              opacity:
+                hasNumDays
+                  ? 1
+                  : 0.7,
+            }}
+          >
+            ＋ Generate Variant
+          </button>
+
+
+          {/* ── Generate Bulk Variant Button ── */}
+
+          <button
+            type="button"
+            onClick={() =>
+              setShowBulkModal(true)
+            }
+            disabled={!hasNumDays}
+            style={{
+              marginLeft: "auto",
+              border: "none",
+              // background: colors.primary,
+              background:
+                hasNumDays
+                  ? colors.primary
+                  : "#d1d5db",
+              color: colors.white,
+              borderRadius: 6,
+              padding: "8px 14px",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              opacity:
+                hasNumDays
+                  ? 1
+                  : 0.7,
+            }}
+          >
+            ⚡ Generate Bulk Variant
+          </button>
+        </div>
       </div>
 
-      {/* Active variant panel */}
-      {activeVariant && (
-        // <VariantPanel
-        //   variant={activeVariant}
-        //   numDays={numDays}
-        //   onChange={(v) => updVariant(activeVariant.id, v)}
-        // />
-        <VariantPanel
-          variant={activeVariant}
-          numDays={numDays}
-          onChange={(v) => updVariant(activeIndexFromTab, v)}
-        />
+      {/* ============================================================
+          VARIANT FORM
+          
+          IMPORTANT:
+          This entire section is hidden initially.
+          It appears only after Generate Variant,
+          Generate Bulk Variant, or Add Variant.
+      ============================================================ */}
+
+      {showVariantForm && (
+
+        <>
+          {/* ────────────────────────────────────────────────────────────────
+          TAB ROW
+      ──────────────────────────────────────────────────────────────── */}
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+
+              // borderBottom:
+              //   `2px solid ${colors.border}`,
+              marginBottom: 14,
+              flexWrap: "wrap",
+            }}
+          >
+
+            {variants.map((v, index) => {
+
+              const act =
+                index === activeIndexFromTab;
+
+
+              return (
+
+                <div
+                  key={v.id ?? index}
+                  onClick={() =>
+                    setActiveTab(index)
+                  }
+                  style={variantTabStyle(act)}
+                >
+
+                  {v.variantsName ||
+                    `Variant ${index + 1}`}
+
+
+                  {variants.length > 1 && (
+
+                    <span
+                      onClick={(e) => {
+
+                        e.stopPropagation();
+
+                        removeVariant(index);
+
+                      }}
+                      style={{
+                        // marginLeft: 4,
+                        // color: colors.textSubtle,
+                        // fontSize: 14,
+                        // lineHeight: 1,
+                        // cursor: "pointer"
+                        marginLeft: 4,
+                        fontSize: 15,
+                        lineHeight: 1,
+                        cursor: "pointer",
+                        opacity: 0.7,
+                      }}
+                    >
+                      ×
+                    </span>
+
+                  )}
+
+                </div>
+
+              );
+
+            })}
+
+
+            {/* ── Add Single Variant ── */}
+
+            <button
+              type="button"
+              onClick={addVariant}
+              style={{
+                ...dashedAddButtonStyle,
+                // marginLeft: 6,
+                // marginBottom: 4
+                marginLeft: 4,
+                fontSize: 15,
+                lineHeight: 1,
+                cursor: "pointer",
+                opacity: 0.7,
+              }}
+            >
+              + Add Variant
+            </button>
+
+          </div>
+
+
+          {/* ────────────────────────────────────────────────────────────────
+          ACTIVE VARIANT
+      ──────────────────────────────────────────────────────────────── */}
+
+          {activeVariant && (
+
+            <VariantPanel
+              variant={activeVariant}
+              numDays={numDays}
+              onChange={(v) =>
+                updVariant(
+                  activeIndex,
+                  v
+                )
+              }
+            />
+
+          )}
+        </>
       )}
+
+      {/* ────────────────────────────────────────────────────────────────
+          BULK VARIANT MODAL
+          This can open even though VariantPanel is not rendered.
+      ──────────────────────────────────────────────────────────────── */}
+
+      {/* ============================================================
+          CLOSE VARIANT FORM CONFIRMATION
+      ============================================================ */}
+      {showDaysWarning && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              width: 400,
+              maxWidth: "90%",
+              background: colors.white,
+              borderRadius: 10,
+              padding: 20,
+              boxShadow: "0 12px 35px rgba(0,0,0,0.2)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 15,
+                fontWeight: 700,
+                color: colors.primary,
+                marginBottom: 10,
+              }}
+            >
+              Close Variant Form?
+            </div>
+
+            <div
+              style={{
+                fontSize: 13,
+                color: colors.text,
+                lineHeight: 1.5,
+                marginBottom: 18,
+              }}
+            >
+              Some variant details have been entered. If you continue,
+              all variant data will be cleared. Do you want to continue?
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 8,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  // NO: restore previous valid days and keep everything.
+                  setShowDaysWarning(false);
+
+                  const previousDays =
+                    previousValidNumDaysRef.current;
+
+                  if (previousDays !== null && previousDays !== undefined) {
+                    setItineraryObj(prev => ({
+                      ...prev,
+                      itineraryBasicDetails: {
+                        ...prev.itineraryBasicDetails,
+                        numDays: previousDays,
+                      },
+                    }));
+                  }
+                }}
+                style={{
+                  border: `1px solid ${colors.border}`,
+                  background: colors.white,
+                  color: colors.text,
+                  borderRadius: 6,
+                  padding: "7px 14px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                No, Keep Form
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  // YES: close form AND completely clear all variants.
+                  setShowDaysWarning(false);
+                  setShowVariantForm(false);
+                  setVariantFormDirty(false);
+                  setActiveTab(0);
+
+                  setItineraryObj(prev => ({
+                    ...prev,
+                    variantsDetails: [],
+                  }));
+                }}
+                style={{
+                  border: "none",
+                  background: colors.primary,
+                  color: colors.white,
+                  borderRadius: 6,
+                  padding: "7px 14px",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontWeight: 600,
+                }}
+              >
+                Yes, Close Form
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBulkModal && (
+
+        <BulkVariantModal
+
+          numDays={numDays}
+
+          /*
+           * BulkVariantModal needs these lists.
+           *
+           * VariantPanel fetches them internally,
+           * but the modal expects them as props.
+           *
+           * Therefore we fetch them here.
+           */
+          tourCode={itineraryObj.itineraryBasicDetails.tourCode}
+          guides={guides}
+
+          targetAudiences={targetAudiences}
+
+          status={status}
+
+          onClose={() =>
+            setShowBulkModal(false)
+          }
+
+          onGenerate={
+            handleBulkGenerate
+          }
+
+        />
+
+      )}
+
     </div>
+
   );
+
 }

@@ -196,8 +196,9 @@ export function KanbanBoard({
     // const statusId = STATUS_MAPPING[activeFilter];
     const statusId = statusMapping[activeFilter]; // ⬅️ was STATUS_MAPPING[activeFilter]
 
-
+    debugger;
     const observer = new IntersectionObserver(
+      
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -227,6 +228,8 @@ export function KanbanBoard({
           const cacheKey = getCacheKey(selectedYear, statusId, month);
           const isLoaded = data[cacheKey] != null;
           const cards = isLoaded ? data[cacheKey] : [];
+          // debugger;
+          // console.log("Cards details from api : ", cards);
 
           return (
             <div

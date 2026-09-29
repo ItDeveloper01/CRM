@@ -464,6 +464,7 @@ export default function LeadListWithFilters({ users, dateRange }) {
   async function fetchLeadDetails(lead) {
     let res = null;
     try {
+      debugger;
       res = await axios.post(GetLeadsForEditAPI, lead, {
         headers: {
           Authorization: `Bearer ${sessionUser.token}`,

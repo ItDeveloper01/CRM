@@ -1,6 +1,8 @@
 // ── Shared style tokens ───────────────────────────────────────────────────
 // Edit this file to update styles across VariantsSection and DayWiseSchedule
 
+import { act } from "react";
+
 export const colors = {
   primary: "#2563EB",
   primaryLight: "#eff6ff",
@@ -151,18 +153,48 @@ export const iconButtonStyle = (variant = "edit") =>
     : { background: colors.dangerBg,    border: "none", borderRadius: 5, padding: "5px 8px", color: colors.danger,  cursor: "pointer" };
 
 // Variant tab item
+// export const variantTabStyle = (active) => ({
+//   display: "flex",
+//   alignItems: "center",
+//   gap: 6,
+//   padding: "8px 16px",
+//   borderBottom: active ? `2px solid ${colors.primary}` : "2px solid transparent",
+//   marginBottom: -2,
+//   cursor: "pointer",
+//   color: active ? colors.primary : colors.textMuted,
+//   fontWeight: active ? 600 : 500,
+//   fontSize: 13,
+//   background: active ? colors.primaryBg : "transparent",
+// });
 export const variantTabStyle = (active) => ({
-  display: "flex",
+  display: "inline-flex",
   alignItems: "center",
-  gap: 6,
-  padding: "8px 16px",
-  borderBottom: active ? `2px solid ${colors.primary}` : "2px solid transparent",
-  marginBottom: -2,
+  gap: 4,
+  padding: "7px 12px",
+  borderRadius: 20,
   cursor: "pointer",
-  color: active ? colors.primary : colors.textMuted,
-  fontWeight: active ? 600 : 500,
+
+  // Selected = Dark
+  // Not Selected = Light
+  backgroundColor: active
+    ? colors.primary
+    : "#edeef3",
+
+  color: active
+    ? "#ffffffe3"
+    : colors.text,
+
+  border: `1px solid ${
+    active
+      ? colors.primary
+      : "#96b4f0"
+  }`,
+
   fontSize: 13,
-  background: active ? colors.primaryBg : "transparent",
+  fontWeight: active ? 600 : 500,
+
+  transition: "all 0.2s ease",
+  userSelect: "none",
 });
 
 // Pickup table header cell
