@@ -1,230 +1,159 @@
-// import React, { useState } from "react";
-// import CloseIcon from "@mui/icons-material/Close";
 
-// import {
-//   Button,
-//   Dialog,
-//   DialogTitle,
-//   DialogContent,
-//   DialogActions,
-//   TextField,
-//   MenuItem,
-//   Grid,
-//   Divider,
-//   Box,
-//   Typography,
-//   Alert,
-//   Snackbar,
-//   Autocomplete,
-//   IconButton 
-// } from "@mui/material";
+import React, { useEffect, useMemo, useState } from "react";
 
-// export default function LeadTransferModal() {
-//   const [open, setOpen] = useState(false);
-//   const [showSuccess, setShowSuccess] = useState(false);
-//   const [branch, setBranch] = useState("");
-//   const [designation, setDesignation] = useState("");
-//   const [user, setUser] = useState(null);
-//   const selectedUserDesignation = user?.label?.match(/\(([^)]+)\)/)?.[1] || "";
-//   const [reason, setReason] = useState("");
-
-//   const branches = ["Mumbai", "Pune", "Nagpur"];
-//   const designations = ["Manager", "Senior Executive", "Executive"];
-//   const users = [
-//     { label: "Amit Patil (Manager)", id: 1 },
-//     { label: "Sneha Kulkarni (Executive)", id: 2 },
-//     { label: "Rohit Deshmukh (Senior Executive)", id: 3 }
-//   ];
-
-//   const isSubmitDisabled = !branch || !designation || !user;
-
-//   const fetchDesignationsByBranch = async (branchValue: string) => {
-//     console.log("API CALL → fetchDesignationsByBranch", branchValue);
-//   };
-
-//   const fetchUsersByBranchAndDesignation = async (branchValue: string, designationValue: string) => {
-//     console.log("API CALL → fetchUsersByBranchAndDesignation", branchValue, designationValue);
-//   };
-
-//   const submitLeadTransfer = async () => {
-//     const payload = {
-//       leadId: "LD-10234",
-//       toBranch: branch,
-//       toDesignation: designation,
-//       toUserId: user?.id,
-//       reason
-//     };
-//     console.log("API CALL → submitLeadTransfer", payload);
-//   };
-
-//   const handleSubmit = async () => {
-//     await submitLeadTransfer();
-//     setOpen(false);
-//     setShowSuccess(true);
-//   };
-
-//   return (
-//     <>
-//       <Button variant="contained" color="primary" onClick={() => setOpen(true)}>
-//         Transfer Lead
-//       </Button>
-
-//       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
-//         <DialogTitle sx={{ fontSize: "1.1rem", fontWeight: 600, color: "#1f2937", borderBottom: "1px solid #e5e7eb", backgroundColor: "#ffffff", pr: 5 }}>
-//           Please provide transfer details
-//           <IconButton aria-label="close" onClick={() => setOpen(false)} sx={{ position: "absolute", right: 8, top: 8, color: "#6b7280" }}>
-//             <CloseIcon />
-//           </IconButton>
-//         </DialogTitle>
-
-//         <DialogContent sx={{ mt: 2, pt: 2 }}>
-//           <Alert severity="info" sx={{ mb: 2, borderRadius: 2 }}>
-//             Please ensure correct branch, designation and user before submitting.
-//           </Alert>
-
-//           {/* Lead Details */}
-//           <Box sx={{ backgroundColor: "#f9fafb", p: 2, borderRadius: 2, mb: 3, border: "1px solid #e5e7eb" }}>
-//             <Typography variant="subtitle2" color="text.secondary">Lead Details</Typography>
-//             <Typography><strong>Lead ID:</strong> LD-10234</Typography>
-//             <Typography><strong>Customer:</strong> Ramesh Kulkarni</Typography>
-//             <Typography><strong>Current Owner:</strong> Anjali Patil</Typography>
-//           </Box>
-
-//           {/* Transfer Form */}
-//           <Typography variant="subtitle2" color="text.secondary" gutterBottom>Transfer To</Typography>
-//           <Grid container spacing={2}>
-//             <Grid item xs={12}>
-//               <TextField
-//                 select
-//                 fullWidth
-//                 size="small"
-//                 label="Branch"
-//                 SelectProps={{ MenuProps: { PaperProps: { sx: { minWidth: 240 } } } }}
-//                 value={branch}
-//                 onChange={(e) => {
-//                   const value = e.target.value;
-//                   setBranch(value);
-//                   setDesignation("");
-//                   setUser(null);
-//                   fetchDesignationsByBranch(value);
-//                 }}
-//               >
-//                 {branches.map((b) => (<MenuItem key={b} value={b}>{b}</MenuItem>))}
-//               </TextField>
-//             </Grid>
-
-//             <Grid item xs={12}>
-//               <TextField
-//                 select
-//                 fullWidth
-//                 size="small"
-//                 label="Designation"
-//                 disabled={!branch}
-//                 SelectProps={{ MenuProps: { PaperProps: { sx: { minWidth: 240 } } } }}
-//                 value={designation}
-//                 onChange={(e) => {
-//                   const value = e.target.value;
-//                   setDesignation(value);
-//                   setUser(null);
-//                   fetchUsersByBranchAndDesignation(branch, value);
-//                 }}
-//               >
-//                 {designations.map((d) => (<MenuItem key={d} value={d}>{d}</MenuItem>))}
-//               </TextField>
-//             </Grid>
-
-//             <Grid item xs={12}>
-//               <Autocomplete
-//                 disabled={!branch || !designation}
-//                 options={users}
-//                 value={user}
-//                 onChange={(e, val) => setUser(val)}
-//                 renderInput={(params) => (
-//                   <TextField {...params} label="Assign To User" size="small" fullWidth />
-//                 )}
-//               />
-//             </Grid>
-
-//             <Grid item xs={12}>
-//               <TextField
-//                 label="Transfer Reason"
-//                 size="small"
-//                 placeholder="Enter reason for transferring this lead"
-//                 multiline
-//                 minRows={3}
-//                 fullWidth
-//                 value={reason}
-//                 onChange={(e) => setReason(e.target.value)}
-//               />
-//             </Grid>
-
-//             {/* Selected User Details after Transfer Reason */}
-//             <Grid item xs={12}>
-//               <Box sx={{ backgroundColor: "#f1f5f9", border: "1px solid #e5e7eb", borderRadius: 2, p: 2, minHeight: 96, mt: 2 }}>
-//                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>Selected User Details</Typography>
-//                 <Grid container spacing={1}>
-//                   <Grid item xs={12}>
-//                     <Typography variant="body2" color="text.secondary">Branch</Typography>
-//                     <Typography fontWeight={600}>{branch || "—"}</Typography>
-//                   </Grid>
-//                   <Grid item xs={12}>
-//                     <Typography variant="body2" color="text.secondary">Designation</Typography>
-//                     <Typography fontWeight={600}>{selectedUserDesignation || "—"}</Typography>
-//                   </Grid>
-//                   <Grid item xs={12}>
-//                     <Typography variant="body2" color="text.secondary">User</Typography>
-//                     <Typography fontWeight={600}>{user?.label || "—"}</Typography>
-//                   </Grid>
-//                 </Grid>
-//               </Box>
-//             </Grid>
-//           </Grid>
-//         </DialogContent>
-
-//         <Divider />
-//         <DialogActions sx={{ p: 2, borderTop: "1px solid #e5e7eb" }}>
-//           <Button onClick={() => setOpen(false)} sx={{ textTransform: "none" }}>Cancel</Button>
-//           <Button
-//             variant="contained"
-//             sx={{ backgroundColor: "#2563eb", color: "#ffffff", textTransform: "none", "&:hover": { backgroundColor: "#1d4ed8" } }}
-//             onClick={handleSubmit}
-//             disabled={isSubmitDisabled}
-//           >
-//             Submit for Approval
-//           </Button>
-//         </DialogActions>
-//       </Dialog>
-
-//       <Snackbar open={showSuccess} autoHideDuration={3000} onClose={() => setShowSuccess(false)}>
-//         <Alert severity="success" variant="filled">Lead transfer request submitted successfully!</Alert>
-//       </Snackbar>
-//     </>
-//   );
-// }
-
-import React, { useState, useEffect } from "react";
-import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
-  MenuItem,
-  Grid,
-  Divider,
-  Box,
-  Typography,
-  Alert,
-  Snackbar,
   Autocomplete,
-  IconButton,
-  Button
+  Button,
+  CircularProgress,
 } from "@mui/material";
+
+import {
+  ArrowRight,
+  CheckCircle2,
+  Users,
+  UserRound,
+  MessageSquareText,
+  X,
+  Send,
+} from "lucide-react";
+
+import axios from "axios";
+
 import { useGetSessionUser } from "./SessionContext";
 import config from "./config";
-import { ConsoleLogger } from "@microsoft/signalr/dist/esm/Utils";
+
+/* =========================================================
+   FIELD STYLE
+   ========================================================= */
+
+const compactFieldSx = {
+  width: "100%",
+
+  "& .MuiInputBase-root": {
+    fontSize: "13px",
+    minHeight: "42px",
+    borderRadius: "9px",
+    backgroundColor: "#ffffff",
+  },
+
+  "& .MuiInputBase-input": {
+    fontSize: "13px",
+    padding: "8px 12px !important",
+    minWidth: "0 !important",
+    width: "100% !important",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+
+  "& .MuiInputLabel-root": {
+    fontSize: "13px",
+  },
+
+  "& .MuiInputLabel-shrink": {
+    fontSize: "12px",
+  },
+
+  "& .MuiFormHelperText-root": {
+    fontSize: "11px",
+  },
+
+  "& .MuiAutocomplete-inputRoot": {
+    padding: "3px 38px 3px 9px !important",
+    minHeight: "42px",
+    width: "100%",
+    boxSizing: "border-box",
+  },
+
+  "& .MuiAutocomplete-input": {
+    minWidth: "0 !important",
+    width: "100% !important",
+    padding: "5px 4px !important",
+  },
+
+  "& .MuiAutocomplete-endAdornment": {
+    right: "7px",
+  },
+
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#cbd5e1",
+  },
+
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#94a3b8",
+  },
+
+  "& .Mui-focused .MuiOutlinedInput-notchedOutline": {
+    borderColor: "#2563eb",
+    borderWidth: "1.5px",
+  },
+};
+
+/* =========================================================
+   SECTION TITLE
+   ========================================================= */
+
+const SectionTitle = ({ icon: Icon, title, count }) => (
+  <div className="mb-2 flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+        <Icon size={15} strokeWidth={2} />
+      </div>
+
+      <span className="text-[13px] font-semibold text-slate-700">
+        {title}
+      </span>
+    </div>
+
+    {count !== undefined && (
+      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-blue-600">
+        {count}
+      </span>
+    )}
+  </div>
+);
+
+/* =========================================================
+   SUMMARY LINE
+   ========================================================= */
+
+const SummaryLine = ({ label, value }) => (
+  <div className="flex items-center justify-between gap-3 border-b border-slate-100 py-1.5 last:border-0">
+    <span className="text-[11px] text-slate-500">{label}</span>
+
+    <span
+      className="max-w-[65%] truncate text-right text-[12px] font-semibold text-slate-700"
+      title={value || ""}
+    >
+      {value || "-"}
+    </span>
+  </div>
+);
+
+/* =========================================================
+   LEAD DETAIL
+   ========================================================= */
+
+const CompactLeadDetail = ({ label, value }) => (
+  <div className="min-w-0">
+    <div className="mb-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">
+      {label}
+    </div>
+
+    <div
+      className="truncate text-[12px] font-semibold text-slate-700"
+      title={value || ""}
+    >
+      {value || "-"}
+    </div>
+  </div>
+);
+
+/* =========================================================
+   MAIN COMPONENT
+   ========================================================= */
 
 export default function LeadTransferModal({
   isOpen,
@@ -232,360 +161,1281 @@ export default function LeadTransferModal({
   users = [],
   onTransfer,
   loadingUsers,
-  selectedLead
+  selectedLeads = [],
 }) {
-  const [selectedBranch, setSelectedBranch] = useState("");
-  const [selectedDesignation, setSelectedDesignation] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [reason, setReason] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedLeadObject, setSelectedLeadObject] = useState(null);
-  const [branchesList, setBranchesList] = useState([]);
-  const [designationList, setDesignationList] = useState([]);
-  const [userList, setUserList] = useState([]);
-  const fetchBranchDesignationApiURl = config.apiUrl + "/Reporting/GetBranchesDesignationsForLeadTransfer";
-  const trasnferLeadApiUrl = config.apiUrl + "/TempLead/TransferLeadToSelectedUser";
+  /*
+   * useGetSessionUser() returns:
+   * {
+   *   user: {...}
+   * }
+   */
+
   const { user: sessionUser } = useGetSessionUser();
 
-  const selectedUserDesignation =
-    selectedUser?.label?.match(/\(([^)]+)\)/)?.[1] || "";
+  /* =======================================================
+     STATE
+     ======================================================= */
 
-  // Reset when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setSelectedBranch("");
-      setSelectedDesignation("");
-      setSelectedUser(null);
-      setReason("");
+  const [branches, setBranches] = useState([]);
+  const [designations, setDesignations] = useState([]);
 
-      console.log("Selectd Lead in Modal:", selectedLead);
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedDesignation, setSelectedDesignation] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
-      setSelectedLeadObject(selectedLead);
+  const [reason, setReason] = useState("");
 
-      fetchBranchesandDesignations();
+  const [userList, setUserList] = useState([]);
 
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const [loadingDesignations, setLoadingDesignations] =
+    useState(false);
 
+  const [submitting, setSubmitting] = useState(false);
+
+  /* =======================================================
+     NORMALIZE SELECTED LEADS
+     ======================================================= */
+
+  /*
+   * Transfer ALWAYS works with an array.
+   *
+   * Single lead:
+   *
+   * [
+   *   {
+   *     selectionKey: "HOL_12345678",
+   *     lead: { ...DashboardRowDto }
+   *   }
+   * ]
+   *
+   * Bulk:
+   *
+   * [
+   *   {
+   *     selectionKey: "HOL_12345678",
+   *     lead: { ...DashboardRowDto }
+   *   },
+   *   {
+   *     selectionKey: "VIS_87654321",
+   *     lead: { ...DashboardRowDto }
+   *   }
+   * ]
+   *
+   * IMPORTANT:
+   * selectionKey remains outside DashboardRowDto.
+   */
+
+  const normalizedSelectedLeadEntries = useMemo(() => {
+    if (!Array.isArray(selectedLeads)) {
+      return [];
     }
-  }, [isOpen]);
 
-  const isSubmitDisabled = !selectedBranch || !selectedDesignation || !selectedUser || !reason;
+    return selectedLeads.filter(
+      (entry) =>
+        entry?.selectionKey &&
+        entry?.lead
+    );
+  }, [selectedLeads]);
+
+  /* =======================================================
+     ACTUAL LEAD OBJECTS
+     ======================================================= */
+
+  /*
+   * Existing UI works with the actual DashboardRowDto objects.
+   *
+   * selectionKey is NOT added to these objects.
+   */
+
+  const normalizedSelectedLeads = useMemo(() => {
+    return normalizedSelectedLeadEntries.map(
+      (entry) => entry.lead
+    );
+  }, [normalizedSelectedLeadEntries]);
+
+  /* =======================================================
+     TRANSFER MODE
+     ======================================================= */
+
+  const isBulkTransfer =
+    normalizedSelectedLeads.length > 1;
+
+  /* =======================================================
+     BRANCH / DESIGNATION HELPERS
+     ======================================================= */
+
+  const getBranchLabel = (option) =>
+    option?.branchName ??
+    option?.BranchName ??
+    option?.branch ??
+    option?.Branch ??
+    option?.name ??
+    option?.Name ??
+    "";
+
+  const getBranchId = (option) =>
+    option?.branchId ??
+    option?.BranchId ??
+    option?.id ??
+    option?.Id ??
+    0;
+
+  const getDesignationLabel = (option) =>
+    option?.designationName ||
+    option?.DesignationName ||
+    option?.roleName ||
+    option?.RoleName ||
+    option?.designation ||
+    option?.Designation ||
+    option?.name ||
+    option?.Name ||
+    "";
+
+  const getDesignationId = (option) =>
+    option?.designationId ||
+    option?.DesignationId ||
+    option?.roleId ||
+    option?.RoleId ||
+    option?.id ||
+    option?.Id ||
+    0;
+
+  const getUserLabel = (option) =>
+    `${option?.firstName || ""} ${option?.lastName || ""
+      }`.trim();
+
+  /* =======================================================
+     LEAD HELPERS
+     ======================================================= */
+
+  const getLeadName = (lead) => {
+    if (!lead) return "-";
+
+    const fName = lead?.fName || "";
+    const lName = lead?.lName || "";
+
+    const fullNameFromFNameLName =
+      `${fName} ${lName}`.trim();
+
+    const fullNameFromFirstLast =
+      `${lead?.firstName || ""} ${lead?.lastName || ""
+        }`.trim();
+
+    return (
+      lead?.leadName ||
+      lead?.name ||
+      lead?.customerName ||
+      fullNameFromFNameLName ||
+      fullNameFromFirstLast ||
+      "-"
+    );
+  };
+
+  const getCategoryName = (lead) =>
+    lead?.categoryName ||
+    lead?.category ||
+    lead?.verticalName ||
+    "-";
+
+  const getAssignedUser = (lead) =>
+    lead?.leadAssignedToName ||
+    lead?.assignedUserName ||
+    lead?.assignedTo ||
+    lead?.leadAssignedTo ||
+    "-";
+
+  const getLeadId = (lead) =>
+    lead?.categoryId
+ ||
+    lead?.leadId ||
+    lead?.id ||
+    "-";
+
+  /* =======================================================
+     FETCH BRANCHES + DESIGNATIONS
+     ======================================================= */
 
   const fetchBranchesandDesignations = async () => {
-    // Simulate API calls to fetch branches and designations
     try {
+      setLoadingBranches(true);
+      setLoadingDesignations(true);
 
-      console.log("API CALL → fetchBranches and Designations");
+      const url =
+        config.apiUrl +
+        "/Reporting/GetBranchesDesignationsForLeadTransfer";
 
-      const response = await axios.post(fetchBranchDesignationApiURl,
-        {
-        },
+      const response = await axios.post(
+        url,
+        {},
         {
           headers: {
             Authorization: `Bearer ${sessionUser.token}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      console.log("API RESPONSE → fetchBranches and Designations", response.data);
-      // setBranchesList(response.data.branches);
-      // setDesignationList(response.data.roles);
-      setBranchesList(response.data?.branches || []);
-      setDesignationList(response.data?.roles || []);
-
-      console.log("branch list", response.data.branches);
-
-
+      setBranches(response.data?.branches || []);
+      setDesignations(response.data?.roles || []);
     } catch (error) {
-      console.error("Error fetching branches and designations:", error);
+      console.error(
+        "Error fetching branches and designations:",
+        error
+      );
+
+      console.error(
+        "API response:",
+        error?.response?.data
+      );
+
+      setBranches([]);
+      setDesignations([]);
+    } finally {
+      setLoadingBranches(false);
+      setLoadingDesignations(false);
     }
   };
 
+  /* =======================================================
+     LOAD MASTER DATA WHEN MODAL OPENS
+     ======================================================= */
 
-  const selectedBranchChanged = (e) => {
-    const value = e.target.value;
-    setSelectedBranch(value);
+  useEffect(() => {
+    if (!isOpen || !sessionUser?.token) {
+      return;
+    }
+
+    setSelectedBranch(null);
+    setSelectedDesignation(null);
     setSelectedUser(null);
-  }
 
-  const selectedDesignationChanged = (e) => {
-    const value = e.target.value;
-    setSelectedDesignation(value);
-    setSelectedUser(null);
-  }
+    setUserList([]);
+    setReason("");
+    setSubmitting(false);
 
-  const fetchUsersList = async (branchValue, designationValue) => {
+    fetchBranchesandDesignations();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, sessionUser?.token]);
+
+  /* =======================================================
+     FETCH USERS FOR TRANSFER
+     ======================================================= */
+
+  /*
+   * Backend contract:
+   *
+   * POST /Reporting/GetUsersForLeadTransfer
+   *
+   * {
+   *   branchId,
+   *   roleId,
+   *   userId,
+   *   verticleName,
+   *   currentLeadOwnerUserId
+   * }
+   *
+   * For multiple selected leads, the existing backend contract
+   * uses the first lead only for determining the available
+   * transfer users.
+   *
+   * IMPORTANT:
+   * This does NOT affect the actual transfer payload.
+   * Actual transfer still sends ALL selected leads.
+   */
+
+  const fetchUsersList = async (
+    branchId,
+    designationId
+  ) => {
+    if (!sessionUser?.token) return;
+
+    if (!branchId || !designationId) {
+      setUserList([]);
+      return;
+    }
+
+    /*
+     * Since transfer is always an array, use the first
+     * selected lead only for the user lookup criteria.
+     *
+     * This is NOT a firstSelectedLead state/value.
+     * It is simply the first element of the array for
+     * the existing GetUsersForLeadTransfer API contract.
+     */
+
+    const leadForUserLookup =
+      normalizedSelectedLeads[0] || null;
+
     try {
-      debugger;
       const payload = {
-        branchId: selectedBranch,
-        roleId: selectedDesignation,
-        userId: sessionUser.user.Id,
-        verticleName: selectedLeadObject?.categoryName || null,
-        currentLeadOwnerUserId: selectedLeadObject?.leadAssignedTo || null
+        branchId: branchId,
+        roleId: designationId,
+
+        userId:
+          sessionUser?.user?.Id || 0,
+
+        verticleName:
+          leadForUserLookup?.categoryName || null,
+
+        currentLeadOwnerUserId:
+          leadForUserLookup?.leadAssignedTo || null,
       };
 
-      debugger;
-      console.log("API CALL → fetchUsersList", branchValue, designationValue);
-      const response = await axios.post(config.apiUrl + "/Reporting/GetUsersForLeadTransfer",
+      const response = await axios.post(
+        config.apiUrl +
+        "/Reporting/GetUsersForLeadTransfer",
         payload,
         {
           headers: {
             Authorization: `Bearer ${sessionUser.token}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-      console.log("API RESPONSE → fetchUsersList", response.data);
-      setUserList(response.data);
-    } catch (error) {
-      console.error("Error fetching users list:", error);
-    }
-  };
 
-  useEffect(() => {
-    if (selectedBranch && selectedDesignation) {
-      fetchUsersList(selectedBranch, selectedDesignation);
-    } else {
+      setUserList(
+        Array.isArray(response.data)
+          ? response.data
+          : []
+      );
+    } catch (error) {
+      console.error(
+        "Error loading users for transfer:",
+        error
+      );
+
+      console.error(
+        "User API response:",
+        error?.response?.data
+      );
+
       setUserList([]);
     }
-  }, [selectedBranch, selectedDesignation]);
-
-
-  const handleSubmit = async () => {
-    await onTransfer({
-      SelectedLead: selectedLeadObject,
-      NewAssignedUserID: selectedUser?.userId || null,
-      ReasonForTransfer: reason,
-      RequestedBy_UserID: sessionUser.user.Id
-    });
-
-    trasnferLedToSelectedUser();
-    debugger;
-    onClose();
-    setShowSuccess(true);
   };
 
+  /* =======================================================
+     BRANCH CHANGE
+     ======================================================= */
 
-  const trasnferLedToSelectedUser = async () => {
-  // Simulate API calls to fetch branches and designations
-  try
-{
-  debugger;
+  const handleBranchChange = (
+    event,
+    newValue
+  ) => {
+    setSelectedBranch(newValue);
+    setSelectedDesignation(null);
+    setSelectedUser(null);
+    setUserList([]);
+  };
 
-  console.log("API CALL → fTrasnfer LEad to selected user");
-  
-const transferPayload = {
-  SelectedLead: selectedLeadObject,
-  NewAssignedUserId: selectedUser?.userId || null,
-  ReasonForTransfer: reason,
-  RequestedBy_UserID: sessionUser.user.id,
-  OldAssignedUserID :"",
-  NotificationType :"",
-  Message :"",
-  LeadId :0
-};
+  /* =======================================================
+     DESIGNATION CHANGE
+     ======================================================= */
 
-console.log("Payload for transferring lead to selected user:", transferPayload);
+  const handleDesignationChange = async (
+    event,
+    newValue
+  ) => {
+    setSelectedDesignation(newValue);
+    setSelectedUser(null);
+    setUserList([]);
 
-  const response = await axios.post(trasnferLeadApiUrl,
-          transferPayload,
-          {
-            headers: {
-              Authorization: `Bearer ${sessionUser.token}`,
-                    "Content-Type": "application/json"
-            }
-          }
-        );
-          console.log("API RESPONSE → Lead  transferred to selected user completed. ", response.data);
-          setBranchesList(response.data.branches);
-          setDesignationList(response.data.roles);
+    const branchId =
+      getBranchId(selectedBranch);
 
-      
+    const designationId =
+      getDesignationId(newValue);
 
+    if (branchId && designationId) {
+      await fetchUsersList(
+        branchId,
+        designationId
+      );
+    }
+  };
 
-        }catch(error){
-          console.error("Error transferring lead to selected user:", error);
-        }
+  /* =======================================================
+     TRANSFER
+     ======================================================= */
+
+  const handleTransfer = async () => {
+    if (submitting) return;
+
+    if (!selectedUser?.userId) {
+      return;
+    }
+
+    if (
+      normalizedSelectedLeadEntries.length === 0
+    ) {
+      return;
+    }
+
+    if (!sessionUser?.token) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      /*
+       * IMPORTANT:
+       *
+       * SelectedLeads is ALWAYS an array.
+       *
+       * Single lead:
+       * [
+       *   { selectionKey, lead }
+       * ]
+       *
+       * Bulk:
+       * [
+       *   { selectionKey, lead },
+       *   { selectionKey, lead }
+       * ]
+       */
+
+      const payload = {
+        SelectedLeads:
+          normalizedSelectedLeadEntries,
+
+        SelectedLead: null,
+
+        NewAssignedUserID:
+          selectedUser.userId,
+
+        ReasonForTransfer:
+          reason,
+
+        RequestedBy_UserID:
+          sessionUser?.user?.userId,
+
+        OldAssignedUserID: "",
+        NotificationType: "",
+        Message: "",
+        LeadId: 0,
       };
 
+      console.log(
+        "TRANSFER PAYLOAD:",
+        payload
+      );
+
+      const response = await axios.post(
+        config.apiUrl +
+        "/TempLead/TransferLeadToSelectedUserService",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${sessionUser.token}`,
+            "Content-Type":
+              "application/json",
+          },
+        }
+      );
+
+      /* =====================================================
+         RETURN SUCCESS TO PARENT
+         ===================================================== */
+
+      const transferredLeadIds =
+        normalizedSelectedLeads
+          .map(
+            (lead) =>
+              lead?.leadID ||
+              lead?.leadId ||
+              lead?.id
+          )
+          .filter(Boolean);
+
+
+      console.log("Tranfer Result:", response);
+
+      // if (onTransfer) {
+      //   await onTransfer({
+      //     leadIds:
+      //       transferredLeadIds,
+
+      //     response:
+      //       response.data,
+      //   });
+      // }
+
+      if (onTransfer) {
+        await onTransfer(response.data);
+      }
+
+      onClose();
+    } catch (error) {
+      console.error(
+        "Lead transfer failed:",
+        error
+      );
+
+      console.error(
+        "Transfer API response:",
+        error?.response?.data
+      );
+
+      /*
+       * Do NOT close modal on failure.
+       * User can retry.
+       */
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /* =======================================================
+     CAN TRANSFER
+     ======================================================= */
+
+  const canTransfer =
+    !submitting &&
+    normalizedSelectedLeads.length > 0 &&
+    !!selectedUser;
+
+  /* =======================================================
+     RENDER
+     ======================================================= */
 
   return (
-    <>
-      <Dialog open={isOpen} onClose={onClose} fullWidth maxWidth="md">
-        <DialogTitle sx={{ pr: 5 }}>
-          Please provide transfer details
-          <IconButton
+    <Dialog
+      open={isOpen}
+      onClose={
+        submitting
+          ? undefined
+          : onClose
+      }
+      fullWidth
+      maxWidth="lg"
+      scroll="paper"
+      PaperProps={{
+        sx: {
+          width: "100%",
+          borderRadius: "14px",
+          overflow: "hidden",
+          boxShadow:
+            "0 24px 70px rgba(15, 23, 42, 0.18)",
+
+          margin: {
+            xs: "8px",
+            sm: "16px",
+          },
+
+          maxHeight:
+            "calc(100vh - 32px)",
+
+          "@media (max-height: 700px)": {
+            maxHeight:
+              "calc(100vh - 16px)",
+          },
+
+          "@media (max-width: 600px)": {
+            maxHeight:
+              "calc(100vh - 16px)",
+            margin: "8px",
+          },
+        },
+      }}
+    >
+      {/* =====================================================
+          HEADER
+          ===================================================== */}
+
+      <div className="shrink-0 border-b border-blue-100 bg-white px-5 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <Send
+                size={18}
+                strokeWidth={2}
+              />
+            </div>
+
+            <div className="min-w-0">
+              <h2 className="truncate text-[16px] font-bold text-slate-800">
+                Transfer Lead
+                {isBulkTransfer
+                  ? "s"
+                  : ""}
+              </h2>
+
+              <p className="mt-0.5 text-[11px] text-slate-500">
+                {isBulkTransfer
+                  ? `Transfer ${normalizedSelectedLeads.length} selected leads`
+                  : "Transfer the selected lead to another user"}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
             onClick={onClose}
-            sx={{ position: "absolute", right: 8, top: 8 }}
+            disabled={submitting}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-blue-50 hover:text-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
+            <X size={18} />
+          </button>
+        </div>
+      </div>
 
-        <DialogContent>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Please ensure correct details before submitting.
-          </Alert>
+      {/* =====================================================
+          CONTENT
+          ===================================================== */}
 
-          {/* Lead Details */}
-          <Box sx={{ mb: 3, p: 2, border: "1px solid #e5e7eb", borderRadius: 2 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Lead Details
-            </Typography>
-            <Typography>
-              <strong>Lead ID:</strong> {selectedLeadObject?.leadID || "—"}
-            </Typography>
-            <Typography>
-              <strong>Customer:</strong> {selectedLeadObject?.fName + " " + selectedLeadObject?.lName || "—"}
-            </Typography>
-            <Typography>
-              <strong>Current Owner:</strong>{" "}
-              {selectedLeadObject?.assignedTo || "—"}
-            </Typography>
-            <Typography>
-              <strong>Category:</strong>{" "}
-              {selectedLeadObject?.categoryName || "—"}
-            </Typography>
-          </Box>
+      <DialogContent
+        sx={{
+          padding:
+            "16px 20px !important",
 
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                label="Branch"
-                // value={selectedBranch.id}
-                value={selectedBranch || ""}
-                onChange={selectedBranchChanged}
-              >
-                <MenuItem value="">
-                  <em>Select Branch</em>
-                </MenuItem>
-                {branchesList?.map((b) => (
-                  <MenuItem key={b.id} value={b.id}>
-                    {b.branchName}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+          backgroundColor:
+            "#f8fafc",
 
-            <Grid item xs={12}>
-              <TextField
-                select
-                fullWidth
-                size="small"
-                label="Designation"
-                disabled={!selectedBranch}
-                value={selectedDesignation}
-                onChange={selectedDesignationChanged}
-              >
-                {designationList?.map((d) => (
-                  <MenuItem key={d.id} value={d.id}>
-                    {d.roleName}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+          overflowY: "auto",
+          overflowX: "hidden",
 
-            {/* <Grid item xs={12}>
-              <Autocomplete
-                loading={loadingUsers}
-                disabled={!selectedBranch || !selectedDesignation}
-                options={userList}
-                value={selectedUser}
-                onChange={(e, val) => setSelectedUser(val)}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Assign To User"
-                    size="small"
-                  />
+          scrollbarWidth: "thin",
+
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor:
+              "#cbd5e1",
+            borderRadius: "10px",
+          },
+
+          "&::-webkit-scrollbar-track": {
+            backgroundColor:
+              "transparent",
+          },
+
+          "@media (max-width: 600px)": {
+            padding:
+              "12px !important",
+          },
+        }}
+      >
+        {/* ===================================================
+            SELECTED LEADS
+            =================================================== */}
+
+        <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3">
+          <SectionTitle
+            icon={Users}
+            title={
+              isBulkTransfer
+                ? "Selected Leads"
+                : "Selected Lead"
+            }
+            count={
+              normalizedSelectedLeads.length
+            }
+          />
+
+          {normalizedSelectedLeads.length ===
+            0 ? (
+            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50 px-3 py-3 text-center text-[12px] text-slate-500">
+              No lead selected.
+            </div>
+          ) : isBulkTransfer ? (
+            <div
+              className="max-h-[175px] overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin"
+              style={{
+                scrollbarWidth: "thin",
+              }}
+            >
+              <div className="flex flex-wrap gap-2">
+                {normalizedSelectedLeads.map(
+                  (lead, index) => (
+                    <div
+                      key={
+                        normalizedSelectedLeadEntries[
+                          index
+                        ]?.selectionKey ||
+                        `lead-${index}`
+                      }
+                      className="min-w-[230px] max-w-[320px] flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                    >
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span
+                          className="truncate text-[12px] font-bold text-slate-800"
+                          title={getLeadName(
+                            lead
+                          )}
+                        >
+                          {getLeadName(
+                            lead
+                          )}
+                        </span>
+
+                        <span className="shrink-0 rounded-md bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
+                          #{getLeadId(lead)}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-x-3">
+                        <CompactLeadDetail
+                          label="Category"
+                          value={getCategoryName(
+                            lead
+                          )}
+                        />
+
+                        <CompactLeadDetail
+                          label="Assigned To"
+                          value={getAssignedUser(
+                            lead
+                          )}
+                        />
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-5 gap-y-2 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2.5 md:grid-cols-4">
+              <CompactLeadDetail
+                label="Lead"
+                value={getLeadName(
+                  normalizedSelectedLeads[0]
                 )}
               />
-            </Grid> */}
-            <Grid item xs={12}>
-              <Autocomplete
-                loading={loadingUsers}
-                disabled={!selectedBranch || !selectedDesignation}
-                options={userList}
-                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`} // display full name
-                value={selectedUser}
-                onChange={(e, val) => setSelectedUser(val)}
-                isOptionEqualToValue={(option, value) => option.userId === value.userId} // important for selection
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Assign To User"
-                    size="small"
-                  />
+
+              <CompactLeadDetail
+                label="Lead ID"
+                value={getLeadId(
+                  normalizedSelectedLeads[0]
                 )}
               />
-            </Grid>
 
-            <Grid item xs={12}>
-              <TextField
-                label="Transfer Reason"
-                multiline
-                minRows={3}
-                fullWidth
-                disabled={!selectedBranch || !selectedDesignation || !selectedUser}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
+              <CompactLeadDetail
+                label="Category"
+                value={getCategoryName(
+                  normalizedSelectedLeads[0]
+                )}
               />
-            </Grid>
 
-            {/* Selected User Details */}
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  p: 2,
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 2
+              <CompactLeadDetail
+                label="Assigned To"
+                value={getAssignedUser(
+                  normalizedSelectedLeads[0]
+                )}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* ===================================================
+            TRANSFER TO
+            =================================================== */}
+
+        <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3">
+          <SectionTitle
+            icon={UserRound}
+            title="Transfer To"
+          />
+
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            {/* =================================================
+                BRANCH
+                ================================================= */}
+
+            <div className="min-w-0">
+              <Autocomplete
+                fullWidth
+                size="small"
+                options={branches}
+                value={selectedBranch}
+                loading={loadingBranches}
+                onChange={
+                  handleBranchChange
+                }
+                getOptionLabel={
+                  getBranchLabel
+                }
+                isOptionEqualToValue={(
+                  option,
+                  value
+                ) =>
+                  getBranchId(option) ===
+                  getBranchId(value)
+                }
+                ListboxProps={{
+                  style: {
+                    maxHeight: 260,
+                  },
                 }}
-              >
-                <Typography variant="subtitle2" color="text.secondary">
-                  Selected User Details
-                </Typography>
-                <Typography>
-                  <strong>Branch:</strong> {selectedBranch || "—"}
-                </Typography>
-                <Typography>
-                  <strong>Designation:</strong>{" "}
-                  {selectedDesignation || "—"}
-                </Typography>
-                <Typography>
-                  <strong>User:</strong> {selectedUser?.firstName || "—"}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </DialogContent>
+                renderOption={(
+                  props,
+                  option
+                ) => (
+                  <li
+                    {...props}
+                    style={{
+                      fontSize: "13px",
+                      padding:
+                        "9px 12px",
+                      whiteSpace:
+                        "normal",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {getBranchLabel(
+                      option
+                    )}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Branch"
+                    placeholder="Select branch"
+                    sx={compactFieldSx}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingBranches && (
+                            <CircularProgress
+                              size={16}
+                              sx={{
+                                color:
+                                  "#2563eb",
+                              }}
+                            />
+                          )}
 
-        <Divider />
+                          {
+                            params
+                              .InputProps
+                              .endAdornment
+                          }
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </div>
 
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
+            {/* =================================================
+                DESIGNATION
+                ================================================= */}
+
+            <div className="min-w-0">
+              <Autocomplete
+                fullWidth
+                size="small"
+                options={
+                  designations
+                }
+                value={
+                  selectedDesignation
+                }
+                loading={
+                  loadingDesignations
+                }
+                disabled={
+                  !selectedBranch
+                }
+                onChange={
+                  handleDesignationChange
+                }
+                getOptionLabel={
+                  getDesignationLabel
+                }
+                isOptionEqualToValue={(
+                  option,
+                  value
+                ) =>
+                  getDesignationId(
+                    option
+                  ) ===
+                  getDesignationId(
+                    value
+                  )
+                }
+                ListboxProps={{
+                  style: {
+                    maxHeight: 260,
+                  },
+                }}
+                renderOption={(
+                  props,
+                  option
+                ) => (
+                  <li
+                    {...props}
+                    style={{
+                      fontSize: "13px",
+                      padding:
+                        "9px 12px",
+                      whiteSpace:
+                        "normal",
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {getDesignationLabel(
+                      option
+                    )}
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Designation"
+                    placeholder="Select designation"
+                    sx={compactFieldSx}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingDesignations && (
+                            <CircularProgress
+                              size={16}
+                              sx={{
+                                color:
+                                  "#2563eb",
+                              }}
+                            />
+                          )}
+
+                          {
+                            params
+                              .InputProps
+                              .endAdornment
+                          }
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </div>
+
+            {/* =================================================
+                USER
+                ================================================= */}
+
+            <div className="min-w-0">
+              <Autocomplete
+                fullWidth
+                size="small"
+                options={
+                  userList || []
+                }
+                value={selectedUser}
+                loading={
+                  loadingUsers
+                }
+                disabled={
+                  !selectedBranch ||
+                  !selectedDesignation ||
+                  loadingUsers
+                }
+                onChange={(
+                  event,
+                  newValue
+                ) =>
+                  setSelectedUser(
+                    newValue
+                  )
+                }
+                getOptionLabel={
+                  getUserLabel
+                }
+                isOptionEqualToValue={(
+                  option,
+                  value
+                ) =>
+                  option?.userId ===
+                  value?.userId
+                }
+                ListboxProps={{
+                  style: {
+                    maxHeight: 280,
+                  },
+                }}
+                renderOption={(
+                  props,
+                  option
+                ) => (
+                  <li
+                    {...props}
+                    style={{
+                      padding:
+                        "8px 12px",
+                      whiteSpace:
+                        "normal",
+                    }}
+                  >
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-semibold text-slate-700">
+                        {getUserLabel(
+                          option
+                        )}
+                      </div>
+
+                      {(
+                        option?.designationName ||
+                        option?.branchName
+                      ) && (
+                          <div className="mt-0.5 truncate text-[11px] text-slate-400">
+                            {[
+                              option?.designationName,
+                              option?.branchName,
+                            ]
+                              .filter(Boolean)
+                              .join(
+                                " • "
+                              )}
+                          </div>
+                        )}
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Assign To User"
+                    placeholder="Select user"
+                    sx={compactFieldSx}
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {loadingUsers && (
+                            <CircularProgress
+                              size={16}
+                              sx={{
+                                color:
+                                  "#2563eb",
+                              }}
+                            />
+                          )}
+
+                          {
+                            params
+                              .InputProps
+                              .endAdornment
+                          }
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ===================================================
+            REASON + SUMMARY
+            =================================================== */}
+
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-7">
+          <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-4">
+            <SectionTitle
+              icon={MessageSquareText}
+              title="Transfer Reason"
+            />
+
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              maxRows={3}
+              value={reason}
+              onChange={(e) =>
+                setReason(
+                  e.target.value
+                )
+              }
+              placeholder="Enter reason for transferring this lead..."
+              sx={{
+                ...compactFieldSx,
+
+                "& .MuiInputBase-root":
+                {
+                  fontSize:
+                    "13px",
+                  borderRadius:
+                    "9px",
+                  alignItems:
+                    "flex-start",
+                },
+
+                "& .MuiInputBase-input":
+                {
+                  lineHeight:
+                    1.45,
+                },
+              }}
+            />
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-3 md:col-span-3">
+            <SectionTitle
+              icon={ArrowRight}
+              title="Transfer Summary"
+            />
+
+            <SummaryLine
+              label="Leads"
+              value={`${normalizedSelectedLeads.length} selected`}
+            />
+
+            <SummaryLine
+              label="Category"
+              value={
+                isBulkTransfer
+                  ? "Multiple categories possible"
+                  : getCategoryName(
+                    normalizedSelectedLeads[0]
+                  )
+              }
+            />
+
+            <SummaryLine
+              label="New Assignee"
+              value={
+                selectedUser
+                  ? getUserLabel(
+                    selectedUser
+                  )
+                  : "Not selected"
+              }
+            />
+          </div>
+        </div>
+      </DialogContent>
+
+      {/* =====================================================
+          FOOTER
+          ===================================================== */}
+
+      <div className="shrink-0 flex items-center justify-between gap-3 border-t border-slate-200 bg-white px-5 py-3">
+        <div className="hidden min-w-0 items-center gap-2 sm:flex">
+          {selectedUser ? (
+            <>
+              <CheckCircle2
+                size={15}
+                className="shrink-0 text-blue-500"
+              />
+
+              <span className="truncate text-[11px] text-slate-500">
+                Ready to transfer to{" "}
+                <span className="font-semibold text-slate-700">
+                  {getUserLabel(
+                    selectedUser
+                  )}
+                </span>
+              </span>
+            </>
+          ) : (
+            <>
+              <Users
+                size={15}
+                className="shrink-0 text-slate-400"
+              />
+
+              <span className="text-[11px] text-slate-400">
+                Select a user to continue
+              </span>
+            </>
+          )}
+        </div>
+
+        <div className="ml-auto flex items-center gap-2">
+          {/* CANCEL */}
+
+          <Button
+            variant="outlined"
+            onClick={onClose}
+            disabled={submitting}
+            startIcon={
+              <X size={15} />
+            }
+            sx={{
+              textTransform:
+                "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: 600,
+              minHeight: "36px",
+              px: 2,
+              borderColor:
+                "#cbd5e1",
+              color: "#475569",
+
+              "&:hover": {
+                borderColor:
+                  "#93c5fd",
+                backgroundColor:
+                  "#eff6ff",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+
+          {/* TRANSFER */}
+
           <Button
             variant="contained"
-            onClick={handleSubmit}
-            disabled={isSubmitDisabled}
-          >
-            Submit for Approval
-          </Button>
-        </DialogActions>
-      </Dialog>
+            onClick={
+              handleTransfer
+            }
+            disabled={
+              !canTransfer
+            }
+            startIcon={
+              submitting ? (
+                <CircularProgress
+                  size={15}
+                  color="inherit"
+                />
+              ) : (
+                <Send size={15} />
+              )
+            }
+            sx={{
+              textTransform:
+                "none",
+              borderRadius: "8px",
+              fontSize: "12px",
+              fontWeight: 700,
+              minHeight: "36px",
+              px: 2.2,
+              backgroundColor:
+                "#2563eb",
 
-      <Snackbar
-        open={showSuccess}
-        autoHideDuration={3000}
-        onClose={() => setShowSuccess(false)}
-      >
-        <Alert severity="success" variant="filled">
-          Lead transfer request submitted successfully!
-        </Alert>
-      </Snackbar>
-    </>
+              "&:hover": {
+                backgroundColor:
+                  "#1d4ed8",
+              },
+
+              "&.Mui-disabled": {
+                backgroundColor:
+                  "#e2e8f0",
+                color:
+                  "#94a3b8",
+              },
+            }}
+          >
+            {submitting
+              ? "Transferring..."
+              : isBulkTransfer
+                ? `Transfer ${normalizedSelectedLeads.length} Leads`
+                : "Transfer Lead"}
+          </Button>
+        </div>
+      </div>
+    </Dialog>
   );
 }
