@@ -43,15 +43,16 @@ import ContextWrapper from "./RBACSystemScreens/ContextWrapper";
 import MasterSettings from './MasterSettingsBoard';
 import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManager';
 import AnalyticsBoardWrapper from './MyTeamAnalyticsBoard/AnalyticsBoardWrapper';
+import NotificationConfiguration from './NotificationConfigurationsScreens/NotificationConfiguration';
 
 
 export default function App() {
 
   const {
-  user,
-  setUser,
-  menu,
-} = useGetSessionUser();
+    user,
+    setUser,
+    menu,
+  } = useGetSessionUser();
 
 
   /**
@@ -309,21 +310,21 @@ export default function App() {
                   />
 
                   <Route
-  path="/access-denied"
-  element={
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold text-gray-800">
-          Access Denied
-        </h1>
+                    path="/access-denied"
+                    element={
+                      <div className="flex min-h-screen items-center justify-center">
+                        <div className="text-center">
+                          <h1 className="text-2xl font-semibold text-gray-800">
+                            Access Denied
+                          </h1>
 
-        <p className="mt-2 text-gray-500">
-          You do not have access to any menu in this context.
-        </p>
-      </div>
-    </div>
-  }
-/>
+                          <p className="mt-2 text-gray-500">
+                            You do not have access to any menu in this context.
+                          </p>
+                        </div>
+                      </div>
+                    }
+                  />
 
 
                   {/* =========================================
@@ -461,6 +462,16 @@ export default function App() {
                     path='/RBAC/RoleMenuMappings'
                     element={<RoleMenuMapping />}
                   />
+
+                    {/* =========================================
+                      Notification Configuration
+                      ========================================= */}
+
+                  <Route
+                    path='/NotificationConfiguration'
+                    element={<NotificationConfiguration />}
+                  />
+
 
 
                   {/* =========================================
