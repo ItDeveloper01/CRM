@@ -49,7 +49,8 @@ export const ApiEndpoints = {
 export const MESSAGE_TYPES = {
  WARNING: "WARNING",
  ERROR: "ERROR",
-  INFO:"INFO"
+  INFO:"INFO",
+  QUESTION: "QUESTION",
 };
 // constants.js
 export const MESSAGE_TYPES_DETAILS = {
@@ -68,6 +69,12 @@ export const MESSAGE_TYPES_DETAILS = {
     label: "Information",
     color: "bg-blue-500 hover:bg-blue-600",
   },
+  QUESTION: {
+    icon: "❓",
+    label: "Question",
+    yesButtonColor: "bg-green-600 hover:bg-green-700",
+    noButtonColor: "bg-gray-600 hover:bg-red-500",
+  }
 };
 
 export const TIME_OPTIONS = {

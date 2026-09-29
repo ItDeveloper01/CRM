@@ -13,83 +13,17 @@ import { useNavigate } from "react-router-dom";
 
 const ContextContext = createContext(null);
 
-const KNOWN_APP_ROUTES = new Set(
-  [
-    "/dashboard",
-    "/leads",
-    "/newcustomer",
-    "/leadsgeneration",
-    "/leadsanalytics",
-    "/teamstatistics/leadsanalytics",
-    "/appreciation",
-    "/teamstatistics/manageranalytics",
-    "/teamstatistics/managerindividualanalytics",
-    "/teamstatistics/manageranalyticboard",
-    "/businessanalysis",
-    "/mastersettings",
-    "/operations/itinerarymanager",
-    "/dashboardv2",
-    "/rbac/rolemenumappings",
-    "/users",
-    "/smtpsettings",
-    "/users/create",
-    "/profiledisplay",
-  ]
-);
-
-const normalizeRoute = (route) => {
-  if (
-    typeof route !== "string" ||
-    !route.trim()
-  ) {
-    return null;
-  }
-
-  const trimmed = route.trim();
-  const withSlash = trimmed.startsWith("/")
-    ? trimmed
-    : `/${trimmed}`;
-
-  return withSlash.length > 1
-    ? withSlash.replace(/\/+$/, "")
-    : withSlash;
-};
-
-const normalizeNullableId = (value) => {
-  const numberValue = Number(value);
-
-  return Number.isFinite(numberValue) &&
-    numberValue > 0
-    ? numberValue
-    : null;
-};
-
-const isKnownRoute = (route) => {
-  const normalizedRoute =
-    normalizeRoute(route);
-
-  return (
-    !!normalizedRoute &&
-    KNOWN_APP_ROUTES.has(
-      normalizedRoute.toLowerCase()
-    )
-  );
-};
-
 export const ContextProvider = ({ children }) => {
-  console.log("🔥 ContextProvider RENDER");
+  console.log("==================================================");
+  console.log("🔥 [CONTEXT] ContextProvider RENDER");
+  console.log("==================================================");
 
   const navigate = useNavigate();
 
-  const { setMenu, user } = useGetSessionUser();
-
-  const sessionUserId =
-    user?.user?.userId ??
-    user?.user?.id ??
-    null;
+  const { setMenu } = useGetSessionUser();
 
   // =========================================================
-  // Keep latest setMenu without making callbacks unstable
+  // Keep latest setMenu without recreating callbacks
   // =========================================================
 
   const setMenuRef = useRef(setMenu);
@@ -99,40 +33,34 @@ export const ContextProvider = ({ children }) => {
   }, [setMenu]);
 
   // =========================================================
-  // Provider lifecycle debugging
+  // Provider lifecycle
   // =========================================================
 
   useEffect(() => {
-    console.log("🔥 ContextProvider MOUNTED");
+    console.log("🔥 [CONTEXT] ContextProvider MOUNTED");
 
     return () => {
-      console.log("💥 ContextProvider UNMOUNTED");
+      console.log("💥 [CONTEXT] ContextProvider UNMOUNTED");
     };
   }, []);
 
   // =========================================================
-  // State
+  // STATE
   // =========================================================
 
   const [availableContexts, setAvailableContexts] = useState([]);
   const [currentContext, setCurrentContext] = useState(null);
   const [contextLoading, setContextLoading] = useState(false);
 
-  useEffect(() => {
-    setAvailableContexts([]);
-    setCurrentContext(null);
-
-    if (!sessionUserId) {
-      localStorage.removeItem("currentContext");
-    }
-  }, [sessionUserId]);
-
   // =========================================================
-  // Load all contexts available to logged-in user
+  // 1. LOAD USER CONTEXTS
   // =========================================================
 
   const loadUserContexts = useCallback(async () => {
-    console.log("📥 loadUserContexts START");
+    console.log("");
+    console.log("--------------------------------------------------");
+    console.log("📥 [CONTEXT-1] loadUserContexts START");
+    console.log("--------------------------------------------------");
 
     try {
       setContextLoading(true);
@@ -141,66 +69,135 @@ export const ContextProvider = ({ children }) => {
         localStorage.getItem("loggedInUser") || "{}"
       );
 
-      console.log("loggedInUser:", loggedInUser);
+      console.log(
+        "📦 [CONTEXT-1] loggedInUser:",
+        loggedInUser
+      );
 
       const token = loggedInUser?.token;
-      const userId =
-        loggedInUser?.user?.userId ??
-        loggedInUser?.user?.UserId;
+      const userId = loggedInUser?.user?.userId;
 
-      console.log("UserId:", userId);
+      console.log(
+        "👤 [CONTEXT-1] UserId:",
+        userId
+      );
 
-      const response = await axios.get(
-        config.apiUrl + "/UserContext/GetUserContextMappings",
+      if (!userId) {
+        console.error(
+          "❌ [CONTEXT-1] UserId NOT FOUND in loggedInUser"
+        );
+
+        throw new Error(
+          "Logged-in user ID not found."
+        );
+      }
+
+      const url =
+        config.apiUrl +
+        "/UserContext/GetUserContextMappings";
+
+      console.log(
+        "🌐 [CONTEXT-1] Calling API:",
+        url
+      );
+
+      console.log(
+        "📤 [CONTEXT-1] Query Params:",
         {
-          params: {
-            userId: userId,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          userId,
         }
       );
 
-      const contexts = response.data || [];
+      const response = await axios.get(
+        url,
+        {
+          params: {
+            userId,
+          },
 
-      console.log("User Contexts:", contexts);
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+              }
+            : {},
+        }
+      );
+
+      console.log(
+        "📥 [CONTEXT-1] API Response:",
+        response
+      );
+
+      const contexts = Array.isArray(response?.data)
+        ? response.data
+        : [];
+
+      console.log(
+        "📋 [CONTEXT-1] Contexts returned:",
+        contexts
+      );
+
+      console.log(
+        "🔢 [CONTEXT-1] Context count:",
+        contexts.length
+      );
+
+      contexts.forEach((context, index) => {
+        console.log(
+          `   Context ${index + 1}:`,
+          context
+        );
+      });
 
       setAvailableContexts(contexts);
 
       console.log(
-        "📥 loadUserContexts COMPLETE"
+        "✅ [CONTEXT-1] availableContexts UPDATED"
       );
 
       return contexts;
+
     } catch (error) {
       console.error(
-        "Error loading user contexts:",
+        "❌ [CONTEXT-1] loadUserContexts ERROR:",
         error
+      );
+
+      console.error(
+        "❌ [CONTEXT-1] Error Response:",
+        error?.response?.data
       );
 
       setAvailableContexts([]);
 
       throw error;
+
     } finally {
       setContextLoading(false);
 
       console.log(
-        "📥 loadUserContexts FINALLY"
+        "🏁 [CONTEXT-1] loadUserContexts FINISHED"
       );
     }
   }, []);
 
   // =========================================================
-  // Load menus for a specific context
+  // 2. LOAD MENUS FOR SELECTED CONTEXT
   // =========================================================
 
   const loadMenusForContext = useCallback(
     async (context) => {
+      console.log("");
+      console.log("--------------------------------------------------");
+      console.log("📋 [CONTEXT-2] loadMenusForContext START");
+      console.log("--------------------------------------------------");
+
       if (!context) {
-        console.warn(
-          "loadMenusForContext called without context."
+        console.error(
+          "❌ [CONTEXT-2] Context is NULL/undefined"
         );
+
+        setMenuRef.current?.([]);
 
         localStorage.setItem(
           "menu",
@@ -211,7 +208,7 @@ export const ContextProvider = ({ children }) => {
       }
 
       console.log(
-        "📋 loadMenusForContext START:",
+        "🎯 [CONTEXT-2] Selected Context:",
         context
       );
 
@@ -224,27 +221,43 @@ export const ContextProvider = ({ children }) => {
 
         const token = loggedInUser?.token;
 
+        // -----------------------------------------------------
+        // Build API request
+        // -----------------------------------------------------
+
         const request = {
           roleId: context.roleId,
-          contextTypeId: context.contextTypeId,
+
+          contextTypeId:
+            context.contextTypeId,
+
           departmentId:
-            normalizeNullableId(
-              context.departmentId
-            ),
+            context.departmentId ?? null,
+
           verticleId:
-            normalizeNullableId(
-              context.verticleId
-            ),
+            context.verticleId ?? null,
         };
 
         console.log(
-          "Loading menus for context:",
+          "📤 [CONTEXT-2] GetMenusForContext REQUEST:",
           request
         );
 
-        const response = await axios.post(
+        const url =
           config.apiUrl +
-            "/RolePermission/GetMenusForContext",
+          "/RolePermission/GetMenusForContext";
+
+        console.log(
+          "🌐 [CONTEXT-2] Calling API:",
+          url
+        );
+
+        // -----------------------------------------------------
+        // API call
+        // -----------------------------------------------------
+
+        const response = await axios.post(
+          url,
           request,
           {
             headers: token
@@ -256,13 +269,13 @@ export const ContextProvider = ({ children }) => {
         );
 
         console.log(
-          "📋 GetMenusForContext RESPONSE:",
+          "📥 [CONTEXT-2] RAW API RESPONSE:",
           response?.data
         );
 
-        // =====================================================
-        // Normalize response
-        // =====================================================
+        // -----------------------------------------------------
+        // Normalize API response
+        // -----------------------------------------------------
 
         const responseData = response?.data;
 
@@ -270,32 +283,57 @@ export const ContextProvider = ({ children }) => {
 
         if (Array.isArray(responseData)) {
           menus = responseData;
+
+          console.log(
+            "📌 [CONTEXT-2] Response format: ARRAY"
+          );
+
         } else if (
           Array.isArray(responseData?.data)
         ) {
           menus = responseData.data;
+
+          console.log(
+            "📌 [CONTEXT-2] Response format: data[]"
+          );
+
         } else if (
           Array.isArray(responseData?.menus)
         ) {
           menus = responseData.menus;
+
+          console.log(
+            "📌 [CONTEXT-2] Response format: menus[]"
+          );
+
         } else if (
           Array.isArray(responseData?.menu)
         ) {
           menus = responseData.menu;
+
+          console.log(
+            "📌 [CONTEXT-2] Response format: menu[]"
+          );
+
         } else if (
           Array.isArray(responseData?.result)
         ) {
           menus = responseData.result;
+
+          console.log(
+            "📌 [CONTEXT-2] Response format: result[]"
+          );
+
         } else {
           console.warn(
-            "Unexpected menu API response shape:",
+            "⚠️ [CONTEXT-2] Unknown API response format:",
             responseData
           );
         }
 
-        // =====================================================
-        // Keep valid menu objects
-        // =====================================================
+        // -----------------------------------------------------
+        // Keep only valid menu objects
+        // -----------------------------------------------------
 
         menus = menus.filter(
           (menu) =>
@@ -304,21 +342,58 @@ export const ContextProvider = ({ children }) => {
         );
 
         console.log(
-          "Normalized context menus:",
+          "📋 [CONTEXT-2] NORMALIZED MENUS:",
           menus
         );
 
-        // =====================================================
-        // Update global menu
-        //
+        console.log(
+          "🔢 [CONTEXT-2] Menu count:",
+          menus.length
+        );
+
+        menus.forEach((menu, index) => {
+          console.log(
+            `   Menu ${index + 1}:`,
+            {
+              id: menu.id ?? menu.Id,
+              name:
+                menu.menuName ??
+                menu.MenuName,
+              route:
+                menu.route ??
+                menu.Route,
+              parent:
+                menu.parent_MenuID ??
+                menu.Parent_MenuID,
+            }
+          );
+        });
+
+        // -----------------------------------------------------
         // IMPORTANT:
-        // Use ref so changing SessionContext.setMenu
-        // identity does not recreate this callback.
-        // =====================================================
+        // Update SessionContext menu
+        // Sidebar receives menu from SessionContext
+        // -----------------------------------------------------
+
+        console.log(
+          "🔄 [CONTEXT-2] Updating SessionContext menu..."
+        );
 
         if (setMenuRef.current) {
           setMenuRef.current(menus);
+
+          console.log(
+            "✅ [CONTEXT-2] SessionContext menu UPDATED"
+          );
+        } else {
+          console.error(
+            "❌ [CONTEXT-2] setMenuRef is unavailable"
+          );
         }
+
+        // -----------------------------------------------------
+        // Save menu locally
+        // -----------------------------------------------------
 
         localStorage.setItem(
           "menu",
@@ -326,14 +401,24 @@ export const ContextProvider = ({ children }) => {
         );
 
         console.log(
-          "📋 loadMenusForContext COMPLETE"
+          "💾 [CONTEXT-2] Menu saved to localStorage"
+        );
+
+        console.log(
+          "✅ [CONTEXT-2] loadMenusForContext COMPLETE"
         );
 
         return menus;
+
       } catch (error) {
         console.error(
-          "Error loading menus for context:",
+          "❌ [CONTEXT-2] loadMenusForContext ERROR:",
           error
+        );
+
+        console.error(
+          "❌ [CONTEXT-2] Error Response:",
+          error?.response?.data
         );
 
         if (setMenuRef.current) {
@@ -346,11 +431,12 @@ export const ContextProvider = ({ children }) => {
         );
 
         throw error;
+
       } finally {
         setContextLoading(false);
 
         console.log(
-          "📋 loadMenusForContext FINALLY"
+          "🏁 [CONTEXT-2] loadMenusForContext FINISHED"
         );
       }
     },
@@ -358,17 +444,26 @@ export const ContextProvider = ({ children }) => {
   );
 
   // =========================================================
-  // Select context
+  // 3. SELECT / SWITCH CONTEXT
   // =========================================================
 
   const selectContext = useCallback(
     async (context) => {
+      console.log("");
+      console.log("--------------------------------------------------");
+      console.log("🔄 [CONTEXT-3] selectContext START");
+      console.log("--------------------------------------------------");
+
       if (!context) {
+        console.error(
+          "❌ [CONTEXT-3] Cannot select empty context"
+        );
+
         return [];
       }
 
       console.log(
-        "Selecting context:",
+        "🎯 [CONTEXT-3] Context selected:",
         context
       );
 
@@ -379,8 +474,21 @@ export const ContextProvider = ({ children }) => {
         JSON.stringify(context)
       );
 
+      console.log(
+        "💾 [CONTEXT-3] currentContext saved"
+      );
+
       const menus =
         await loadMenusForContext(context);
+
+      console.log(
+        "📋 [CONTEXT-3] Menus loaded after context switch:",
+        menus
+      );
+
+      console.log(
+        "✅ [CONTEXT-3] selectContext COMPLETE"
+      );
 
       return menus;
     },
@@ -388,18 +496,33 @@ export const ContextProvider = ({ children }) => {
   );
 
   // =========================================================
-  // Restore previously selected context
+  // 4. RESTORE SAVED CONTEXT
   // =========================================================
 
   const restoreContext = useCallback(
     (contexts) => {
+      console.log("");
+      console.log("--------------------------------------------------");
+      console.log("🔎 [CONTEXT-4] restoreContext START");
+      console.log("--------------------------------------------------");
+
       if (
-        !contexts ||
+        !Array.isArray(contexts) ||
         contexts.length === 0
       ) {
+        console.warn(
+          "⚠️ [CONTEXT-4] No contexts available"
+        );
+
         setCurrentContext(null);
+
         return null;
       }
+
+      console.log(
+        "📋 [CONTEXT-4] Available contexts:",
+        contexts
+      );
 
       let savedContext = null;
 
@@ -409,9 +532,15 @@ export const ContextProvider = ({ children }) => {
             "currentContext"
           ) || "null"
         );
+
+        console.log(
+          "💾 [CONTEXT-4] Saved context:",
+          savedContext
+        );
+
       } catch (error) {
         console.warn(
-          "Invalid saved currentContext."
+          "⚠️ [CONTEXT-4] Invalid saved context"
         );
       }
 
@@ -425,21 +554,23 @@ export const ContextProvider = ({ children }) => {
             (context) =>
               context.userId ===
                 savedContext.userId &&
-              context.userId ===
-                sessionUserId &&
+
               context.roleId ===
                 savedContext.roleId &&
+
               context.contextTypeId ===
                 savedContext.contextTypeId &&
-              normalizeNullableId(context.departmentId) ===
-                normalizeNullableId(savedContext.departmentId) &&
-              normalizeNullableId(context.verticleId) ===
-                normalizeNullableId(savedContext.verticleId)
+
+              (context.departmentId ?? null) ===
+                (savedContext.departmentId ?? null) &&
+
+              (context.verticleId ?? null) ===
+                (savedContext.verticleId ?? null)
           );
 
         if (matchedContext) {
           console.log(
-            "Restored saved context:",
+            "✅ [CONTEXT-4] Saved context MATCHED:",
             matchedContext
           );
 
@@ -449,6 +580,10 @@ export const ContextProvider = ({ children }) => {
 
           return matchedContext;
         }
+
+        console.log(
+          "⚠️ [CONTEXT-4] Saved context no longer exists"
+        );
       }
 
       // -------------------------------------------------------
@@ -462,7 +597,7 @@ export const ContextProvider = ({ children }) => {
         ) || contexts[0];
 
       console.log(
-        "Selected default context:",
+        "⭐ [CONTEXT-4] Default context selected:",
         defaultContext
       );
 
@@ -477,19 +612,28 @@ export const ContextProvider = ({ children }) => {
         )
       );
 
+      console.log(
+        "💾 [CONTEXT-4] Default context saved"
+      );
+
       return defaultContext;
     },
-    [sessionUserId]
+    []
   );
 
   // =========================================================
-  // Navigate to valid menu
+  // 5. NAVIGATE TO FIRST VALID MENU
   // =========================================================
 
   const navigateToValidMenu = useCallback(
     (menus) => {
+      console.log("");
+      console.log("--------------------------------------------------");
+      console.log("🚦 [CONTEXT-5] navigateToValidMenu");
+      console.log("--------------------------------------------------");
+
       console.log(
-        "🚦 navigateToValidMenu:",
+        "📋 [CONTEXT-5] Menus received:",
         menus
       );
 
@@ -497,67 +641,85 @@ export const ContextProvider = ({ children }) => {
         !Array.isArray(menus) ||
         menus.length === 0
       ) {
+        console.warn(
+          "⚠️ [CONTEXT-5] No menus available"
+        );
+
+        console.log(
+          "➡️ [CONTEXT-5] Navigating to /access-denied"
+        );
+
         navigate(
           "/access-denied",
-          {
-            replace: true,
-          }
+          { replace: true }
         );
 
         return;
       }
 
-      const getRoute = (menu) => {
+      // -------------------------------------------------------
+      // IMPORTANT:
+      // First menu WITH a valid route wins.
+      // Dashboard has NO special priority.
+      // -------------------------------------------------------
+
+      let firstValidMenu = null;
+
+      for (const menu of menus) {
         const route =
           menu?.route ??
           menu?.Route;
 
-        return normalizeRoute(route);
-      };
+        if (
+          typeof route === "string" &&
+          route.trim() !== ""
+        ) {
+          firstValidMenu = {
+            menu,
+            route: route.trim(),
+          };
 
-      // -------------------------------------------------------
-      // First menu route
-      // -------------------------------------------------------
+          break;
+        }
+      }
 
-      const firstRoute = menus
-        .map(getRoute)
-        .find(Boolean);
+      console.log(
+        "🎯 [CONTEXT-5] First valid menu:",
+        firstValidMenu
+      );
 
-      if (
-        firstRoute &&
-        isKnownRoute(firstRoute)
-      ) {
+      if (firstValidMenu) {
         console.log(
-          "🚦 Navigating to:",
-          firstRoute
+          "➡️ [CONTEXT-5] Navigating to:",
+          firstValidMenu.route
         );
 
         navigate(
-          firstRoute,
-          {
-            replace: true,
-          }
+          firstValidMenu.route,
+          { replace: true }
         );
 
         return;
       }
 
-      // -------------------------------------------------------
-      // Nothing valid / page is not registered in React
-      // -------------------------------------------------------
+      console.warn(
+        "⚠️ [CONTEXT-5] Menus exist but none has a valid route"
+      );
+
+      console.log(
+        "➡️ [CONTEXT-5] Navigating to /access-denied"
+      );
 
       navigate(
         "/access-denied",
-        {
-          replace: true,
-        }
+        { replace: true }
       );
     },
     [navigate]
   );
 
   // =========================================================
-  // Context value
+  // CONTEXT PROVIDER VALUE
   // =========================================================
 
   const value = {
@@ -577,16 +739,14 @@ export const ContextProvider = ({ children }) => {
   };
 
   return (
-    <ContextContext.Provider
-      value={value}
-    >
+    <ContextContext.Provider value={value}>
       {children}
     </ContextContext.Provider>
   );
 };
 
 // =============================================================
-// Hook
+// HOOK
 // =============================================================
 
 export const useContextState = () => {
