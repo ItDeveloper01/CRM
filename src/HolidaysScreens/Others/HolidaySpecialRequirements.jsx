@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 
 import {
@@ -16,8 +17,6 @@ import {
     InputAdornment
 } from "@mui/material";
 
-import { alpha } from "@mui/material/styles";
-
 import SearchIcon from "@mui/icons-material/Search";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import RadioButtonUncheckedRoundedIcon from "@mui/icons-material/RadioButtonUncheckedRounded";
@@ -25,98 +24,220 @@ import InventoryRoundedIcon from "@mui/icons-material/InventoryRounded";
 import SearchOffRoundedIcon from "@mui/icons-material/SearchOffRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 
-export default function HolidaySpecialRequirements({
 
-    requirements = [],
-    selectedRequirementIds = [],
+/* =========================================================
+   SPECIAL REQUIREMENTS THEME
+   ---------------------------------------------------------
+   Change colors here only.
+   ========================================================= */
+
+const SPECIAL_REQUIREMENTS_THEME = {
+
+    primary: "#2563eb",
+    primaryDark: "#1d4ed8",
+
+    background: "#ffffff",
+    subtleBackground: "#f8fafc",
+    hoverBackground: "#f4f7fb",
+
+    border: "#e2e8f0",
+    borderLight: "#eef2f7",
+
+    text: "#334155",
+    textSecondary: "#64748b",
+    textMuted: "#94a3b8",
+
+    selectedCategoryBackground: "#eff6ff",
+    selectedCategoryBorder: "#bfdbfe",
+    selectedCategoryText: "#1d4ed8",
+
+    selectedRequirementBackground: "#f8fbff",
+    selectedRequirementBorder: "#93c5fd",
+
+    free: {
+        background: "#f0fdf4",
+        text: "#15803d"
+    },
+
+    chargeable: {
+        background: "#fff7ed",
+        text: "#c2410c"
+    }
+};
+
+
+/* =========================================================
+   FONT / TYPOGRAPHY
+   ---------------------------------------------------------
+   Change sizes and weights here only.
+   ========================================================= */
+
+const SPECIAL_REQUIREMENTS_FONTS = {
+
+    header: {
+        size: 17,
+        weight: 700
+    },
+
+    search: {
+        size: 12.5
+    },
+
+    category: {
+        size: 13,
+        weight: 600
+    },
+
+    categoryCount: {
+        size: 10.5,
+        weight: 500
+    },
+
+    requirement: {
+        size: 13,
+        weight: 500,
+        selectedWeight: 600
+    },
+
+    requirementSubtext: {
+        size: 10,
+        weight: 400
+    },
+
+    badge: {
+        size: 9.5,
+        weight: 700
+    },
+
+    button: {
+        size: 11.5,
+        weight: 600
+    },
+
+    emptyState: {
+        size: 12
+    },
+
+    footer: {
+        size: 11.5,
+        weight: 600
+    }
+};
+
+
+/* =========================================================
+   LAYOUT CONSTANTS
+   ========================================================= */
+
+const TWO_COLUMN_THRESHOLD = 6;
+
+const EMPTY_ARRAY = [];
+
+
+/* =========================================================
+   COMPONENT
+   ========================================================= */
+
+const HolidaySpecialRequirements = ({
+    requirements = EMPTY_ARRAY,
+    selectedRequirementIds = EMPTY_ARRAY,
     onSave,
     onClose,
     isViewMode = false
-
-}) {
-
-    //------------------------------------------------------
-    // State
-    //------------------------------------------------------
+}) => {
 
     const [selectedIds, setSelectedIds] = useState([]);
 
     const [searchText, setSearchText] = useState("");
 
-    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [selectedCategoryId, setSelectedCategoryId] =
+        useState(null);
 
-    //------------------------------------------------------
-    // preload for edit
-    //------------------------------------------------------
+
+    /* =====================================================
+       PRELOAD SELECTED REQUIREMENTS
+    ===================================================== */
 
     useEffect(() => {
 
         setSelectedIds(
-
-            (selectedRequirementIds || []).map(id => Number(id))
-
+            (selectedRequirementIds || []).map(
+                id => Number(id)
+            )
         );
 
     }, [selectedRequirementIds]);
 
-    //------------------------------------------------------
-    // Selection helpers
-    //
-    // IDs coming from the parent (selectedRequirementIds, often
-    // strings from an API) can be a different type than
-    // requirement.requirementID (often a number). A plain
-    // Array.includes() uses strict equality, so "12" !== 12 and
-    // nothing ever appears selected. Compare as strings instead.
-    //------------------------------------------------------
 
-    const isSelected = (id) =>
+    /* =====================================================
+       CHECK SELECTION
+    ===================================================== */
 
-        selectedIds.some(x => String(x) === String(id));
+    const isSelected = (id) => {
 
-    //------------------------------------------------------
-    // Group requirements
-    //------------------------------------------------------
+        return selectedIds.some(
+            x =>
+                String(x) === String(id)
+        );
+
+    };
+
+
+    /* =====================================================
+       GROUP REQUIREMENTS BY CATEGORY
+    ===================================================== */
 
     const groupedRequirements = useMemo(() => {
 
         const groups = {};
 
-        requirements.forEach(item => {
+        (requirements || []).forEach(
+            requirement => {
 
-            if (!groups[item.categoryID]) {
+                const categoryId =
+                    requirement.categoryID;
 
-                groups[item.categoryID] = {
+                if (!groups[categoryId]) {
 
-                    categoryID: item.categoryID,
+                    groups[categoryId] = {
 
-                    categoryName: item.categoryName,
+                        categoryID:
+                            categoryId,
 
-                    categoryDisplayOrder:
-                        item.categoryDisplayOrder,
+                        categoryName:
+                            requirement.categoryName ||
+                            "Other",
 
-                    requirements: []
+                        categoryDisplayOrder:
+                            requirement.categoryDisplayOrder ??
+                            9999,
 
-                };
+                        requirements: []
+
+                    };
+
+                }
+
+                groups[categoryId]
+                    .requirements
+                    .push(requirement);
 
             }
-
-            groups[item.categoryID]
-                .requirements
-                .push(item);
-
-        });
+        );
 
         return Object.values(groups)
-            .sort((a, b) =>
-                a.categoryDisplayOrder -
-                b.categoryDisplayOrder
+            .sort(
+                (a, b) =>
+                    a.categoryDisplayOrder -
+                    b.categoryDisplayOrder
             );
 
     }, [requirements]);
 
-    //------------------------------------------------------
-    // first category
-    //------------------------------------------------------
+
+    /* =====================================================
+       SET FIRST CATEGORY
+    ===================================================== */
 
     useEffect(() => {
 
@@ -131,273 +252,435 @@ export default function HolidaySpecialRequirements({
 
         }
 
-    }, [groupedRequirements]);
+    }, [
+        groupedRequirements,
+        selectedCategoryId
+    ]);
 
-    //------------------------------------------------------
-    // Search
-    //------------------------------------------------------
+
+    /* =====================================================
+       SEARCH
+    ===================================================== */
+
+    const normalizedSearchText =
+        searchText
+            .trim()
+            .toLowerCase();
+
+
+    const selectedCategory =
+        groupedRequirements.find(
+            category =>
+                category.categoryID ===
+                selectedCategoryId
+        );
+
 
     const filteredRequirements = useMemo(() => {
 
-        if (!selectedCategoryId)
+        if (!selectedCategory) {
             return [];
+        }
 
-        let category =
-            groupedRequirements.find(
-                x =>
-                    x.categoryID === selectedCategoryId
-            );
+        if (!normalizedSearchText) {
 
-        if (!category)
-            return [];
+            return selectedCategory.requirements;
 
-        if (!searchText.trim())
-            return category.requirements;
+        }
 
-        return category.requirements.filter(r =>
-
-            r.specialRequirementName
-
-                .toLowerCase()
-
-                .includes(searchText.toLowerCase())
-
+        return selectedCategory.requirements.filter(
+            requirement =>
+                (
+                    requirement
+                        .specialRequirementName ||
+                    ""
+                )
+                    .toLowerCase()
+                    .includes(
+                        normalizedSearchText
+                    )
         );
 
     }, [
-
-        groupedRequirements,
-
-        selectedCategoryId,
-
-        searchText
-
+        selectedCategory,
+        normalizedSearchText
     ]);
 
-    //------------------------------------------------------
-    // auto switch category while searching
-    //------------------------------------------------------
+
+    /* =====================================================
+       AUTO SELECT CATEGORY WHILE SEARCHING
+    ===================================================== */
 
     useEffect(() => {
 
-        if (!searchText.trim())
+        if (!normalizedSearchText) {
             return;
+        }
 
-        const first = requirements.find(r =>
+        const matchingCategory =
+            groupedRequirements.find(
+                category =>
+                    category.requirements.some(
+                        requirement =>
+                            (
+                                requirement
+                                    .specialRequirementName ||
+                                ""
+                            )
+                                .toLowerCase()
+                                .includes(
+                                    normalizedSearchText
+                                )
+                    )
+            );
 
-            r.specialRequirementName
+        if (
+            matchingCategory &&
+            matchingCategory.categoryID !==
+                selectedCategoryId
+        ) {
 
-                .toLowerCase()
-
-                .includes(searchText.toLowerCase())
-
-        );
-
-        if (first) {
-
-            setSelectedCategoryId(first.categoryID);
+            setSelectedCategoryId(
+                matchingCategory.categoryID
+            );
 
         }
 
     }, [
-
-        searchText,
-
-        requirements
-
+        normalizedSearchText,
+        groupedRequirements,
+        selectedCategoryId
     ]);
 
-    //------------------------------------------------------
-    // toggle
-    //------------------------------------------------------
 
-    const toggleSelection = (id) => {
+    /* =====================================================
+       TOGGLE REQUIREMENT
+    ===================================================== */
 
-        if (isViewMode)
+    const handleToggle = (id) => {
+
+        if (isViewMode) {
             return;
-
-        if (isSelected(id)) {
-
-            setSelectedIds(
-
-                selectedIds.filter(x => String(x) !== String(id))
-
-            );
-
-        }
-        else {
-
-            setSelectedIds(
-
-                [...selectedIds, Number(id)]
-
-            );
-
         }
 
-    };
+        const numericId =
+            Number(id);
 
-    //------------------------------------------------------
-    // category counts
-    //------------------------------------------------------
+        setSelectedIds(previous => {
 
-    const getCategorySelectedCount = (category) => {
+            const exists =
+                previous.some(
+                    x =>
+                        String(x) ===
+                        String(numericId)
+                );
 
-        return category.requirements.filter(r =>
+            if (exists) {
 
-            isSelected(r.requirementID)
-
-        ).length;
-
-    };
-
-    //------------------------------------------------------
-    // Select All (Current Category)
-    //------------------------------------------------------
-
-    const handleSelectAll = () => {
-
-        if (isViewMode)
-            return;
-
-        const ids = filteredRequirements.map(
-
-            x => Number(x.requirementID)
-
-        );
-
-        const merged = [...selectedIds];
-
-        ids.forEach(id => {
-
-            if (!merged.some(x => x === id)) {
-
-                merged.push(id);
+                return previous.filter(
+                    x =>
+                        String(x) !==
+                        String(numericId)
+                );
 
             }
 
-        });
+            return [
+                ...previous,
+                numericId
+            ];
 
-        setSelectedIds(merged);
+        });
 
     };
 
-    //------------------------------------------------------
-    // Clear All
-    //------------------------------------------------------
+
+    /* =====================================================
+       CATEGORY SELECTED COUNT
+    ===================================================== */
+
+    const getCategorySelectedCount =
+        (category) => {
+
+            return category.requirements.filter(
+                requirement =>
+                    isSelected(
+                        requirement
+                            .requirementID
+                    )
+            ).length;
+
+        };
+
+
+    /* =====================================================
+       SELECT ALL
+    ===================================================== */
+
+    const handleSelectAll = () => {
+
+        if (isViewMode) {
+            return;
+        }
+
+        const idsToAdd =
+            filteredRequirements.map(
+                requirement =>
+                    Number(
+                        requirement
+                            .requirementID
+                    )
+            );
+
+        setSelectedIds(previous => {
+
+            const merged =
+                new Set(
+                    previous.map(
+                        id => Number(id)
+                    )
+                );
+
+            idsToAdd.forEach(
+                id =>
+                    merged.add(id)
+            );
+
+            return Array.from(merged);
+
+        });
+
+    };
+
+
+    /* =====================================================
+       CLEAR ALL
+    ===================================================== */
 
     const handleClearAll = () => {
 
-        if (isViewMode)
+        if (isViewMode) {
             return;
+        }
 
         setSelectedIds([]);
 
     };
 
-    //------------------------------------------------------
-    // Save
-    //------------------------------------------------------
+
+    /* =====================================================
+       SAVE
+    ===================================================== */
 
     const handleSave = () => {
 
-        onSave(selectedIds.map(id => Number(id)));
+        if (isViewMode) {
+
+            onClose();
+
+            return;
+
+        }
+
+        onSave(
+            selectedIds.map(
+                id => Number(id)
+            )
+        );
 
     };
 
-    //------------------------------------------------------
-    // Selected Category
-    //------------------------------------------------------
 
-    const selectedCategory =
-        groupedRequirements.find(
-            x => x.categoryID === selectedCategoryId
-        );
+    /* =====================================================
+       TWO COLUMN LOGIC
+    ===================================================== */
 
-    //------------------------------------------------------
-    // UI
-    //------------------------------------------------------
+    const useTwoColumns =
+        filteredRequirements.length >
+        TWO_COLUMN_THRESHOLD;
+
+
+    /* =====================================================
+       UI
+    ===================================================== */
 
     return (
 
         <Paper
             elevation={0}
             sx={{
+
                 height: "72vh",
+
                 display: "flex",
                 flexDirection: "column",
+
                 overflow: "hidden",
-                borderRadius: 3
+
+                backgroundColor:
+                    SPECIAL_REQUIREMENTS_THEME
+                        .background,
+
+                border:
+                    `1px solid ${
+                        SPECIAL_REQUIREMENTS_THEME
+                            .border
+                    }`,
+
+                borderRadius: 2
+
             }}
         >
 
-            {/* ============================================
-                Header
-            ============================================= */}
+            {/* =================================================
+                HEADER
+            ================================================= */}
 
-            <Box sx={{ px: 3, pt: 2.5, pb: 2 }}>
+            <Box
+                sx={{
+
+                    px: 1.75,
+                    py: 1.15,
+
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent:
+                        "space-between",
+
+                    backgroundColor:
+                        SPECIAL_REQUIREMENTS_THEME
+                            .background
+
+                }}
+            >
 
                 <Stack
                     direction="row"
-                    justifyContent="space-between"
                     alignItems="center"
-                    mb={2}
+                    spacing={0.8}
                 >
 
-                    <Box>
+                    <Typography
+                        sx={{
 
-                        <Typography
-                            fontWeight={700}
-                            fontSize={19}
-                        >
-                            Special Requirements
-                        </Typography>
+                            fontSize:
+                                SPECIAL_REQUIREMENTS_FONTS
+                                    .header
+                                    .size,
 
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                        >
-                            {isViewMode
-                                ? "Requirements included in this booking"
-                                : "Pick everything the guest needs for this trip"}
-                        </Typography>
+                            fontWeight:
+                                SPECIAL_REQUIREMENTS_FONTS
+                                    .header
+                                    .weight,
 
-                    </Box>
+                            color:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .text
+
+                        }}
+                    >
+                        Special Requirements
+                    </Typography>
+
 
                     <Chip
                         size="small"
-                        label={`${selectedIds.length} selected`}
+                        label={
+                            `${selectedIds.length} selected`
+                        }
                         sx={{
+
+                            height: 23,
+
+                            fontSize: 10.5,
+
                             fontWeight: 600,
-                            bgcolor: theme => alpha(theme.palette.primary.main, 0.1),
-                            color: "primary.main",
-                            border: theme => `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
+
+                            backgroundColor:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .selectedCategoryBackground,
+
+                            color:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .selectedCategoryText,
+
+                            border:
+                                `1px solid ${
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .selectedCategoryBorder
+                                }`,
+
+                            "& .MuiChip-label": {
+                                px: 0.9
+                            }
+
                         }}
                     />
 
                 </Stack>
 
+            </Box>
+
+
+            <Divider
+                sx={{
+                    borderColor:
+                        SPECIAL_REQUIREMENTS_THEME
+                            .borderLight
+                }}
+            />
+
+
+            {/* =================================================
+                SEARCH + ACTIONS
+            ================================================= */}
+
+            <Box
+                sx={{
+
+                    px: 1.75,
+                    py: 1,
+
+                    display: "flex",
+                    alignItems: "center",
+
+                    gap: 0.8
+
+                }}
+            >
+
                 <TextField
-
                     fullWidth
-
                     size="small"
 
-                    placeholder="Search special requirements..."
+                    placeholder={
+                        "Search requirements..."
+                    }
 
                     value={searchText}
 
-                    onChange={(e) =>
-                        setSearchText(e.target.value)
+                    onChange={e =>
+                        setSearchText(
+                            e.target.value
+                        )
                     }
 
                     InputProps={{
 
                         startAdornment: (
 
-                            <InputAdornment position="start">
+                            <InputAdornment
+                                position="start"
+                            >
 
-                                <SearchIcon fontSize="small" sx={{ color: "text.disabled" }} />
+                                <SearchIcon
+                                    sx={{
+                                        fontSize: 18,
+                                        color:
+                                            SPECIAL_REQUIREMENTS_THEME
+                                                .textMuted
+                                    }}
+                                />
 
                             </InputAdornment>
 
@@ -408,208 +691,353 @@ export default function HolidaySpecialRequirements({
                     sx={{
 
                         "& .MuiOutlinedInput-root": {
-                            borderRadius: 2,
-                            bgcolor: "background.default"
+
+                            height: 36,
+
+                            fontSize:
+                                SPECIAL_REQUIREMENTS_FONTS
+                                    .search
+                                    .size,
+
+                            borderRadius: 1.5,
+
+                            backgroundColor:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .subtleBackground,
+
+                            "& fieldset": {
+
+                                borderColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .border
+
+                            },
+
+                            "&:hover fieldset": {
+
+                                borderColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .selectedRequirementBorder
+
+                            },
+
+                            "&.Mui-focused fieldset": {
+
+                                borderColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .primary
+
+                            }
+
                         }
 
                     }}
 
                 />
 
-                {!isViewMode &&
 
-                    <Stack
+                {!isViewMode && (
 
-                        direction="row"
-
-                        spacing={1}
-
-                        mt={1.5}
-
-                    >
+                    <>
 
                         <Button
-
                             size="small"
+                            variant="outlined"
 
-                            variant="text"
+                            onClick={
+                                handleSelectAll
+                            }
 
-                            onClick={handleSelectAll}
+                            disabled={
+                                filteredRequirements
+                                    .length === 0
+                            }
 
-                            sx={{ fontWeight: 600 }}
+                            sx={{
 
+                                height: 34,
+
+                                px: 1.2,
+
+                                minWidth: "auto",
+
+                                whiteSpace:
+                                    "nowrap",
+
+                                textTransform:
+                                    "none",
+
+                                fontSize:
+                                    SPECIAL_REQUIREMENTS_FONTS
+                                        .button
+                                        .size,
+
+                                fontWeight:
+                                    SPECIAL_REQUIREMENTS_FONTS
+                                        .button
+                                        .weight,
+
+                                borderColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .border,
+
+                                color:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .textSecondary,
+
+                                "&:hover": {
+
+                                    borderColor:
+                                        SPECIAL_REQUIREMENTS_THEME
+                                            .primary,
+
+                                    color:
+                                        SPECIAL_REQUIREMENTS_THEME
+                                            .primary,
+
+                                    backgroundColor:
+                                        SPECIAL_REQUIREMENTS_THEME
+                                            .selectedCategoryBackground
+
+                                }
+
+                            }}
                         >
-
-                            Select all in category
-
+                            Select All
                         </Button>
+
 
                         <Button
-
                             size="small"
-
-                            color="inherit"
-
                             variant="text"
 
-                            onClick={handleClearAll}
+                            onClick={
+                                handleClearAll
+                            }
 
-                            sx={{ fontWeight: 600, color: "text.secondary" }}
+                            disabled={
+                                selectedIds.length === 0
+                            }
 
+                            sx={{
+
+                                height: 34,
+
+                                px: 0.8,
+
+                                minWidth: "auto",
+
+                                whiteSpace:
+                                    "nowrap",
+
+                                textTransform:
+                                    "none",
+
+                                fontSize:
+                                    SPECIAL_REQUIREMENTS_FONTS
+                                        .button
+                                        .size,
+
+                                fontWeight:
+                                    SPECIAL_REQUIREMENTS_FONTS
+                                        .button
+                                        .weight,
+
+                                color:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .textSecondary
+
+                            }}
                         >
-
-                            Clear all
-
+                            Clear
                         </Button>
 
-                    </Stack>
+                    </>
 
-                }
+                )}
 
             </Box>
 
-            <Divider />
 
-            {/* ============================================
-                    Body
-            ============================================= */}
+            <Divider
+                sx={{
+                    borderColor:
+                        SPECIAL_REQUIREMENTS_THEME
+                            .borderLight
+                }}
+            />
+
+
+            {/* =================================================
+                BODY
+            ================================================= */}
 
             <Box
-
                 sx={{
 
-                    display: "flex",
-
                     flex: 1,
+
+                    minHeight: 0,
+
+                    display: "flex",
 
                     overflow: "hidden"
 
                 }}
-
             >
 
-                {/* =====================================
-                        LEFT PANEL — categories
-                ====================================== */}
+
+                {/* =================================================
+                    CATEGORY SIDEBAR
+                ================================================= */}
 
                 <Box
-
                     sx={{
 
-                        width: 250,
+                        width: 215,
+
+                        flexShrink: 0,
 
                         overflowY: "auto",
 
-                        borderRight: "1px solid",
+                        borderRight:
+                            `1px solid ${
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .borderLight
+                            }`,
 
-                        borderColor: "divider",
-
-                        bgcolor: "background.default",
-
-                        py: 1.5,
-
-                        px: 1
+                        backgroundColor:
+                            SPECIAL_REQUIREMENTS_THEME
+                                .subtleBackground
 
                     }}
-
                 >
 
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        fontWeight={700}
+                    <List
+                        disablePadding
                         sx={{
-                            display: "block",
-                            px: 1,
-                            pb: 1,
-                            letterSpacing: 0.4,
-                            textTransform: "uppercase"
+                            py: 0.6
                         }}
                     >
-                        Categories
-                    </Typography>
 
-                    <List disablePadding>
+                        {groupedRequirements.map(
+                            category => {
 
-                        {
+                                const count =
+                                    getCategorySelectedCount(
+                                        category
+                                    );
 
-                            groupedRequirements.map(category => {
-
-                                const active =
-                                    selectedCategoryId === category.categoryID;
-
-                                const count = getCategorySelectedCount(category);
+                                const isActive =
+                                    category
+                                        .categoryID ===
+                                    selectedCategoryId;
 
                                 return (
 
                                     <ListItemButton
 
-                                        key={category.categoryID}
+                                        key={
+                                            category
+                                                .categoryID
+                                        }
 
-                                        selected={active}
+                                        selected={
+                                            isActive
+                                        }
 
                                         onClick={() =>
                                             setSelectedCategoryId(
-                                                category.categoryID
+                                                category
+                                                    .categoryID
                                             )
                                         }
 
                                         sx={{
 
-                                            px: 1.5,
+                                            minHeight: 44,
 
-                                            py: 1,
+                                            px: 1.3,
+                                            py: 0.55,
 
-                                            mb: 0.5,
+                                            borderLeft:
+                                                isActive
+                                                    ? `3px solid ${
+                                                        SPECIAL_REQUIREMENTS_THEME
+                                                            .primary
+                                                    }`
+                                                    : "3px solid transparent",
 
-                                            borderRadius: 2,
-
-                                            border: "1px solid",
-
-                                            borderColor: active
-                                                ? "primary.main"
-                                                : "transparent",
-
-                                            bgcolor: active
-                                                ? "primary.main"
-                                                : "transparent",
+                                            backgroundColor:
+                                                isActive
+                                                    ? SPECIAL_REQUIREMENTS_THEME
+                                                        .selectedCategoryBackground
+                                                    : "transparent",
 
                                             "&:hover": {
 
-                                                bgcolor: active
-                                                    ? "primary.dark"
-                                                    : theme => alpha(theme.palette.primary.main, 0.08),
-
-                                                borderColor: "primary.main"
+                                                backgroundColor:
+                                                    SPECIAL_REQUIREMENTS_THEME
+                                                        .hoverBackground
 
                                             },
 
                                             "&.Mui-selected": {
 
-                                                bgcolor: "primary.main",
+                                                backgroundColor:
+                                                    SPECIAL_REQUIREMENTS_THEME
+                                                        .selectedCategoryBackground
 
-                                                "&:hover": {
-                                                    bgcolor: "primary.dark"
-                                                }
+                                            },
+
+                                            "&.Mui-selected:hover": {
+
+                                                backgroundColor:
+                                                    SPECIAL_REQUIREMENTS_THEME
+                                                        .selectedCategoryBackground
 
                                             }
 
                                         }}
-
                                     >
 
                                         <ListItemText
 
+                                            sx={{
+                                                my: 0
+                                            }}
+
                                             primary={
 
                                                 <Typography
-                                                    fontSize={14}
-                                                    fontWeight={active ? 700 : 600}
-                                                    color={active ? "primary.contrastText" : "text.primary"}
+                                                    noWrap
+                                                    sx={{
+
+                                                        fontSize:
+                                                            SPECIAL_REQUIREMENTS_FONTS
+                                                                .category
+                                                                .size,
+
+                                                        fontWeight:
+                                                            isActive
+                                                                ? 700
+                                                                : SPECIAL_REQUIREMENTS_FONTS
+                                                                    .category
+                                                                    .weight,
+
+                                                        color:
+                                                            isActive
+                                                                ? SPECIAL_REQUIREMENTS_THEME
+                                                                    .selectedCategoryText
+                                                                : SPECIAL_REQUIREMENTS_THEME
+                                                                    .text
+
+                                                    }}
                                                 >
-
-                                                    {category.categoryName}
-
+                                                    {
+                                                        category
+                                                            .categoryName
+                                                    }
                                                 </Typography>
 
                                             }
@@ -617,362 +1045,796 @@ export default function HolidaySpecialRequirements({
                                             secondary={
 
                                                 <Typography
-                                                    variant="caption"
-                                                    fontWeight={600}
                                                     sx={{
-                                                        color: active
-                                                            ? "rgba(255,255,255,0.85)"
-                                                            : count > 0
-                                                                ? "success.main"
-                                                                : "text.secondary"
+
+                                                        fontSize:
+                                                            SPECIAL_REQUIREMENTS_FONTS
+                                                                .categoryCount
+                                                                .size,
+
+                                                        fontWeight:
+                                                            SPECIAL_REQUIREMENTS_FONTS
+                                                                .categoryCount
+                                                                .weight,
+
+                                                        color:
+                                                            count > 0
+                                                                ? SPECIAL_REQUIREMENTS_THEME
+                                                                    .free
+                                                                    .text
+                                                                : SPECIAL_REQUIREMENTS_THEME
+                                                                    .textMuted
+
                                                     }}
                                                 >
-
-                                                    {count} / {category.requirements.length} selected
-
+                                                    {count} /{" "}
+                                                    {
+                                                        category
+                                                            .requirements
+                                                            .length
+                                                    }{" "}
+                                                    selected
                                                 </Typography>
 
                                             }
 
                                         />
 
+
                                         <ChevronRightRoundedIcon
-
-                                            fontSize="small"
-
                                             sx={{
 
-                                                color: active
-                                                    ? "primary.contrastText"
-                                                    : "text.disabled",
+                                                fontSize: 18,
 
-                                                opacity: active ? 1 : 0.5
+                                                color:
+                                                    isActive
+                                                        ? SPECIAL_REQUIREMENTS_THEME
+                                                            .primary
+                                                        : SPECIAL_REQUIREMENTS_THEME
+                                                            .textMuted,
+
+                                                opacity:
+                                                    isActive
+                                                        ? 0.9
+                                                        : 0.45
 
                                             }}
-
                                         />
 
                                     </ListItemButton>
 
                                 );
 
-                            })
-
-                        }
+                            }
+                        )}
 
                     </List>
 
                 </Box>
 
-                {/* =====================================
-                        RIGHT PANEL — requirements
-                ====================================== */}
+
+                {/* =================================================
+                    RIGHT REQUIREMENTS AREA
+                ================================================= */}
 
                 <Box
-
                     sx={{
 
                         flex: 1,
 
-                        overflowY: "auto",
+                        minWidth: 0,
+                        minHeight: 0,
 
-                        p: 2
+                        display: "flex",
+                        flexDirection: "column",
+
+                        overflow: "hidden",
+
+                        backgroundColor:
+                            SPECIAL_REQUIREMENTS_THEME
+                                .background
 
                     }}
-
                 >
-                    {
-                        selectedCategory == null ? (
+
+
+                    {/* Category header */}
+
+                    <Box
+                        sx={{
+
+                            px: 1.75,
+                            py: 1,
+
+                            flexShrink: 0,
+
+                            display: "flex",
+
+                            alignItems: "center",
+
+                            justifyContent:
+                                "space-between",
+
+                            borderBottom:
+                                `1px solid ${
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .borderLight
+                                }`
+
+                        }}
+                    >
+
+                        <Typography
+                            sx={{
+
+                                fontSize: 13.5,
+
+                                fontWeight: 700,
+
+                                color:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .text
+
+                            }}
+                        >
+                            {
+                                selectedCategory?.categoryName ||
+                                "Requirements"
+                            }
+                        </Typography>
+
+
+                        <Typography
+                            sx={{
+
+                                fontSize: 11,
+
+                                color:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .textSecondary
+
+                            }}
+                        >
+                            {filteredRequirements.length}{" "}
+                            option
+                            {
+                                filteredRequirements.length !== 1
+                                    ? "s"
+                                    : ""
+                            }
+                        </Typography>
+
+                    </Box>
+
+
+                    {/* =================================================
+                        REQUIREMENTS LIST
+
+                        1-6 options  = 1 column
+                        7+ options   = 2 columns
+
+                        The container itself scrolls when required.
+                    ================================================= */}
+
+                    <Box
+                        sx={{
+
+                            flex: 1,
+
+                            minHeight: 0,
+
+                            overflowY: "auto",
+
+                            px: 1.5,
+                            py: 1.2,
+
+                            "&::-webkit-scrollbar": {
+                                width: 6
+                            },
+
+                            "&::-webkit-scrollbar-thumb": {
+
+                                backgroundColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .border,
+
+                                borderRadius: 4
+
+                            },
+
+                            "&::-webkit-scrollbar-track": {
+
+                                backgroundColor:
+                                    "transparent"
+
+                            }
+
+                        }}
+                    >
+
+                        {filteredRequirements.length === 0 ? (
 
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
+
                                     height: "100%",
-                                    gap: 1,
-                                    color: "text.secondary"
+
+                                    display: "flex",
+
+                                    flexDirection:
+                                        "column",
+
+                                    alignItems:
+                                        "center",
+
+                                    justifyContent:
+                                        "center",
+
+                                    color:
+                                        SPECIAL_REQUIREMENTS_THEME
+                                            .textMuted
+
                                 }}
                             >
-                                <InventoryRoundedIcon sx={{ fontSize: 36, opacity: 0.4 }} />
-                                <Typography color="text.secondary">
-                                    Select a category to see its requirements
+
+                                <SearchOffRoundedIcon
+                                    sx={{
+
+                                        fontSize: 34,
+
+                                        mb: 0.5,
+
+                                        opacity: 0.5
+
+                                    }}
+                                />
+
+                                <Typography
+                                    sx={{
+
+                                        fontSize:
+                                            SPECIAL_REQUIREMENTS_FONTS
+                                                .emptyState
+                                                .size,
+
+                                        fontWeight: 500
+
+                                    }}
+                                >
+                                    No requirements found
                                 </Typography>
+
+
+                                {searchText && (
+
+                                    <Typography
+                                        sx={{
+
+                                            fontSize: 10.5,
+
+                                            mt: 0.3,
+
+                                            color:
+                                                SPECIAL_REQUIREMENTS_THEME
+                                                    .textMuted
+
+                                        }}
+                                    >
+                                        Try a different search
+                                    </Typography>
+
+                                )}
+
                             </Box>
 
-                        ) : filteredRequirements.length === 0 ? (
+                        ) : (
 
                             <Box
                                 sx={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    height: "100%",
-                                    gap: 1,
-                                    color: "text.secondary"
+
+                                    display: "grid",
+
+                                    gridTemplateColumns:
+                                        useTwoColumns
+                                            ? {
+                                                xs: "1fr",
+                                                sm: "repeat(2, minmax(0, 1fr))"
+                                            }
+                                            : "1fr",
+
+                                    gap: 0.8,
+
+                                    alignContent:
+                                        "start"
+
                                 }}
                             >
-                                <SearchOffRoundedIcon sx={{ fontSize: 36, opacity: 0.4 }} />
-                                <Typography color="text.secondary">
-                                    No requirements match "{searchText}"
-                                </Typography>
-                            </Box>
 
-        ) : (
-
-                            <Stack spacing={0.75}>
-
-                                {
-                                    filteredRequirements.map(requirement => {
+                                {filteredRequirements.map(
+                                    requirement => {
 
                                         const selected =
-                                            isSelected(requirement.requirementID);
+                                            isSelected(
+                                                requirement
+                                                    .requirementID
+                                            );
+
+                                        const isFree =
+                                            requirement
+                                                .isFree ===
+                                            true;
 
                                         return (
 
                                             <Paper
 
-                                                key={requirement.requirementID}
+                                                key={
+                                                    requirement
+                                                        .requirementID
+                                                }
 
-                                                variant="outlined"
+                                                elevation={0}
 
                                                 onClick={() =>
-                                                    toggleSelection(
-                                                        requirement.requirementID
+                                                    handleToggle(
+                                                        requirement
+                                                            .requirementID
                                                     )
                                                 }
 
                                                 sx={{
 
-                                                    cursor: isViewMode
-                                                        ? "default"
-                                                        : "pointer",
+                                                    minWidth: 0,
 
-                                                    py: 1,
+                                                    minHeight: 48,
 
-                                                    px: 1.5,
+                                                    px: 1.1,
+                                                    py: 0.8,
 
-                                                    borderRadius: 1.5,
+                                                    display:
+                                                        "flex",
+
+                                                    alignItems:
+                                                        "center",
+
+                                                    border:
+                                                        `1px solid ${
+                                                            selected
+                                                                ? SPECIAL_REQUIREMENTS_THEME
+                                                                    .selectedRequirementBorder
+                                                                : SPECIAL_REQUIREMENTS_THEME
+                                                                    .border
+                                                        }`,
+
+                                                    borderRadius:
+                                                        1.25,
+
+                                                    backgroundColor:
+                                                        selected
+                                                            ? SPECIAL_REQUIREMENTS_THEME
+                                                                .selectedRequirementBackground
+                                                            : SPECIAL_REQUIREMENTS_THEME
+                                                                .background,
+
+                                                    cursor:
+                                                        isViewMode
+                                                            ? "default"
+                                                            : "pointer",
 
                                                     transition:
                                                         "border-color .15s ease, background-color .15s ease",
 
-                                                    borderColor: selected
-                                                        ? "primary.main"
-                                                        : "divider",
+                                                    "&:hover":
+                                                        !isViewMode
+                                                            ? {
 
-                                                    bgcolor: selected
-                                                        ? theme => alpha(theme.palette.primary.main, 0.05)
-                                                        : "background.paper",
+                                                                borderColor:
+                                                                    SPECIAL_REQUIREMENTS_THEME
+                                                                        .selectedRequirementBorder,
 
-                                                    "&:hover": isViewMode
-                                                        ? {}
-                                                        : {
+                                                                backgroundColor:
+                                                                    selected
+                                                                        ? SPECIAL_REQUIREMENTS_THEME
+                                                                            .selectedRequirementBackground
+                                                                        : SPECIAL_REQUIREMENTS_THEME
+                                                                            .hoverBackground
 
-                                                            borderColor: "primary.main",
+                                                            }
+                                                            : {}
 
-                                                            bgcolor: theme =>
-                                                                alpha(theme.palette.primary.main, 0.04)
+                                                }}
+                                            >
+
+                                                {/* Checkbox */}
+
+                                                {!isViewMode && (
+
+                                                    <Checkbox
+
+                                                        size="small"
+
+                                                        checked={
+                                                            selected
+                                                        }
+
+                                                        onChange={() =>
+                                                            handleToggle(
+                                                                requirement
+                                                                    .requirementID
+                                                            )
+                                                        }
+
+                                                        onClick={e =>
+                                                            e.stopPropagation()
+                                                        }
+
+                                                        icon={
+
+                                                            <RadioButtonUncheckedRoundedIcon
+                                                                sx={{
+                                                                    fontSize: 21,
+                                                                    color:
+                                                                        SPECIAL_REQUIREMENTS_THEME
+                                                                            .textMuted
+                                                                }}
+                                                            />
 
                                                         }
 
-                                                }}
+                                                        checkedIcon={
 
-                                            >
+                                                            <CheckCircleRoundedIcon
+                                                                sx={{
+                                                                    fontSize: 21,
+                                                                    color:
+                                                                        SPECIAL_REQUIREMENTS_THEME
+                                                                            .primary
+                                                                }}
+                                                            />
 
-                                                <Stack
+                                                        }
 
-                                                    direction="row"
+                                                        sx={{
 
-                                                    alignItems="center"
+                                                            p: 0.25,
 
-                                                    spacing={1}
+                                                            mr: 0.8,
 
+                                                            flexShrink: 0
+
+                                                        }}
+
+                                                    />
+
+                                                )}
+
+
+                                                {/* Requirement text */}
+
+                                                <Box
+                                                    sx={{
+
+                                                        flex: 1,
+
+                                                        minWidth: 0
+
+                                                    }}
                                                 >
 
-                                                    {!isViewMode &&
+                                                    <Typography
+                                                        noWrap
 
-                                                        <Checkbox
+                                                        title={
+                                                            requirement
+                                                                .specialRequirementName
+                                                        }
 
-                                                            checked={selected}
+                                                        sx={{
 
-                                                            icon={<RadioButtonUncheckedRoundedIcon fontSize="small" />}
+                                                            fontSize:
+                                                                SPECIAL_REQUIREMENTS_FONTS
+                                                                    .requirement
+                                                                    .size,
 
-                                                            checkedIcon={<CheckCircleRoundedIcon fontSize="small" />}
+                                                            fontWeight:
+                                                                selected
+                                                                    ? SPECIAL_REQUIREMENTS_FONTS
+                                                                        .requirement
+                                                                        .selectedWeight
+                                                                    : SPECIAL_REQUIREMENTS_FONTS
+                                                                        .requirement
+                                                                        .weight,
 
-                                                            onClick={(e) =>
-                                                                e.stopPropagation()
-                                                            }
+                                                            color:
+                                                                SPECIAL_REQUIREMENTS_THEME
+                                                                    .text,
 
-                                                            onChange={() =>
-                                                                toggleSelection(
-                                                                    requirement.requirementID
-                                                                )
-                                                            }
+                                                            overflow:
+                                                                "hidden",
 
-                                                            sx={{ p: 0.5 }}
+                                                            textOverflow:
+                                                                "ellipsis"
 
-                                                        />
-
-                                                    }
-
-                                                    <Box
-                                                        flex={1}
-                                                        minWidth={0}
+                                                        }}
                                                     >
+                                                        {
+                                                            requirement
+                                                                .specialRequirementName
+                                                        }
+                                                    </Typography>
+
+
+                                                    {requirement.extraCostLabel && (
 
                                                         <Typography
-                                                            fontWeight={500}
-                                                            fontSize={14}
                                                             noWrap
-                                                            sx={{ color: "text.secondary" }}
+                                                            sx={{
+
+                                                                fontSize:
+                                                                    SPECIAL_REQUIREMENTS_FONTS
+                                                                        .requirementSubtext
+                                                                        .size,
+
+                                                                fontWeight:
+                                                                    SPECIAL_REQUIREMENTS_FONTS
+                                                                        .requirementSubtext
+                                                                        .weight,
+
+                                                                mt: 0.15,
+
+                                                                color:
+                                                                    SPECIAL_REQUIREMENTS_THEME
+                                                                        .textSecondary,
+
+                                                                overflow:
+                                                                    "hidden",
+
+                                                                textOverflow:
+                                                                    "ellipsis"
+
+                                                            }}
                                                         >
                                                             {
-                                                                requirement.specialRequirementName
+                                                                requirement
+                                                                    .extraCostLabel
                                                             }
                                                         </Typography>
 
-                                                        {
-                                                            !requirement.isFree &&
-                                                            requirement.extraCostLabel &&
+                                                    )}
 
-                                                            <Typography
-                                                                variant="caption"
-                                                                color="text.secondary"
-                                                            >
-                                                                {
-                                                                    requirement.extraCostLabel
-                                                                }
-                                                            </Typography>
-                                                        }
+                                                </Box>
 
-                                                    </Box>
 
-                                                    {
+                                                {/* Free / Chargeable */}
 
-                                                        requirement.isFree ? (
+                                                <Chip
 
-                                                            <Chip
+                                                    size="small"
 
-                                                                label="Free"
-
-                                                                size="small"
-
-                                                                sx={{
-                                                                    fontWeight: 600,
-                                                                    bgcolor: theme =>
-                                                                        alpha(theme.palette.success.main, 0.12),
-                                                                    color: "success.dark"
-                                                                }}
-
-                                                            />
-
-                                                        ) : (
-
-                                                            <Chip
-
-                                                                label={
-                                                                    requirement.extraCostLabel ??
-                                                                    "Chargeable"
-                                                                }
-
-                                                                size="small"
-
-                                                                sx={{
-                                                                    fontWeight: 600,
-                                                                    bgcolor: theme =>
-                                                                        alpha(theme.palette.warning.main, 0.15),
-                                                                    color: "warning.dark"
-                                                                }}
-
-                                                            />
-
-                                                        )
-
+                                                    label={
+                                                        isFree
+                                                            ? "Free"
+                                                            : "Chargeable"
                                                     }
 
-                                                </Stack>
+                                                    sx={{
+
+                                                        ml: 0.7,
+
+                                                        flexShrink: 0,
+
+                                                        height: 22,
+
+                                                        maxWidth:
+                                                            isFree
+                                                                ? 48
+                                                                : 82,
+
+                                                        fontSize:
+                                                            SPECIAL_REQUIREMENTS_FONTS
+                                                                .badge
+                                                                .size,
+
+                                                        fontWeight:
+                                                            SPECIAL_REQUIREMENTS_FONTS
+                                                                .badge
+                                                                .weight,
+
+                                                        backgroundColor:
+                                                            isFree
+                                                                ? SPECIAL_REQUIREMENTS_THEME
+                                                                    .free
+                                                                    .background
+                                                                : SPECIAL_REQUIREMENTS_THEME
+                                                                    .chargeable
+                                                                    .background,
+
+                                                        color:
+                                                            isFree
+                                                                ? SPECIAL_REQUIREMENTS_THEME
+                                                                    .free
+                                                                    .text
+                                                                : SPECIAL_REQUIREMENTS_THEME
+                                                                    .chargeable
+                                                                    .text,
+
+                                                        "& .MuiChip-label": {
+
+                                                            px: 0.8,
+
+                                                            overflow:
+                                                                "hidden",
+
+                                                            textOverflow:
+                                                                "ellipsis"
+
+                                                        }
+
+                                                    }}
+
+                                                />
 
                                             </Paper>
 
                                         );
 
-                                    })
-                                }
+                                    }
+                                )}
 
-                            </Stack>
+                            </Box>
 
-                        )
-                    }
+                        )}
+
+                    </Box>
 
                 </Box>
 
             </Box>
 
-            <Divider />
 
-            {/* ====================================
-                    FOOTER
-            ===================================== */}
+            {/* =================================================
+                FOOTER
+            ================================================= */}
 
-            <Stack
+            <Divider
+                sx={{
+                    borderColor:
+                        SPECIAL_REQUIREMENTS_THEME
+                            .borderLight
+                }}
+            />
 
-                direction="row"
 
-                justifyContent="flex-end"
-
-                spacing={1.5}
-
+            <Box
                 sx={{
 
-                    px: 3,
+                    px: 1.75,
+                    py: 1,
 
-                    py: 2
+                    display: "flex",
+
+                    justifyContent:
+                        "flex-end",
+
+                    gap: 0.8,
+
+                    backgroundColor:
+                        SPECIAL_REQUIREMENTS_THEME
+                            .subtleBackground
 
                 }}
-
             >
 
                 <Button
-
+                    size="small"
                     variant="outlined"
-
                     onClick={onClose}
 
-                    sx={{ borderRadius: 2, fontWeight: 600 }}
+                    sx={{
 
+                        minHeight: 32,
+
+                        px: 1.6,
+
+                        textTransform:
+                            "none",
+
+                        fontSize:
+                            SPECIAL_REQUIREMENTS_FONTS
+                                .footer
+                                .size,
+
+                        fontWeight:
+                            SPECIAL_REQUIREMENTS_FONTS
+                                .footer
+                                .weight,
+
+                        borderColor:
+                            SPECIAL_REQUIREMENTS_THEME
+                                .border,
+
+                        color:
+                            SPECIAL_REQUIREMENTS_THEME
+                                .textSecondary,
+
+                        "&:hover": {
+
+                            borderColor:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .textSecondary,
+
+                            backgroundColor:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .hoverBackground
+
+                        }
+
+                    }}
                 >
-
-                    Cancel
-
+                    {isViewMode
+                        ? "Close"
+                        : "Cancel"}
                 </Button>
 
-                {
-                    !isViewMode &&
+
+                {!isViewMode && (
 
                     <Button
-
+                        size="small"
                         variant="contained"
 
-                        onClick={handleSave}
+                        onClick={
+                            handleSave
+                        }
 
-                        disableElevation
+                        sx={{
 
-                        sx={{ borderRadius: 2, fontWeight: 600 }}
+                            minHeight: 32,
 
+                            px: 1.8,
+
+                            textTransform:
+                                "none",
+
+                            fontSize:
+                                SPECIAL_REQUIREMENTS_FONTS
+                                    .footer
+                                    .size,
+
+                            fontWeight:
+                                SPECIAL_REQUIREMENTS_FONTS
+                                    .footer
+                                    .weight,
+
+                            backgroundColor:
+                                SPECIAL_REQUIREMENTS_THEME
+                                    .primary,
+
+                            boxShadow:
+                                "none",
+
+                            "&:hover": {
+
+                                backgroundColor:
+                                    SPECIAL_REQUIREMENTS_THEME
+                                        .primaryDark,
+
+                                boxShadow:
+                                    "none"
+
+                            }
+
+                        }}
                     >
-
                         Save Requirements
-
                     </Button>
-                }
 
-            </Stack>
+                )}
+
+            </Box>
 
         </Paper>
-
     );
+};
 
-}
+export default HolidaySpecialRequirements;

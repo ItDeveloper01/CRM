@@ -160,259 +160,314 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
 
   };
 
-  return (
-    <div className="mt-5 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
 
-      {/* HEADER */}
-      <div
-        onClick={() => setIsPaxOpen(prev => !prev)}
-        className="flex justify-between items-center px-4 py-3 bg-gray-100 hover:bg-gray-50 cursor-pointer transition-all border-b"
-      >
 
-        <div className="flex items-center gap-2">
+return (
+  <div className="mt-4 w-full min-w-0 rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
 
-          <span className="font-semibold text-sm text-gray-800">
-            PAX Details
+    {/* HEADER */}
+    <div
+      onClick={() => setIsPaxOpen((prev) => !prev)}
+      className="flex justify-between items-center px-4 py-2 bg-gray-100 hover:bg-gray-50 cursor-pointer transition-all border-b"
+    >
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-sm text-gray-800">
+          PAX Details
+        </span>
+
+        {paxCount > 0 && (
+          <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+            {paxCount}
           </span>
-
-          {paxCount > 0 && (
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-              {paxCount}
-            </span>
-          )}
-
-        </div>
-
-        <div className="flex items-center gap-2">
-
-          {paxCount > 0 && !isPaxOpen && (
-            <span className="w-3.5 h-3.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.9)]"></span>
-          )}
-
-          <span>{isPaxOpen ? "▲" : "▼"}</span>
-        </div>
+        )}
       </div>
 
-      {/* BODY */}
-      <div
-        className={`transition-all duration-300 overflow-hidden
-        ${isPaxOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0"}
+      <div className="flex items-center gap-2">
+        {paxCount > 0 && !isPaxOpen && (
+          <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_7px_rgba(34,197,94,0.9)]"></span>
+        )}
+
+        <span className="text-xs">
+          {isPaxOpen ? "▲" : "▼"}
+        </span>
+      </div>
+    </div>
+
+    {/* BODY */}
+    <div
+      className={`transition-all duration-300 overflow-hidden
+        ${isPaxOpen ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}
       `}
-      >
+    >
+      <div className="border-t border-gray-100 px-4 lg:px-5 py-3 bg-gradient-to-br from-white to-blue-50/30">
 
-        <div className="border-t border-gray-100 px-5 py-5 bg-gradient-to-br from-white to-blue-50/30">
+        {/* PAX GRID */}
+        <div
+          className="
+            grid
+            grid-cols-2
+            sm:grid-cols-4
+            lg:grid-cols-9
+            gap-x-3
+            gap-y-2
+            pb-0
+          "
+        >
 
-          {/* GRID */}
-          <div className="flex flex-nowrap gap-3 overflow-x-auto pb-1">
+          {/* Adults */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Adults
+            </label>
 
-            {/* Adults */}
-            <div className="min-w-[90px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Adults
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.noOfAdults}
-                onChange={(e) => updateField("noOfAdults", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Extra Adults */}
-            <div className="min-w-[100px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Extra Adults
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.noOfExtraAdults}
-                onChange={(e) => updateField("noOfExtraAdults", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Child W Bed */}
-            <div className="min-w-[110px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Child W/ Bed
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.noOfChildrenWithBed}
-                onChange={(e) => updateField("noOfChildrenWithBed", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Child WO Bed */}
-            <div className="min-w-[115px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Child W/O Bed
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.noOfChildrenWithoutBed}
-                onChange={(e) => updateField("noOfChildrenWithoutBed", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Infants */}
-            <div className="min-w-[90px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Infants
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.infants}
-                onChange={(e) => updateField("infants", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Rooms */}
-            <div className="min-w-[80px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Rooms
-              </label>
-
-              <input
-                type="number"
-                value={paxDetailsObj.noOfRooms}
-                onChange={(e) => updateField("noOfRooms", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              />
-            </div>
-
-            {/* Room Type (API BIND) */}
-            <div className="min-w-[120px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Room Type
-              </label>
-
-              <select
-                value={paxDetailsObj.roomType}
-                onChange={(e) => updateField("roomType", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="">Select</option>
-                {roomTypes.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Hotel Type (API BIND) */}
-            <div className="min-w-[120px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Hotel Type
-              </label>
-
-              <select
-                value={paxDetailsObj.hotelType}
-                onChange={(e) => updateField("hotelType", Number(e.target.value) || 0)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="">Select</option>
-                {hotelTypes.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Total */}
-            <div className="min-w-[90px]">
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Total
-              </label>
-
-              <div className="h-[42px] rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shadow-md">
-                {paxCount}
-              </div>
-            </div>
-
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.noOfAdults}
+              onChange={(e) =>
+                updateField("noOfAdults", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
           </div>
 
-          {/* Bottom (API BIND Disability) */}
-          <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-gray-200 pt-4">
-
-            {/* Senior Citizen */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={paxDetailsObj.isSeniorCitizen}
-                onChange={(e) =>
-                  updateField("isSeniorCitizen", e.target.checked)
-                }
-                className="accent-blue-600 h-4 w-4"
-              />
-              <span className="text-xs font-medium text-gray-700">
-                Senior Citizen
-              </span>
+          {/* Extra Adults */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block whitespace-nowrap">
+              Extra Adults
             </label>
 
-            {/* Differently Abled */}
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={paxDetailsObj.isDifferentAbled}
-                onChange={(e) => {
-                  const isChecked = e.target.checked;
-                  updateField("isDifferentAbled", isChecked);
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.noOfExtraAdults}
+              onChange={(e) =>
+                updateField("noOfExtraAdults", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
 
-                  if (!isChecked) {
-                    updateField("DisabilityType", 0);
-                  }
-                }}
-                className="accent-blue-600 h-4 w-4"
-              />
-              <span className="text-xs font-medium text-gray-700">
-                Differently Abled
-              </span>
+          {/* Child W Bed */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block whitespace-nowrap">
+              Child W/ Bed
             </label>
 
-            {/* Disability Type API */}
-            <div className="min-w-[220px]">
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.noOfChildrenWithBed}
+              onChange={(e) =>
+                updateField(
+                  "noOfChildrenWithBed",
+                  Number(e.target.value) || 0
+                )
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
 
-              <label className="text-[11px] font-medium text-gray-500 mb-1 block">
-                Disability Type
-              </label>
+          {/* Child WO Bed */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block whitespace-nowrap">
+              Child W/O Bed
+            </label>
 
-              <select
-                disabled={!paxDetailsObj.isDifferentAbled}
-                value={paxDetailsObj.disabilityType || ""}
-                onChange={(e) =>
-                  updateField("disabilityType",Number(e.target.value) || 0)
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.noOfChildrenWithoutBed}
+              onChange={(e) =>
+                updateField(
+                  "noOfChildrenWithoutBed",
+                  Number(e.target.value) || 0
+                )
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          {/* Infants */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Infants
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.infants}
+              onChange={(e) =>
+                updateField("infants", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          {/* Rooms */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Rooms
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              value={paxDetailsObj.noOfRooms}
+              onChange={(e) =>
+                updateField("noOfRooms", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-sm text-center shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </div>
+
+          {/* Room Type */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Room Type
+            </label>
+
+            <select
+              value={paxDetailsObj.roomType}
+              onChange={(e) =>
+                updateField("roomType", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-xs shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select</option>
+
+              {roomTypes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Hotel Type */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Hotel Type
+            </label>
+
+            <select
+              value={paxDetailsObj.hotelType}
+              onChange={(e) =>
+                updateField("hotelType", Number(e.target.value) || 0)
+              }
+              className="w-full h-[36px] rounded-lg border border-gray-200 bg-white px-2 text-xs shadow-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">Select</option>
+
+              {hotelTypes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Total */}
+          <div className="min-w-0">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Total
+            </label>
+
+            <div className="h-[36px] rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-sm font-bold shadow-md">
+              {paxCount}
+            </div>
+          </div>
+        </div>
+
+        {/* ADDITIONAL PAX INFORMATION */}
+        <div className="mt-3 flex flex-wrap items-end gap-x-5 gap-y-2 border-t border-gray-200 pt-3">
+
+          {/* Senior Citizen */}
+          <label className="flex items-center gap-2 cursor-pointer h-[36px]">
+            <input
+              type="checkbox"
+              checked={paxDetailsObj.isSeniorCitizen}
+              onChange={(e) =>
+                updateField("isSeniorCitizen", e.target.checked)
+              }
+              className="accent-blue-600 h-4 w-4"
+            />
+
+            <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+              Senior Citizen
+            </span>
+          </label>
+
+          {/* Differently Abled */}
+          <label className="flex items-center gap-2 cursor-pointer h-[36px]">
+            <input
+              type="checkbox"
+              checked={paxDetailsObj.isDifferentAbled}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+
+                updateField("isDifferentAbled", isChecked);
+
+                if (!isChecked) {
+                  updateField("disabilityType", 0);
                 }
-                className={`w-full rounded-xl border px-3 py-2 text-sm shadow-sm outline-none
-                ${paxDetailsObj.isDifferentAbled
+              }}
+              className="accent-blue-600 h-4 w-4"
+            />
+
+            <span className="text-xs font-medium text-gray-700 whitespace-nowrap">
+              Differently Abled
+            </span>
+          </label>
+
+          {/* Disability Type */}
+          <div className="w-full sm:w-[220px]">
+            <label className="text-[10px] font-medium text-gray-500 mb-0.5 block">
+              Disability Type
+            </label>
+
+            <select
+              disabled={!paxDetailsObj.isDifferentAbled}
+              value={paxDetailsObj.disabilityType || ""}
+              onChange={(e) =>
+                updateField(
+                  "disabilityType",
+                  Number(e.target.value) || 0
+                )
+              }
+              className={`
+                w-full
+                h-[36px]
+                rounded-lg
+                border
+                px-3
+                text-xs
+                shadow-sm
+                outline-none
+                ${
+                  paxDetailsObj.isDifferentAbled
                     ? "border-gray-200 bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     : "border-gray-100 bg-gray-100 text-gray-400"
-                  }`}
-              >
-                <option value="">Select</option>
-                {disabilityTypes.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
+                }
+              `}
+            >
+              <option value="">Select</option>
 
-            </div>
-
+              {disabilityTypes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
           </div>
 
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 }
+
+
