@@ -1,17 +1,17 @@
+
 // BucketCard.jsx
+
 import React, { useState } from "react";
 import axios from "axios";
 import { Maximize2, Minimize2, Search, X } from "lucide-react";
+
 import LeadRow from "./LeadRow";
 import UpdateLeadsModal from "../../UpdateLeadsModal";
 import { getEmptyLeadObj } from "../../Model/LeadModel";
 import config from "../../config";
-import { useGetSessionUser } from "../../SessionContext"
-import { MESSAGE_TYPES } from "../../Constants"
+import { useGetSessionUser } from "../../SessionContext";
+import { MESSAGE_TYPES } from "../../Constants";
 import { useMessageBox } from "../../Notification";
-
-
-
 
 const BUCKET_META = {
     overdue: {
@@ -36,32 +36,42 @@ const BUCKET_META = {
     }
 };
 
-
 /* =========================================================
    COLUMN WIDTHS
 ========================================================= */
 
+/*
+   COLLAPSED
+   Sr No | Lead ID | Customer | Follow-up | Enquiry | Actions
+*/
 const COLLAPSED_COLUMNS = {
-    gridTemplateColumns: "4% 6% 32% 20% 18% 20%"
+    gridTemplateColumns:
+        "4% 6% 32% 20% 18% 20%"
 };
 
+/*
+   EXPANDED - NON HOLIDAY
+   Sr No | Lead ID | Customer | Category | Follow-up |
+   Enquiry | Assignee | Contact | Status | Actions
+*/
 const EXPANDED_COLUMNS = {
     gridTemplateColumns:
-        "2% 6% 16% 14% 8% 8% 8% 9% 9% 10% 5% 9%"
+        "2% 6% 15% 9% 11% 9% 11% 11% 10% 16%"
 };
 
+/*
+   EXPANDED - HOLIDAY
+   Sr No | Lead ID | Customer | Destination | Travel Date |
+   Category | Type / Trip | Follow-up | Enquiry | Assignee |
+   Contact | Status | Actions
+*/
 const EXPANDED_HOLIDAY_COLUMNS = {
     gridTemplateColumns:
-        "2% 5% 20%  8% 8% 7% 7% 8% 8% 11% 5% 10%"
+        "2% 5% 14% 9% 8% 8% 7% 8% 8% 9% 7% 7% 8%"
 };
-
 
 /* =========================================================
    SEARCH HELPERS
-   Broad fallback so this keeps working even if a field name
-   below doesn't exactly match your DTO — it scans every
-   shallow string/number field on the lead (or lead.category)
-   as a last resort.
 ========================================================= */
 
 const flattenSearchableText = (obj, depth = 0) => {
@@ -72,17 +82,21 @@ const flattenSearchableText = (obj, depth = 0) => {
     return Object.values(obj)
         .map((v) => {
             if (v === null || v === undefined) return "";
-            if (typeof v === "string" || typeof v === "number") return String(v);
-            if (typeof v === "object") return flattenSearchableText(v, depth + 1);
+
+            if (typeof v === "string" || typeof v === "number") {
+                return String(v);
+            }
+
+            if (typeof v === "object") {
+                return flattenSearchableText(v, depth + 1);
+            }
+
             return "";
         })
         .join(" ");
 };
 
 const getLeadNameText = (lead) => {
-    // Individual name parts, checked explicitly so a search for
-    // just a middle or last name still matches even if there's
-    // also a combined "Name" field.
     const nameParts = [
         lead?.FirstName,
         lead?.firstName,
@@ -113,9 +127,8 @@ const getLeadNameText = (lead) => {
         return nameParts.join(" ");
     }
 
-    // Fallback: nothing matched a known field name, so scan
-    // everything shallow on the lead itself.
     const { category, histories, ...rest } = lead || {};
+
     return flattenSearchableText(rest);
 };
 
@@ -135,14 +148,13 @@ const getLeadDestinationText = (lead) => {
         return candidates.join(" ");
     }
 
-    // Fallback: scan everything shallow on lead.category.
     return flattenSearchableText(lead?.category);
 };
-
 
 /* =========================================================
    HEADER TEXT
 ========================================================= */
+
 const HeaderText = ({
     text,
     center = false,
@@ -210,7 +222,6 @@ const SortableHeader = ({
                 {text}
             </span>
 
-            {/* Sort indicator */}
             <span
                 className={`
                     flex
@@ -228,7 +239,7 @@ const SortableHeader = ({
                 <span
                     className={
                         isActive &&
-                            sortConfig.direction === "asc"
+                        sortConfig.direction === "asc"
                             ? "text-slate-600"
                             : "text-slate-300"
                     }
@@ -239,7 +250,7 @@ const SortableHeader = ({
                 <span
                     className={
                         isActive &&
-                            sortConfig.direction === "desc"
+                        sortConfig.direction === "desc"
                             ? "text-slate-600"
                             : "text-slate-300"
                     }
@@ -251,15 +262,15 @@ const SortableHeader = ({
     );
 };
 
-
 /* =========================================================
-   IN-COLUMN SEARCH INPUT
-   Lives INSIDE a column-header cell so it lines up exactly
-   with the data column it filters, instead of floating off
-   in the card header.
+   COLUMN SEARCH
 ========================================================= */
 
-const ColumnSearchInput = ({ value, onChange, placeholder }) => (
+const ColumnSearchInput = ({
+    value,
+    onChange,
+    placeholder
+}) => (
     <div className="relative h-full w-full min-w-0">
         <Search
             className="
@@ -318,6 +329,9 @@ const ColumnSearchInput = ({ value, onChange, placeholder }) => (
     </div>
 );
 
+/* =========================================================
+   COMPONENT
+========================================================= */
 
 const BucketCard = ({
     bucket,
@@ -340,18 +354,19 @@ const BucketCard = ({
     onRescheduleSuccess,
     onCancelInline
 }) => {
-    console.log(
-        "🔥 BUCKETCARD CALLBACK:",
-        onRescheduleSuccess
-    );
     const meta = BUCKET_META[bucket];
 
     const safeLeads = Array.isArray(leads)
         ? leads
         : [];
+
     const { user: sessionUser } = useGetSessionUser();
     const { showMessage } = useMessageBox();
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+    const [sortConfig, setSortConfig] = useState({
+        key: null,
+        direction: "asc"
+    });
 
     /* =========================================================
        SEARCH STATE
@@ -360,12 +375,12 @@ const BucketCard = ({
     const [searchName, setSearchName] = useState("");
     const [searchDestination, setSearchDestination] = useState("");
 
-
     const handleSort = (key) => {
         setSortConfig((current) => ({
             key,
             direction:
-                current.key === key && current.direction === "asc"
+                current.key === key &&
+                current.direction === "asc"
                     ? "desc"
                     : "asc"
         }));
@@ -420,13 +435,13 @@ const BucketCard = ({
             ""
         ).toUpperCase() === "HOLIDAY";
 
-
     /* =========================================================
-       SEARCH FILTER — Name (first/middle/last, substring) +
-       Preferred Destination (holiday buckets only)
+       SEARCH
     ========================================================= */
 
-    const normalizedNameQuery = searchName.trim().toLowerCase();
+    const normalizedNameQuery =
+        searchName.trim().toLowerCase();
+
     const normalizedDestinationQuery = isHoliday
         ? searchDestination.trim().toLowerCase()
         : "";
@@ -434,7 +449,9 @@ const BucketCard = ({
     const searchedLeads = safeLeads.filter((lead) => {
         const nameMatch =
             !normalizedNameQuery ||
-            getLeadNameText(lead).toLowerCase().includes(normalizedNameQuery);
+            getLeadNameText(lead)
+                .toLowerCase()
+                .includes(normalizedNameQuery);
 
         if (!nameMatch) {
             return false;
@@ -442,7 +459,9 @@ const BucketCard = ({
 
         const destinationMatch =
             !normalizedDestinationQuery ||
-            getLeadDestinationText(lead).toLowerCase().includes(normalizedDestinationQuery);
+            getLeadDestinationText(lead)
+                .toLowerCase()
+                .includes(normalizedDestinationQuery);
 
         return destinationMatch;
     });
@@ -456,8 +475,15 @@ const BucketCard = ({
             return 0;
         }
 
-        const valueA = getSortValue(a, sortConfig.key);
-        const valueB = getSortValue(b, sortConfig.key);
+        const valueA = getSortValue(
+            a,
+            sortConfig.key
+        );
+
+        const valueB = getSortValue(
+            b,
+            sortConfig.key
+        );
 
         if (!valueA && !valueB) return 0;
         if (!valueA) return 1;
@@ -465,13 +491,14 @@ const BucketCard = ({
 
         let comparison = 0;
 
-        // Lead ID
         if (sortConfig.key === "leadId") {
             comparison = valueA - valueB;
         } else {
-            // Dates
-            const dateA = new Date(valueA).getTime();
-            const dateB = new Date(valueB).getTime();
+            const dateA =
+                new Date(valueA).getTime();
+
+            const dateB =
+                new Date(valueB).getTime();
 
             comparison = dateA - dateB;
         }
@@ -481,60 +508,66 @@ const BucketCard = ({
             : -comparison;
     });
 
-
     /* =========================================================
        MODAL STATE
     ========================================================= */
 
     const [modalOpen, setModalOpen] = useState(false);
-
     const [modalMode, setModalMode] = useState("edit");
 
     const [openNoteId, setOpenNoteId] = useState(null);
-    const [openRescheduleId, setOpenRescheduleId] = useState(null);
+    const [openRescheduleId, setOpenRescheduleId] =
+        useState(null);
 
-    const GetLeadsForEditAPI = config.apiUrl + "/TempLead/GetLeadForEdit";
-    const UpdateFollowupDateAPI = config.apiUrl + "/TempLead/UpdateFollowUpDate";
-    const UpdateNotesAPI = config.apiUrl + "/TempLead/UpdateNotes"
+    const GetLeadsForEditAPI =
+        config.apiUrl +
+        "/TempLead/GetLeadForEdit";
 
+    const UpdateFollowupDateAPI =
+        config.apiUrl +
+        "/TempLead/UpdateFollowUpDate";
 
-    const [selectedLead, setSelectedLead] = useState(
-        getEmptyLeadObj()
-    );
+    const UpdateNotesAPI =
+        config.apiUrl +
+        "/TempLead/UpdateNotes";
 
+    const [selectedLead, setSelectedLead] =
+        useState(getEmptyLeadObj());
 
     /* =========================================================
-       OPEN LEAD
+       FETCH LEAD DETAILS
     ========================================================= */
 
     async function fetchLeadDetails(lead) {
-        let res = null;
         try {
-            debugger;
-            console.log("GetLeadsForEditAPI:", GetLeadsForEditAPI);
-            console.log("LEad data to be passed to API", lead);
-            res = await axios.post(GetLeadsForEditAPI, lead, {
-                headers: {
-                    Authorization: `Bearer ${sessionUser.token}`,// ✅ JWT token
-                    "Content-Type": "application/json"
+            const res = await axios.post(
+                GetLeadsForEditAPI,
+                lead,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${sessionUser.token}`,
+                        "Content-Type":
+                            "application/json"
+                    }
+                }
+            );
 
-                },
-                // params: {
-                //   lead: lead,
-                // }
-            });
-            debugger;
             if (res && res.data) {
-                console.log("Leads details fetched:" + res.data);
                 return res.data;
-            } else {
-                showMessage("Empty response from server.", MESSAGE_TYPES.WARNING);
-                return null;
             }
 
+            showMessage(
+                "Empty response from server.",
+                MESSAGE_TYPES.WARNING
+            );
+
+            return null;
         } catch (error) {
-            debugger;
-            console.log("Error fetching Lead for edit...", error);
+            console.error(
+                "Error fetching Lead for edit...",
+                error
+            );
 
             const message =
                 error.response?.data ||
@@ -542,25 +575,25 @@ const BucketCard = ({
                 error.message ||
                 "Unknown error";
 
-            showMessage("Error fetching Lead for edit." + JSON.stringify(message), MESSAGE_TYPES.ERROR);
+            showMessage(
+                "Error fetching Lead for edit. " +
+                JSON.stringify(message),
+                MESSAGE_TYPES.ERROR
+            );
+
             return null;
-
         }
-
     }
 
+    /* =========================================================
+       OPEN LEAD
+    ========================================================= */
+
     const handleOpenLead = async (lead) => {
-
         try {
-
             const leadId =
                 lead?.LeadID ??
                 lead?.leadID;
-
-            console.log(
-                "Lead Received for modal:",
-                lead
-            );
 
             if (!leadId) {
                 console.error(
@@ -570,61 +603,26 @@ const BucketCard = ({
                 return;
             }
 
+            const templead =
+                await fetchLeadDetails(lead);
 
-            /* ---------------------------------------------
-               For now use the lead already available.
-               We can add API call here later.
-            --------------------------------------------- */
-
-
-            try {
-
-                let templead = await fetchLeadDetails(lead);
+            if (templead) {
                 setSelectedLead(templead);
                 setModalMode("edit");
                 setModalOpen(true);
-            } catch {
-                showMessage("Exception thrown.", MESSAGE_TYPES.ERROR);
             }
-
-            //  setSelectedLead(lead);
-
-
-
-            //   setModalOpen(true);
-
-
-            /* ---------------------------------------------
-               API can be called here later if required:
-
-            const response = await axios.get(
-                `${apiUrl}/Lead/GetLeadById`,
-                {
-                    params: {
-                        leadId: leadId
-                    },
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
-
-            setSelectedLead(response.data);
-
-            --------------------------------------------- */
-
         } catch (error) {
-
             console.error(
                 "Error opening lead:",
                 error
             );
 
+            showMessage(
+                "Exception thrown.",
+                MESSAGE_TYPES.ERROR
+            );
         }
-
     };
-
 
     /* =========================================================
        COLUMN STYLE
@@ -633,54 +631,62 @@ const BucketCard = ({
     let columnStyle;
 
     if (!expanded) {
-
-        columnStyle =
-            COLLAPSED_COLUMNS;
-
+        columnStyle = COLLAPSED_COLUMNS;
     } else if (isHoliday) {
-
-        columnStyle =
-            EXPANDED_HOLIDAY_COLUMNS;
-
+        columnStyle = EXPANDED_HOLIDAY_COLUMNS;
     } else {
-
-        columnStyle =
-            EXPANDED_COLUMNS;
+        columnStyle = EXPANDED_COLUMNS;
     }
 
-    const handleNote = (lead) => {
-        const leadId = lead?.LeadID ?? lead?.leadID;
+    /* =========================================================
+       INLINE ACTIONS
+    ========================================================= */
 
-        setOpenNoteId(current =>
-            current === leadId ? null : leadId
+    const handleNote = (lead) => {
+        const leadId =
+            lead?.LeadID ??
+            lead?.leadID;
+
+        setOpenNoteId((current) =>
+            current === leadId
+                ? null
+                : leadId
         );
 
-        // Close reschedule if opening note
         setOpenRescheduleId(null);
     };
 
-
     const handleReschedule = (lead) => {
-        const leadId = lead?.LeadID ?? lead?.leadID;
+        const leadId =
+            lead?.LeadID ??
+            lead?.leadID;
 
-        setOpenRescheduleId(current =>
-            current === leadId ? null : leadId
+        setOpenRescheduleId((current) =>
+            current === leadId
+                ? null
+                : leadId
         );
 
-        // Close note if opening reschedule
         setOpenNoteId(null);
     };
-
 
     const handleCancelInline = () => {
         setOpenNoteId(null);
         setOpenRescheduleId(null);
+
+        if (onCancelInline) {
+            onCancelInline();
+        }
     };
 
-    const handleSaveNote = async (lead, noteText) => {
-        lead.category.notes = noteText;
-        console.log("SAVE NOTE CLICKED", lead, noteText);
+    /* =========================================================
+       SAVE NOTE
+    ========================================================= */
 
+    const handleSaveNote = async (
+        lead,
+        noteText
+    ) => {
         if (!noteText?.trim()) {
             showMessage(
                 "Please enter a note.",
@@ -693,93 +699,130 @@ const BucketCard = ({
             const response = await axios.post(
                 UpdateNotesAPI,
                 {
-                    lead: lead,
+                    lead,
                     notes: noteText,
-                    currentUser: sessionUser.user.userId,
+                    currentUser:
+                        sessionUser.user.userId
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${sessionUser.token}`,
-                        "Content-Type": "application/json"
+                        Authorization:
+                            `Bearer ${sessionUser.token}`,
+                        "Content-Type":
+                            "application/json"
                     }
                 }
             );
 
-            console.log("Notes API response:", response.data);
-
-            showMessage(
-                "Notes updated successfully.", MESSAGE_TYPES.SUCCESS
+            console.log(
+                "Notes API response:",
+                response.data
             );
 
-            lead.histories[0].notes = noteText;
-            setOpenNoteId(null);
+            showMessage(
+                "Notes updated successfully.",
+                MESSAGE_TYPES.SUCCESS
+            );
 
+            if (lead?.category) {
+                lead.category.notes = noteText;
+            }
+
+            if (
+                Array.isArray(lead?.histories) &&
+                lead.histories.length > 0
+            ) {
+                lead.histories[0].notes =
+                    noteText;
+            }
+
+            setOpenNoteId(null);
         } catch (error) {
-            console.error("Error saving note:", error);
+            console.error(
+                "Error saving note:",
+                error
+            );
+
+            showMessage(
+                "Error saving note.",
+                MESSAGE_TYPES.ERROR
+            );
         }
     };
 
-    const handleSaveReschedule = async (lead, newDate) => {
+    /* =========================================================
+       SAVE RESCHEDULE
+    ========================================================= */
+
+    const handleSaveReschedule = async (
+        lead,
+        newDate
+    ) => {
         try {
-            const leadId = lead?.LeadID ?? lead?.leadID;
+            const leadId =
+                lead?.LeadID ??
+                lead?.leadID;
 
             if (!leadId) {
-                console.error("Lead ID not found", lead);
+                console.error(
+                    "Lead ID not found",
+                    lead
+                );
                 return false;
             }
 
             if (!newDate) {
-                console.error("Follow-up date is required");
+                console.error(
+                    "Follow-up date is required"
+                );
                 return false;
             }
 
-            console.log("Saving FollowUpDate:", {
-                leadId,
-                newDate
-            });
-
-            const response = await axios.post(UpdateFollowupDateAPI,
+            const response = await axios.post(
+                UpdateFollowupDateAPI,
                 {
                     Lead: lead,
                     FollowUPDate: newDate,
-                    currentUser: sessionUser.user.userId,
+                    currentUser:
+                        sessionUser.user.userId
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ${sessionUser.token}`,
-                        "Content-Type": "application/json"
+                        Authorization:
+                            `Bearer ${sessionUser.token}`,
+                        "Content-Type":
+                            "application/json"
                     }
                 }
             );
 
-            console.log("FollowUpDate API response:", response.data);
+            console.log(
+                "FollowUpDate API response:",
+                response.data
+            );
 
             if (response.data === true) {
-
-                // Update the current lead object immediately
                 lead.followUpDate = newDate;
 
-                debugger;
-                // Update the dashboard timeline immediately
                 if (onRescheduleSuccess) {
-                    onRescheduleSuccess(lead, newDate);
+                    onRescheduleSuccess(
+                        lead,
+                        newDate
+                    );
                 }
-
 
                 showMessage(
                     "Follow-up date updated successfully.",
                     MESSAGE_TYPES.SUCCESS
                 );
 
-                // Close reschedule
                 setOpenRescheduleId(null);
 
                 return true;
             }
 
-
+            return false;
         } catch (error) {
-
             console.error(
                 "Error updating FollowUpDate:",
                 error
@@ -801,32 +844,16 @@ const BucketCard = ({
         }
     };
 
+    /* =========================================================
+       RENDER
+    ========================================================= */
+
     return (
-
         <div>
-
-            {/* =====================================================
-                BUCKET CARD
-            ===================================================== */}
+            {/* BUCKET CARD */}
 
             <div
-            // h-full
-                // className={`
-                //     flex flex-col
-                //     min-w-0
-                //     w-full
-                    
-                //     overflow-hidden
-                //     rounded-xl
-                //     border border-slate-200
-                //     bg-white
-                //     shadow-sm
-                //     ${expanded
-                //         ? "col-span-full row-span-full  h-full"
-                //          : "h-[300px]"
-                //     }
-                // `}
-                  className={`
+                className={`
                     flex flex-col
                     min-w-0
                     w-full
@@ -837,13 +864,13 @@ const BucketCard = ({
                     border border-slate-200
                     bg-white
                     shadow-sm
-                    ${expanded ? "col-span-full row-span-full" : ""}
+                    ${expanded
+                        ? "col-span-full row-span-full"
+                        : ""
+                    }
                 `}
             >
-
-                {/* =====================================================
-                    BUCKET HEADER (back to its original, uncluttered form)
-                ===================================================== */}
+                {/* BUCKET HEADER */}
 
                 <div
                     className={`
@@ -855,7 +882,6 @@ const BucketCard = ({
                         ${meta.header}
                     `}
                 >
-
                     <span
                         className={`
                             h-2.5 w-2.5
@@ -884,7 +910,6 @@ const BucketCard = ({
                             : safeLeads.length}
                     </span>
 
-
                     <button
                         type="button"
                         onClick={onToggleExpand}
@@ -905,28 +930,15 @@ const BucketCard = ({
                                 : "Expand"
                         }
                     >
-
                         {expanded ? (
-                            <Minimize2
-                                className="h-3.5 w-3.5"
-                            />
+                            <Minimize2 className="h-3.5 w-3.5" />
                         ) : (
-                            <Maximize2
-                                className="h-3.5 w-3.5"
-                            />
+                            <Maximize2 className="h-3.5 w-3.5" />
                         )}
-
                     </button>
-
                 </div>
 
-
-                {/* =====================================================
-                    COLUMN HEADER
-                    Name / Preferred Destination cells now hold the
-                    search inputs directly, so they line up with the
-                    actual data column below them.
-                ===================================================== */}
+                {/* COLUMN HEADER */}
 
                 <div
                     className="
@@ -938,7 +950,6 @@ const BucketCard = ({
                         bg-slate-50
                     "
                 >
-
                     <div
                         className="
                             grid
@@ -949,8 +960,7 @@ const BucketCard = ({
                         "
                         style={columnStyle}
                     >
-
-                        {/* DOT */}
+                        {/* # */}
 
                         <div className="min-w-0 px-2" />
 
@@ -965,7 +975,7 @@ const BucketCard = ({
                             />
                         </div>
 
-                        {/* NAME — search input replaces the plain label */}
+                        {/* NAME */}
 
                         <div className="min-w-0 px-2">
                             <ColumnSearchInput
@@ -975,79 +985,57 @@ const BucketCard = ({
                             />
                         </div>
 
-
-                        {/* =================================================
-                            COLLAPSED
-                        ================================================= */}
+                        {/* COLLAPSED COLUMNS */}
 
                         {!expanded && (
                             <>
-
                                 <div className="min-w-0 px-2">
-
                                     <SortableHeader
                                         text="Follow-up"
                                         sortKey="followUp"
                                         sortConfig={sortConfig}
                                         onSort={handleSort}
                                     />
-
                                 </div>
 
                                 <div className="min-w-0 px-2">
-
                                     <SortableHeader
                                         text="Enquiry"
                                         sortKey="enquiry"
                                         sortConfig={sortConfig}
                                         onSort={handleSort}
                                     />
-
                                 </div>
 
+                                {/* Actions column */}
+
+                                <div className="min-w-0 px-1">
+                                    <HeaderText
+                                        text="Actions"
+                                        center
+                                        wrap
+                                    />
+                                </div>
                             </>
                         )}
 
-
-                        {/* =================================================
-                            EXPANDED
-                        ================================================= */}
+                        {/* EXPANDED COLUMNS */}
 
                         {expanded && (
                             <>
-
-                                {/* NOTES */}
-
-                                {/* <div className="min-w-0 px-2">
-
-                                    <HeaderText
-                                        text="Notes"
-                                        wrap
-                                    />
-
-                                </div> */}
-
-
-                                {/* =================================================
-                                    HOLIDAY ONLY
-                                ================================================= */}
+                                {/* HOLIDAY: DESTINATION */}
 
                                 {isHoliday && (
                                     <>
-
-                                        {/* PREFERRED DESTINATION — search input
-                                            replaces the plain label; only exists
-                                            for holiday buckets since that's the
-                                            only place this column renders */}
-
                                         <div className="min-w-0 px-2">
                                             <ColumnSearchInput
                                                 value={searchDestination}
-                                                onChange={setSearchDestination}
+                                                onChange={
+                                                    setSearchDestination
+                                                }
                                                 placeholder="Search destination..."
                                             />
                                         </div>
-
 
                                         {/* TRAVEL DATE */}
 
@@ -1059,30 +1047,35 @@ const BucketCard = ({
                                                 onSort={handleSort}
                                                 wrap
                                             />
-
                                         </div>
-
-
-                                        {/* TYPE / TRIP */}
-
-                                        <div className="min-w-0 px-2">
-
-                                            <HeaderText
-                                                text="Type / Trip"
-                                                center
-                                                wrap
-                                            />
-
-                                        </div>
-
                                     </>
                                 )}
 
+                                {/* CATEGORY */}
+
+                                <div className="min-w-0 px-2">
+                                    <HeaderText
+                                        text="Category"
+                                        center
+                                        wrap
+                                    />
+                                </div>
+
+                                {/* TYPE / TRIP */}
+
+                                {isHoliday && (
+                                    <div className="min-w-0 px-2">
+                                        <HeaderText
+                                            text="Type / Trip"
+                                            center
+                                            wrap
+                                        />
+                                    </div>
+                                )}
 
                                 {/* FOLLOW-UP */}
 
                                 <div className="min-w-0 px-2">
-
                                     <SortableHeader
                                         text="Follow-up"
                                         sortKey="followUp"
@@ -1091,11 +1084,9 @@ const BucketCard = ({
                                     />
                                 </div>
 
-
                                 {/* ENQUIRY */}
 
                                 <div className="min-w-0 px-2">
-
                                     <SortableHeader
                                         text="Enquiry"
                                         sortKey="enquiry"
@@ -1104,65 +1095,39 @@ const BucketCard = ({
                                     />
                                 </div>
 
-
                                 {/* ASSIGNEE */}
 
                                 <div className="min-w-0 px-2">
-
-                                    <HeaderText
-                                        text="Assignee"
-                                    />
-
+                                    <HeaderText text="Assignee" />
                                 </div>
-
 
                                 {/* CONTACT */}
 
                                 <div className="min-w-0 px-2">
-
-                                    <HeaderText
-                                        text="Contact"
-                                    />
-
+                                    <HeaderText text="Contact" />
                                 </div>
-
 
                                 {/* STATUS */}
 
                                 <div className="min-w-0 px-2">
-
-                                    <HeaderText
-                                        text="Status"
-                                    />
-
+                                    <HeaderText text="Status" />
                                 </div>
 
+                                {/* ACTIONS */}
+
+                                <div className="min-w-0 px-1">
+                                    <HeaderText
+                                        text="Actions"
+                                        center
+                                        wrap
+                                    />
+                                </div>
                             </>
                         )}
-
-
-                        {/* =================================================
-                            ACTIONS
-                        ================================================= */}
-
-                        <div className="min-w-0 px-1">
-
-                            <HeaderText
-                                text="Actions"
-                                center
-                                wrap
-                            />
-
-                        </div>
-
                     </div>
-
                 </div>
 
-
-                {/* =====================================================
-                    ROWS
-                ===================================================== */}
+                {/* ROWS */}
 
                 <div
                     className="
@@ -1174,9 +1139,7 @@ const BucketCard = ({
                         overflow-x-hidden
                     "
                 >
-
                     {sortedLeads.length === 0 ? (
-
                         <div
                             className="
                                 flex
@@ -1192,84 +1155,77 @@ const BucketCard = ({
                                 ? "No leads match your search"
                                 : "No follow-ups"}
                         </div>
-
                     ) : (
-
                         sortedLeads.map(
-                            (lead, index) => (
+                            (lead, index) => {
+                                const leadId =
+                                    lead?.LeadID ??
+                                    lead?.leadID;
 
-                                <LeadRow
-                                    // key={
-                                    //     lead?.LeadID ??
-                                    //     lead?.leadID ??
-                                    //     index
-                                    // }
-                                    key={`${lead?.LeadID ?? lead?.leadID}-${index}`}
+                                return (
+                                    <LeadRow
+                                        key={`${leadId}-${index}`}
+                                        lead={lead}
+                                        index={index}
+                                        expanded={expanded}
+                                        isHoliday={isHoliday}
+                                        columnStyle={columnStyle}
 
-                                    lead={lead}
-                                    index={index}
-                                    expanded={expanded}
-                                    isHoliday={isHoliday}
-                                    columnStyle={columnStyle}
+                                        onCall={onCall}
 
-                                    onCall={onCall}
+                                        onNote={handleNote}
 
-                                    onNote={handleNote}   // ✅ THIS IS THE FIX
+                                        onReschedule={
+                                            handleReschedule
+                                        }
 
-                                    onReschedule={handleReschedule}
+                                        onOpen={
+                                            handleOpenLead
+                                        }
 
-                                    onOpen={handleOpenLead}
+                                        noteOpen={
+                                            openNoteId ===
+                                            leadId
+                                        }
 
-                                    noteOpen={
-                                        openNoteId ===
-                                        (lead?.LeadID ?? lead?.leadID)
-                                    }
+                                        rescheduleOpen={
+                                            openRescheduleId ===
+                                            leadId
+                                        }
 
-                                    rescheduleOpen={
-                                        openRescheduleId ===
-                                        (lead?.LeadID ?? lead?.leadID)
-                                    }
+                                        onSaveNote={
+                                            handleSaveNote
+                                        }
 
-                                    onSaveNote={handleSaveNote}
-                                    onSaveReschedule={handleSaveReschedule}
-                                    onCancelInline={handleCancelInline}
-                                />
+                                        onSaveReschedule={
+                                            handleSaveReschedule
+                                        }
 
-                            )
+                                        onCancelInline={
+                                            handleCancelInline
+                                        }
+                                    />
+                                );
+                            }
                         )
-
                     )}
-
                 </div>
-
             </div>
 
-
-            {/* =====================================================
-                LEAD MODAL
-            ===================================================== */}
+            {/* LEAD MODAL */}
 
             <UpdateLeadsModal
-
                 parent="Lead Table for existing Phone no"
-
                 isOpen={modalOpen}
-
                 onClose={() =>
                     setModalOpen(false)
                 }
-
                 lead={selectedLead}
-
                 mode={modalMode}
-
                 viewAllLeads={false}
-
             />
-
         </div>
     );
 };
-
 
 export default BucketCard;
