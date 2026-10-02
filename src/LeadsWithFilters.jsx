@@ -8350,56 +8350,56 @@ Are you sure you want to continue with the transfer?`;
   //   showMessage("Reopen request captured. Backend API is not wired yet.", MESSAGE_TYPES.WARNING);
   // };
 
-// const handleReopenSubmit = async () => {
-//   const reason = reopenReason.trim();
+  // const handleReopenSubmit = async () => {
+  //   const reason = reopenReason.trim();
 
-//   if (!reason) {
-//     showMessage("Reason / message to reopen is mandatory.", MESSAGE_TYPES.WARNING);
-//     return;
-//   }
+  //   if (!reason) {
+  //     showMessage("Reason / message to reopen is mandatory.", MESSAGE_TYPES.WARNING);
+  //     return;
+  //   }
 
-//   const entries = selectedReopenLeadEntries;
-//   if (!entries.length) return;
+  //   const entries = selectedReopenLeadEntries;
+  //   if (!entries.length) return;
 
-//   // Payload for the future API (same wrapper style as transfer)
-//   const payload = {
-//     reopenLeads: entries,               // [{ selectionKey, lead }]
-//     reason,
-//     requestedBy_UserID: sessionUser?.user?.userId,
-//   };
+  //   // Payload for the future API (same wrapper style as transfer)
+  //   const payload = {
+  //     reopenLeads: entries,               // [{ selectionKey, lead }]
+  //     reason,
+  //     requestedBy_UserID: sessionUser?.user?.userId,
+  //   };
 
-//   console.log("TEMP REOPEN REQUEST", payload);
+  //   console.log("TEMP REOPEN REQUEST", payload);
 
-//   // TODO: call reopen API with `payload`.
-//   // On success, only for keys the backend confirms:
-//   //   setReopenedLeadIds((prev) => [...prev, ...successKeys]);
+  //   // TODO: call reopen API with `payload`.
+  //   // On success, only for keys the backend confirms:
+  //   //   setReopenedLeadIds((prev) => [...prev, ...successKeys]);
 
-//   setShowReopenModal(false);
-//   setSelectedReopenLeads([]);
-//   setReopenReason("");
+  //   setShowReopenModal(false);
+  //   setSelectedReopenLeads([]);
+  //   setReopenReason("");
 
-//   showMessage("Reopen request captured. Backend API is not wired yet.", MESSAGE_TYPES.WARNING);
-// };
+  //   showMessage("Reopen request captured. Backend API is not wired yet.", MESSAGE_TYPES.WARNING);
+  // };
 
-// Called by ReOpenLeadModal after the API succeeds.
-// Identify rows ONLY by selectionKey.
-const handleReopened = async ({ reopenedEntries }) => {
-  const keys = (reopenedEntries || [])
-    .map((entry) => entry.selectionKey)
-    .filter(Boolean);
+  // Called by ReOpenLeadModal after the API succeeds.
+  // Identify rows ONLY by selectionKey.
+  const handleReopened = async ({ reopenedEntries }) => {
+    const keys = (reopenedEntries || [])
+      .map((entry) => entry.selectionKey)
+      .filter(Boolean);
 
-  if (keys.length > 0) {
-    setReopenedLeadIds((prev) => [...new Set([...prev, ...keys])]);
-  }
+    if (keys.length > 0) {
+      setReopenedLeadIds((prev) => [...new Set([...prev, ...keys])]);
+    }
 
-  setSelectedLeadIds([]);
-  setSelectedReopenLeads([]);
+    setSelectedLeadIds([]);
+    setSelectedReopenLeads([]);
 
-  showMessage(
-    `${keys.length} Lead${keys.length > 1 ? "s" : ""} reopened successfully.`,
-    MESSAGE_TYPES.SUCCESS
-  );
-};
+    showMessage(
+      `${keys.length} Lead${keys.length > 1 ? "s" : ""} reopened successfully.`,
+      MESSAGE_TYPES.SUCCESS
+    );
+  };
 
   const handleBulkReopenClick = () => {
     if (!SHOW_REOPEN_OPTIONS || !selectedLeadIds.length) return;
@@ -10175,23 +10175,23 @@ const handleReopened = async ({ reopenedEntries }) => {
   }, [selectedTransferLeads]);
 
   // ==========================================================
-// REOPEN API WRAPPER ITEMS
-// ==========================================================
-// Same shape as transfer: SelectionKey stays outside DashboardRowDto.
-const selectedReopenLeadEntries = useMemo(() => {
-  return selectedReopenLeads
-    .map((lead) => {
-      const selectionKey =
-        leadToSelectionKeyMapRef.current.get(lead);
+  // REOPEN API WRAPPER ITEMS
+  // ==========================================================
+  // Same shape as transfer: SelectionKey stays outside DashboardRowDto.
+  const selectedReopenLeadEntries = useMemo(() => {
+    return selectedReopenLeads
+      .map((lead) => {
+        const selectionKey =
+          leadToSelectionKeyMapRef.current.get(lead);
 
-      if (!selectionKey) {
-        return null;
-      }
+        if (!selectionKey) {
+          return null;
+        }
 
-      return { selectionKey, lead };
-    })
-    .filter(Boolean);
-}, [selectedReopenLeads]);
+        return { selectionKey, lead };
+      })
+      .filter(Boolean);
+  }, [selectedReopenLeads]);
 
 
   // ==========================================================
@@ -11025,26 +11025,22 @@ const selectedReopenLeadEntries = useMemo(() => {
                           flex-wrap
                         ">
 
-                            {getTripType(
-                              lead
-                            ) && (
-
-                                <span className="
-                              px-2
-                              py-0.5
-                              rounded-full
-                              text-[10px]
-                              bg-blue-100
-                              text-blue-700
-                            ">
-                                  {
-                                    getTripType(
-                                      lead
-                                    )
-                                  }
-                                </span>
-
-                              )}
+                            {getTripType(lead) && (
+                              <span
+                                className={`
+                                            px-2
+                                            py-0.5
+                                            rounded-full
+                                            text-[10px]
+                                            ${getTripType(lead)?.trim().toLowerCase() === "international"
+                                                ? "bg-red-100 text-red-700"
+                                                : "bg-blue-100 text-blue-700"
+                                              }
+                                          `}
+                              >
+                                {getTripType(lead)}
+                              </span>
+                            )}
 
 
                             {getLeadType(
@@ -11337,40 +11333,39 @@ const selectedReopenLeadEntries = useMemo(() => {
 
       <LeadTransferModal
 
-        isOpen={      showTransferModal   }
+        isOpen={showTransferModal}
 
-        onClose={() => 
-          { 
-            setShowTransferModal(false  );
+        onClose={() => {
+          setShowTransferModal(false);
 
-          setSelectedTransferLeads( [] );
+          setSelectedTransferLeads([]);
 
         }}
 
-        users={ transferUsers }
+        users={transferUsers}
 
-        onTransfer={ handleTransfer }
+        onTransfer={handleTransfer}
 
-        loadingUsers={ loadingUsers }
+        loadingUsers={loadingUsers}
 
         // Kept for compatibility with your existing modal.
         // Single lead is the first array item.
 
-        selectedLead={ selectedTransferLeadEntries[0] ||   null  }
+        selectedLead={selectedTransferLeadEntries[0] || null}
 
         // Actual transfer collection.
         // Both prop names are supplied so the existing modal
         // remains compatible without changing its internal logic.
 
-        selectedLeadItems={ selectedTransferLeadEntries }
+        selectedLeadItems={selectedTransferLeadEntries}
 
-        selectedLeads={ selectedTransferLeadEntries  }
+        selectedLeads={selectedTransferLeadEntries}
 
       />
 
       {/* Confirmed/Lost warning. NO preserves the existing checkbox selection. */}
       {showTransferConfirmation && (
-         <MessageBox
+        <MessageBox
           show={showTransferConfirmation}
           type={MESSAGE_TYPES.QUESTION}
           message={transferConfirmationMessage}
@@ -11392,28 +11387,28 @@ const selectedReopenLeadEntries = useMemo(() => {
         />
       )}
       {showReopenModal && (
-  //       <ReOpenLeadModal
-  //   isOpen={showReopenModal}
-  //   onClose={() => {
-  //     setShowReopenModal(false);
-  //     setSelectedReopenLeads([]);
-  //     setReopenReason("");
-  //   }}
-  //   selectedLeads={selectedReopenLeadEntries}   // was: selectedReopenLeads
-  //   reopenReason={reopenReason}
-  //   setReopenReason={setReopenReason}
-  //   onReopen={handleReopenSubmit}
-  // />
+        //       <ReOpenLeadModal
+        //   isOpen={showReopenModal}
+        //   onClose={() => {
+        //     setShowReopenModal(false);
+        //     setSelectedReopenLeads([]);
+        //     setReopenReason("");
+        //   }}
+        //   selectedLeads={selectedReopenLeadEntries}   // was: selectedReopenLeads
+        //   reopenReason={reopenReason}
+        //   setReopenReason={setReopenReason}
+        //   onReopen={handleReopenSubmit}
+        // />
 
-  <ReOpenLeadModal
-    isOpen={showReopenModal}
-    onClose={() => {
-      setShowReopenModal(false);
-      setSelectedReopenLeads([]);
-    }}
-    selectedLeadEntries={selectedReopenLeadEntries}
-    onReopened={handleReopened}
-  />
+        <ReOpenLeadModal
+          isOpen={showReopenModal}
+          onClose={() => {
+            setShowReopenModal(false);
+            setSelectedReopenLeads([]);
+          }}
+          selectedLeadEntries={selectedReopenLeadEntries}
+          onReopened={handleReopened}
+        />
 
       )}
 
