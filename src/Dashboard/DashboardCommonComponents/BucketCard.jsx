@@ -224,8 +224,34 @@ const getAssigneeText = (lead) =>
     lead?.LeadAssignedTo ??
     lead?.assignedTo ??
     lead?.AssignedTo ??
+    lead?.assignedUserId ??
+    lead?.AssignedUserId ??
+    lead?.userId ??
+    lead?.UserId ??
     lead?.assignedUserName ??
     lead?.AssignedUserName ??
+    lead?.userName ??
+    lead?.UserName ??
+    "";
+
+/*
+   Assignee display text is intentionally kept separate from the
+   assignee filter value. The backend/filtering continues to use the
+   assignee ID, while the UI shows the same full name used in the row.
+*/
+const getAssigneeNameText = (lead) =>
+    lead?.leadAssignedToName ??
+    lead?.LeadAssignedToName ??
+    lead?.assignedUserName ??
+    lead?.AssignedUserName ??
+    lead?.assignedToName ??
+    lead?.AssignedToName ??
+    lead?.leadAssignedUserName ??
+    lead?.LeadAssignedUserName ??
+    lead?.userFullName ??
+    lead?.UserFullName ??
+    lead?.fullName ??
+    lead?.FullName ??
     lead?.userName ??
     lead?.UserName ??
     "";
@@ -395,17 +421,49 @@ const FilterPopover = ({
 }) => {
     const [localSearch, setLocalSearch] = useState("");
 
+    const normalizedOptions = useMemo(
+        () =>
+            options.map((option) => {
+                if (
+                    option &&
+                    typeof option === "object"
+                ) {
+                    return {
+                        value: String(option.value ?? ""),
+                        label: String(
+                            option.label ??
+                                option.value ??
+                                ""
+                        )
+                    };
+                }
+
+                return {
+                    value: String(option ?? ""),
+                    label: String(option ?? "")
+                };
+            }),
+        [options]
+    );
+
     const filteredOptions = useMemo(() => {
         if (!localSearch.trim()) {
-            return options;
+            return normalizedOptions;
         }
 
-        return options.filter((option) =>
-            String(option)
-                .toLowerCase()
-                .includes(localSearch.trim().toLowerCase())
+        const searchText =
+            localSearch.trim().toLowerCase();
+
+        return normalizedOptions.filter(
+            (option) =>
+                option.label
+                    .toLowerCase()
+                    .includes(searchText) ||
+                option.value
+                    .toLowerCase()
+                    .includes(searchText)
         );
-    }, [options, localSearch]);
+    }, [normalizedOptions, localSearch]);
 
     const selectedValues = Array.isArray(value)
         ? value.map((item) => String(item))
@@ -584,7 +642,7 @@ const FilterPopover = ({
                                         selectedValues.some(
                                             (item) =>
                                                 item.toLowerCase() ===
-                                                String(option).toLowerCase()
+                                                option.value.toLowerCase()
                                         );
 
                                     return (
@@ -596,11 +654,11 @@ const FilterPopover = ({
                                                     ? selectedValues.filter(
                                                           (item) =>
                                                               item.toLowerCase() !==
-                                                              String(option).toLowerCase()
+                                                              option.value.toLowerCase()
                                                       )
                                                     : [
                                                           ...selectedValues,
-                                                          String(option)
+                                                          option.value
                                                       ];
 
                                                 onChange(next);
@@ -647,8 +705,11 @@ const FilterPopover = ({
                                                 )}
                                             </span>
 
-                                            <span className="min-w-0 truncate">
-                                                {option}
+                                            <span
+                                                className="min-w-0 truncate"
+                                                title={option.label}
+                                            >
+                                                {option.label}
                                             </span>
                                         </button>
                                     );
@@ -1188,13 +1249,44 @@ const BucketCard = ({
         );
 
     const assigneeOptions =
-        useMemo(
-            () =>
-                getUniqueOptions(
-                    getAssigneeText
-                ),
-            [safeLeads]
-        );
+        useMemo(() => {
+            const map = new Map();
+
+            safeLeads.forEach((lead) => {
+                const id = String(
+                    getAssigneeText(lead) || ""
+                ).trim();
+
+                if (!id) {
+                    return;
+                }
+
+                const name = String(
+                    getAssigneeNameText(lead) || ""
+                ).trim();
+
+                const label = name
+                    ? `${name} (${id})`
+                    : id;
+
+                if (!map.has(id)) {
+                    map.set(id, {
+                        value: id,
+                        label
+                    });
+                }
+            });
+
+            return [...map.values()].sort((a, b) =>
+                a.label.localeCompare(
+                    b.label,
+                    undefined,
+                    {
+                        sensitivity: "base"
+                    }
+                )
+            );
+        }, [safeLeads]);
 
     const statusOptions =
         useMemo(
