@@ -123,7 +123,7 @@ export default function ItineraryDetailsSection({
       itineraryBasicDetails: {
         ...prev.itineraryBasicDetails,
         // basic
-         
+
         tourCode: "",
         itName: "",
         description: "",
@@ -140,9 +140,10 @@ export default function ItineraryDetailsSection({
     const fetchSectorType = async () => {
 
       try {
-
+        debugger;
         const data = await getSectorTypeList();
         // console.log("Sector Type Api Response:", data);
+        // setTravelScope(data);
         setTravelScope(data);
 
       }
@@ -152,6 +153,7 @@ export default function ItineraryDetailsSection({
     }
     fetchSectorType();
   }, [getSectorTypeList]);
+  // }, [getSectorTypeList]);
   // const travScope = [
   //   { id: 1, travelScope: "Domestic" },
   //   { id: 2, travelScope: "International" },
@@ -170,28 +172,28 @@ export default function ItineraryDetailsSection({
       {/* Section header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 14 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span
-          style={{
-            background: colors.primary,
-            color: colors.white,
-            borderRadius: "50%",
-            width: 22,
-            height: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          1
-        </span>
-        <span style={{ fontWeight: 700, fontSize: 15, color: colors.primary }}>
-          Itinerary Details
-        </span>
-      </div>
+          <span
+            style={{
+              background: colors.primary,
+              color: colors.white,
+              borderRadius: "50%",
+              width: 22,
+              height: 22,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 700,
+            }}
+          >
+            1
+          </span>
+          <span style={{ fontWeight: 700, fontSize: 15, color: colors.primary }}>
+            Itinerary Details
+          </span>
+        </div>
 
-       {/* Clear All Details button - same line as heading */}
+        {/* Clear All Details button - same line as heading */}
         <button
           type="button"
           onClick={handleClearAllDetails}
@@ -246,24 +248,39 @@ export default function ItineraryDetailsSection({
         {/* Row 1, Col 3: Travel Scope */}
         <div style={{ gridColumn: 3, gridRow: 1 }}>
           <label style={labelStyle}>Travel Sector *</label>
+
           <select
             value={basic.travelScope ?? ""}
             onChange={(e) => {
-              const selectedScope = e.target.value === "" ? null : Number(e.target.value);
+              const selectedScope =
+                e.target.value === ""
+                  ? null
+                  : Number(e.target.value);
+
               handleChange("travelScope", selectedScope);
               handleChange("selectedDestinations", []);
             }}
             style={inputStyle}
-            placeholder="e.g. Explore the beautiful backwaters…"
-          />
+          >
+            <option value="">Select Travel Sector</option>
+
+            {travelScope?.map((item) => (
+              <option
+                key={item.id}
+                value={item.id}
+              >
+                {item.sectorTypeName}
+              </option>
+            ))}
+          </select>
         </div>
 
-       
+
         {/* Row 1-2, Col 4: Selected Destinations (right side) */}
         <div style={{ gridColumn: 4, gridRow: "1 / 3" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <label style={labelStyle}>Selected Destinations</label>
-          {(basic.selectedDestinations || []).length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <label style={labelStyle}>Selected Destinations</label>
+            {(basic.selectedDestinations || []).length > 0 && (
               <button
                 type="button"
                 onClick={handleClearAllDestinations}
@@ -296,7 +313,7 @@ export default function ItineraryDetailsSection({
               alignItems: (basic.selectedDestinations || []).length === 0 ? "center" : "flex-start",
               justifyContent: (basic.selectedDestinations || []).length === 0 ? "center" : "flex-start",
               gap: 6,
-              
+
             }}
           >
             {(basic.selectedDestinations || []).length === 0 ? (
@@ -351,16 +368,16 @@ export default function ItineraryDetailsSection({
         {/* Row 2, Col 1: Number of Days */}
         <div style={{ gridColumn: 1, gridRow: 2 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, }} >
-          <label style={labelStyle}>Number of Days *</label>
-           <span
-          style={{
-            fontSize: 9,
-            color: colors.danger
-          }}
-        >
-          (Please select days to generate variant)
-        </span>
-        </div>
+            <label style={labelStyle}>Number of Days *</label>
+            <span
+              style={{
+                fontSize: 9,
+                color: colors.danger
+              }}
+            >
+              (Please select days to generate variant)
+            </span>
+          </div>
           <div style={{ position: "relative" }}>
             <input
               type="number"
