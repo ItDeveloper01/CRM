@@ -13,6 +13,18 @@ import { useNavigate } from "react-router-dom";
 
 const ContextContext = createContext(null);
 
+const bypassedContextValue = {
+  availableContexts: [],
+  currentContext: null,
+  contextLoading: false,
+  loadUserContexts: async () => [],
+  loadMenusForContext: async () => [],
+  selectContext: async () => [],
+  restoreContext: () => null,
+  navigateToValidMenu: () => {},
+  setCurrentContext: () => {},
+};
+
 export const ContextProvider = ({ children }) => {
   console.log("==================================================");
   console.log("🔥 [CONTEXT] ContextProvider RENDER");
@@ -754,9 +766,7 @@ export const useContextState = () => {
     useContext(ContextContext);
 
   if (!context) {
-    throw new Error(
-      "useContextState must be used inside ContextProvider"
-    );
+    return bypassedContextValue;
   }
 
   return context;

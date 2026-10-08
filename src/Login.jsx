@@ -5,6 +5,8 @@ import axios from 'axios';
 import { UserProvider } from './SessionContext';
 import { useGetSessionUser } from './SessionContext';
 
+const BYPASS_CONTEXT_WRAPPER = false;
+
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -15,181 +17,130 @@ export default function Login() {
 
   const { setUser, setMenu } = useGetSessionUser();   // ✅ from context
   //const navigate = useNavigate();
+const handleLogin = async (e) => {
+  console.log("user", username);
+  console.log("pass:", password);
 
-  const handleLogin = async (e) => {
-    console.log("user", username);
-    console.log("pass:", password);
+  e.preventDefault();
 
-    e.preventDefault();
+  setError("");
+  setErrorMsg("");
 
-    setError("");
-    setErrorMsg("");
-
-    const formdata = {
-      userId: username,
-      password: password,
-    };
-
-    try {
-      console.log("config APIURL ", config.API_URL);
-
-      const APIURL = config.apiUrl + "/users/login";
-
-      console.log(
-        "Connection String to User ...." + APIURL
-      );
-
-      console.log("formdata....:", formdata);
-
-      const response = await axios.post(APIURL, formdata);
-
-      console.log(
-        "Login response with menu:",
-        response
-      );
-
-      localStorage.removeItem("currentContext");
-      localStorage.removeItem("menu");
-
-      // -------------------------------------------------------
-      // Save user details
-      // -------------------------------------------------------
-
-      localStorage.setItem(
-        "loggedInUser",
-        JSON.stringify(response.data)
-      );
-
-
-      // -------------------------------------------------------
-      // Get user menu
-      // -------------------------------------------------------
-
-      const responseMenus =
-        response.data.menu ??
-        response.data.menus;
-
-      const userMenus = Array.isArray(responseMenus)
-        ? responseMenus
-        : [];
-
-      console.log(
-        "User menus:",
-        userMenus
-      );
-
-
-      localStorage.setItem(
-        "menu",
-        JSON.stringify(userMenus)
-      );
-
-
-      // -------------------------------------------------------
-      // Update global auth context
-      // -------------------------------------------------------
-
-      const authData = {
-        isLoggedIn: true,
-
-        role: response.data.user.role,
-
-        user: {
-          id: response.data.user.userId,
-          name: response.data.user.firstName,
-          ...response.data.user,
-        },
-
-        token: response.data.token,
-      };
-
-
-      localStorage.setItem(
-        "auth",
-        JSON.stringify(authData)
-      );
-
-      setUser(authData);
-
-      setMenu(userMenus);
-
-
-      console.log(
-        "User Logged with following Menu:",
-        JSON.stringify(userMenus)
-      );
-
-
-      navigate("/context");
-      // -------------------------------------------------------
-      // Navigate
-      // -------------------------------------------------------
-
-      // if (firstMenu) {
-
-      //   console.log(
-      //     "Navigating to first menu:",
-      //     firstMenu.menuName,
-      //     firstMenu.route
-      //   );
-
-      //   navigate(firstMenu.route);
-
-      // } else {
-
-      //   // -----------------------------------------------------
-      //   // User has no usable menu
-      //   // -----------------------------------------------------
-
-      //   console.warn(
-      //     "User has no navigable menus."
-      //   );
-
-      //   // You can change this to an access-denied page
-      //   // if you have one.
-      //   navigate("/access-denied");
-      // }
-
-    } catch (err) {
-
-      console.log("Login error:", err);
-
-      if (err.response && err.response.data) {
-
-        console.log(
-          "Status:",
-          err.response.status
-        );
-
-        console.log(
-          "Error message:",
-          err.response
-        );
-
-        setErrorMsg(
-          err.response.data.error
-        );
-
-        setError(
-          err.response.data
-        );
-
-      } else {
-
-        setError("Invalid credentials");
-
-        setErrorMsg("Invalid credentials");
-
-        console.log(
-          "Error:",
-          err
-        );
-
-        alert("Server unreachable");
-      }
-    }
+  const formdata = {
+    userId: username,
+    password: password,
   };
 
+  try {
+
+    debugger;
+    console.log("config APIURL ", config.API_URL);
+
+    const APIURL = config.apiUrl + "/users/login";
+
+    console.log(
+      "Connection String to User ...." + APIURL
+    );
+
+    console.log("formdata....:", formdata);
+
+    const response = await axios.post(APIURL, formdata);
+
+    console.log(
+      "Login response:",
+      response
+    );
+
+    // -------------------------------------------------------
+    // Save user details
+    // -------------------------------------------------------
+
+    localStorage.setItem(
+      "loggedInUser",
+      JSON.stringify(response.data)
+    );
+
+    const loginMenu = Array.isArray(response.data?.menu)
+      ? response.data.menu
+      : [];
+
+    // -------------------------------------------------------
+    // Update global auth context
+    // -------------------------------------------------------
+
+    const authData = {
+      isLoggedIn: true,
+
+      role: response.data.user.role,
+
+      user: {
+        id: response.data.user.userId,
+        name: response.data.user.firstName,
+        ...response.data.user,
+      },
+
+      token: response.data.token,
+    };
+
+    setUser(authData);
+
+    setMenu(loginMenu);
+
+    localStorage.setItem(
+      "menu",
+      JSON.stringify(loginMenu)
+    );
+
+    // -------------------------------------------------------
+    // Context-based navigation
+    // ContextWrapper will:
+    // 1. Load user's contexts
+    // 2. Select default context
+    // 3. Load menus for that context
+    // 4. Navigate to valid route
+    // -------------------------------------------------------
+
+    navigate(BYPASS_CONTEXT_WRAPPER ? "/dashboard" : "/context");
+
+  } catch (err) {
+
+    console.log("Login error:", err);
+
+    if (err.response && err.response.data) {
+
+      console.log(
+        "Status:",
+        err.response.status
+      );
+
+      console.log(
+        "Error message:",
+        err.response
+      );
+
+      setErrorMsg(
+        err.response.data.error
+      );
+
+      setError(
+        err.response.data
+      );
+
+    } else {
+
+      setError("Invalid credentials");
+
+      setErrorMsg("Invalid credentials");
+
+      console.log(
+        "Error:",
+        err
+      );
+
+      alert("Server unreachable");
+    }
+  }
+};
   return (
     // <div className='flex h-screen items-center justify-center bg-gray-100'>
 
