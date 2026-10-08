@@ -61,7 +61,18 @@ export function UserProvider({ children }) {
 
   const [menu, setMenu] = useState(() => {
     const savedMenu = localStorage.getItem("menu");
-    return savedMenu ? JSON.parse(savedMenu) : [];
+    if (savedMenu) {
+      return JSON.parse(savedMenu);
+    }
+
+    const loggedInUser = localStorage.getItem("loggedInUser");
+
+    if (loggedInUser) {
+      const parsedUser = JSON.parse(loggedInUser);
+      return Array.isArray(parsedUser?.menu) ? parsedUser.menu : [];
+    }
+
+    return [];
   });
 
   const logout = useCallback(() => {

@@ -45,6 +45,19 @@ import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManage
 import AnalyticsBoardWrapper from './MyTeamAnalyticsBoard/AnalyticsBoardWrapper';
 import NotificationConfiguration from './NotificationConfigurationsScreens/NotificationConfiguration';
 
+const BYPASS_CONTEXT_WRAPPER = false;
+
+const ContextShell = ({ children }) => {
+  if (BYPASS_CONTEXT_WRAPPER) {
+    return <>{children}</>;
+  }
+
+  return (
+    <ContextProvider>
+      {children}
+    </ContextProvider>
+  );
+};
 
 export default function App() {
 
@@ -256,7 +269,7 @@ export default function App() {
             because ContextContext uses useNavigate()
             =================================================== */}
 
-        <ContextProvider>
+        <ContextShell>
 
           <Routes>
 
@@ -284,8 +297,8 @@ export default function App() {
                   <Route
                     path='/'
                     element={
-                      <Navigate
-                        to="/context"
+                        <Navigate
+                        to={BYPASS_CONTEXT_WRAPPER ? "/dashboard" : "/context"}
                         replace
                       />
                     }
@@ -297,7 +310,11 @@ export default function App() {
 
                   <Route
                     path="/context"
-                    element={<ContextWrapper />}
+                    element={
+                      BYPASS_CONTEXT_WRAPPER
+                        ? <Navigate to="/dashboard" replace />
+                        : <ContextWrapper />
+                    }
                   />
 
                   {/* =========================================
@@ -592,7 +609,7 @@ export default function App() {
 
           </Routes>
 
-        </ContextProvider>
+        </ContextShell>
 
       </Router>
 
