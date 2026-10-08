@@ -5,6 +5,7 @@ import config from "../../config";
 import { useGetSessionUser } from "../../SessionContext";
 
 import SalesDashboard from "../SalesDashboard/SalesDashboard";
+import OperationsDashboard from "../OperationDashboard/OperationDashbord";
 
 import DashboardDepartmentHeader from "../DashboardCommonComponents/DashboardDepartmentHeader";
 
@@ -309,7 +310,7 @@ const DashboardWrapper = () => {
                 // Future
                 // return OperationsDashboard;
 
-                return null;
+                return OperationsDashboard;
 
             case DEPARTMENT.TELECALLING:
 
