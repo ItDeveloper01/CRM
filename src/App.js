@@ -45,7 +45,7 @@ import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManage
 import AnalyticsBoardWrapper from './MyTeamAnalyticsBoard/AnalyticsBoardWrapper';
 import NotificationConfiguration from './NotificationConfigurationsScreens/NotificationConfiguration';
 
-const BYPASS_CONTEXT_WRAPPER = false;
+const BYPASS_CONTEXT_WRAPPER = true;
 
 const ContextShell = ({ children }) => {
   if (BYPASS_CONTEXT_WRAPPER) {
