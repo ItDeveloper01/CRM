@@ -468,6 +468,8 @@ export const HolidayLeadObject = {
 
     preferredTravelDateFlexibilityDays:null, // New field for travel date flexibility in days
 
+    fITDomRequestForQuotation:false, // New field for FIT Domestic Request for Quotation
+
     // =====================================================
     // PAX
     // =====================================================
