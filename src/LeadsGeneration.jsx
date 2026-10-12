@@ -1162,6 +1162,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
             holidayLeadObj.updatedBy_UserID = currentUser?.user?.userId;
 
             holidayLeadObj.fITDomRequestForQuotation = requestQuoteForFIT; 
+            console.log("FIT Domestic Flag Check :", holidayLeadObj.fITDomRequestForQuotation );
             
             const deepHolidayLeadObj = cloneDeep(holidayLeadObj);
             deepLeadCopy.category = { ...deepHolidayLeadObj };;
@@ -1236,8 +1237,11 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
             holidayLeadObj.assignee_UserID ||= currentUser?.user?.userId;
             // holidayLeadObj.updatedBy_UserID ||= currentUser?.user?.userId;
             holidayLeadObj.preferredTravelDate = formatHolidayDateForApi(holidayLeadObj.preferredTravelDate);
+            holidayLeadObj.fITDomRequestForQuotation = requestQuoteForFIT; 
+            console.log("fITDomRequestForQuotation Flage set for Create: ", holidayLeadObj.fITDomRequestForQuotation);
             const deepHolidayLeadCopy = cloneDeep(holidayLeadObj);
             deepCopy.category = { ...deepHolidayLeadCopy };
+            console.log("Checkbox state:", requestQuoteForFIT);
             console.log("Holiday Lead Obj to be sent...", deepCopy.category);
             break;
 
@@ -1257,7 +1261,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
           console.log("Lead created successfully:", response.data);
-           setIsDashboardLoading(false);
+          setIsDashboardLoading(false);
           alert("Lead saved successfully!");
         }).catch((error) => {
           console.error("Error saving lead:", error);
