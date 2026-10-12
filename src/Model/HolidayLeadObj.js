@@ -401,27 +401,35 @@ export const PackagePreferenceModel = {
 
     flexibleDays: 0,
 
+    budgetPreference: null,
     // ==========================================
     // BUDGET
     // ==========================================
 
-    budget: 0,
+    tripBudget: "",
 
-    currency: "INR",
+    // currency: "INR",
 
     // ==========================================
     // HOTEL & MEAL
     // ==========================================
 
-    hotelCategory: "",
+    hotelCategory: null,
 
-    mealPlan: "",
+    mealPlan: null,
+
+    //===========================================
+    //Vehicle Details
+    //===========================================
+    vehicleType : null,
 
     // ==========================================
     // TRIP INFO
     // ==========================================
 
     tripDescription: "",
+
+    arrivalCity: "",
 
     departureCity: "",
 
@@ -431,7 +439,7 @@ export const PackagePreferenceModel = {
     // EXTRA
     // ==========================================
 
-    notes: ""
+    sketchItinerary: ""
 };
 
 export const getEmptyPackagePreferenceObj = () => {

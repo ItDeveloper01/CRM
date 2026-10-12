@@ -152,7 +152,7 @@ export default function ItineraryDetailsSection({
       }
     }
     fetchSectorType();
-  }, [getSectorTypeList]);
+  }, []);
   // }, [getSectorTypeList]);
   // const travScope = [
   //   { id: 1, travelScope: "Domestic" },

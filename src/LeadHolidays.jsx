@@ -832,15 +832,15 @@ const LeadHolidays = forwardRef(({
 
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Travel Date <span className="text-red-500">*</span>
-                    </label>
+
 
                     <div className="flex items-start gap-2">
 
                         {/* Travel Date */}
                         <div className="flex-1">
-
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Travel Date <span className="text-red-500">*</span>
+                            </label>
                             {/* Input + Calendar */}
                             <div className="relative">
 
@@ -1055,15 +1055,21 @@ const LeadHolidays = forwardRef(({
                         </div>
 
                         {/* Flexibility */}
-                        <div className="relative">
 
-                            <button
-                                type="button"
-                                disabled={isViewMode}
-                                onClick={() =>
-                                    setShowFlexibility(prev => !prev)
-                                }
-                                className={`
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Flexible Dates <span className="text-red-500"></span>
+                            </label>
+
+                            <div className="relative">
+
+                                <button
+                                    type="button"
+                                    disabled={isViewMode}
+                                    onClick={() =>
+                                        setShowFlexibility(prev => !prev)
+                                    }
+                                    className={`
                     h-[38px]
                     px-3
                     rounded-full
@@ -1076,33 +1082,33 @@ const LeadHolidays = forwardRef(({
                     transition-all
                     duration-150
                     ${holidayLeadObj.preferredTravelDateFlexibilityDays
-                                        ? "bg-blue-50 border-blue-200 text-blue-600"
-                                        : "bg-gray-50 border-gray-200 text-gray-500"
-                                    }
+                                            ? "bg-blue-50 border-blue-200 text-blue-600"
+                                            : "bg-gray-50 border-gray-200 text-gray-500"
+                                        }
                     ${isViewMode
-                                        ? "cursor-not-allowed opacity-70"
-                                        : "hover:bg-blue-100 hover:border-blue-300"
-                                    }
+                                            ? "cursor-not-allowed opacity-70"
+                                            : "hover:bg-blue-100 hover:border-blue-300"
+                                        }
                 `}
-                            >
-                                <span className="text-xs">±</span>
+                                >
+                                    <span className="text-xs">±</span>
 
-                                <span>
-                                    {holidayLeadObj.preferredTravelDateFlexibilityDays
-                                        ? `${holidayLeadObj.preferredTravelDateFlexibilityDays} Days`
-                                        : "Flexibility"}
-                                </span>
+                                    <span>
+                                        {holidayLeadObj.preferredTravelDateFlexibilityDays
+                                            ? `${holidayLeadObj.preferredTravelDateFlexibilityDays} Days`
+                                            : "Flexibility"}
+                                    </span>
 
-                                <ChevronDown
-                                    size={14}
-                                    className={`transition-transform ${showFlexibility ? "rotate-180" : ""
-                                        }`}
-                                />
-                            </button>
+                                    <ChevronDown
+                                        size={14}
+                                        className={`transition-transform ${showFlexibility ? "rotate-180" : ""
+                                            }`}
+                                    />
+                                </button>
 
-                            {showFlexibility && !isViewMode && (
-                                <div
-                                    className="
+                                {showFlexibility && !isViewMode && (
+                                    <div
+                                        className="
                         absolute
                         right-0
                         top-full
@@ -1116,32 +1122,32 @@ const LeadHolidays = forwardRef(({
                         shadow-lg
                         p-1.5
                     "
-                                >
-                                    {[
-                                        { value: 0, label: "Exact Date" },
-                                        { value: 1, label: "± 1 Day" },
-                                        { value: 2, label: "± 2 Days" },
-                                        { value: 3, label: "± 3 Days" },
-                                        { value: 5, label: "± 5 Days" },
-                                        { value: 7, label: "± 7 Days" },
-                                        { value: 9, label: "± 9 Days" },
-                                        { value: 11, label: "± 11 Days" },
-                                        { value: 13, label: "± 13 Days" },
-                                        { value: 15, label: "± 15 Days" }
-                                    ].map(option => (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            onClick={() => {
-                                                setHolidayLeadObj(prev => ({
-                                                    ...prev,
-                                                    preferredTravelDateFlexibilityDays:
-                                                        option.value
-                                                }));
+                                    >
+                                        {[
+                                            { value: 0, label: "Exact Date" },
+                                            { value: 1, label: "± 1 Day" },
+                                            { value: 2, label: "± 2 Days" },
+                                            { value: 3, label: "± 3 Days" },
+                                            { value: 5, label: "± 5 Days" },
+                                            { value: 7, label: "± 7 Days" },
+                                            { value: 9, label: "± 9 Days" },
+                                            { value: 11, label: "± 11 Days" },
+                                            { value: 13, label: "± 13 Days" },
+                                            { value: 15, label: "± 15 Days" }
+                                        ].map(option => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => {
+                                                    setHolidayLeadObj(prev => ({
+                                                        ...prev,
+                                                        preferredTravelDateFlexibilityDays:
+                                                            option.value
+                                                    }));
 
-                                                setShowFlexibility(false);
-                                            }}
-                                            className={`
+                                                    setShowFlexibility(false);
+                                                }}
+                                                className={`
                                 w-full
                                 text-left
                                 px-3
@@ -1150,18 +1156,19 @@ const LeadHolidays = forwardRef(({
                                 text-sm
                                 transition
                                 ${holidayLeadObj
-                                                    .preferredTravelDateFlexibilityDays ===
-                                                    option.value
-                                                    ? "bg-blue-50 text-blue-600 font-medium"
-                                                    : "text-gray-600 hover:bg-gray-50"
-                                                }
+                                                        .preferredTravelDateFlexibilityDays ===
+                                                        option.value
+                                                        ? "bg-blue-50 text-blue-600 font-medium"
+                                                        : "text-gray-600 hover:bg-gray-50"
+                                                    }
                             `}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1178,6 +1185,15 @@ const LeadHolidays = forwardRef(({
                 setHolidayLeadObj={setHolidayLeadObj}
                 isViewMode={isViewMode}
             />
+
+             {/* SPECIAL REQUIREMENTS */}
+
+                    <SpecialRequirementsSection
+                        holidayLeadObj={holidayLeadObj}
+                        setHolidayLeadObj={setHolidayLeadObj}
+                        isViewMode={isViewMode}
+                        allRequirements={specialRequirement}
+                    />
 
             {/* ===================================== */}
             {/* ADD DOMESTIC / INTERNATIONAL DETAILS */}
@@ -1286,7 +1302,7 @@ const LeadHolidays = forwardRef(({
 
                     {/* SERVICES */}
 
-                    {selectedConfig?.features?.services && (
+                    {/* {selectedConfig?.features?.services && (
 
                         <ServiceAccordion
                             travelScope={
@@ -1300,7 +1316,7 @@ const LeadHolidays = forwardRef(({
                             getAIAssistant={getAIAssistant}
                         />
 
-                    )}
+                    )} */}
 
                     {/* PACKAGE PREFERENCES */}
 
@@ -1349,18 +1365,11 @@ const LeadHolidays = forwardRef(({
 
                     )}
 
-                    {/* SPECIAL REQUIREMENTS */}
-
-                    <SpecialRequirementsSection
-                        holidayLeadObj={holidayLeadObj}
-                        setHolidayLeadObj={setHolidayLeadObj}
-                        isViewMode={isViewMode}
-                        allRequirements={specialRequirement}
-                    />
+                   
 
                     {/* QUOTE CALCULATOR */}
 
-                    <QuoteCalculator
+                    {/* <QuoteCalculator
                         baseAmt={holidayLeadObj.quoteAmount || 0}
                         discountPct={holidayLeadObj.discountPercent || 0}
                         discountAmt={holidayLeadObj.discountAmount || 0}
@@ -1369,7 +1378,7 @@ const LeadHolidays = forwardRef(({
                         onDiscountChange={onDiscountAmountChange}
                         onFinalChange={onFinalAmountChange}
                         isViewMode={isViewMode}
-                    />
+                    /> */}
 
                 </>
 

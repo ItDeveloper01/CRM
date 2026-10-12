@@ -275,6 +275,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { getEmptyPackagePreferenceObj } from "./../../Model/HolidayLeadObj";
+import config from "../../config";
+import axios from "axios";
+import { useGetSessionUser } from "./../../SessionContext";
+
 
 const CalendarIcon = ({ size = 14, color = "#2563eb" }) => (
     <svg
@@ -938,19 +942,30 @@ const FullScreenNotesEditor = ({
     // CHARACTER COUNT
     // --------------------------------------------------------
 
+    // const getPlainTextLength = () => {
+
+    //     if (!editorRef.current)
+    //         return 0;
+
+    //     return (
+    //         editorRef.current.innerText ||
+    //         editorRef.current.textContent ||
+    //         ""
+    //     ).length;
+
+    // };
+
+
     const getPlainTextLength = () => {
+        if (!editorRef.current) return 0;
 
-        if (!editorRef.current)
-            return 0;
+        const text = editorRef.current.innerText || "";
 
-        return (
-            editorRef.current.innerText ||
-            editorRef.current.textContent ||
-            ""
-        ).length;
-
+        return text
+            .replace(/\r/g, "")
+            .replace(/\n/g, "")
+            .length;
     };
-
 
     return (
         <div className="
@@ -1508,12 +1523,14 @@ const FullScreenNotesEditor = ({
                         gap-3
                     ">
 
-                        <span className="
+
+                        {/* check text length later  */}
+                        {/* <span className="
                             text-xs
                             text-gray-500
                         ">
                             {getPlainTextLength()}/300
-                        </span>
+                        </span> */}
 
 
                         <button
@@ -1562,13 +1579,113 @@ export default function TravelPackage({
     travelScope = ""
 }) {
 
-    const [isOpen, setIsOpen] =
-        useState(true);
+    const [isOpen, setIsOpen] = useState(true);
+    const scopeLabel = travelScope ? ` (${travelScope})` : "";
+    const { user: sessionUser } = useGetSessionUser();
 
-    const scopeLabel =
-        travelScope
-            ? ` (${travelScope})`
-            : "";
+    const [vehicleType, setVehicleType] = useState([]);
+    const getVehicleTypeEndPoint = config.apiUrl + `/MasterData/GetHolidayTransportVehicleTypeMasterList`;
+
+    const [budgetPreference, setBudgetPreference] = useState([]);
+    const getBudgetPreferenceEndPoint = config.apiUrl + `/MasterData/GetBudgetPreferenceList`;
+
+
+    const [hotelCategory, setHotelCategory] = useState([]);
+    const getHotelCategoryEndPoint = config.apiUrl + `/MasterData/GetHotelTypeList`;
+
+    const [mealPlan, setMealPlan] = useState([]);
+    const  getMealPlanEndPoint =config.apiUrl + `/MasterData/GetMealPlanList`;
+
+
+    
+
+    useEffect(() => {
+
+
+        const fetchVehicleType = async () => {
+            debugger;
+            const response = await axios.get(getVehicleTypeEndPoint,
+                {
+                    params: {
+                        TravelScope: travelScope || "International",
+                    },
+                    headers: {
+                        Authorization: `Bearer ${sessionUser.token}`,
+                    },
+                }
+
+            )
+            console.log("Travel Scope in travel package :", travelScope);
+            setVehicleType(response.data || []);
+        }
+        fetchVehicleType();
+
+    }, [travelScope]);
+
+    useEffect(() => {
+
+        //BudgetPreference fetch Api
+        const fetchBudgetPreference = async () => {
+            try{
+            debugger;
+
+            const response = await axios.get(getBudgetPreferenceEndPoint);
+
+            setBudgetPreference(response.data || []);
+            console.log("Response of Budget Preference api:", response.data);
+            }
+            catch(error){
+                console.error("Error while fetching Budget Preference List: ", error);
+            }
+        }
+
+        fetchBudgetPreference();
+
+
+        //Hotel Category/type Api Fetch 
+        const fetchHotelCategory =async () =>{
+            try{
+                debugger;
+                const response = await axios.get(getHotelCategoryEndPoint);
+                setHotelCategory(response.data || []);
+
+                console.log("Response From Hotel Category/Type API: ",response.data);
+
+            }
+            catch(error)
+            {
+                console.error("Error while fetching Hotel Category/Type List: ",error);
+            }
+
+        }
+        fetchHotelCategory();
+
+
+        //Fetch Meal Plan List 
+
+        const fetchMealPlan = async () => {
+            try 
+            {
+                const  response = await axios.get(getMealPlanEndPoint);
+                 setMealPlan(response.data || []);
+                 console.log("Response from Meal Plan Master API:",response.data);
+
+            }
+            catch(error)
+                {
+                    console.error("Error while fetching meal plan:",error);
+                }
+        }
+
+        fetchMealPlan();
+
+    }, []);
+
+    // useEffect(() => {
+    //   console.log("CarRentalBookingForm mounted or travelScope changed, loading vehicles...",  travelScope);
+    //   fetchVehicleType();
+    // }, [travelScope]);
+
 
     const [activeTab, setActiveTab] =
         useState(0);
@@ -1825,7 +1942,7 @@ export default function TravelPackage({
 
         updatePackage(
             expandedNotesPackageIndex,
-            "notes",
+            "sketchItinerary",
             value
         );
 
@@ -2157,7 +2274,7 @@ export default function TravelPackage({
 
                                     const pkg =
                                         packagesArray[
-                                            activeTab
+                                        activeTab
                                         ];
 
                                     const index =
@@ -2278,12 +2395,9 @@ export default function TravelPackage({
 
                                                 </div>
 
-
-                                                {/* FLEXIBLE DATES */}
                                                 <div>
-
                                                     <label className="label-style">
-                                                        Flexible Dates
+                                                        Flexible Days
                                                     </label>
 
 
@@ -2323,7 +2437,7 @@ export default function TravelPackage({
                                                                     ] = {
 
                                                                         ...updated[
-                                                                            index
+                                                                        index
                                                                         ],
 
                                                                         isFlexibleDates:
@@ -2425,55 +2539,33 @@ export default function TravelPackage({
 
                                             </div>
 
-
-                                            {/* ================================================= */}
                                             {/* ROW 2 */}
-                                            {/* ================================================= */}
+                                            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"> */}
+                                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-2">
 
-                                            <div className="
-                                                grid
-                                                grid-cols-1
-                                                md:grid-cols-4
-                                                gap-2
-                                                mt-2
-                                            ">
+                                                {/* <div>
+                                                <label className="label-style">
+                                                    Budget Per Pax
+                                                </label>
 
-                                                {/* BUDGET */}
-                                                <div>
+                                                <input
+                                                    type="number"
+                                                    value={pkg.budget || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(
+                                                            index,
+                                                            "budget",
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                    className="border-highlight"
+                                                />
+                                            </div> */}
 
-                                                    <label className="label-style">
-                                                        Budget
-                                                    </label>
-
-
-                                                    <input
-                                                        type="number"
-                                                        value={
-                                                            pkg.budget ||
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "budget",
-                                                                Number(
-                                                                    e.target.value
-                                                                )
-                                                            )
-                                                        }
-                                                        className="border-highlight"
-                                                    />
-
-                                                </div>
-
-
-                                                {/* CURRENCY */}
-                                                <div>
-
-                                                    <label className="label-style">
-                                                        Currency
-                                                    </label>
-
+                                                {/* <div>
+                                                <label className="label-style">
+                                                    Currency
+                                                </label>
 
                                                     <select
                                                         value={
@@ -2498,54 +2590,151 @@ export default function TravelPackage({
                                                             USD
                                                         </option>
 
-                                                        <option value="EUR">
-                                                            EUR
-                                                        </option>
+                                                    <option value="EUR">
+                                                        EUR
+                                                    </option>
+                                                </select>
+                                            </div> */}
+                                                <div className="flex flex-col ">
+                                                    <label className="label-style">Package Preference</label>
+
+                                                    {/* {isViewMode ? (
+                                                    <ViewSelect value={leadObj.budgetPreference} />
+                                                ) : ( */}
+                                                    <select
+                                                        name="budgetPreference"
+                                                        value={pkg.budgetPreference || ""} 
+                                                        // onChange={(e) =>
+                                                        //     updatePackage(
+                                                        //         index,
+                                                        //         "budgetPreference",
+                                                        //         e.target.value
+                                                        //     )
+                                                        // }
+
+                                                        onChange={(e) => {
+                                                            const value =
+                                                                e.target.value === "" ? null : Number(e.target.value);
+
+                                                            updatePackage(
+                                                                index,
+                                                                "budgetPreference",
+                                                                value
+                                                            );
+                                                        }}
+
+
+                                                        className="border-highlight"
+                                                    >
+                                                        <option value="">Select Budget Prefernce</option>
+                                                        {budgetPreference.map((budgetPre) => (
+                                                            <option key={budgetPre.id} value={budgetPre.id}>
+                                                                {budgetPre.budgetPreferenceName}
+                                                            </option>
+                                                        ))}
 
                                                     </select>
-
+                                                    {/* )} */}
                                                 </div>
 
 
-                                                {/* HOTEL */}
-                                                <div>
+                                                <div className="md:col-span-2">
+                                                    <label className="label-style">
+                                                        Trip Description
+                                                    </label>
 
+                                                    <input
+                                                        type="text"
+                                                        value={pkg.tripDescription || ""}
+                                                        onChange={(e) =>
+                                                            updatePackage(
+                                                                index,
+                                                                "tripDescription",
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        className="border-highlight"
+                                                    />
+                                                </div>
+
+
+                                                {/* <div>
+                                                <label className="label-style">
+                                                    Hotel
+                                                </label>
+
+                                                <select
+                                                    value={pkg.hotelCategory || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(
+                                                            index,
+                                                            "hotelCategory",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border-highlight"
+                                                >
+                                                    <option value="">
+                                                        Select
+                                                    </option>
+
+                                                    <option value="3 Star">
+                                                        3 Star
+                                                    </option>
+
+                                                    <option value="4 Star">
+                                                        4 Star
+                                                    </option>
+
+                                                    <option value="5 Star">
+                                                        5 Star
+                                                    </option>
+                                                </select>
+                                            </div> */}
+
+                                                <div>
                                                     <label className="label-style">
                                                         Hotel
                                                     </label>
-
 
                                                     <select
                                                         value={
                                                             pkg.hotelCategory ||
                                                             ""
                                                         }
-                                                        onChange={(e) =>
+                                                        onChange={(e) =>{
+                                                            const value =e.target.value === "" 
+                                                            ? null 
+                                                            : Number(e.target.value);
+
+                                                            console.log("Value is ",value);        // 2
+                                                            console.log(typeof value); // "number"    
+
+
                                                             updatePackage(
                                                                 index,
                                                                 "hotelCategory",
-                                                                e.target.value
+                                                                // e.target.value
+                                                                value
                                                             )
+
+                                                            
+                                                            
+                                                           
+                                                        }
                                                         }
                                                         className="border-highlight"
                                                     >
 
-                                                        <option value="">
-                                                            Select
+                                                       
+                                                        <option value=""> Select Hotel Type</option>
+                                                    {hotelCategory.map((hotelCat)=> (
+                                                        <option key={hotelCat.id} value={hotelCat.id}>
+                                                            {hotelCat.hotelType}
                                                         </option>
 
-                                                        <option value="3 Star">
-                                                            3 Star
-                                                        </option>
-
-                                                        <option value="4 Star">
-                                                            4 Star
-                                                        </option>
-
-                                                        <option value="5 Star">
-                                                            5 Star
-                                                        </option>
-
+                                                        
+                                                    ))}
                                                     </select>
 
                                                 </div>
@@ -2560,89 +2749,114 @@ export default function TravelPackage({
 
 
                                                     <select
-                                                        value={
-                                                            pkg.mealPlan ||
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
+                                                        value={pkg.mealPlan ||""}
+                                                        onChange={(e) =>{
+                                                             const value =e.target.value === "" 
+                                                            ? null 
+                                                            : Number(e.target.value);
+
+                                                            console.log("Value is ",value);        // 2
+                                                            console.log(typeof value); // "number" 
+                                                            
                                                             updatePackage(
                                                                 index,
                                                                 "mealPlan",
-                                                                e.target.value
+                                                                value
                                                             )
+                                                        }
                                                         }
                                                         className="border-highlight"
                                                     >
 
-                                                        <option value="">
-                                                            Select
-                                                        </option>
+                                                        <option value="">Select Meal Plan</option>
 
-                                                        <option value="Breakfast">
-                                                            Breakfast
-                                                        </option>
+                                                        {mealPlan.map((mealpl)=>(
+                                                            <option  key={mealpl.id} value={mealpl.id}>
+                                                                {mealpl.mealPlanName}
+                                                            </option>
+                                                        ))}
+                                                        
+                                                    </select>
+                                                </div>
 
-                                                        <option value="Half Board">
-                                                            Half Board
-                                                        </option>
 
-                                                        <option value="Full Board">
-                                                            Full Board
-                                                        </option>
 
-                                                        <option value="All Inclusive">
-                                                            All Inclusive
-                                                        </option>
+
+                                                <div >
+                                                    <label className="label-style">
+                                                        Vehicle Type
+                                                    </label>
+                                                    <select
+                                                        name="vehicleType"
+                                                        value={pkg.vehicleType}
+                                                        onChange={(e) =>{
+                                                             const value =e.target.value === "" 
+                                                            ? null 
+                                                            : Number(e.target.value);
+
+                                                            updatePackage(
+                                                                index,
+                                                                "vehicleType",
+                                                                //    e.target.value
+                                                                value
+                                                            )
+                                                        }
+                                                        }
+                                                        className="border-highlight"
+                                                    >
+                                                        <option value="">Select Vehicle type</option>
+                                                        {vehicleType.map((vehType) => (
+                                                            <option key={vehType.id} value={vehType.id}>
+                                                                {vehType.vehicleType}
+                                                            </option>
+                                                        ))}
 
                                                     </select>
-
                                                 </div>
+
+                                                {/* <div>
+                                                <label className="label-style">
+                                                    Trip Description
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    value={pkg.tripDescription || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(
+                                                            index,
+                                                            "tripDescription",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border-highlight"
+                                                />
+                                            </div> */}
 
                                             </div>
 
-
-                                            {/* ================================================= */}
                                             {/* ROW 3 */}
-                                            {/* ================================================= */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
 
-                                            <div className="
-                                                grid
-                                                grid-cols-1
-                                                md:grid-cols-2
-                                                gap-3
-                                                mt-3
-                                            ">
-
-                                                {/* TRIP DESCRIPTION */}
                                                 <div>
-
                                                     <label className="label-style">
-                                                        Trip Description
+                                                        Arrival City
                                                     </label>
-
-
                                                     <input
                                                         type="text"
-                                                        value={
-                                                            pkg.tripDescription ||
-                                                            ""
-                                                        }
+                                                        value={pkg.arrivalCity || ""}
                                                         onChange={(e) =>
                                                             updatePackage(
                                                                 index,
-                                                                "tripDescription",
+                                                                "arrivalCity",
                                                                 e.target.value
-                                                            )
-                                                        }
+                                                            )}
                                                         className="border-highlight"
+                                                        placeholder="Enter Arrival City"
                                                     />
-
                                                 </div>
 
-
-                                                {/* DEPARTURE CITY */}
                                                 <div>
-
                                                     <label className="label-style">
                                                         Departure City
                                                     </label>
@@ -2658,41 +2872,33 @@ export default function TravelPackage({
                                                         className="border-highlight"
                                                         placeholder="Enter Departure City"
                                                     />
-
                                                 </div>
 
+
+
                                             </div>
 
-
-                                            {/* ================================================= */}
                                             {/* DESTINATIONS */}
-                                            {/* ================================================= */}
+                                            {/* <div className="mt-3">
 
-                                            <div className="mt-3">
+                                            <label className="label-style">
+                                                Destinations
+                                            </label>
 
-                                                <label className="label-style">
-                                                    Destinations
-                                                </label>
-
-
-                                                <input
-                                                    type="text"
-                                                    value={
-                                                        pkg.destinations ||
-                                                        ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "destinations",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    placeholder="e.g. Paris, Rome, Zurich"
-                                                    className="border-highlight"
-                                                />
-
-                                            </div>
+                                            <input
+                                                type="text"
+                                                value={pkg.destinations || ""}
+                                                onChange={(e) =>
+                                                    updatePackage(
+                                                        index,
+                                                        "destinations",
+                                                        e.target.value
+                                                    )
+                                                }
+                                                placeholder="e.g. Paris, Rome, Zurich"
+                                                className="border-highlight"
+                                            />
+                                        </div>
 
 
                                             {/* ================================================= */}
@@ -2709,7 +2915,7 @@ export default function TravelPackage({
                                                 ">
 
                                                     <label className="label-style mb-0">
-                                                        Notes
+                                                        Stetch Itinerary
                                                     </label>
 
 
@@ -2747,7 +2953,7 @@ export default function TravelPackage({
 
                                                 <RichTextEditor
                                                     value={
-                                                        pkg.notes ||
+                                                        pkg.sketchItinerary ||
                                                         ""
                                                     }
                                                     disabled={
@@ -2756,7 +2962,7 @@ export default function TravelPackage({
                                                     onChange={(value) =>
                                                         updatePackage(
                                                             index,
-                                                            "notes",
+                                                            "sketchItinerary",
                                                             value
                                                         )
                                                     }
@@ -2769,11 +2975,34 @@ export default function TravelPackage({
 
                                             </div>
 
+
+                                            <div className="mt-3">
+                                                <label className="label-style">
+                                                    Trip Budget (Excluding Air Fare, Visa, Insurance)
+                                                </label>
+
+                                                <input
+                                                    type="text"
+                                                    value={pkg.tripBudget || ""}
+                                                    onChange={(e) =>
+                                                        updatePackage(
+                                                            index,
+                                                            "tripBudget",
+                                                            e.target.value
+                                                        )
+                                                    }
+                                                    className="border-highlight"
+                                                    placeholder="Enter Trip Budget"
+                                                />
+                                            </div>
+
                                         </div>
 
                                     );
 
                                 })()}
+
+
 
                         </div>
 
@@ -2795,7 +3024,7 @@ export default function TravelPackage({
                         value={
                             packagesArray[
                                 expandedNotesPackageIndex
-                            ]?.notes || ""
+                            ]?.sketchItinerary || ""
                         }
                         onChange={
                             updateExpandedNotes
@@ -2806,6 +3035,8 @@ export default function TravelPackage({
                     />
 
                 )}
+
+
 
         </div>
     );
