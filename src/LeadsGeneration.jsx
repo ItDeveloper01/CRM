@@ -55,6 +55,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
   const isViewMode = mode === "view";
+  const [requestQuoteForFIT, setRequestQuoteForFIT] = useState(true);
 
   console.log("mode value ", mode);
 
@@ -128,6 +129,9 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const [errors, setErrors] = useState({});
   const [specialRequirements, setSpecialRequirements] = useState([]);
   const [leadcategory, setleadcategory] = useState({});
+  
+  //This flag should be configured from config file or env variable. For now, we are hardcoding it to true.
+  const  FIT_DOM_REQUEST_QUOTE_TO_OPERATION = true;
 
   // const enquirySources = [
   //   'Referred by client', 'Repeat Guest', 'Paper Advt', 'Paper Advt-Sakal', 'Paper Advt-Maharashtra Times',
@@ -1156,6 +1160,8 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
             holidayLeadObj.preferredTravelDate = formatHolidayDateForApi(holidayLeadObj.preferredTravelDate);
 
             holidayLeadObj.updatedBy_UserID = currentUser?.user?.userId;
+
+            holidayLeadObj.fITDomRequestForQuotation = requestQuoteForFIT; 
             
             const deepHolidayLeadObj = cloneDeep(holidayLeadObj);
             deepLeadCopy.category = { ...deepHolidayLeadObj };;
@@ -1651,66 +1657,98 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           {/* Render dynamic fields */}
           <div className='mt-4'>{renderCategoryFields()}</div>
           {/* <fieldset disabled={readOnly}> */}
-          <div className="flex justify-between items-center mt-6 gap-4">
-            {!isViewMode && (
-              <button
-                onClick={handleSubmit}
-                disabled={!selectedLeadName}
-                // className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                className={`font-semibold py-2 px-4 rounded-lg transition ${!selectedLeadName
-                  ? "bg-gray-200 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
-              >
-                {isEditMode ? "Update Lead" : "Generate Lead"}
-                {/* {submitBtnTxt} */}
-              </button>
-            )}
+        
+<div className="flex justify-between items-center mt-6 gap-4">
+  <div className="flex items-center gap-4">
+  {!isViewMode && (
+    <>
+      {/* Generate / Update Lead Button */}
+      <button
+        onClick={handleSubmit}
+        disabled={!selectedLeadName}
+        className={`font-semibold py-2 px-4 rounded-lg transition ${
+          !selectedLeadName
+            ? "bg-gray-200 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700 text-white"
+        }`}
+      >
+        {isEditMode ? "Update Lead" : "Generate Lead"}
+      </button>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="followUpDate" className="font-medium text-gray-600 whitespace-nowrap"><span className="text-red-500 text-lg leading-none">* </span>
-                Follow Up Date :
-              </label>
-              <div className="flex flex-col  justify-start leading-none">
-                {isViewMode ? (
-                  <DateViewField value={leadObj.followUpDate} />
-                ) : (
+      {/* Request Quote Checkbox - Only for FIT Domestic Holiday */}
+      {selectedLeadName=== "Holiday" &&
+        holidayLeadObj.leadType === "FIT" &&
+        holidayLeadObj.tripType === "Domestic" &&  FIT_DOM_REQUEST_QUOTE_TO_OPERATION && (
+          <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+            <input
+              type="checkbox"
+              checked={requestQuoteForFIT}
+              onChange={(e) => setRequestQuoteForFIT(e.target.checked)}
+              className="h-4 w-4 accent-blue-600 cursor-pointer"
+            />
+            <span className="font-medium text-gray-700">
+              Request Quote for FIT
+            </span>
+          </label>
+        )}
+    </>
+  )}
+</div>
 
-                  <input
-                    type="date"
-                    id="followUpDate"
-                    name="followUpDate"
-                    value={leadObj.followUpDate || ""}
-                    onChange={handleChange}
-                    onBlur={() => {
-                      const selectedDate = new Date(leadObj.followUpDate);
-                      const tomorrow = new Date();
-                      tomorrow.setDate(tomorrow.getDate());
+  {/* Follow Up Date */}
+  <div className="flex items-center gap-2">
+    <label
+      htmlFor="followUpDate"
+      className="font-medium text-gray-600 whitespace-nowrap"
+    >
+      <span className="text-red-500 text-lg leading-none">*</span>
+      {" "}Follow Up Date :
+    </label>
 
-                      if (selectedDate < tomorrow) {
-                        setLeadObj(prev => ({ ...prev, followUpDate: "" }));
-                        setErrors(prev => ({ ...prev, followUpDate: "Invalid — Date must be tomorrow or later" }));
-                      }
-                    }}
-                    min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
-                    className={`border-highlight ${errors.followUpDate ? "border-red-500" : ""}`}
-                    required
-                  />
-                )}
-                {/* <input
-                  type="date"
-                  id="followUpDate"
-                  name="followUpDate"
-                  value={leadObj.followUpDate || ''}
-                  onChange={handleChange}
-                  min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} //  only tomorrow onward date is allowed 
-                  // min={new Date().toISOString().split("T")[0]} //  disables past dates
-                  className={`border-highlight ${errors.followUpDate ? "border-red-500" : " "}`}
-                  required
-                /> */}
-              </div>
-            </div>
-          </div>
+    <div className="flex flex-col justify-start leading-none">
+      {isViewMode ? (
+        <DateViewField value={leadObj.followUpDate} />
+      ) : (
+        <input
+          type="date"
+          id="followUpDate"
+          name="followUpDate"
+          value={leadObj.followUpDate || ""}
+          onChange={handleChange}
+          onBlur={() => {
+            if (!leadObj.followUpDate) return;
+
+            const selectedDate = new Date(
+              `${leadObj.followUpDate}T00:00:00`
+            );
+            const tomorrow = new Date();
+            tomorrow.setHours(0, 0, 0, 0);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (selectedDate < tomorrow) {
+              setLeadObj((prev) => ({
+                ...prev,
+                followUpDate: "",
+              }));
+              setErrors((prev) => ({
+                ...prev,
+                followUpDate: "Invalid — Date must be tomorrow or later",
+              }));
+            }
+          }}
+          min={new Date(Date.now() + 86400000)
+            .toISOString()
+            .split("T")[0]}
+          className={`border-highlight ${
+            errors.followUpDate ? "border-red-500" : ""
+          }`}
+          required
+        />
+      )}
+    </div>
+  </div>
+</div>
+
           {/* </fieldset> */}
           <div className='text-right'>
 
