@@ -272,140 +272,125 @@
 //   );
 // }
 
-
 import React, { useState, useEffect, useRef } from "react";
 import { getEmptyPackagePreferenceObj } from "./../../Model/HolidayLeadObj";
 import config from "../../config";
 import axios from "axios";
 import { useGetSessionUser } from "./../../SessionContext";
-
+import { Trash2, Eraser } from "lucide-react";
 
 const CalendarIcon = ({ size = 14, color = "#2563eb" }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-    >
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
 );
-
 
 // ============================================================
 // TOGGLE SWITCH STYLES
 // ============================================================
 
 const toggleStyles = {
-    wrapper: "flex items-center gap-2",
+  wrapper: "flex items-center gap-2",
 
-    toggle: (isActive) => `
+  toggle: (isActive) => `
         relative inline-flex items-center h-6 w-11 rounded-full cursor-pointer
         transition-all duration-300 flex-shrink-0 shadow-inner
-        ${isActive
+        ${
+          isActive
             ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
-            : "bg-gradient-to-r from-slate-300 to-slate-400"}
+            : "bg-gradient-to-r from-slate-300 to-slate-400"
+        }
     `,
 
-    circle: (isActive) => `
+  circle: (isActive) => `
         absolute h-5 w-5 bg-white rounded-full shadow-md transition-transform duration-300
         ${isActive ? "translate-x-5" : "translate-x-0.5"}
     `,
 
-    label: (isActive) => `
+  label: (isActive) => `
         text-xs font-semibold tracking-wide transition-colors duration-200 min-w-[24px]
         ${isActive ? "text-emerald-600" : "text-slate-400"}
-    `
+    `,
 };
-
 
 // ============================================================
 // RICH TEXT TOOLBAR
 // ============================================================
 
-const RichTextToolbar = ({
-    editorRef,
-    disabled = false
-}) => {
+const RichTextToolbar = ({ editorRef, disabled = false }) => {
+  const execCommand = (command, value = null) => {
+    if (disabled) return;
 
-    const execCommand = (command, value = null) => {
+    if (!editorRef.current) return;
 
-        if (disabled) return;
+    editorRef.current.focus();
 
-        if (!editorRef.current) return;
+    document.execCommand(command, false, value);
 
-        editorRef.current.focus();
+    editorRef.current.focus();
+  };
 
-        document.execCommand(
-            command,
-            false,
-            value
-        );
-
-        editorRef.current.focus();
-    };
-
-
-    return (
-        <div className="flex flex-wrap items-center gap-1 px-2 py-2 bg-gray-50 border-b border-gray-200">
-
-            {/* UNDO */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand("undo")}
-                title="Undo"
-                className="
+  return (
+    <div className="flex flex-wrap items-center gap-1 px-2 py-2 bg-gray-50 border-b border-gray-200">
+      {/* UNDO */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("undo")}
+        title="Undo"
+        className="
                     h-8 w-8 rounded
                     hover:bg-gray-200
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                ↶
-            </button>
+      >
+        ↶
+      </button>
 
-
-            {/* REDO */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand("redo")}
-                title="Redo"
-                className="
+      {/* REDO */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("redo")}
+        title="Redo"
+        className="
                     h-8 w-8 rounded
                     hover:bg-gray-200
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                ↷
-            </button>
+      >
+        ↷
+      </button>
 
+      <div className="h-5 w-px bg-gray-300 mx-1" />
 
-            <div className="h-5 w-px bg-gray-300 mx-1" />
-
-
-            {/* BOLD */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand("bold")}
-                title="Bold"
-                className="
+      {/* BOLD */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("bold")}
+        title="Bold"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
@@ -413,19 +398,18 @@ const RichTextToolbar = ({
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                B
-            </button>
+      >
+        B
+      </button>
 
-
-            {/* ITALIC */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand("italic")}
-                title="Italic"
-                className="
+      {/* ITALIC */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("italic")}
+        title="Italic"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
@@ -433,19 +417,18 @@ const RichTextToolbar = ({
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                I
-            </button>
+      >
+        I
+      </button>
 
-
-            {/* UNDERLINE */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => execCommand("underline")}
-                title="Underline"
-                className="
+      {/* UNDERLINE */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("underline")}
+        title="Underline"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
@@ -453,26 +436,19 @@ const RichTextToolbar = ({
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                U
-            </button>
+      >
+        U
+      </button>
 
+      <div className="h-5 w-px bg-gray-300 mx-1" />
 
-            <div className="h-5 w-px bg-gray-300 mx-1" />
-
-
-            {/* FONT SIZE */}
-            <select
-                disabled={disabled}
-                defaultValue="3"
-                title="Font Size"
-                onChange={(e) =>
-                    execCommand(
-                        "fontSize",
-                        e.target.value
-                    )
-                }
-                className="
+      {/* FONT SIZE */}
+      <select
+        disabled={disabled}
+        defaultValue="3"
+        title="Font Size"
+        onChange={(e) => execCommand("fontSize", e.target.value)}
+        className="
                     h-8
                     px-2
                     text-xs
@@ -485,29 +461,23 @@ const RichTextToolbar = ({
                     focus:ring-blue-400
                     disabled:opacity-40
                 "
-            >
-                <option value="1">Small</option>
-                <option value="2">Normal</option>
-                <option value="3">Medium</option>
-                <option value="4">Large</option>
-                <option value="5">X-Large</option>
-                <option value="6">XX-Large</option>
-                <option value="7">Huge</option>
-            </select>
+      >
+        <option value="1">Small</option>
+        <option value="2">Normal</option>
+        <option value="3">Medium</option>
+        <option value="4">Large</option>
+        <option value="5">X-Large</option>
+        <option value="6">XX-Large</option>
+        <option value="7">Huge</option>
+      </select>
 
-
-            {/* TEXT COLOR */}
-            <input
-                type="color"
-                disabled={disabled}
-                title="Text Color"
-                onChange={(e) =>
-                    execCommand(
-                        "foreColor",
-                        e.target.value
-                    )
-                }
-                className="
+      {/* TEXT COLOR */}
+      <input
+        type="color"
+        disabled={disabled}
+        title="Text Color"
+        onChange={(e) => execCommand("foreColor", e.target.value)}
+        className="
                     w-8
                     h-8
                     p-1
@@ -517,255 +487,240 @@ const RichTextToolbar = ({
                     cursor-pointer
                     disabled:opacity-40
                 "
-            />
+      />
 
+      <div className="h-5 w-px bg-gray-300 mx-1" />
 
-            <div className="h-5 w-px bg-gray-300 mx-1" />
-
-
-            {/* ALIGN LEFT */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand("justifyLeft")
-                }
-                title="Align Left"
-                className="
+      {/* ALIGN LEFT */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("justifyLeft")}
+        title="Align Left"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                ≡
-            </button>
+      >
+        ≡
+      </button>
 
-
-            {/* ALIGN CENTER */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand("justifyCenter")
-                }
-                title="Align Center"
-                className="
+      {/* ALIGN CENTER */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("justifyCenter")}
+        title="Align Center"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                ☰
-            </button>
+      >
+        ☰
+      </button>
 
-
-            {/* ALIGN RIGHT */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand("justifyRight")
-                }
-                title="Align Right"
-                className="
+      {/* ALIGN RIGHT */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("justifyRight")}
+        title="Align Right"
+        className="
                     h-8 w-8 rounded
                     hover:bg-blue-100
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                ≡
-            </button>
+      >
+        ≡
+      </button>
 
+      <div className="h-5 w-px bg-gray-300 mx-1" />
 
-            <div className="h-5 w-px bg-gray-300 mx-1" />
-
-
-            {/* BULLET LIST */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand(
-                        "insertUnorderedList"
-                    )
-                }
-                title="Bulleted List"
-                className="
+      {/* BULLET LIST */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("insertUnorderedList")}
+        title="Bulleted List"
+        className="
                     h-8 px-2 rounded
                     hover:bg-blue-100
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                •☰
-            </button>
+      >
+        •☰
+      </button>
 
-
-            {/* NUMBERED LIST */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand(
-                        "insertOrderedList"
-                    )
-                }
-                title="Numbered List"
-                className="
+      {/* NUMBERED LIST */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("insertOrderedList")}
+        title="Numbered List"
+        className="
                     h-8 px-2 rounded
                     hover:bg-blue-100
                     text-gray-700
                     flex items-center justify-center
                     disabled:opacity-40
                 "
-            >
-                1.☰
-            </button>
+      >
+        1.☰
+      </button>
 
+      <div className="h-5 w-px bg-gray-300 mx-1" />
 
-            <div className="h-5 w-px bg-gray-300 mx-1" />
+      {/* CLEAR TEXT */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          if (editorRef.current) {
+            editorRef.current.innerHTML = "";
+          }
+        }}
+        title="Clear All Text"
+        className="
+        h-8
+        px-3
+        rounded-md
+        border border-red-200
+        bg-white
+        text-red-600
+        text-xs font-medium
+        flex items-center justify-center gap-1.5
+        shadow-sm
+        transition-all duration-150
+        hover:bg-red-50
+        hover:border-red-300
+        hover:shadow
+        active:scale-95
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+    "
+      >
+        <Trash2 size={13} />
+        Clear Text
+      </button>
 
-
-            {/* CLEAR FORMAT */}
-            <button
-                type="button"
-                disabled={disabled}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() =>
-                    execCommand("removeFormat")
-                }
-                title="Clear Formatting"
-                className="
-                    h-8
-                    px-2
-                    rounded
-                    hover:bg-red-100
-                    text-gray-600
-                    text-xs
-                    flex items-center justify-center
-                    disabled:opacity-40
-                "
-            >
-                Clear
-            </button>
-
-        </div>
-    );
+      {/* CLEAR FORMATTING */}
+      <button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => execCommand("removeFormat")}
+        title="Remove formatting from selected text only."
+        className="
+        h-8
+        px-3
+        rounded-md
+        border border-gray-200
+        bg-white
+        text-gray-700
+        text-xs font-medium
+        flex items-center justify-center gap-1.5
+        shadow-sm
+        transition-all duration-150
+        hover:bg-gray-100
+        hover:border-gray-300
+        hover:shadow
+        active:scale-95
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+    "
+      >
+        <Eraser size={13} />
+        Clear Formatting
+      </button>
+    </div>
+  );
 };
-
 
 // ============================================================
 // RICH TEXT EDITOR
 // ============================================================
 
-
 // ============================================================
 // RICH TEXT EDITOR - COMPACT
 // ============================================================
 
-const RichTextEditor = ({
-    value,
-    onChange,
-    disabled = false,
-    onExpand
-}) => {
+const RichTextEditor = ({ value, onChange, disabled = false, onExpand }) => {
+  const editorRef = useRef(null);
 
-    const editorRef = useRef(null);
+  // --------------------------------------------------------
+  // SYNC VALUE FROM PARENT
+  // --------------------------------------------------------
 
+  useEffect(() => {
+    if (!editorRef.current) return;
 
-    // --------------------------------------------------------
-    // SYNC VALUE FROM PARENT
-    // --------------------------------------------------------
+    const incomingValue = value || "";
 
-    useEffect(() => {
+    // Only update DOM if it is actually different.
+    // This prevents the cursor from jumping while typing.
+    if (editorRef.current.innerHTML !== incomingValue) {
+      editorRef.current.innerHTML = incomingValue;
+    }
+  }, [value]);
 
-        if (!editorRef.current) return;
+  // --------------------------------------------------------
+  // HANDLE TYPING
+  // --------------------------------------------------------
 
-        const incomingValue = value || "";
+  const handleInput = () => {
+    if (!editorRef.current) return;
 
-        // Only update DOM if it is actually different.
-        // This prevents the cursor from jumping while typing.
-        if (
-            editorRef.current.innerHTML !==
-            incomingValue
-        ) {
-            editorRef.current.innerHTML =
-                incomingValue;
-        }
+    onChange(editorRef.current.innerHTML);
+  };
 
-    }, [value]);
+  // --------------------------------------------------------
+  // CHARACTER COUNT
+  // --------------------------------------------------------
 
+  const getPlainTextLength = () => {
+    if (!editorRef.current) return 0;
 
-    // --------------------------------------------------------
-    // HANDLE TYPING
-    // --------------------------------------------------------
+    return (editorRef.current.innerText || editorRef.current.textContent || "")
+      .length;
+  };
 
-    const handleInput = () => {
-
-        if (!editorRef.current) return;
-
-        onChange(
-            editorRef.current.innerHTML
-        );
-
-    };
-
-
-    // --------------------------------------------------------
-    // CHARACTER COUNT
-    // --------------------------------------------------------
-
-    const getPlainTextLength = () => {
-
-        if (!editorRef.current)
-            return 0;
-
-        return (
-            editorRef.current.innerText ||
-            editorRef.current.textContent ||
-            ""
-        ).length;
-
-    };
-
-
-    return (
-        <div className="
+  return (
+    <div
+      className="
             border-2
             border-gray-300
             rounded-lg
             overflow-hidden
             bg-white
-        ">
+        "
+    >
+      {/* TOOLBAR */}
+      <RichTextToolbar editorRef={editorRef} disabled={disabled} />
 
-            {/* TOOLBAR */}
-            <RichTextToolbar
-                editorRef={editorRef}
-                disabled={disabled}
-            />
-
-
-            {/* EDITOR */}
-            <div className="relative">
-
-                <div
-                    ref={editorRef}
-                    contentEditable={!disabled}
-                    suppressContentEditableWarning
-                    onInput={handleInput}
-                    className={`
+      {/* EDITOR */}
+      <div className="relative">
+        <div
+          ref={editorRef}
+          contentEditable={!disabled}
+          suppressContentEditableWarning
+          onInput={handleInput}
+          className={`
                         min-h-[110px]
                         max-h-[220px]
                         overflow-y-auto
@@ -784,21 +739,21 @@ const RichTextEditor = ({
 
                         [&_li]:ml-2
 
-                        ${disabled
+                        ${
+                          disabled
                             ? "bg-gray-100 cursor-not-allowed"
                             : "bg-white"
                         }
                     `}
-                />
+        />
 
-                {/* EXPAND */}
-                {!disabled && (
-
-                    <button
-                        type="button"
-                        onClick={onExpand}
-                        title="Open full notepad"
-                        className="
+        {/* EXPAND */}
+        {!disabled && (
+          <button
+            type="button"
+            onClick={onExpand}
+            title="Open full notepad"
+            className="
                             absolute
                             right-2
                             bottom-2
@@ -816,17 +771,15 @@ const RichTextEditor = ({
                             items-center
                             gap-1
                         "
-                    >
-                        ↗ Expand
-                    </button>
+          >
+            ↗ Expand
+          </button>
+        )}
+      </div>
 
-                )}
-
-            </div>
-
-
-            {/* FOOTER */}
-            <div className="
+      {/* FOOTER */}
+      <div
+        className="
                 flex
                 items-center
                 justify-between
@@ -835,140 +788,104 @@ const RichTextEditor = ({
                 bg-gray-50
                 border-t
                 border-gray-200
-            ">
-
-                <span className="
+            "
+      >
+        <span
+          className="
                     text-[11px]
                     text-gray-400
-                ">
-                    Rich text formatting supported
-                </span>
+                "
+        >
+          Rich text formatting supported
+        </span>
 
-
-                <span className="
+        <span className="
                     text-xs
                     text-gray-500
                 ">
-                    {getPlainTextLength()}/300
-                </span>
-
-            </div>
-
-        </div>
-    );
+          {getPlainTextLength()} characters
+        </span>
+      </div>
+    </div>
+  );
 };
-
 
 // ============================================================
 // FULL SCREEN NOTEPAD
 // ============================================================
 
-const FullScreenNotesEditor = ({
-    value,
-    onChange,
-    onClose
-}) => {
+const FullScreenNotesEditor = ({ value, onChange, onClose }) => {
+  const editorRef = useRef(null);
 
-    const editorRef = useRef(null);
+  // --------------------------------------------------------
+  // LOAD VALUE WHEN MODAL OPENS / VALUE CHANGES
+  // --------------------------------------------------------
 
+  useEffect(() => {
+    if (!editorRef.current) return;
 
-    // --------------------------------------------------------
-    // LOAD VALUE WHEN MODAL OPENS / VALUE CHANGES
-    // --------------------------------------------------------
+    const incomingValue = value || "";
 
-    useEffect(() => {
+    if (editorRef.current.innerHTML !== incomingValue) {
+      editorRef.current.innerHTML = incomingValue;
+    }
+  }, [value]);
 
-        if (!editorRef.current) return;
+  // --------------------------------------------------------
+  // HANDLE TYPING
+  // --------------------------------------------------------
 
-        const incomingValue = value || "";
+  const handleInput = () => {
+    if (!editorRef.current) return;
 
-        if (
-            editorRef.current.innerHTML !==
-            incomingValue
-        ) {
-            editorRef.current.innerHTML =
-                incomingValue;
-        }
+    onChange(editorRef.current.innerHTML);
+  };
 
-    }, [value]);
+  // --------------------------------------------------------
+  // FORMAT COMMAND
+  // --------------------------------------------------------
 
+  const execCommand = (command, commandValue = null) => {
+    if (!editorRef.current) return;
 
-    // --------------------------------------------------------
-    // HANDLE TYPING
-    // --------------------------------------------------------
+    editorRef.current.focus();
 
-    const handleInput = () => {
+    document.execCommand(command, false, commandValue);
 
-        if (!editorRef.current) return;
+    editorRef.current.focus();
 
-        onChange(
-            editorRef.current.innerHTML
-        );
+    // Immediately save formatting change.
+    onChange(editorRef.current.innerHTML);
+  };
 
-    };
+  // --------------------------------------------------------
+  // CHARACTER COUNT
+  // --------------------------------------------------------
 
+  // const getPlainTextLength = () => {
 
-    // --------------------------------------------------------
-    // FORMAT COMMAND
-    // --------------------------------------------------------
+  //     if (!editorRef.current)
+  //         return 0;
 
-    const execCommand = (
-        command,
-        commandValue = null
-    ) => {
+  //     return (
+  //         editorRef.current.innerText ||
+  //         editorRef.current.textContent ||
+  //         ""
+  //     ).length;
 
-        if (!editorRef.current)
-            return;
+  // };
 
-        editorRef.current.focus();
+  const getPlainTextLength = () => {
+    if (!editorRef.current) return 0;
 
-        document.execCommand(
-            command,
-            false,
-            commandValue
-        );
+    const text = editorRef.current.innerText || "";
 
-        editorRef.current.focus();
+    return text.replace(/\r/g, "").replace(/\n/g, "").length;
+  };
 
-        // Immediately save formatting change.
-        onChange(
-            editorRef.current.innerHTML
-        );
-
-    };
-
-
-    // --------------------------------------------------------
-    // CHARACTER COUNT
-    // --------------------------------------------------------
-
-    // const getPlainTextLength = () => {
-
-    //     if (!editorRef.current)
-    //         return 0;
-
-    //     return (
-    //         editorRef.current.innerText ||
-    //         editorRef.current.textContent ||
-    //         ""
-    //     ).length;
-
-    // };
-
-
-    const getPlainTextLength = () => {
-        if (!editorRef.current) return 0;
-
-        const text = editorRef.current.innerText || "";
-
-        return text
-            .replace(/\r/g, "")
-            .replace(/\n/g, "")
-            .length;
-    };
-
-    return (
-        <div className="
+  return (
+    <div
+      className="
             fixed
             inset-0
             z-[9999]
@@ -977,9 +894,10 @@ const FullScreenNotesEditor = ({
             items-center
             justify-center
             p-4
-        ">
-
-            <div className="
+        "
+    >
+      <div
+        className="
                 w-full
                 h-full
                 max-w-6xl
@@ -990,14 +908,14 @@ const FullScreenNotesEditor = ({
                 overflow-hidden
                 flex
                 flex-col
-            ">
+            "
+      >
+        {/* ================================================= */}
+        {/* HEADER */}
+        {/* ================================================= */}
 
-
-                {/* ================================================= */}
-                {/* HEADER */}
-                {/* ================================================= */}
-
-                <div className="
+        <div
+          className="
                     flex
                     items-center
                     justify-between
@@ -1008,15 +926,17 @@ const FullScreenNotesEditor = ({
                     to-blue-700
                     text-white
                     flex-shrink-0
-                ">
-
-                    <div className="
+                "
+        >
+          <div
+            className="
                         flex
                         items-center
                         gap-3
-                    ">
-
-                        <div className="
+                    "
+          >
+            <div
+              className="
                             w-9
                             h-9
                             rounded-lg
@@ -1025,36 +945,36 @@ const FullScreenNotesEditor = ({
                             items-center
                             justify-center
                             text-lg
-                        ">
-                            📝
-                        </div>
+                        "
+            >
+              📝
+            </div>
 
-
-                        <div>
-
-                            <div className="
+            <div>
+              <div
+                className="
                                 font-semibold
                                 text-sm
-                            ">
-                                Package Notes
-                            </div>
+                            "
+              >
+                Package Notes
+              </div>
 
-                            <div className="
+              <div
+                className="
                                 text-[11px]
                                 text-blue-100
-                            ">
-                                Full Notepad
-                            </div>
+                            "
+              >
+                Full Notepad
+              </div>
+            </div>
+          </div>
 
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="
+          <button
+            type="button"
+            onClick={onClose}
+            className="
                             h-9
                             px-4
                             rounded-lg
@@ -1064,18 +984,17 @@ const FullScreenNotesEditor = ({
                             text-sm
                             font-medium
                         "
-                    >
-                        ✕ Close
-                    </button>
+          >
+            ✕ Close
+          </button>
+        </div>
 
-                </div>
+        {/* ================================================= */}
+        {/* TOOLBAR */}
+        {/* ================================================= */}
 
-
-                {/* ================================================= */}
-                {/* TOOLBAR */}
-                {/* ================================================= */}
-
-                <div className="
+        <div
+          className="
                     flex
                     flex-wrap
                     items-center
@@ -1086,71 +1005,58 @@ const FullScreenNotesEditor = ({
                     border-b
                     border-gray-200
                     flex-shrink-0
-                ">
-
-                    {/* UNDO */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand("undo")
-                        }
-                        title="Undo"
-                        className="
+                "
+        >
+          {/* UNDO */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("undo")}
+            title="Undo"
+            className="
                             h-9
                             w-9
                             rounded
                             hover:bg-gray-200
                             text-gray-700
                         "
-                    >
-                        ↶
-                    </button>
+          >
+            ↶
+          </button>
 
-
-                    {/* REDO */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand("redo")
-                        }
-                        title="Redo"
-                        className="
+          {/* REDO */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("redo")}
+            title="Redo"
+            className="
                             h-9
                             w-9
                             rounded
                             hover:bg-gray-200
                             text-gray-700
                         "
-                    >
-                        ↷
-                    </button>
+          >
+            ↷
+          </button>
 
-
-                    <div className="
+          <div
+            className="
                         h-6
                         w-px
                         bg-gray-300
                         mx-1
-                    " />
+                    "
+          />
 
-
-                    {/* BOLD */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand("bold")
-                        }
-                        title="Bold"
-                        className="
+          {/* BOLD */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("bold")}
+            title="Bold"
+            className="
                             h-9
                             w-9
                             rounded
@@ -1158,22 +1064,17 @@ const FullScreenNotesEditor = ({
                             font-bold
                             text-gray-700
                         "
-                    >
-                        B
-                    </button>
+          >
+            B
+          </button>
 
-
-                    {/* ITALIC */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand("italic")
-                        }
-                        title="Italic"
-                        className="
+          {/* ITALIC */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("italic")}
+            title="Italic"
+            className="
                             h-9
                             w-9
                             rounded
@@ -1181,22 +1082,17 @@ const FullScreenNotesEditor = ({
                             italic
                             text-gray-700
                         "
-                    >
-                        I
-                    </button>
+          >
+            I
+          </button>
 
-
-                    {/* UNDERLINE */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand("underline")
-                        }
-                        title="Underline"
-                        className="
+          {/* UNDERLINE */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("underline")}
+            title="Underline"
+            className="
                             h-9
                             w-9
                             rounded
@@ -1204,30 +1100,25 @@ const FullScreenNotesEditor = ({
                             underline
                             text-gray-700
                         "
-                    >
-                        U
-                    </button>
+          >
+            U
+          </button>
 
-
-                    <div className="
+          <div
+            className="
                         h-6
                         w-px
                         bg-gray-300
                         mx-1
-                    " />
+                    "
+          />
 
-
-                    {/* FONT SIZE */}
-                    <select
-                        defaultValue="3"
-                        title="Font Size"
-                        onChange={(e) =>
-                            execCommand(
-                                "fontSize",
-                                e.target.value
-                            )
-                        }
-                        className="
+          {/* FONT SIZE */}
+          <select
+            defaultValue="3"
+            title="Font Size"
+            onChange={(e) => execCommand("fontSize", e.target.value)}
+            className="
                             h-9
                             px-2
                             text-sm
@@ -1237,48 +1128,28 @@ const FullScreenNotesEditor = ({
                             bg-white
                             text-gray-700
                         "
-                    >
-                        <option value="1">
-                            Small
-                        </option>
+          >
+            <option value="1">Small</option>
 
-                        <option value="2">
-                            Normal
-                        </option>
+            <option value="2">Normal</option>
 
-                        <option value="3">
-                            Medium
-                        </option>
+            <option value="3">Medium</option>
 
-                        <option value="4">
-                            Large
-                        </option>
+            <option value="4">Large</option>
 
-                        <option value="5">
-                            X-Large
-                        </option>
+            <option value="5">X-Large</option>
 
-                        <option value="6">
-                            XX-Large
-                        </option>
+            <option value="6">XX-Large</option>
 
-                        <option value="7">
-                            Huge
-                        </option>
-                    </select>
+            <option value="7">Huge</option>
+          </select>
 
-
-                    {/* COLOR */}
-                    <input
-                        type="color"
-                        title="Text Color"
-                        onChange={(e) =>
-                            execCommand(
-                                "foreColor",
-                                e.target.value
-                            )
-                        }
-                        className="
+          {/* COLOR */}
+          <input
+            type="color"
+            title="Text Color"
+            onChange={(e) => execCommand("foreColor", e.target.value)}
+            className="
                             w-9
                             h-9
                             p-1
@@ -1287,158 +1158,122 @@ const FullScreenNotesEditor = ({
                             rounded
                             cursor-pointer
                         "
-                    />
+          />
 
-
-                    <div className="
+          <div
+            className="
                         h-6
                         w-px
                         bg-gray-300
                         mx-1
-                    " />
+                    "
+          />
 
-
-                    {/* ALIGN LEFT */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "justifyLeft"
-                            )
-                        }
-                        title="Align Left"
-                        className="
+          {/* ALIGN LEFT */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("justifyLeft")}
+            title="Align Left"
+            className="
                             h-9
                             w-9
                             rounded
                             hover:bg-blue-100
                             text-gray-700
                         "
-                    >
-                        ≡
-                    </button>
+          >
+            ≡
+          </button>
 
-
-                    {/* CENTER */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "justifyCenter"
-                            )
-                        }
-                        title="Align Center"
-                        className="
+          {/* CENTER */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("justifyCenter")}
+            title="Align Center"
+            className="
                             h-9
                             w-9
                             rounded
                             hover:bg-blue-100
                             text-gray-700
                         "
-                    >
-                        ☰
-                    </button>
+          >
+            ☰
+          </button>
 
-
-                    {/* RIGHT */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "justifyRight"
-                            )
-                        }
-                        title="Align Right"
-                        className="
+          {/* RIGHT */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("justifyRight")}
+            title="Align Right"
+            className="
                             h-9
                             w-9
                             rounded
                             hover:bg-blue-100
                             text-gray-700
                         "
-                    >
-                        ≡
-                    </button>
+          >
+            ≡
+          </button>
 
-
-                    <div className="
+          <div
+            className="
                         h-6
                         w-px
                         bg-gray-300
                         mx-1
-                    " />
+                    "
+          />
 
-
-                    {/* BULLET */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "insertUnorderedList"
-                            )
-                        }
-                        title="Bulleted List"
-                        className="
+          {/* BULLET */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("insertUnorderedList")}
+            title="Bulleted List"
+            className="
                             h-9
                             px-2
                             rounded
                             hover:bg-blue-100
                             text-gray-700
                         "
-                    >
-                        •☰
-                    </button>
+          >
+            •☰
+          </button>
 
-
-                    {/* NUMBER */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "insertOrderedList"
-                            )
-                        }
-                        title="Numbered List"
-                        className="
+          {/* NUMBER */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => execCommand("insertOrderedList")}
+            title="Numbered List"
+            className="
                             h-9
                             px-2
                             rounded
                             hover:bg-blue-100
                             text-gray-700
                         "
-                    >
-                        1.☰
-                    </button>
+          >
+            1.☰
+          </button>
 
-
-                    {/* CLEAR */}
-                    <button
-                        type="button"
-                        onMouseDown={(e) =>
-                            e.preventDefault()
-                        }
-                        onClick={() =>
-                            execCommand(
-                                "removeFormat"
-                            )
-                        }
-                        title="Clear Formatting"
-                        className="
+          {/* CLEAR */}
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              if (editorRef.current) {
+                editorRef.current.innerHTML = "";
+              }
+            }}
+            title="Clear Text"
+            className="
                             h-9
                             px-3
                             rounded
@@ -1446,30 +1281,29 @@ const FullScreenNotesEditor = ({
                             text-gray-600
                             text-xs
                         "
-                    >
-                        Clear
-                    </button>
+          >
+            Clear Text
+          </button>
+        </div>
 
-                </div>
+        {/* ================================================= */}
+        {/* EDITOR */}
+        {/* ================================================= */}
 
-
-                {/* ================================================= */}
-                {/* EDITOR */}
-                {/* ================================================= */}
-
-                <div className="
+        <div
+          className="
                     flex-1
                     overflow-hidden
                     bg-white
                     p-5
-                ">
-
-                    <div
-                        ref={editorRef}
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={handleInput}
-                        className="
+                "
+        >
+          <div
+            ref={editorRef}
+            contentEditable
+            suppressContentEditableWarning
+            onInput={handleInput}
+            className="
                             h-full
                             w-full
                             overflow-y-auto
@@ -1488,16 +1322,15 @@ const FullScreenNotesEditor = ({
 
                             [&_li]:ml-2
                         "
-                    />
+          />
+        </div>
 
-                </div>
+        {/* ================================================= */}
+        {/* FOOTER */}
+        {/* ================================================= */}
 
-
-                {/* ================================================= */}
-                {/* FOOTER */}
-                {/* ================================================= */}
-
-                <div className="
+        <div
+          className="
                     flex
                     items-center
                     justify-between
@@ -1507,36 +1340,36 @@ const FullScreenNotesEditor = ({
                     border-t
                     border-gray-200
                     flex-shrink-0
-                ">
-
-                    <span className="
+                "
+        >
+          <span
+            className="
                         text-xs
                         text-gray-400
-                    ">
-                        Use the toolbar to format your notes.
-                    </span>
+                    "
+          >
+            Use the toolbar to format your notes.
+          </span>
 
-
-                    <div className="
+          <div
+            className="
                         flex
                         items-center
                         gap-3
-                    ">
-
-
-                        {/* check text length later  */}
-                        {/* <span className="
+                    "
+          >
+            {/* check text length later  */}
+            {/* <span className="
                             text-xs
                             text-gray-500
                         ">
                             {getPlainTextLength()}/300
                         </span> */}
 
-
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="
+            <button
+              type="button"
+              onClick={onClose}
+              className="
                                 px-5
                                 py-2
                                 rounded-lg
@@ -1548,433 +1381,280 @@ const FullScreenNotesEditor = ({
                                 transition
                                 shadow-sm
                             "
-                        >
-                            Done
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
-
+            >
+              Done
+            </button>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
-
-
-
-
-
 
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
 
 export default function TravelPackage({
-    holidayLeadObj = {},
-    setHolidayLeadObj,
-    cities = [],
-    isViewMode = false,
-    travelScope = ""
+  holidayLeadObj = {},
+  setHolidayLeadObj,
+  cities = [],
+  isViewMode = false,
+  travelScope = "",
 }) {
+  const [isOpen, setIsOpen] = useState(true);
+  const scopeLabel = travelScope ? ` (${travelScope})` : "";
+  const { user: sessionUser } = useGetSessionUser();
 
-    const [isOpen, setIsOpen] = useState(true);
-    const scopeLabel = travelScope ? ` (${travelScope})` : "";
-    const { user: sessionUser } = useGetSessionUser();
+  const [vehicleType, setVehicleType] = useState([]);
+  const getVehicleTypeEndPoint =
+    config.apiUrl + `/MasterData/GetHolidayTransportVehicleTypeMasterList`;
 
-    const [vehicleType, setVehicleType] = useState([]);
-    const getVehicleTypeEndPoint = config.apiUrl + `/MasterData/GetHolidayTransportVehicleTypeMasterList`;
+  const [budgetPreference, setBudgetPreference] = useState([]);
+  const getBudgetPreferenceEndPoint =
+    config.apiUrl + `/MasterData/GetBudgetPreferenceList`;
 
-    const [budgetPreference, setBudgetPreference] = useState([]);
-    const getBudgetPreferenceEndPoint = config.apiUrl + `/MasterData/GetBudgetPreferenceList`;
+  const [hotelCategory, setHotelCategory] = useState([]);
+  const getHotelCategoryEndPoint =
+    config.apiUrl + `/MasterData/GetHotelTypeList`;
 
+  const [mealPlan, setMealPlan] = useState([]);
+  const getMealPlanEndPoint = config.apiUrl + `/MasterData/GetMealPlanList`;
 
-    const [hotelCategory, setHotelCategory] = useState([]);
-    const getHotelCategoryEndPoint = config.apiUrl + `/MasterData/GetHotelTypeList`;
+  useEffect(() => {
+    const fetchVehicleType = async () => {
+      debugger;
+      const response = await axios.get(getVehicleTypeEndPoint, {
+        params: {
+          TravelScope: travelScope || "International",
+        },
+        headers: {
+          Authorization: `Bearer ${sessionUser.token}`,
+        },
+      });
+      console.log("Travel Scope in travel package :", travelScope);
+      setVehicleType(response.data || []);
+    };
+    fetchVehicleType();
+  }, [travelScope]);
 
-    const [mealPlan, setMealPlan] = useState([]);
-    const  getMealPlanEndPoint =config.apiUrl + `/MasterData/GetMealPlanList`;
+  useEffect(() => {
+    //BudgetPreference fetch Api
+    const fetchBudgetPreference = async () => {
+      try {
+        debugger;
 
+        const response = await axios.get(getBudgetPreferenceEndPoint);
 
-    
-
-    useEffect(() => {
-
-
-        const fetchVehicleType = async () => {
-            debugger;
-            const response = await axios.get(getVehicleTypeEndPoint,
-                {
-                    params: {
-                        TravelScope: travelScope || "International",
-                    },
-                    headers: {
-                        Authorization: `Bearer ${sessionUser.token}`,
-                    },
-                }
-
-            )
-            console.log("Travel Scope in travel package :", travelScope);
-            setVehicleType(response.data || []);
-        }
-        fetchVehicleType();
-
-    }, [travelScope]);
-
-    useEffect(() => {
-
-        //BudgetPreference fetch Api
-        const fetchBudgetPreference = async () => {
-            try{
-            debugger;
-
-            const response = await axios.get(getBudgetPreferenceEndPoint);
-
-            setBudgetPreference(response.data || []);
-            console.log("Response of Budget Preference api:", response.data);
-            }
-            catch(error){
-                console.error("Error while fetching Budget Preference List: ", error);
-            }
-        }
-
-        fetchBudgetPreference();
-
-
-        //Hotel Category/type Api Fetch 
-        const fetchHotelCategory =async () =>{
-            try{
-                debugger;
-                const response = await axios.get(getHotelCategoryEndPoint);
-                setHotelCategory(response.data || []);
-
-                console.log("Response From Hotel Category/Type API: ",response.data);
-
-            }
-            catch(error)
-            {
-                console.error("Error while fetching Hotel Category/Type List: ",error);
-            }
-
-        }
-        fetchHotelCategory();
-
-
-        //Fetch Meal Plan List 
-
-        const fetchMealPlan = async () => {
-            try 
-            {
-                const  response = await axios.get(getMealPlanEndPoint);
-                 setMealPlan(response.data || []);
-                 console.log("Response from Meal Plan Master API:",response.data);
-
-            }
-            catch(error)
-                {
-                    console.error("Error while fetching meal plan:",error);
-                }
-        }
-
-        fetchMealPlan();
-
-    }, []);
-
-    // useEffect(() => {
-    //   console.log("CarRentalBookingForm mounted or travelScope changed, loading vehicles...",  travelScope);
-    //   fetchVehicleType();
-    // }, [travelScope]);
-
-
-    const [activeTab, setActiveTab] =
-        useState(0);
-
-
-    // FULL SCREEN NOTES
-    const [isNotesExpanded, setIsNotesExpanded] =
-        useState(false);
-
-    const [expandedNotesPackageIndex, setExpandedNotesPackageIndex] =
-        useState(null);
-
-
-    // ============================================================
-    // INIT
-    // ============================================================
-
-    useEffect(() => {
-
-        if (!holidayLeadObj.packages) {
-
-            setHolidayLeadObj(prev => ({
-                ...prev,
-                packages: [
-                    getEmptyPackagePreferenceObj()
-                ]
-            }));
-
-        }
-
-    }, [holidayLeadObj.packages, setHolidayLeadObj]);
-
-
-    const packagesArray =
-        holidayLeadObj.packages || [];
-
-
-    // ============================================================
-    // HAS DATA
-    // ============================================================
-
-    const hasPackageData = (pkg) => {
-
-        return !!(
-            pkg?.fromDate ||
-            pkg?.toDate ||
-            pkg?.budget ||
-            pkg?.tripDescription ||
-            pkg?.destinations ||
-            pkg?.departureCity
-        );
-
+        setBudgetPreference(response.data || []);
+        console.log("Response of Budget Preference api:", response.data);
+      } catch (error) {
+        console.error("Error while fetching Budget Preference List: ", error);
+      }
     };
 
+    fetchBudgetPreference();
 
-    // ============================================================
-    // ACTIVE COUNT
-    // ============================================================
+    //Hotel Category/type Api Fetch
+    const fetchHotelCategory = async () => {
+      try {
+        debugger;
+        const response = await axios.get(getHotelCategoryEndPoint);
+        setHotelCategory(response.data || []);
 
-    const activePackageCount =
-        packagesArray.filter(
-            hasPackageData
-        ).length;
+        console.log("Response From Hotel Category/Type API: ", response.data);
+      } catch (error) {
+        console.error("Error while fetching Hotel Category/Type List: ", error);
+      }
+    };
+    fetchHotelCategory();
 
+    //Fetch Meal Plan List
 
-    // ============================================================
-    // UPDATE PACKAGE
-    // ============================================================
-
-    const updatePackage = (
-        index,
-        field,
-        value
-    ) => {
-
-        const updated =
-            [...packagesArray];
-
-        updated[index] = {
-            ...updated[index],
-            [field]: value
-        };
-
-
-        // AUTO DURATION
-        if (
-            field === "fromDate" ||
-            field === "toDate"
-        ) {
-
-            const fromDate =
-                field === "fromDate"
-                    ? value
-                    : updated[index].fromDate;
-
-            const toDate =
-                field === "toDate"
-                    ? value
-                    : updated[index].toDate;
-
-
-            if (
-                fromDate &&
-                toDate
-            ) {
-
-                const start =
-                    new Date(fromDate);
-
-                const end =
-                    new Date(toDate);
-
-                const diff =
-                    Math.ceil(
-                        (
-                            end - start
-                        ) /
-                        (
-                            1000 *
-                            60 *
-                            60 *
-                            24
-                        )
-                    );
-
-
-                updated[index].duration =
-                    diff >= 0
-                        ? `${diff}N/${diff + 1}D`
-                        : "Invalid";
-
-            }
-
-        }
-
-
-        setHolidayLeadObj(prev => ({
-            ...prev,
-            packages: updated
-        }));
-
+    const fetchMealPlan = async () => {
+      try {
+        const response = await axios.get(getMealPlanEndPoint);
+        setMealPlan(response.data || []);
+        console.log("Response from Meal Plan Master API:", response.data);
+      } catch (error) {
+        console.error("Error while fetching meal plan:", error);
+      }
     };
 
+    fetchMealPlan();
+  }, []);
 
-    // ============================================================
-    // ADD
-    // ============================================================
+  // useEffect(() => {
+  //   console.log("CarRentalBookingForm mounted or travelScope changed, loading vehicles...",  travelScope);
+  //   fetchVehicleType();
+  // }, [travelScope]);
 
-    const addPackagePreference = () => {
+  const [activeTab, setActiveTab] = useState(0);
 
-        setHolidayLeadObj(prev => ({
+  // FULL SCREEN NOTES
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
 
-            ...prev,
+  const [expandedNotesPackageIndex, setExpandedNotesPackageIndex] =
+    useState(null);
 
-            packages: [
-                ...(prev.packages || []),
-                getEmptyPackagePreferenceObj()
-            ]
+  // ============================================================
+  // INIT
+  // ============================================================
 
-        }));
+  useEffect(() => {
+    if (!holidayLeadObj.packages) {
+      setHolidayLeadObj((prev) => ({
+        ...prev,
+        packages: [getEmptyPackagePreferenceObj()],
+      }));
+    }
+  }, [holidayLeadObj.packages, setHolidayLeadObj]);
 
+  const packagesArray = holidayLeadObj.packages || [];
+
+  // ============================================================
+  // HAS DATA
+  // ============================================================
+
+  const hasPackageData = (pkg) => {
+    return !!(
+      pkg?.fromDate ||
+      pkg?.toDate ||
+      pkg?.budget ||
+      pkg?.tripDescription ||
+      pkg?.destinations ||
+      pkg?.departureCity
+    );
+  };
+
+  // ============================================================
+  // ACTIVE COUNT
+  // ============================================================
+
+  const activePackageCount = packagesArray.filter(hasPackageData).length;
+
+  // ============================================================
+  // UPDATE PACKAGE
+  // ============================================================
+
+  const updatePackage = (index, field, value) => {
+    const updated = [...packagesArray];
+
+    updated[index] = {
+      ...updated[index],
+      [field]: value,
     };
 
+    // AUTO DURATION
+    if (field === "fromDate" || field === "toDate") {
+      const fromDate = field === "fromDate" ? value : updated[index].fromDate;
 
-    // ============================================================
-    // REMOVE
-    // ============================================================
+      const toDate = field === "toDate" ? value : updated[index].toDate;
 
-    const removePackagePreference = (
-        index
-    ) => {
+      if (fromDate && toDate) {
+        const start = new Date(fromDate);
 
-        const updated =
-            [...packagesArray];
+        const end = new Date(toDate);
 
-        updated.splice(index, 1);
+        const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
+        updated[index].duration =
+          diff >= 0 ? `${diff}N/${diff + 1}D` : "Invalid";
+      }
+    }
 
-        setHolidayLeadObj(prev => ({
-            ...prev,
+    setHolidayLeadObj((prev) => ({
+      ...prev,
+      packages: updated,
+    }));
+  };
 
-            packages:
-                updated.length > 0
-                    ? updated
-                    : [
-                        getEmptyPackagePreferenceObj()
-                    ]
+  // ============================================================
+  // ADD
+  // ============================================================
 
-        }));
+  const addPackagePreference = () => {
+    setHolidayLeadObj((prev) => ({
+      ...prev,
 
+      packages: [...(prev.packages || []), getEmptyPackagePreferenceObj()],
+    }));
+  };
 
-        if (
-            activeTab >=
-            updated.length
-        ) {
+  // ============================================================
+  // REMOVE
+  // ============================================================
 
-            setActiveTab(
-                Math.max(
-                    0,
-                    updated.length - 1
-                )
-            );
+  const removePackagePreference = (index) => {
+    const updated = [...packagesArray];
 
-        }
+    updated.splice(index, 1);
 
-    };
+    setHolidayLeadObj((prev) => ({
+      ...prev,
 
+      packages: updated.length > 0 ? updated : [getEmptyPackagePreferenceObj()],
+    }));
 
-    // ============================================================
-    // EXPAND NOTES
-    // ============================================================
+    if (activeTab >= updated.length) {
+      setActiveTab(Math.max(0, updated.length - 1));
+    }
+  };
 
-    const openNotesEditor = (
-        index
-    ) => {
+  // ============================================================
+  // EXPAND NOTES
+  // ============================================================
 
-        setExpandedNotesPackageIndex(
-            index
-        );
+  const openNotesEditor = (index) => {
+    setExpandedNotesPackageIndex(index);
 
-        setIsNotesExpanded(true);
+    setIsNotesExpanded(true);
+  };
 
-    };
+  // ============================================================
+  // CLOSE NOTES
+  // ============================================================
 
+  const closeNotesEditor = () => {
+    setIsNotesExpanded(false);
 
-    // ============================================================
-    // CLOSE NOTES
-    // ============================================================
+    setExpandedNotesPackageIndex(null);
+  };
 
-    const closeNotesEditor = () => {
+  // ============================================================
+  // FULL SCREEN NOTES CHANGE
+  // ============================================================
 
-        setIsNotesExpanded(false);
+  const updateExpandedNotes = (value) => {
+    if (expandedNotesPackageIndex === null) {
+      return;
+    }
 
-        setExpandedNotesPackageIndex(
-            null
-        );
+    updatePackage(expandedNotesPackageIndex, "sketchItinerary", value);
+  };
 
-    };
+  // ============================================================
+  // RENDER
+  // ============================================================
 
-
-    // ============================================================
-    // FULL SCREEN NOTES CHANGE
-    // ============================================================
-
-    const updateExpandedNotes = (
-        value
-    ) => {
-
-        if (
-            expandedNotesPackageIndex === null
-        ) {
-            return;
-        }
-
-        updatePackage(
-            expandedNotesPackageIndex,
-            "sketchItinerary",
-            value
-        );
-
-    };
-
-
-    // ============================================================
-    // RENDER
-    // ============================================================
-
-    return (
-        <div className="w-full mt-4">
-
-            <div className="
+  return (
+    <div className="w-full mt-4">
+      <div
+        className="
                 border
                 rounded-xl
                 bg-white
                 overflow-hidden
                 shadow-sm
-            ">
+            "
+      >
+        {/* ================================================= */}
+        {/* HEADER */}
+        {/* ================================================= */}
 
-                {/* ================================================= */}
-                {/* HEADER */}
-                {/* ================================================= */}
-
-                <div
-                    onClick={() =>
-                        setIsOpen(
-                            prev => !prev
-                        )
-                    }
-                    className="
+        <div
+          onClick={() => setIsOpen((prev) => !prev)}
+          className="
                         flex
                         justify-between
                         items-center
@@ -1983,27 +1663,28 @@ export default function TravelPackage({
                         cursor-pointer
                         border-b
                     "
-                >
-
-                    <div className="
+        >
+          <div
+            className="
                         flex
                         items-center
                         gap-2
-                    ">
-
-                        <span className="
+                    "
+          >
+            <span
+              className="
                             font-semibold
                             text-gray-700
-                        ">
-                            Package Preferences
-                            {scopeLabel}
-                        </span>
+                        "
+            >
+              Package Preferences
+              {scopeLabel}
+            </span>
 
-
-                        {/* ACTIVE COUNT */}
-                        {activePackageCount > 0 && (
-
-                            <span className="
+            {/* ACTIVE COUNT */}
+            {activePackageCount > 0 && (
+              <span
+                className="
                                 text-xs
                                 px-2
                                 py-0.5
@@ -2011,60 +1692,50 @@ export default function TravelPackage({
                                 bg-blue-100
                                 text-blue-700
                                 font-medium
-                            ">
-                                {activePackageCount} Active
-                            </span>
+                            "
+              >
+                {activePackageCount} Active
+              </span>
+            )}
+          </div>
 
-                        )}
-
-                    </div>
-
-
-                    <div className="
+          <div
+            className="
                         flex
                         items-center
                         gap-2
-                    ">
-
-                        {/* GREEN PULSE */}
-                        {activePackageCount > 0 && (
-
-                            <span className="
+                    "
+          >
+            {/* GREEN PULSE */}
+            {activePackageCount > 0 && (
+              <span
+                className="
                                 w-3.5
                                 h-3.5
                                 bg-green-500
                                 rounded-full
                                 animate-pulse
                                 shadow-[0_0_8px_rgba(34,197,94,0.9)]
-                            " />
+                            "
+              />
+            )}
 
-                        )}
+            <span>{isOpen ? "▲" : "▼"}</span>
+          </div>
+        </div>
 
+        {/* ================================================= */}
+        {/* BODY */}
+        {/* ================================================= */}
 
-                        <span>
-                            {isOpen
-                                ? "▲"
-                                : "▼"}
-                        </span>
+        {isOpen && (
+          <div>
+            {/* ================================================= */}
+            {/* TABS */}
+            {/* ================================================= */}
 
-                    </div>
-
-                </div>
-
-
-                {/* ================================================= */}
-                {/* BODY */}
-                {/* ================================================= */}
-
-                {isOpen && (
-
-                    <div>
-
-                        {/* ================================================= */}
-                        {/* TABS */}
-                        {/* ================================================= */}
-
-                        <div className="
+            <div
+              className="
                             flex
                             gap-2
                             border-b
@@ -2072,34 +1743,18 @@ export default function TravelPackage({
                             px-4
                             pt-3
                             bg-gray-50
-                        ">
+                        "
+            >
+              {packagesArray.map((pkg, index) => {
+                const hasData = hasPackageData(pkg);
 
-                            {packagesArray.map(
-                                (pkg, index) => {
+                const isActive = activeTab === index;
 
-                                    const hasData =
-                                        hasPackageData(
-                                            pkg
-                                        );
-
-                                    const isActive =
-                                        activeTab ===
-                                        index;
-
-
-                                    return (
-
-                                        <button
-                                            key={
-                                                pkg.packagePreferenceID ||
-                                                index
-                                            }
-                                            onClick={() =>
-                                                setActiveTab(
-                                                    index
-                                                )
-                                            }
-                                            className={`
+                return (
+                  <button
+                    key={pkg.packagePreferenceID || index}
+                    onClick={() => setActiveTab(index)}
+                    className={`
                                                 relative
                                                 px-5
                                                 py-2.5
@@ -2112,17 +1767,17 @@ export default function TravelPackage({
                                                 duration-200
                                                 whitespace-nowrap
 
-                                                ${isActive
+                                                ${
+                                                  isActive
                                                     ? "bg-white border-gray-300 border-b-white text-blue-600 font-semibold shadow-sm"
                                                     : "bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200 hover:text-gray-800"
                                                 }
                                             `}
-                                        >
-
-                                            {/* ACTIVE TOP BAR */}
-                                            {isActive && (
-
-                                                <span className="
+                  >
+                    {/* ACTIVE TOP BAR */}
+                    {isActive && (
+                      <span
+                        className="
                                                     absolute
                                                     top-0
                                                     left-0
@@ -2130,68 +1785,55 @@ export default function TravelPackage({
                                                     h-[3px]
                                                     bg-blue-500
                                                     rounded-t-lg
-                                                " />
+                                                "
+                      />
+                    )}
 
-                                            )}
-
-
-                                            {/* GREEN DOT */}
-                                            {hasData && (
-
-                                                <span className="
+                    {/* GREEN DOT */}
+                    {hasData && (
+                      <span
+                        className="
                                                     w-2.5
                                                     h-2.5
                                                     bg-green-500
                                                     rounded-full
                                                     animate-pulse
-                                                " />
+                                                "
+                      />
+                    )}
 
-                                            )}
+                    {/* LABEL */}
+                    <span>Package {index + 1}</span>
 
-
-                                            {/* LABEL */}
-                                            <span>
-                                                Package {index + 1}
-                                            </span>
-
-
-                                            {/* DURATION */}
-                                            {pkg.duration && (
-
-                                                <span
-                                                    className={`
+                    {/* DURATION */}
+                    {pkg.duration && (
+                      <span
+                        className={`
                                                         text-xs
                                                         px-2
                                                         py-0.5
                                                         rounded-full
 
-                                                        ${isActive
+                                                        ${
+                                                          isActive
                                                             ? "bg-blue-100 text-blue-700"
                                                             : "bg-gray-200 text-gray-600"
                                                         }
                                                     `}
-                                                >
-                                                    {pkg.duration}
-                                                </span>
+                      >
+                        {pkg.duration}
+                      </span>
+                    )}
 
-                                            )}
+                    {/* REMOVE */}
+                    {!isViewMode && packagesArray.length > 1 && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
 
-
-                                            {/* REMOVE */}
-                                            {!isViewMode &&
-                                                packagesArray.length > 1 && (
-
-                                                    <span
-                                                        onClick={(e) => {
-
-                                                            e.stopPropagation();
-
-                                                            removePackagePreference(
-                                                                index
-                                                            );
-
-                                                        }}
-                                                        className={`
+                          removePackagePreference(index);
+                        }}
+                        className={`
                                                             ml-1
                                                             text-xs
                                                             w-5
@@ -2201,47 +1843,35 @@ export default function TravelPackage({
                                                             items-center
                                                             justify-center
 
-                                                            ${isActive
+                                                            ${
+                                                              isActive
                                                                 ? "hover:bg-blue-100"
                                                                 : "hover:bg-red-100"
                                                             }
                                                         `}
-                                                    >
-                                                        ✕
-                                                    </span>
+                      >
+                        ✕
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
 
-                                                )}
+              {/* ================================================= */}
+              {/* ADD BUTTON */}
+              {/* ================================================= */}
 
-                                        </button>
+              {!isViewMode && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    addPackagePreference();
 
-                                    );
-
-                                }
-                            )}
-
-
-                            {/* ================================================= */}
-                            {/* ADD BUTTON */}
-                            {/* ================================================= */}
-
-                            {!isViewMode && (
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-
-                                        addPackagePreference();
-
-                                        setTimeout(() => {
-
-                                            setActiveTab(
-                                                packagesArray.length
-                                            );
-
-                                        }, 0);
-
-                                    }}
-                                    className="
+                    setTimeout(() => {
+                      setActiveTab(packagesArray.length);
+                    }, 0);
+                  }}
+                  className="
                                         h-10
                                         min-w-[40px]
                                         rounded-t-lg
@@ -2254,269 +1884,180 @@ export default function TravelPackage({
                                         text-xl
                                         shadow-sm
                                     "
-                                >
-                                    +
-                                </button>
+                >
+                  +
+                </button>
+              )}
+            </div>
 
-                            )}
+            {/* ================================================= */}
+            {/* ACTIVE PACKAGE */}
+            {/* ================================================= */}
 
-                        </div>
+            <div className="p-4">
+              {packagesArray[activeTab] &&
+                (() => {
+                  const pkg = packagesArray[activeTab];
 
+                  const index = activeTab;
 
-                        {/* ================================================= */}
-                        {/* ACTIVE PACKAGE */}
-                        {/* ================================================= */}
-
-                        <div className="p-4">
-
-                            {packagesArray[activeTab] &&
-                                (() => {
-
-                                    const pkg =
-                                        packagesArray[
-                                        activeTab
-                                        ];
-
-                                    const index =
-                                        activeTab;
-
-
-                                    return (
-
-                                        <div className="
+                  return (
+                    <div
+                      className="
                                             border
                                             border-gray-200
                                             rounded-xl
                                             p-4
                                             bg-gray-50
-                                        ">
+                                        "
+                    >
+                      {/* ================================================= */}
+                      {/* ROW 1 */}
+                      {/* ================================================= */}
 
-                                            {/* ================================================= */}
-                                            {/* ROW 1 */}
-                                            {/* ================================================= */}
-
-                                            <div className="
+                      <div
+                        className="
                                                 grid
                                                 grid-cols-1
                                                 md:grid-cols-4
                                                 gap-2
-                                            ">
-
-                                                {/* FROM */}
-                                                <div>
-
-                                                    <label className="
+                                            "
+                      >
+                        {/* FROM */}
+                        <div>
+                          <label
+                            className="
                                                         label-style
                                                         flex
                                                         items-center
                                                         gap-1
-                                                    ">
-                                                        <CalendarIcon />
+                                                    "
+                          >
+                            <CalendarIcon />
+                            From
+                          </label>
 
-                                                        From
-                                                    </label>
+                          <input
+                            type="date"
+                            value={pkg.fromDate || ""}
+                            onChange={(e) =>
+                              updatePackage(index, "fromDate", e.target.value)
+                            }
+                            className="border-highlight"
+                          />
+                        </div>
 
-
-                                                    <input
-                                                        type="date"
-                                                        value={
-                                                            pkg.fromDate ||
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "fromDate",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="border-highlight"
-                                                    />
-
-                                                </div>
-
-
-                                                {/* TO */}
-                                                <div>
-
-                                                    <label className="
+                        {/* TO */}
+                        <div>
+                          <label
+                            className="
                                                         label-style
                                                         flex
                                                         items-center
                                                         gap-1
-                                                    ">
-                                                        <CalendarIcon
-                                                            color="#16a34a"
-                                                        />
+                                                    "
+                          >
+                            <CalendarIcon color="#16a34a" />
+                            To
+                          </label>
 
-                                                        To
-                                                    </label>
+                          <input
+                            type="date"
+                            value={pkg.toDate || ""}
+                            onChange={(e) =>
+                              updatePackage(index, "toDate", e.target.value)
+                            }
+                            className="border-highlight"
+                          />
+                        </div>
 
+                        {/* DURATION */}
+                        <div>
+                          <label className="label-style">Duration</label>
 
-                                                    <input
-                                                        type="date"
-                                                        value={
-                                                            pkg.toDate ||
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "toDate",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="border-highlight"
-                                                    />
-
-                                                </div>
-
-
-                                                {/* DURATION */}
-                                                <div>
-
-                                                    <label className="label-style">
-                                                        Duration
-                                                    </label>
-
-
-                                                    <input
-                                                        type="text"
-                                                        disabled
-                                                        value={
-                                                            pkg.duration ||
-                                                            ""
-                                                        }
-                                                        className="
+                          <input
+                            type="text"
+                            disabled
+                            value={pkg.duration || ""}
+                            className="
                                                             border-highlight
                                                             bg-gray-100
                                                         "
-                                                    />
+                          />
+                        </div>
 
-                                                </div>
+                        <div>
+                          <label className="label-style">Flexible Days</label>
 
-                                                <div>
-                                                    <label className="label-style">
-                                                        Flexible Days
-                                                    </label>
-
-
-                                                    <div className="
+                          <div
+                            className="
                                                         flex
                                                         items-end
                                                         gap-2
-                                                    ">
+                                                    "
+                          >
+                            <div className={toggleStyles.wrapper}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (isViewMode) {
+                                    return;
+                                  }
 
-                                                        <div className={
-                                                            toggleStyles.wrapper
-                                                        }>
+                                  const newValue = !pkg.isFlexibleDates;
 
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
+                                  const updated = [...packagesArray];
 
-                                                                    if (
-                                                                        isViewMode
-                                                                    ) {
-                                                                        return;
-                                                                    }
+                                  updated[index] = {
+                                    ...updated[index],
 
+                                    isFlexibleDates: newValue,
 
-                                                                    const newValue =
-                                                                        !pkg.isFlexibleDates;
+                                    ...(newValue === false && {
+                                      flexibleDays: 0,
+                                    }),
+                                  };
 
+                                  setHolidayLeadObj((prev) => ({
+                                    ...prev,
+                                    packages: updated,
+                                  }));
+                                }}
+                                className={toggleStyles.toggle(
+                                  pkg.isFlexibleDates,
+                                )}
+                              >
+                                <div
+                                  className={toggleStyles.circle(
+                                    pkg.isFlexibleDates,
+                                  )}
+                                />
+                              </button>
 
-                                                                    const updated =
-                                                                        [
-                                                                            ...packagesArray
-                                                                        ];
+                              <span
+                                className={toggleStyles.label(
+                                  pkg.isFlexibleDates,
+                                )}
+                              >
+                                {pkg.isFlexibleDates ? "Yes" : "No"}
+                              </span>
+                            </div>
 
-
-                                                                    updated[
-                                                                        index
-                                                                    ] = {
-
-                                                                        ...updated[
-                                                                        index
-                                                                        ],
-
-                                                                        isFlexibleDates:
-                                                                            newValue,
-
-                                                                        ...(newValue === false && {
-                                                                            flexibleDays: 0
-                                                                        })
-
-                                                                    };
-
-
-                                                                    setHolidayLeadObj(
-                                                                        prev => ({
-                                                                            ...prev,
-                                                                            packages:
-                                                                                updated
-                                                                        })
-                                                                    );
-
-                                                                }}
-                                                                className={
-                                                                    toggleStyles.toggle(
-                                                                        pkg.isFlexibleDates
-                                                                    )
-                                                                }
-                                                            >
-
-                                                                <div
-                                                                    className={
-                                                                        toggleStyles.circle(
-                                                                            pkg.isFlexibleDates
-                                                                        )
-                                                                    }
-                                                                />
-
-                                                            </button>
-
-
-                                                            <span
-                                                                className={
-                                                                    toggleStyles.label(
-                                                                        pkg.isFlexibleDates
-                                                                    )
-                                                                }
-                                                            >
-                                                                {pkg.isFlexibleDates
-                                                                    ? "Yes"
-                                                                    : "No"}
-                                                            </span>
-
-                                                        </div>
-
-
-                                                        <input
-                                                            type="number"
-                                                            disabled={
-                                                                isViewMode ||
-                                                                !pkg.isFlexibleDates
-                                                            }
-                                                            value={
-                                                                pkg.isFlexibleDates
-                                                                    ? (
-                                                                        pkg.flexibleDays ||
-                                                                        0
-                                                                    )
-                                                                    : 0
-                                                            }
-                                                            onChange={(e) =>
-                                                                updatePackage(
-                                                                    index,
-                                                                    "flexibleDays",
-                                                                    Number(
-                                                                        e.target.value
-                                                                    )
-                                                                )
-                                                            }
-                                                            placeholder="Days"
-                                                            className={`
+                            <input
+                              type="number"
+                              disabled={isViewMode || !pkg.isFlexibleDates}
+                              value={
+                                pkg.isFlexibleDates ? pkg.flexibleDays || 0 : 0
+                              }
+                              onChange={(e) =>
+                                updatePackage(
+                                  index,
+                                  "flexibleDays",
+                                  Number(e.target.value),
+                                )
+                              }
+                              placeholder="Days"
+                              className={`
                                                                 h-9
                                                                 w-16
                                                                 px-2
@@ -2526,24 +2067,21 @@ export default function TravelPackage({
                                                                 border-gray-300
                                                                 rounded
 
-                                                                ${!pkg.isFlexibleDates
+                                                                ${
+                                                                  !pkg.isFlexibleDates
                                                                     ? "bg-gray-100 cursor-not-allowed"
                                                                     : "bg-white"
                                                                 }
                                                             `}
-                                                        />
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                            {/* ROW 2 */}
-                                            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"> */}
-                                            <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-2">
-
-                                                {/* <div>
+                      {/* ROW 2 */}
+                      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2"> */}
+                      <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-2">
+                        {/* <div>
                                                 <label className="label-style">
                                                     Budget Per Pax
                                                 </label>
@@ -2562,7 +2100,7 @@ export default function TravelPackage({
                                                 />
                                             </div> */}
 
-                                                {/* <div>
+                        {/* <div>
                                                 <label className="label-style">
                                                     Currency
                                                 </label>
@@ -2595,70 +2133,65 @@ export default function TravelPackage({
                                                     </option>
                                                 </select>
                                             </div> */}
-                                                <div className="flex flex-col ">
-                                                    <label className="label-style">Package Preference</label>
+                        <div className="flex flex-col ">
+                          <label className="label-style">
+                            Package Preference
+                          </label>
 
-                                                    {/* {isViewMode ? (
+                          {/* {isViewMode ? (
                                                     <ViewSelect value={leadObj.budgetPreference} />
                                                 ) : ( */}
-                                                    <select
-                                                        name="budgetPreference"
-                                                        value={pkg.budgetPreference || ""} 
-                                                        // onChange={(e) =>
-                                                        //     updatePackage(
-                                                        //         index,
-                                                        //         "budgetPreference",
-                                                        //         e.target.value
-                                                        //     )
-                                                        // }
+                          <select
+                            name="budgetPreference"
+                            value={pkg.budgetPreference || ""}
+                            // onChange={(e) =>
+                            //     updatePackage(
+                            //         index,
+                            //         "budgetPreference",
+                            //         e.target.value
+                            //     )
+                            // }
 
-                                                        onChange={(e) => {
-                                                            const value =
-                                                                e.target.value === "" ? null : Number(e.target.value);
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value);
 
-                                                            updatePackage(
-                                                                index,
-                                                                "budgetPreference",
-                                                                value
-                                                            );
-                                                        }}
+                              updatePackage(index, "budgetPreference", value);
+                            }}
+                            className="border-highlight"
+                          >
+                            <option value="">Select Budget Prefernce</option>
+                            {budgetPreference.map((budgetPre) => (
+                              <option key={budgetPre.id} value={budgetPre.id}>
+                                {budgetPre.budgetPreferenceName}
+                              </option>
+                            ))}
+                          </select>
+                          {/* )} */}
+                        </div>
 
+                        <div className="md:col-span-2">
+                          <label className="label-style">
+                            Trip Description
+                          </label>
 
-                                                        className="border-highlight"
-                                                    >
-                                                        <option value="">Select Budget Prefernce</option>
-                                                        {budgetPreference.map((budgetPre) => (
-                                                            <option key={budgetPre.id} value={budgetPre.id}>
-                                                                {budgetPre.budgetPreferenceName}
-                                                            </option>
-                                                        ))}
+                          <input
+                            type="text"
+                            value={pkg.tripDescription || ""}
+                            onChange={(e) =>
+                              updatePackage(
+                                index,
+                                "tripDescription",
+                                e.target.value,
+                              )
+                            }
+                            className="border-highlight"
+                          />
+                        </div>
 
-                                                    </select>
-                                                    {/* )} */}
-                                                </div>
-
-
-                                                <div className="md:col-span-2">
-                                                    <label className="label-style">
-                                                        Trip Description
-                                                    </label>
-
-                                                    <input
-                                                        type="text"
-                                                        value={pkg.tripDescription || ""}
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "tripDescription",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        className="border-highlight"
-                                                    />
-                                                </div>
-
-
-                                                {/* <div>
+                        {/* <div>
                                                 <label className="label-style">
                                                     Hotel
                                                 </label>
@@ -2692,129 +2225,97 @@ export default function TravelPackage({
                                                 </select>
                                             </div> */}
 
-                                                <div>
-                                                    <label className="label-style">
-                                                        Hotel
-                                                    </label>
+                        <div>
+                          <label className="label-style">Hotel</label>
 
-                                                    <select
-                                                        value={
-                                                            pkg.hotelCategory ||
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>{
-                                                            const value =e.target.value === "" 
-                                                            ? null 
-                                                            : Number(e.target.value);
+                          <select
+                            value={pkg.hotelCategory || ""}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value);
 
-                                                            console.log("Value is ",value);        // 2
-                                                            console.log(typeof value); // "number"    
+                              console.log("Value is ", value); // 2
+                              console.log(typeof value); // "number"
 
+                              updatePackage(
+                                index,
+                                "hotelCategory",
+                                // e.target.value
+                                value,
+                              );
+                            }}
+                            className="border-highlight"
+                          >
+                            <option value=""> Select Hotel Type</option>
+                            {hotelCategory.map((hotelCat) => (
+                              <option key={hotelCat.id} value={hotelCat.id}>
+                                {hotelCat.hotelType}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
-                                                            updatePackage(
-                                                                index,
-                                                                "hotelCategory",
-                                                                // e.target.value
-                                                                value
-                                                            )
+                        {/* MEAL PLAN */}
+                        <div>
+                          <label className="label-style">Meal Plan</label>
 
-                                                            
-                                                            
-                                                           
-                                                        }
-                                                        }
-                                                        className="border-highlight"
-                                                    >
+                          <select
+                            value={pkg.mealPlan || ""}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value);
 
-                                                       
-                                                        <option value=""> Select Hotel Type</option>
-                                                    {hotelCategory.map((hotelCat)=> (
-                                                        <option key={hotelCat.id} value={hotelCat.id}>
-                                                            {hotelCat.hotelType}
-                                                        </option>
+                              console.log("Value is ", value); // 2
+                              console.log(typeof value); // "number"
 
-                                                        
-                                                    ))}
-                                                    </select>
+                              updatePackage(index, "mealPlan", value);
+                            }}
+                            className="border-highlight"
+                          >
+                            <option value="">Select Meal Plan</option>
 
-                                                </div>
+                            {mealPlan.map((mealpl) => (
+                              <option key={mealpl.id} value={mealpl.id}>
+                                {mealpl.mealPlanName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
+                        <div>
+                          <label className="label-style">Vehicle Type</label>
+                          <select
+                            name="vehicleType"
+                            value={pkg.vehicleType}
+                            onChange={(e) => {
+                              const value =
+                                e.target.value === ""
+                                  ? null
+                                  : Number(e.target.value);
 
-                                                {/* MEAL PLAN */}
-                                                <div>
+                              updatePackage(
+                                index,
+                                "vehicleType",
+                                //    e.target.value
+                                value,
+                              );
+                            }}
+                            className="border-highlight"
+                          >
+                            <option value="">Select Vehicle type</option>
+                            {vehicleType.map((vehType) => (
+                              <option key={vehType.id} value={vehType.id}>
+                                {vehType.vehicleType}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
-                                                    <label className="label-style">
-                                                        Meal Plan
-                                                    </label>
-
-
-                                                    <select
-                                                        value={pkg.mealPlan ||""}
-                                                        onChange={(e) =>{
-                                                             const value =e.target.value === "" 
-                                                            ? null 
-                                                            : Number(e.target.value);
-
-                                                            console.log("Value is ",value);        // 2
-                                                            console.log(typeof value); // "number" 
-                                                            
-                                                            updatePackage(
-                                                                index,
-                                                                "mealPlan",
-                                                                value
-                                                            )
-                                                        }
-                                                        }
-                                                        className="border-highlight"
-                                                    >
-
-                                                        <option value="">Select Meal Plan</option>
-
-                                                        {mealPlan.map((mealpl)=>(
-                                                            <option  key={mealpl.id} value={mealpl.id}>
-                                                                {mealpl.mealPlanName}
-                                                            </option>
-                                                        ))}
-                                                        
-                                                    </select>
-                                                </div>
-
-
-
-
-                                                <div >
-                                                    <label className="label-style">
-                                                        Vehicle Type
-                                                    </label>
-                                                    <select
-                                                        name="vehicleType"
-                                                        value={pkg.vehicleType}
-                                                        onChange={(e) =>{
-                                                             const value =e.target.value === "" 
-                                                            ? null 
-                                                            : Number(e.target.value);
-
-                                                            updatePackage(
-                                                                index,
-                                                                "vehicleType",
-                                                                //    e.target.value
-                                                                value
-                                                            )
-                                                        }
-                                                        }
-                                                        className="border-highlight"
-                                                    >
-                                                        <option value="">Select Vehicle type</option>
-                                                        {vehicleType.map((vehType) => (
-                                                            <option key={vehType.id} value={vehType.id}>
-                                                                {vehType.vehicleType}
-                                                            </option>
-                                                        ))}
-
-                                                    </select>
-                                                </div>
-
-                                                {/* <div>
+                        {/* <div>
                                                 <label className="label-style">
                                                     Trip Description
                                                 </label>
@@ -2832,54 +2333,47 @@ export default function TravelPackage({
                                                     className="border-highlight"
                                                 />
                                             </div> */}
+                      </div>
 
-                                            </div>
+                      {/* ROW 3 */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <label className="label-style">Arrival City</label>
+                          <input
+                            type="text"
+                            value={pkg.arrivalCity || ""}
+                            onChange={(e) =>
+                              updatePackage(
+                                index,
+                                "arrivalCity",
+                                e.target.value,
+                              )
+                            }
+                            className="border-highlight"
+                            placeholder="Enter Arrival City"
+                          />
+                        </div>
 
-                                            {/* ROW 3 */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                        <div>
+                          <label className="label-style">Departure City</label>
+                          <input
+                            type="text"
+                            value={pkg.departureCity || ""}
+                            onChange={(e) =>
+                              updatePackage(
+                                index,
+                                "departureCity",
+                                e.target.value,
+                              )
+                            }
+                            className="border-highlight"
+                            placeholder="Enter Departure City"
+                          />
+                        </div>
+                      </div>
 
-                                                <div>
-                                                    <label className="label-style">
-                                                        Arrival City
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={pkg.arrivalCity || ""}
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "arrivalCity",
-                                                                e.target.value
-                                                            )}
-                                                        className="border-highlight"
-                                                        placeholder="Enter Arrival City"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="label-style">
-                                                        Departure City
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={pkg.departureCity || ""}
-                                                        onChange={(e) =>
-                                                            updatePackage(
-                                                                index,
-                                                                "departureCity",
-                                                                e.target.value
-                                                            )}
-                                                        className="border-highlight"
-                                                        placeholder="Enter Departure City"
-                                                    />
-                                                </div>
-
-
-
-                                            </div>
-
-                                            {/* DESTINATIONS */}
-                                            {/* <div className="mt-3">
+                      {/* DESTINATIONS */}
+                      {/* <div className="mt-3">
 
                                             <label className="label-style">
                                                 Destinations
@@ -2902,33 +2396,27 @@ export default function TravelPackage({
 
 
                                             {/* ================================================= */}
-                                            {/* NOTES */}
-                                            {/* ================================================= */}
+                      {/* NOTES */}
+                      {/* ================================================= */}
 
-                                            <div className="mt-3">
-
-                                                <div className="
+                      <div className="mt-3">
+                        <div
+                          className="
                                                     flex
                                                     items-center
                                                     justify-between
                                                     mb-1
-                                                ">
+                                                "
+                        >
+                          <label className="label-style mb-0">
+                            Stetch Itinerary
+                          </label>
 
-                                                    <label className="label-style mb-0">
-                                                        Stetch Itinerary
-                                                    </label>
-
-
-                                                    {!isViewMode && (
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                openNotesEditor(
-                                                                    index
-                                                                )
-                                                            }
-                                                            className="
+                          {!isViewMode && (
+                            <button
+                              type="button"
+                              onClick={() => openNotesEditor(index)}
+                              className="
                                                                 inline-flex
                                                                 items-center
                                                                 gap-1.5
@@ -2942,102 +2430,58 @@ export default function TravelPackage({
                                                                 font-medium
                                                                 transition
                                                             "
-                                                        >
-                                                            ↗ Expand Notepad
-                                                        </button>
-
-                                                    )}
-
-                                                </div>
-
-
-                                                <RichTextEditor
-                                                    value={
-                                                        pkg.sketchItinerary ||
-                                                        ""
-                                                    }
-                                                    disabled={
-                                                        isViewMode
-                                                    }
-                                                    onChange={(value) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "sketchItinerary",
-                                                            value
-                                                        )
-                                                    }
-                                                    onExpand={() =>
-                                                        openNotesEditor(
-                                                            index
-                                                        )
-                                                    }
-                                                />
-
-                                            </div>
-
-
-                                            <div className="mt-3">
-                                                <label className="label-style">
-                                                    Trip Budget (Excluding Air Fare, Visa, Insurance)
-                                                </label>
-
-                                                <input
-                                                    type="text"
-                                                    value={pkg.tripBudget || ""}
-                                                    onChange={(e) =>
-                                                        updatePackage(
-                                                            index,
-                                                            "tripBudget",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    className="border-highlight"
-                                                    placeholder="Enter Trip Budget"
-                                                />
-                                            </div>
-
-                                        </div>
-
-                                    );
-
-                                })()}
-
-
-
+                            >
+                              ↗ Expand Notepad
+                            </button>
+                          )}
                         </div>
 
+                        <RichTextEditor
+                          value={pkg.sketchItinerary || ""}
+                          disabled={isViewMode}
+                          onChange={(value) =>
+                            updatePackage(index, "sketchItinerary", value)
+                          }
+                          onExpand={() => openNotesEditor(index)}
+                        />
+                      </div>
+
+                      <div className="mt-3">
+                        <label className="label-style">
+                          Trip Budget (Excluding Air Fare, Visa, Insurance)
+                        </label>
+
+                        <input
+                          type="text"
+                          value={pkg.tripBudget || ""}
+                          onChange={(e) =>
+                            updatePackage(index, "tripBudget", e.target.value)
+                          }
+                          className="border-highlight"
+                          placeholder="Enter Trip Budget"
+                        />
+                      </div>
                     </div>
-
-                )}
-
+                  );
+                })()}
             </div>
+          </div>
+        )}
+      </div>
 
+      {/* ===================================================== */}
+      {/* FULL SCREEN NOTES MODAL */}
+      {/* ===================================================== */}
 
-            {/* ===================================================== */}
-            {/* FULL SCREEN NOTES MODAL */}
-            {/* ===================================================== */}
-
-            {isNotesExpanded &&
-                expandedNotesPackageIndex !== null && (
-
-                    <FullScreenNotesEditor
-                        value={
-                            packagesArray[
-                                expandedNotesPackageIndex
-                            ]?.sketchItinerary || ""
-                        }
-                        onChange={
-                            updateExpandedNotes
-                        }
-                        onClose={
-                            closeNotesEditor
-                        }
-                    />
-
-                )}
-
-
-
-        </div>
-    );
+      {isNotesExpanded && expandedNotesPackageIndex !== null && (
+        <FullScreenNotesEditor
+          value={
+            packagesArray[expandedNotesPackageIndex]?.sketchItinerary || ""
+          }
+          onChange={updateExpandedNotes}
+          onClose={closeNotesEditor}
+        />
+      )}
+    </div>
+  );
 }
