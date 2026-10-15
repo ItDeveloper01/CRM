@@ -2457,8 +2457,9 @@ export default function TravelPackage({
                           onChange={(e) =>
                             updatePackage(index, "tripBudget", e.target.value)
                           }
-                          className="border-highlight"
+                          className="border-highlight bg-[#f5cb83] font-bold "
                           placeholder="Enter Trip Budget"
+                          
                         />
                       </div>
                     </div>
