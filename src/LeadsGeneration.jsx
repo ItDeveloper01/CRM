@@ -253,7 +253,8 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
 
 
   const cityAreas = {
-    Pune: ["Kothrud", "Karvenagar", "Nigdi", "Bhosari", "Deccan"],
+    Pune: ["Kothrud", "Karvenagar","Deccan","Viman Nagar","Phursungi","Katraj","Warje","Bavdhan","Baner","Camp","Deccan Gymkhana","Peth Area","Hadapsar","Sinhagad Road","Kondva","Hinjewadi"],
+    PCMC:["Sangvi", "Dehu","Nigdi","Bhosari","Chakan","Rajguru Nagar","VisrantWadi","Khadki","Alandi","Pimpri-Chinchwad"],
     Mumbai: ["Andheri", "Borivali", "Dadar", "Bandra", "Kurla"],
     Aurangabad: ["Cidco", "Nirala Bazar", "Garkheda", "Waluj"],
     Kolhapur: ["Shahupuri", "Laxmipuri", "Rajaram Puri"],
