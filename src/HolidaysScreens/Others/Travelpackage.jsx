@@ -2409,7 +2409,7 @@ export default function TravelPackage({
                                                 "
                         >
                           <label className="label-style mb-0">
-                            Stetch Itinerary
+                            Sketch Itinerary
                           </label>
 
                           {!isViewMode && (
