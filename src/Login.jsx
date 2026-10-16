@@ -78,8 +78,10 @@ const handleLogin = async (e) => {
         name: response.data.user.firstName,
         ...response.data.user,
       },
-
+      
       token: response.data.token,
+
+      permissions: response.data.permissions,
     };
 
     setUser(authData);

@@ -7317,6 +7317,7 @@ import { useGetSessionUser } from "./SessionContext";
 import LeadTransferModal from "./LeadTransferModal";
 import ReOpenLeadModal from "./ReOpenLeadModal";
 import MessageBox from "./MessageBox";
+import { usePermission } from "./utils/UserPermissionMapper";
 
 
 import {
@@ -7335,6 +7336,8 @@ import {
   CalendarFilter,
   LeadsSummaryBar,
 } from "./LeadsSharedTable";
+
+
 
 
 // ============================================================
@@ -7378,99 +7381,11 @@ const HOLIDAY_FILTER_KEYS = [
 ];
 
 
-// ============================================================
-// LEAD TRANSFER PERMISSIONS
-// ============================================================
-//
-// These flags are temporary.
-//
-// Later these should come from the DB / SessionContext.
-//
-// SHOW_TRANSFER_OPTIONS
-//      Master permission.
-//      If FALSE -> no transfer UI will be displayed.
-//
-// CAN_TRANSFER_CONFIRMED
-//      Controls transfer of Confirmed leads.
-//
-// CAN_TRANSFER_LOST
-//      Controls transfer of Lost leads.
-//
-// For now all are TRUE.
-// ============================================================
-
-const SHOW_TRANSFER_OPTIONS = true;
-
-const CAN_TRANSFER_CONFIRMED = true;
-
-const CAN_TRANSFER_LOST = true;
-
-// ============================================================
-// LEAD REOPEN PERMISSIONS
-// ============================================================
-// These are intentionally hard-coded for now.
-// Later they can come from DB / SessionContext exactly like transfer.
-const SHOW_REOPEN_OPTIONS = true;
-const CAN_REOPEN_CONFIRMED = true;
-const CAN_REOPEN_LOST = true;
-const CAN_REOPEN_POSTPONED = true;
-const CAN_REOPEN_CLOSED = true;
 
 
-// ============================================================
-// CHECK WHETHER A LEAD CAN BE TRANSFERRED
-// ============================================================
-//
-// This is the single place where transfer permission is checked.
-//
-// This will make it easy later to replace these hard-coded flags
-// with DB-driven permissions.
-// ============================================================
-
-const isLeadTransferable = (lead) => {
-
-  // Master transfer permission.
-  if (!SHOW_TRANSFER_OPTIONS) {
-    return false;
-  }
-
-  const status = (lead?.status || "")
-    .trim()
-    .toLowerCase();
 
 
-  // Confirmed lead.
-  if (status === "confirmed") {
-    return CAN_TRANSFER_CONFIRMED;
-  }
 
-
-  // Lost lead.
-  if (status === "lost") {
-    return CAN_TRANSFER_LOST;
-  }
-
-
-  // Open / Postponed / other statuses.
-  return true;
-};
-
-
-// ============================================================
-// CHECK WHETHER A LEAD CAN BE REOPENED
-// ============================================================
-const isLeadReopenable = (lead) => {
-  if (!SHOW_REOPEN_OPTIONS) return false;
-
-  const status = (lead?.status || "").trim().toLowerCase();
-
-  if (status === "confirmed") return CAN_REOPEN_CONFIRMED;
-  if (status === "lost") return CAN_REOPEN_LOST;
-  if (status === "postponed") return CAN_REOPEN_POSTPONED;
-  if (status === "closed") return CAN_REOPEN_CLOSED;
-
-  return false;
-};
 
 
 // ============================================================
@@ -7942,18 +7857,66 @@ export default function LeadListWithFilters({
     "/Reporting/GetManagerAnalyticsDataWithFilters";
 
 
+
   // ==========================================================
   // SESSION / MESSAGE
   // ==========================================================
 
-  const {
-    user: sessionUser
-  } = useGetSessionUser();
+  const { user: sessionUser } = useGetSessionUser();
 
-  const {
-    showMessage
-  } = useMessageBox();
+  const { showMessage } = useMessageBox();
 
+  // Inside your component
+  const { hasPermission } = usePermission();
+
+
+
+  
+// ============================================================
+// LEAD TRANSFER PERMISSIONS
+// ============================================================
+//
+// These flags are temporary.
+//
+// Later these should come from the DB / SessionContext.
+//
+// SHOW_TRANSFER_OPTIONS
+//      Master permission.
+//      If FALSE -> no transfer UI will be displayed.
+//
+// CAN_TRANSFER_CONFIRMED
+//      Controls transfer of Confirmed leads.
+//
+// CAN_TRANSFER_LOST
+//      Controls transfer of Lost leads.
+//
+// For now all are TRUE.
+// ============================================================
+
+const SHOW_TRANSFER_OPTIONS = hasPermission("Sales.Holiday.Lead.BulkTransfer");
+
+const CAN_TRANSFER_CONFIRMED = hasPermission("Sales.Holiday.Lead.Transfer");
+
+const CAN_TRANSFER_LOST = hasPermission("Sales.Holiday.Lead.Transfer");
+
+
+  console.log("Holiday Transfer Permissions:", {
+  bulkTransfer: SHOW_TRANSFER_OPTIONS,
+  transferConfirmed: CAN_TRANSFER_CONFIRMED,
+  transferLost: CAN_TRANSFER_LOST,
+});
+
+
+// ============================================================
+// LEAD REOPEN PERMISSIONS
+// ============================================================
+// These are intentionally hard-coded for now.
+// Later they can come from DB / SessionContext exactly like transfer.
+const SHOW_REOPEN_OPTIONS = hasPermission("Sales.Holiday.Lead.BulkReOpen");
+const CAN_REOPEN_CONFIRMED = hasPermission("Sales.Holiday.Lead.ReOpen");
+const CAN_REOPEN_LOST = hasPermission("Sales.Holiday.Lead.ReOpen");
+const CAN_REOPEN_POSTPONED = hasPermission("Sales.Holiday.Lead.ReOpen");
+const CAN_REOPEN_CLOSED = hasPermission("Sales.Holiday.Lead.ReOpen");
 
   // ==========================================================
   // VIEW MODAL STATE
@@ -8040,6 +8003,64 @@ export default function LeadListWithFilters({
 
   const [showTransferModal, setShowTransferModal] =
     useState(false);
+
+
+// ============================================================
+// CHECK WHETHER A LEAD CAN BE TRANSFERRED
+// ============================================================
+//
+// This is the single place where transfer permission is checked.
+//
+// This will make it easy later to replace these hard-coded flags
+// with DB-driven permissions.
+// ============================================================
+
+const isLeadTransferable = (lead) => {
+
+  // Master transfer permission.
+  if (!SHOW_TRANSFER_OPTIONS) {
+    return false;
+  }
+
+  const status = (lead?.status || "")
+    .trim()
+    .toLowerCase();
+
+
+  // Confirmed lead.
+  if (status === "confirmed") {
+    return CAN_TRANSFER_CONFIRMED;
+  }
+
+
+  // Lost lead.
+  if (status === "lost") {
+    return CAN_TRANSFER_LOST;
+  }
+
+
+  // Open / Postponed / other statuses.
+  return true;
+};
+
+
+
+// ============================================================
+// CHECK WHETHER A LEAD CAN BE REOPENED
+// ============================================================
+const isLeadReopenable = (lead) => {
+  if (!SHOW_REOPEN_OPTIONS) return false;
+
+  const status = (lead?.status || "").trim().toLowerCase();
+
+  if (status === "confirmed") return CAN_REOPEN_CONFIRMED;
+  if (status === "lost") return CAN_REOPEN_LOST;
+  if (status === "postponed") return CAN_REOPEN_POSTPONED;
+  if (status === "closed") return CAN_REOPEN_CLOSED;
+
+  return false;
+};
+
 
   // ==========================================================
   // FRONTEND-ONLY LEAD SELECTION DICTIONARY
@@ -10533,101 +10554,117 @@ Are you sure you want to continue with the transfer?`;
           SUMMARY BAR + BULK TRANSFER / BULK REOPEN
       ====================================================== */}
 
-      <div className="flex flex-row mt-2 gap-2 items-stretch flex-shrink-0">
-        <div
-          className={
-            isBulkTransferMode || isBulkReopenMode
-              ? "w-[70%]"
-              : "w-[70%]"
-          }
-        >
-          <LeadsSummaryBar dateRange={dateRange} leads={sortedLeads} />
-        </div>
+   
+<div className="flex flex-row mt-2 gap-2 items-stretch flex-shrink-0">
+  {/* SUMMARY BAR */}
+  <div
+    className={
+      !SHOW_TRANSFER_OPTIONS && !SHOW_REOPEN_OPTIONS
+        ? "w-full min-w-0"
+        : "w-[70%] min-w-0"
+    }
+  >
+    <LeadsSummaryBar
+      dateRange={dateRange}
+      leads={sortedLeads}
+    />
+  </div>
 
-        <div className={isBulkTransferMode || isBulkReopenMode ? "w-[30%]" : "w-[30%]"}>
-          {!isBulkTransferMode && !isBulkReopenMode ? (
-            <div className="w-full h-full flex gap-2">
-              {SHOW_TRANSFER_OPTIONS && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsBulkTransferMode(true);
-                    setSelectedLeadIds([]);
-                  }}
-                  className="
-        flex-1
-        min-w-0
-        h-full
-        rounded-lg
-        bg-blue-50
-        border
-        border-blue-200
-        text-sm
-        font-medium
-        text-blue-700
-        hover:bg-blue-100
-        hover:text-blue-800
-        hover:border-blue-300
-        transition-colors
-        duration-150
-      "
-                >
-                  Bulk Transfer
-                </button>
-              )}
+  {/* BULK ACTIONS */}
+  {(SHOW_TRANSFER_OPTIONS || SHOW_REOPEN_OPTIONS) && (
+    <div className="w-[30%] min-w-0">
+      {!isBulkTransferMode && !isBulkReopenMode ? (
+        <div className="w-full h-full flex gap-2">
+          {SHOW_TRANSFER_OPTIONS && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsBulkTransferMode(true);
+                setSelectedLeadIds([]);
+              }}
+              className="
+                flex-1 min-w-0 h-full rounded-lg
+                bg-blue-50 border border-blue-200
+                text-sm font-medium text-blue-700
+                hover:bg-blue-100 hover:text-blue-800
+                hover:border-blue-300 transition-colors duration-150
+              "
+            >
+              Bulk Transfer
+            </button>
+          )}
 
-              {SHOW_REOPEN_OPTIONS && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsBulkReopenMode(true);
-                    setSelectedLeadIds([]);
-                  }}
-                  className="
-        flex-1
-        min-w-0
-        h-full
-        rounded-lg
-        bg-amber-50
-        border
-        border-amber-200
-        text-sm
-        font-medium
-        text-amber-700
-        hover:bg-amber-100
-        hover:text-amber-800
-        hover:border-amber-300
-        transition-colors
-        duration-150
-      "
-                >
-                  Bulk Reopen
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className={`w-full h-full flex items-center justify-between gap-2 px-3 rounded-lg border ${isBulkReopenMode ? "bg-amber-50 border-amber-100" : "bg-blue-50 border-blue-100"}`}>
-              <span className={`text-xs font-medium whitespace-nowrap ${isBulkReopenMode ? "text-amber-700" : "text-blue-700"}`}>
-                {selectedCount} selected
-              </span>
-              <div className="flex items-center gap-1.5">
-                <button type="button" onClick={isBulkReopenMode ? exitBulkReopenMode : exitBulkMode} className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-50 whitespace-nowrap transition-colors duration-150">
-                  Clear
-                </button>
-                {isBulkReopenMode ? (
-                  <button type="button" onClick={handleBulkReopenClick} disabled={selectedCount === 0} className="px-2.5 py-1 text-xs font-medium text-white bg-amber-600 rounded hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap transition-colors duration-150">
-                    Reopen
-                  </button>
-                ) : (
-                  <button type="button" onClick={handleBulkTransferClick} disabled={selectedCount === 0} className="px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap transition-colors duration-150">
-                    Transfer
-                  </button>
-                )}
-              </div>
-            </div>
+          {SHOW_REOPEN_OPTIONS && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsBulkReopenMode(true);
+                setSelectedLeadIds([]);
+              }}
+              className="
+                flex-1 min-w-0 h-full rounded-lg
+                bg-amber-50 border border-amber-200
+                text-sm font-medium text-amber-700
+                hover:bg-amber-100 hover:text-amber-800
+                hover:border-amber-300 transition-colors duration-150
+              "
+            >
+              Bulk Reopen
+            </button>
           )}
         </div>
-      </div>
+      ) : (
+        <div
+          className={`w-full h-full flex items-center justify-between gap-2 px-3 rounded-lg border ${
+            isBulkReopenMode
+              ? "bg-amber-50 border-amber-100"
+              : "bg-blue-50 border-blue-100"
+          }`}
+        >
+          <span
+            className={`text-xs font-medium whitespace-nowrap ${
+              isBulkReopenMode ? "text-amber-700" : "text-blue-700"
+            }`}
+          >
+            {selectedCount} selected
+          </span>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={
+                isBulkReopenMode ? exitBulkReopenMode : exitBulkMode
+              }
+              className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded hover:bg-gray-50 whitespace-nowrap transition-colors duration-150"
+            >
+              Clear
+            </button>
+
+            {isBulkReopenMode ? (
+              <button
+                type="button"
+                onClick={handleBulkReopenClick}
+                disabled={selectedCount === 0}
+                className="px-2.5 py-1 text-xs font-medium text-white bg-amber-600 rounded hover:bg-amber-700 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap transition-colors duration-150"
+              >
+                Reopen
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleBulkTransferClick}
+                disabled={selectedCount === 0}
+                className="px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed whitespace-nowrap transition-colors duration-150"
+              >
+                Transfer
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</div>
 
       {/* ======================================================
           LEAD TABLE

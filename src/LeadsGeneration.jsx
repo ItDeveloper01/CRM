@@ -55,7 +55,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const isCreateMode = mode === "create";
   const isEditMode = mode === "edit";
   const isViewMode = mode === "view";
-  const [requestQuoteForFIT, setRequestQuoteForFIT] = useState(true);
+  const [requestQuoteForFIT, setRequestQuoteForFIT] = useState(false);
 
   console.log("mode value ", mode);
 
@@ -1683,17 +1683,31 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
       {selectedLeadName=== "Holiday" &&
         holidayLeadObj.leadType === "FIT" &&
         holidayLeadObj.tripType === "Domestic" &&  FIT_DOM_REQUEST_QUOTE_TO_OPERATION && (
-          <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
-            <input
-              type="checkbox"
-              checked={requestQuoteForFIT}
-              onChange={(e) => setRequestQuoteForFIT(e.target.checked)}
-              className="h-4 w-4 accent-blue-600 cursor-pointer"
-            />
-            <span className="font-medium text-gray-700">
-              Request Quote for FIT
-            </span>
-          </label>
+        
+
+<div className="flex flex-col gap-1">
+  <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+    <input
+      type="checkbox"
+      checked={requestQuoteForFIT}
+      onChange={(e) => setRequestQuoteForFIT(e.target.checked)}
+      className="h-4 w-4 accent-blue-600 cursor-pointer"
+    />
+
+    <span className="font-medium text-gray-700">
+      Request Quote for FIT Domestic
+    </span>
+  </label>
+
+  <p className="ml-6 text-xs text-red-600 leading-relaxed">
+   An email requesting a quotation for FIT Domestic will be sent to the
+  Operations team when you click Generate/Update Lead while this checkbox is checked.
+  If a quotation has already been requested, keep it unchecked unless you
+  have made changes and require a revised quotation.
+  </p>
+</div>
+
+
         )}
     </>
   )}
