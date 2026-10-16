@@ -8,6 +8,7 @@ import config from "./config";
 import { useMessageBox } from "./Notification";
 import { useGetSessionUser } from "./SessionContext";
 import LeadTransferModal from "./LeadTransferModal";
+import { usePermission } from "./utils/UserPermissionMapper";
 import {
   LoadingOverlay,
   MultiSelectFilter,
@@ -366,6 +367,11 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [leads, setLeads] = useState([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
+
+  // Inside your component
+  const { hasPermission } = usePermission();
+
+  const CAN_TRANSFER_LEADS = hasPermission("Sales.Holiday.Lead.Transfer");
 
   const openTransferModal = (lead) => {
     setSelectedLead(lead);
@@ -905,7 +911,7 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
       <LeadsSummaryBar dateRange={dateRange} leads={sortedLeads} />
 
       {/* ---------------- TABLE (fills remaining height, only this scrolls) ---------------- */}
-      <div className="overflow-auto flex-1 border rounded-lg mt-2">
+      <div className="overflow-auto flex-1 border rounded-lg mt-2  select-none"  >
         <table className="w-full text-xs border-collapse">
           <thead className="bg-gray-100">
             <tr>
@@ -939,7 +945,11 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                 />
               )}
               <SortableHeader label="Follow-up Date" sortKey="followUpDate" sortConfig={sortConfig} onSort={handleSort} />
-              <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">TransferTo</th>
+              {CAN_TRANSFER_LEADS && (
+                <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">
+                  TransferTo
+                </th>
+              )}
               <th className="p-2 text-left sticky top-0 z-10 bg-gray-100">Details</th>
             </tr>
           </thead>
@@ -1040,19 +1050,26 @@ export default function CreatedLeadsListWithFilters({ users, dateRange }) {
                     : <span className="text-gray-400">—</span>}
                 </td>
 
-                <td className="p-2 text-center">
-                  <button
-                    className={`inline-flex items-center justify-center p-1.5 rounded ${["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())
-                      ? "bg-gray-300 cursor-not-allowed text-white"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
+                {CAN_TRANSFER_LEADS && (
+                  <td className="p-2 text-center">
+                    <button
+                      className={`inline-flex items-center justify-center p-1.5 rounded ${
+                        ["lost", "confirmed"].includes(
+                          lead.status?.trim().toLowerCase(),
+                        )
+                          ? "bg-gray-300 cursor-not-allowed text-white"
+                          : "bg-blue-600 text-white hover:bg-blue-700"
                       }`}
-                    title="Transfer Lead"
-                    onClick={() => openTransferModal(lead)}
-                    disabled={["lost", "confirmed"].includes(lead.status?.trim().toLowerCase())}
-                  >
-                    <SwapIcon />
-                  </button>
-                </td>
+                      title="Transfer Lead"
+                      onClick={() => openTransferModal(lead)}
+                      disabled={["lost", "confirmed"].includes(
+                        lead.status?.trim().toLowerCase(),
+                      )}
+                    >
+                      <SwapIcon />
+                    </button>
+                  </td>
+                )}
                 <td className="p-2">
                   <button
                     className="p-1.5 rounded text-blue-700 hover:bg-blue-50"

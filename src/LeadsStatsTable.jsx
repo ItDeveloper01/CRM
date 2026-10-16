@@ -156,14 +156,14 @@ export default function LeadStatsTable({ leads }) {
     <div  ref={fullPrintRef}>
 
       {/* PRINT ENTIRE */}
-      <div className="flex justify-end">
+      {/* <div className="flex justify-end">
         <button
           onClick={() => handlePrint(fullPrintRef)}
           className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
         >
           🖨
         </button>
-      </div>
+      </div> */}
 
       {/* ---------------- TRAVEL CATEGORY ---------------- */}
       <Card className="rounded-xl shadow-md p-4" ref={travelPrintRef}>
@@ -171,15 +171,15 @@ export default function LeadStatsTable({ leads }) {
           <CardTitle className="text-lg font-bold">
             Travel Category & Overall Status Summary
           </CardTitle>
-          <button
+          {/* <button
             onClick={() => handlePrint(travelPrintRef)}
             className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
           >
             🖨
-          </button>
+          </button> */}
         </div>
 
-        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded">
+        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded select-none">
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 bg-gray-100">
               <tr>
@@ -222,12 +222,12 @@ export default function LeadStatsTable({ leads }) {
       <Card className="rounded-xl shadow-md p-4" ref={userPrintRef}>
         <div className="flex justify-between items-center mb-4">
           <CardTitle className="text-lg font-bold">User-wise Summary</CardTitle>
-          <button
+          {/* <button
             onClick={() => handlePrint(userPrintRef)}
             className="text-xs px-2 py-1 border rounded-md hover:bg-gray-100"
           >
             🖨
-          </button>
+          </button> */}
         </div>
 
         {/* FILTER */}
@@ -275,7 +275,7 @@ export default function LeadStatsTable({ leads }) {
         </div>
 
         {/* USER TABLE */}
-        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded">
+        <div className="max-h-[420px] overflow-y-auto overflow-x-hidden border rounded select-none">
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 bg-gray-100">
               <tr>
