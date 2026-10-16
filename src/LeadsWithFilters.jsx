@@ -10675,8 +10675,9 @@ Are you sure you want to continue with the transfer?`;
         flex-1
         border
         rounded-lg
-        mt-2
-      ">
+        mt-2 
+         select-none
+      "   >
 
         <table className="
           w-full

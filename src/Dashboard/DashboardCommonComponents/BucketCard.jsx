@@ -2162,6 +2162,7 @@ const BucketCard = ({
                     border-slate-200
                     bg-white
                     shadow-sm
+                     select-none
                     ${
                         expanded
                             ? "col-span-full row-span-full"
