@@ -449,50 +449,36 @@ const LeadHolidays = forwardRef(({
         }
     }, [passportDetailsObj, setHolidayLeadObj, showMessage]);
 
+useEffect(() => {
+    let isMounted = true;
 
-    useEffect(() => {
+    const fetchData = async () => {
+        try {
+            const res = await axios.get(
+                getSpecialRequirementsListEndPoint
+            );
 
-        debugger;
+            if (!isMounted) return;
 
+            setSpecialRequirements(res.data || []);
+        } catch (error) {
+            if (!isMounted) return;
 
+            console.error(error);
 
+            showMessage({
+                type: MESSAGE_TYPES.ERROR,
+                message: "Error fetching special requirements."
+            });
+        }
+    };
 
+    fetchData();
 
-        const fetchData = async () => {
-
-            try {
-
-
-                debugger;
-
-                // let str= config.operationsUrl + "/TestOperations/GetTestOperations";
-                // const testData =  await axios.get(str);
-                // console.log("TEST DATA =>", testData.data);
-
-
-                const res = await axios.get(
-                    getSpecialRequirementsListEndPoint
-                );
-
-                setSpecialRequirements(
-                    res.data || []
-                );
-
-            } catch (error) {
-
-                console.error(error);
-
-                showMessage({
-                    type: MESSAGE_TYPES.ERROR,
-                    message:
-                        "Error fetching special requirements."
-                });
-            }
-        };
-
-        fetchData();
-
-    }, []);
+    return () => {
+        isMounted = false;
+    };
+}, []);
 
 
 

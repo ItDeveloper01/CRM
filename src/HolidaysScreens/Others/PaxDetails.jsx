@@ -94,27 +94,36 @@ export function PaxDetails({ holidayLeadObj, setHolidayLeadObj }) {
   // ======================
   // 🔥 LOAD DROPDOWNS FROM API
   // ======================
-  useEffect(() => {
+ useEffect(() => {
+  let isMounted = true;
 
-    const loadDropdowns = async () => {
+  const loadDropdowns = async () => {
+    try {
+      const [ rooms, hotels, disabilities,] = await Promise.all([
+                                                  getRoomTypesAPI(),
+                                                  getHotelTypesAPI(),
+                                                  getDisabilityTypesAPI(),
+                                                ]);
 
-      try {
-        const rooms = await getRoomTypesAPI();
-        const hotels = await getHotelTypesAPI();
-        const disabilities = await getDisabilityTypesAPI();
+      if (!isMounted) return;
 
-        setRoomTypes(rooms);
-        setHotelTypes(hotels);
-        setDisabilityTypes(disabilities);
-      } catch (error) {
-        console.error("Error loading pax dropdowns", error);
-        setDisabilityTypes([]);
-      }
-    };
+      setRoomTypes(rooms);
+      setHotelTypes(hotels);
+      setDisabilityTypes(disabilities);
+    } catch (error) {
+      if (!isMounted) return;
 
-    loadDropdowns();
+      console.error("Error loading pax dropdowns", error);
+      setDisabilityTypes([]);
+    }
+  };
 
-  }, []);
+  loadDropdowns();
+
+  return () => {
+    isMounted = false;
+  };
+}, []);
 
   // ======================
   // 🔥 Single Source of Truth

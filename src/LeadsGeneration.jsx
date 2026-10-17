@@ -180,20 +180,20 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     }
 
     //  Fetch Countries (REST Countries - Replaces broken CountriesNow API)
-    fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedCountries = data
-          .map((country) => ({
-            name: country.name.common,
-            value: country.cca2 || country.name.common,
-            flag: country.flags?.png
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
+    // fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags")
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     const formattedCountries = data
+    //       .map((country) => ({
+    //         name: country.name.common,
+    //         value: country.cca2 || country.name.common,
+    //         flag: country.flags?.png
+    //       }))
+    //       .sort((a, b) => a.name.localeCompare(b.name));
 
-        setCountries(formattedCountries);
-      })
-      .catch((err) => console.error("Error fetching countries:", err));
+    //     setCountries(formattedCountries);
+    //   })
+    //   .catch((err) => console.error("Error fetching countries:", err));
 
     fetchCountries();
     fetchCityList();     // for City API
@@ -515,94 +515,158 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
     setISLeadsForPhoneVisible(false);
   };
 
-  const fetchEnquiryDetails = async () => {
-    debugger;
-    const enqmodes = await axios.get(getEnquiryModesListEndPoint, {
-      headers: {
-        Authorization: `Bearer ${sessionUser.token}`,
-      },
-    })
-      .then((res) => {
-        console.log('Fetching Enquiry Modes in Lead Generate Page ...', res.data);
-        setEnquiryMode(res.data || []);
-      }
-      ).catch((err) => {
-        debugger;
-        console.error("Failed to fetch Enquiry Modes :", err);
-        console.error("Failed ......... :", err.response.data);
+  // const fetchEnquiryDetails = async () => {
+  //   debugger;
+  //   const enqmodes = await axios.get(getEnquiryModesListEndPoint, {
+  //     headers: {
+  //       Authorization: `Bearer ${sessionUser.token}`,
+  //     },
+  //   })
+  //     .then((res) => {
+  //       console.log('Fetching Enquiry Modes in Lead Generate Page ...', res.data);
+  //       setEnquiryMode(res.data || []);
+  //     }
+  //     ).catch((err) => {
+  //       debugger;
+  //       console.error("Failed to fetch Enquiry Modes :", err);
+  //       console.error("Failed ......... :", err.response.data);
 
-      })
-      .finally(() => {
-        // Always executed, regardless of success or error
-        console.log('Enquiry Modes Fetch function finished.')
-        // alert("Enquiry Modes Fetch function finished.");
-      })
+  //     })
+  //     .finally(() => {
+  //       // Always executed, regardless of success or error
+  //       console.log('Enquiry Modes Fetch function finished.')
+  //       // alert("Enquiry Modes Fetch function finished.");
+  //     })
 
-    // for Enquiry Source API
-    try {
-      const enqSource = await axios.get(getEnquirySourceListEndPoint, {
+  //   // for Enquiry Source API
+  //   try {
+  //     const enqSource = await axios.get(getEnquirySourceListEndPoint, {
 
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`,
-        }
-      });
-      setEnquirySource(enqSource.data || []);
-      console.log("Enquiry Source fetch Successfully", enqSource.data);
-    } catch (err) {
-      console.log("Failed to fetch Enquiry Source: ", err);
-    }
+  //       headers: {
+  //         Authorization: `Bearer ${sessionUser.token}`,
+  //       }
+  //     });
+  //     setEnquirySource(enqSource.data || []);
+  //     console.log("Enquiry Source fetch Successfully", enqSource.data);
+  //   } catch (err) {
+  //     console.log("Failed to fetch Enquiry Source: ", err);
+  //   }
 
-    // for CustomerType API
-    try {
-      const custType = await axios.get(getCustomerTypeListEndPoint, {
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`
-        }
-      });
-      setCustomerType(custType.data || []);
-      console.log("customer Type fetch Successfully", custType.data);
-    } catch (err) {
-      console.log("Failed to fetch Customer Type: ", err);
-    }
-  }
+  //   // for CustomerType API
+  //   try {
+  //     const custType = await axios.get(getCustomerTypeListEndPoint, {
+  //       headers: {
+  //         Authorization: `Bearer ${sessionUser.token}`
+  //       }
+  //     });
+  //     setCustomerType(custType.data || []);
+  //     console.log("customer Type fetch Successfully", custType.data);
+  //   } catch (err) {
+  //     console.log("Failed to fetch Customer Type: ", err);
+  //   }
+  // }
 
+
+  
 
   //  for Lead Status API
-  const fetchLeadStatus = async () => {
-    try {
-      const leadStatus = await axios.get(getLeadStatusListMasterEndPoint, {
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`,
-        },
-      });
-      setleadStatusMasterList(leadStatus.data || []);
-      console.log("Lead Status fetch Successfully", leadStatus.data);
-    } catch (err) {
-      console.error("Error fetching Lead Status:", err);
-      throw err;
-    }
-    finally {
+  
+  
+const fetchEnquiryDetails = async (headers) => {
+  const results = await Promise.allSettled([
+    axios.get(getEnquiryModesListEndPoint, { headers }),
+    axios.get(getEnquirySourceListEndPoint, { headers }),
+    axios.get(getCustomerTypeListEndPoint, { headers }),
+  ]);
 
-    }
-  };
+  const [modes, sources, customerTypes] = results;
 
-  const fetchLeadCategoriesByUserId = async () => {
-    try {
-      const leadCategoriesByUserId = await axios.get(getLeadCategoriesByUserId, {
+  if (modes.status === "fulfilled") {
+    setEnquiryMode(modes.value.data || []);
+  } else {
+    console.error("Failed to fetch enquiry modes:", modes.reason);
+  }
+
+  if (sources.status === "fulfilled") {
+    setEnquirySource(sources.value.data || []);
+  } else {
+    console.error("Failed to fetch enquiry sources:", sources.reason);
+  }
+
+  if (customerTypes.status === "fulfilled") {
+    setCustomerType(customerTypes.value.data || []);
+  } else {
+    console.error("Failed to fetch customer types:", customerTypes.reason);
+  }
+};
+
+const fetchLeadStatus = async (headers) => {
+  try {
+    const response = await axios.get(
+      getLeadStatusListMasterEndPoint,
+      { headers }
+    );
+
+    setleadStatusMasterList(response.data || []);
+  } catch (error) {
+    console.error("Failed to fetch lead status:", error);
+  }
+};
+
+const fetchLeadCategoriesByUserId = async (headers) => {
+  try {
+    const response = await axios.get(
+      getLeadCategoriesByUserId,
+      {
         params: {
           userId: sessionUser.user.userId,
         },
-        headers: {
-          Authorization: `Bearer ${sessionUser.token}`,
-        },
-      });
-      setLeadCategoriesByUserIdList(leadCategoriesByUserId.data || []);
-      console.log("Lead Categories fetch Successfully", leadCategoriesByUserId.data);
-    } catch (err) {
-      console.error("Error fetching Lead Categories:", err);
-      throw err;
-    }
-  };
+        headers,
+      }
+    );
+
+    setLeadCategoriesByUserIdList(response.data || {});
+  } catch (error) {
+    console.error("Failed to fetch lead categories:", error);
+  }
+};
+
+  
+  // const fetchLeadStatus = async () => {
+  //   try {
+  //     const leadStatus = await axios.get(getLeadStatusListMasterEndPoint, {
+  //       headers: {
+  //         Authorization: `Bearer ${sessionUser.token}`,
+  //       },
+  //     });
+  //     setleadStatusMasterList(leadStatus.data || []);
+  //     console.log("Lead Status fetch Successfully", leadStatus.data);
+  //   } catch (err) {
+  //     console.error("Error fetching Lead Status:", err);
+  //     throw err;
+  //   }
+  //   finally {
+
+  //   }
+  // };
+
+  // const fetchLeadCategoriesByUserId = async () => {
+  //   try {
+  //     const leadCategoriesByUserId = await axios.get(getLeadCategoriesByUserId, {
+  //       params: {
+  //         userId: sessionUser.user.userId,
+  //       },
+  //       headers: {
+  //         Authorization: `Bearer ${sessionUser.token}`,
+  //       },
+  //     });
+  //     setLeadCategoriesByUserIdList(leadCategoriesByUserId.data || []);
+  //     console.log("Lead Categories fetch Successfully", leadCategoriesByUserId.data);
+  //   } catch (err) {
+  //     console.error("Error fetching Lead Categories:", err);
+  //     throw err;
+  //   }
+  // };
   console.log("sessionUser object:", sessionUser);
   console.log("useId : ", sessionUser.user.userId);
 
@@ -646,20 +710,59 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
   }, [leadObj, viewAllLeads, isUpdateMode]); // Run when leadObj or viewAllLeads changes
 
   // Fetch Lead Categories
-  useEffect(() => {
-    // const fetchLeadCategories = async () => {
-    //   try {
-    //     const res = await axios.get(LeadCategoryAPI);
-    //     if (res.data) setLeadCategoryList(res.data);
-    //   } catch (err) {
-    //     console.error("Error fetching Lead Categories:", err);
-    //   }
-    // };
-    // fetchLeadCategories();
-    fetchLeadCategoriesByUserId();
-    fetchEnquiryDetails();
-    fetchLeadStatus();
-  }, []);
+  // useEffect(() => {
+  //   // const fetchLeadCategories = async () => {
+  //   //   try {
+  //   //     const res = await axios.get(LeadCategoryAPI);
+  //   //     if (res.data) setLeadCategoryList(res.data);
+  //   //   } catch (err) {
+  //   //     console.error("Error fetching Lead Categories:", err);
+  //   //   }
+  //   // };
+  //   // fetchLeadCategories();
+  //   fetchLeadCategoriesByUserId();
+  //   fetchEnquiryDetails();
+  //   fetchLeadStatus();
+  // }, []);
+
+
+  
+useEffect(() => {
+  if (!sessionUser?.token || !sessionUser?.user?.userId) {
+    return;
+  }
+
+  const headers = {
+    Authorization: `Bearer ${sessionUser.token}`,
+  };
+
+  let isMounted = true;
+
+  const initializeLookups = async () => {
+    const results = await Promise.allSettled([
+      fetchLeadCategoriesByUserId(headers),
+      fetchEnquiryDetails(headers),
+      fetchLeadStatus(headers),
+    ]);
+
+    results.forEach((result, index) => {
+      if (result.status === "rejected") {
+        console.error(
+          `Lookup initialization failed at index ${index}:`,
+          result.reason
+        );
+      }
+    });
+  };
+
+  initializeLookups();
+
+  return () => {
+    isMounted = false;
+  };
+}, [sessionUser?.token, sessionUser?.user?.userId]);
+
+
 
   // Set selected lead name whenever leadObj.fK_LeadCategoryID or categories update
   useEffect(() => {
@@ -1262,7 +1365,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           headers: { "Content-Type": "application/json" }
         }).then((response) => {
           console.log("Lead created successfully:", response.data);
-          setIsDashboardLoading(false);
+           setIsDashboardLoading(false);
           alert("Lead saved successfully!");
         }).catch((error) => {
           console.error("Error saving lead:", error);
