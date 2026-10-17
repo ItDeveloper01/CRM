@@ -1662,120 +1662,127 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           {/* Render dynamic fields */}
           <div className='mt-4'>{renderCategoryFields()}</div>
           {/* <fieldset disabled={readOnly}> */}
-        
-<div className="flex justify-between items-center mt-6 gap-4">
-  <div className="flex items-center gap-4">
-  {!isViewMode && (
-    <>
-      {/* Generate / Update Lead Button */}
-      <button
-        onClick={handleSubmit}
-        disabled={!selectedLeadName}
-        className={`font-semibold py-2 px-4 rounded-lg transition ${
-          !selectedLeadName
-            ? "bg-gray-200 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700 text-white"
-        }`}
-      >
-        {isEditMode ? "Update Lead" : "Generate Lead"}
-      </button>
 
-      {/* Request Quote Checkbox - Only for FIT Domestic Holiday */}
-      {selectedLeadName=== "Holiday" &&
-        holidayLeadObj.leadType === "FIT" &&
-        holidayLeadObj.tripType === "Domestic" &&  FIT_DOM_REQUEST_QUOTE_TO_OPERATION && (
-        
+          <div className="flex justify-between items-start mt-6 gap-4">
+            <div className="flex items-start gap-4">
+              {!isViewMode && (
+                <>
+                  {/* Generate / Update Lead Button */}
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!selectedLeadName}
+                    className={`font-semibold py-2 px-4 rounded-lg transition ${!selectedLeadName
+                      ? "bg-gray-200 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"
+                      }`}
+                  >
+                    {isEditMode ? "Update Lead" : "Generate Lead"}
+                  </button>
 
-<div className="flex flex-col gap-1">
-  <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
-    <input
-      type="checkbox"
-      checked={requestQuoteForFIT}
-      onChange={(e) => setRequestQuoteForFIT(e.target.checked)}
-      className="h-4 w-4 accent-blue-600 cursor-pointer"
-    />
-
-    <span className="font-medium text-gray-700">
-      Request Quote for FIT Domestic
-    </span>
-  </label>
-
-  <p className="ml-6 text-xs text-red-600 leading-relaxed">
-   An email requesting a quotation for FIT Domestic will be sent to the
-  Operations team when you click Generate/Update Lead while this checkbox is checked.
-  If a quotation has already been requested, keep it unchecked unless you
-  have made changes and require a revised quotation.
-  </p>
-</div>
+                  {/* Request Quote Checkbox - Only for FIT Domestic Holiday */}
+                  {selectedLeadName === "Holiday" &&
+                    holidayLeadObj.leadType === "FIT" &&
+                    holidayLeadObj.tripType === "Domestic" && FIT_DOM_REQUEST_QUOTE_TO_OPERATION && (
 
 
-        )}
-    </>
-  )}
-</div>
+                      <div className="flex flex-col gap-1">
+                        <label className="flex items-center gap-2 cursor-pointer whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={requestQuoteForFIT}
+                            onChange={(e) => setRequestQuoteForFIT(e.target.checked)}
+                            className="h-4 w-4 accent-blue-600 cursor-pointer"
+                          />
 
-  {/* Follow Up Date */}
-  <div className="flex items-center gap-2">
-    <label
-      htmlFor="followUpDate"
-      className="font-medium text-gray-600 whitespace-nowrap"
-    >
-      <span className="text-red-500 text-lg leading-none">*</span>
-      {" "}Follow Up Date :
-    </label>
+                          <span className="font-medium text-gray-700">
+                            Request Quote for FIT Domestic
+                          </span>
+                        </label>
 
-    <div className="flex flex-col justify-start leading-none">
-      {isViewMode ? (
-        <DateViewField value={leadObj.followUpDate} />
-      ) : (
-        <input
-          type="date"
-          id="followUpDate"
-          name="followUpDate"
-          value={leadObj.followUpDate || ""}
-          onChange={handleChange}
-          onBlur={() => {
-            if (!leadObj.followUpDate) return;
+                        <p className="ml-6 text-xs text-red-600 leading-relaxed">
+                          An email requesting a quotation for FIT Domestic will be sent to the
+                          Operations team when you click Generate/Update Lead while this checkbox is checked.
+                          If a quotation has already been requested, keep it unchecked unless you
+                          have made changes and require a revised quotation.
+                        </p>
+                      </div>
 
-            const selectedDate = new Date(
-              `${leadObj.followUpDate}T00:00:00`
-            );
-            const tomorrow = new Date();
-            tomorrow.setHours(0, 0, 0, 0);
-            tomorrow.setDate(tomorrow.getDate() + 1);
 
-            if (selectedDate < tomorrow) {
-              setLeadObj((prev) => ({
-                ...prev,
-                followUpDate: "",
-              }));
-              setErrors((prev) => ({
-                ...prev,
-                followUpDate: "Invalid — Date must be tomorrow or later",
-              }));
-            }
-          }}
-          min={new Date(Date.now() + 86400000)
-            .toISOString()
-            .split("T")[0]}
-          className={`border-highlight ${
-            errors.followUpDate ? "border-red-500" : ""
-          }`}
-          required
-        />
-      )}
-    </div>
-  </div>
-</div>
+                    )}
+                </>
+              )}
+            </div>
+
+            {/* Follow Up Date */}
+            <div className="flex flex-col items-start">
+              <div className="flex items-start gap-2">
+                <label
+                  htmlFor="followUpDate"
+                  className=" mt-2  font-medium text-gray-600 whitespace-nowrap"
+                >
+                  <span className="text-red-500 text-lg leading-none">*</span>
+                  {" "}Follow Up Date :
+                </label>
+
+                {/* <div className="flex flex-col justify-start leading-none"> */}
+                {isViewMode ? (
+                  <DateViewField value={leadObj.followUpDate} />
+                ) : (
+                  <div className="flex flex-col">
+                    <input
+                      type="date"
+                      id="followUpDate"
+                      name="followUpDate"
+                      value={leadObj.followUpDate || ""}
+                      onChange={handleChange}
+                      onBlur={() => {
+                        if (!leadObj.followUpDate) return;
+
+                        const selectedDate = new Date(
+                          `${leadObj.followUpDate}T00:00:00`
+                        );
+                        const tomorrow = new Date();
+                        tomorrow.setHours(0, 0, 0, 0);
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+
+                        if (selectedDate < tomorrow) {
+                          setLeadObj((prev) => ({
+                            ...prev,
+                            followUpDate: "",
+                          }));
+                          setErrors((prev) => ({
+                            ...prev,
+                            followUpDate: "Invalid — Date must be tomorrow or later",
+                          }));
+                        }
+                      }}
+                      min={new Date(Date.now() + 86400000)
+                        .toISOString()
+                        .split("T")[0]}
+                      className={`border-highlight ${errors.followUpDate ? "border-red-500" : ""
+                        }`}
+                      required
+                    />
+                    {errors.followUpDate && (
+                      <p className="text-red-500 text-sm mt-1 justify-right">
+                        {errors.followUpDate}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
 
           {/* </fieldset> */}
-          <div className='text-right'>
+          {/* <div className='text-right'>
 
             {errors.followUpDate && !isViewMode && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.followUpDate}</p>)}
 
             {/* {errors.FollowUpDate && (<p className="text-red-500 text-sm mt-1 justify-right">{errors.FollowUpDate}</p>)} */}
 
-          </div>
+          {/* </div> */} 
 
           {/* Footer */}
 
