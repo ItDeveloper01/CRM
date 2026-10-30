@@ -17,7 +17,8 @@ const DashboardTimeline = ({
     onSaveNote,
     onSaveReschedule,
     onRescheduleSuccess,
-    onCancelInline
+    onCancelInline,
+    onLeadUpdateFromBucket
 }) => {
 
     const [expandedBucket, setExpandedBucket] = useState(null);
@@ -78,6 +79,7 @@ const DashboardTimeline = ({
                             onRescheduleSuccess={(lead, newDate) => {
                                 onRescheduleSuccess(lead, newDate);
                             }}
+                            onLeadUpdateFromBucket={onLeadUpdateFromBucket}
                         />
                     ))}
             </div>

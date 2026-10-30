@@ -45,7 +45,7 @@ console.log("LeadHolidays =", LeadHolidays);
 
 
 
-export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true, fullWidth = false }) {
+export default function LeadsGeneration({ lead, onClose,onSaveSuccess, mode, viewAllLeads = false, isGenerateNewLeadAllowed = true, fullWidth = false }) {
   const [leadObj, setLeadObj] = useState(getEmptyLeadObj());
   const [visadObj, setVisaObj] = useState(getEmptyVisaObj());
   const location = useLocation();
@@ -436,7 +436,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
           if (value != null) {
             showMessage(
               "Duplicate mobile number found. Please check the existing leads.",
-              MESSAGE_TYPES.warning
+              MESSAGE_TYPES.WARNING
             );
           }
           console.log("Duplicate mobile number found. Leads:", res.data);
@@ -449,7 +449,7 @@ console.log("IN mppping the incoming lead.:" , incomingLead.category.$type?.toLo
         console.error("Error checking duplicate mobile number:", error);
         showMessage(
           "Something went wrong while checking the mobile number. Please try again.",
-          MESSAGE_TYPES.error
+          MESSAGE_TYPES.ERROR
         );
       } finally {
         setIsScreenLocked(false);
@@ -1309,7 +1309,11 @@ if (isFITDomesticQuoteRequired) {
         console.log("Updated lead:", response.data);
 
 
+        deepLeadCopy.category.status = deepLeadCopy.leadStatus; // Update the category with the response data
         alert("Lead updated successfully!");
+        onSaveSuccess(response.data.result); // Call the callback function after successful update
+
+
         // Close the modal after successful update
         onClose();
         navigate("/dashboard"); // Navigate after operation
