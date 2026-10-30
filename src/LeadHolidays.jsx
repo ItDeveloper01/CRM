@@ -72,6 +72,7 @@ import {
 } from "lucide-react";
 import { fa } from "intl-tel-input/i18n";
 import { getEmptyItineraryDayObj } from "./Model/HolidayLeadObj";
+import { validateTravelPackages } from "./Validations/TravelPackageValidation";
 
 
 
@@ -715,6 +716,22 @@ const LeadHolidays = forwardRef(({
         (holidayLeadObj?.leadType ||
             selectedConfig?.values?.leadType) === "GIT";
 
+            // 28.10.2026
+            
+    // useEffect(() => {
+    //     if (!isGIT) {
+    //         setShowAdditionalDetails(true);
+    //     }
+    // }, [isGIT]);
+
+    
+useEffect(() => {
+    if (selectedConfig?.key === "FIT_DOMESTIC") {
+        setShowAdditionalDetails(true);
+    } else if (selectedConfig?.key === "FIT_INTERNATIONAL") {
+        setShowAdditionalDetails(false);
+    }
+}, [selectedConfig?.key]);
 
 
 
@@ -724,8 +741,23 @@ const LeadHolidays = forwardRef(({
     // ======================================================
     // UI
     // ======================================================
+    debugger;
     useImperativeHandle(ref, () => ({
-        validate: validateHoliday
+        
+        validate: validateHoliday,
+         validatePackagePreference: () => {
+        const packageErrors = validateTravelPackages(
+            holidayLeadObj?.packages || []
+        );
+         console.log("Packages:", holidayLeadObj?.packages);
+    console.log("Package Errors:", packageErrors);
+        setErrors(prev => ({
+            ...prev,
+            packagePreferences: packageErrors
+        }));
+
+        return Object.keys(packageErrors).length === 0;
+    }
     }));
     return (
 
@@ -1202,8 +1234,8 @@ const LeadHolidays = forwardRef(({
             {/* ===================================== */}
             {/* ADDITIONAL DETAILS */}
             {/* ===================================== */}
-
-            <div
+            {/* commented on 26.10.2026                                    */}
+            {/* <div
                 onClick={() => {
 
                     if (isGIT) {
@@ -1290,13 +1322,119 @@ const LeadHolidays = forwardRef(({
 
                 </div>
 
+            </div> */}
+            {(isGIT || selectedConfig?.key === "FIT_INTERNATIONAL") && (
+    <div
+        onClick={() => {
+            if (isGIT) {
+                showMessage(
+                    "Group Tour Details will be available in the upcoming release. You can still save the lead with the basic information.",
+                    MESSAGE_TYPES.INFO
+                );
+                return;
+            }
+
+            setShowAdditionalDetails(prev => !prev);
+        }}
+        className={`overflow-hidden rounded-xl border transition-all duration-300
+            ${isGIT
+                ? "cursor-not-allowed border-gray-300 bg-gray-100"
+                : "cursor-pointer border-blue-300 bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md hover:shadow-lg"
+            }`}
+    >
+        <div className="flex items-center justify-between px-4 py-2">
+            <div className="flex items-center gap-2">
+                <div
+                    className={`h-7 w-7 rounded-full flex items-center justify-center text-lg ${
+                        isGIT ? "bg-gray-300" : "bg-white/20"
+                    }`}
+                >
+                    {isGIT
+                        ? "🚧"
+                        : showAdditionalDetails
+                            ? "📂"
+                            : "✈️"}
+                </div>
+
+                <div>
+                    <div
+                        className={`font-semibold text-sm ${
+                            isGIT ? "text-gray-700" : "text-white"
+                        }`}
+                    >
+                        {isGIT
+                            ? "Group Tour Details (Coming Soon)"
+                            : showAdditionalDetails
+                                ? `Hide ${travelScope} Details`
+                                : `Add ${travelScope} Details`}
+                    </div>
+
+                    <div
+                        className={`text-xs ${
+                            isGIT ? "text-gray-600" : "text-blue-100"
+                        }`}
+                    >
+                        {isGIT
+                            ? "You can save the lead with basic information."
+                            : showAdditionalDetails
+                                ? "Hide services, itinerary, passport, pricing & special requirements."
+                                : "Add services, itinerary, passport, pricing & special requirements."}
+                    </div>
+                </div>
             </div>
+
+            {!isGIT && (
+                <div
+                    className={`transition-transform duration-300 text-sm select-none ${
+                        showAdditionalDetails ? "rotate-180" : ""
+                    }`}
+                >
+                    ▼
+                </div>
+            )}
+        </div>
+    </div>
+)}
+
+
+            {/* Commented on 28.10.2026 */}
+            {/* {isGIT && (
+                <div
+                    onClick={() => {
+                        showMessage(
+                            "Group Tour Details will be available in the upcoming release. You can still save the lead with the basic information.",
+                            MESSAGE_TYPES.INFO
+                        );
+                    }}
+                    className="overflow-hidden rounded-xl border border-gray-300 bg-gray-100 transition-all duration-300 cursor-not-allowed"
+                >
+                    <div className="flex items-center justify-between px-4 py-2">
+                        <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-full flex items-center justify-center text-lg bg-gray-300">
+                                🚧
+                            </div>
+
+                            <div>
+                                <div className="font-semibold text-sm text-gray-700">
+                                    Group Tour Details (Coming Soon)
+                                </div>
+
+                                <div className="text-xs text-gray-600">
+                                    You can save the lead with basic information.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )} */}
+
 
             {/* ===================================== */}
             {/* EXPANDABLE CONTENT */}
             {/* ===================================== */}
 
-            {showAdditionalDetails && !isGIT && (
+            {/* {showAdditionalDetails && !isGIT && ( */}
+            {(showAdditionalDetails || selectedConfig?.key === "FIT_DOMESTIC") && !isGIT && (
 
                 <>
 
@@ -1330,6 +1468,8 @@ const LeadHolidays = forwardRef(({
                                 holidayLeadObj?.tripType ||
                                 selectedConfig?.values?.tripType
                             }
+
+                            packageErrors={errors.packagePreferences || {}}
                         />
 
                     )}
@@ -1365,7 +1505,7 @@ const LeadHolidays = forwardRef(({
 
                     )}
 
-                   
+
 
                     {/* QUOTE CALCULATOR */}
 

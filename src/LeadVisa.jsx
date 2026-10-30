@@ -17,9 +17,11 @@ import { MessageType } from "@microsoft/signalr";
 import { useMessageBox } from "./Notification";
 import { Type } from "lucide-react";
 import { id } from "intl-tel-input/i18n";
+import { data } from "react-router-dom";
 
 
-const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mode }) => {
+const LeadVisa = ({ visadObj, setVisaLeadObj, histories, isUpdate, mode }) => {
+    // countries,
 
     const isViewMode = mode === "view";
     const isEditMode = mode === "edit";
@@ -31,14 +33,19 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
     const [passportDetailsObj, setPassportDetails] = useState(getEmptyPassportDetailsObj());
     const [purposeOfTravel, setPurposeOfTravel] = useState([]);
-    const [visaType,setVisaType] = useState([]);
-    const [noOfEntries,setNoOfEntries] = useState([]);
+    const [visaType, setVisaType] = useState([]);
+    const [noOfEntries, setNoOfEntries] = useState([]);
+    const [countries, setCountries] = useState([]);
 
     const { showMessage } = useMessageBox();
 
     const getPurposeOfTravelListEndPoint = config.apiUrl + '/MasterData/GetTravelPurposeList';
     const getVisaTypeListEndPoint = config.apiUrl + '/MasterData/GetVisaTypeList';
     const getNoOfEntriesListEndPoint = config.apiUrl + '/MasterData/GetNoOfEntriesList';
+    const getCountryListMasterEndPoint = config.apiUrl + '/MasterData/GetCountryList?fields=countryName';
+
+    //to fetch country name and country code at a time 
+    // const getCountryListMasterEndPoint = config.apiUrl + '/MasterData/GetCountryList?fields=countryName,countryCode';
 
 
     useEffect(() => {
@@ -68,30 +75,53 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
             catch (error) {
                 console.error("Error while Fetching Visa Type", error);
                 showMessage
-                ({
-                    Type: MessageType.ERROR,
-                    message: "Error fetching Visa type data.",
-                })
+                    ({
+                        Type: MessageType.ERROR,
+                        message: "Error fetching Visa type data.",
+                    })
 
             }
         };
         fetchVisaTypeList();
 
-        const  fetchNoOfEntriesList = async() => {
-            try{
-                const noOfEntriesList =await axios.get(getNoOfEntriesListEndPoint,{})
+        const fetchNoOfEntriesList = async () => {
+            try {
+                const noOfEntriesList = await axios.get(getNoOfEntriesListEndPoint, {})
                 setNoOfEntries(noOfEntriesList.data || []);
+
             }
-            catch(error){
-                console.error("Error while Fetching No Of Entries",error);
+            catch (error) {
+                console.error("Error while Fetching No Of Entries", error);
                 showMessage
-                ({
-                    Type: MessageType.ERROR,
-                    message: "Error fetching No Of Entries data.",
-                })
+                    ({
+                        Type: MessageType.ERROR,
+                        message: "Error fetching No Of Entries data.",
+                    })
             }
         };
         fetchNoOfEntriesList();
+
+
+        //Fetch country list 
+        const fetchCountryList = async () => {
+            // debugger;
+            try {
+                const country = await axios.get(getCountryListMasterEndPoint, {});
+                setCountries(country.data || []);
+                console.log("Country api response:", country.data);
+            }
+            catch (error) {
+                console.log("Error while fetching country list.");
+                showMessage
+                    ({
+                        Type: MessageType.ERROR,
+                        message: "Error fetching No Of Entries data.",
+                    })
+
+            }
+        };
+        fetchCountryList();
+
 
 
     }, []);
@@ -180,8 +210,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         <ViewSelect value={getLabelById(
                             countries,
                             visadObj.country1,
-                            "name",
-                            "name"
+                            "countryName",
+                            "countryName"
                         )} />
                     ) : (
                         <select
@@ -192,10 +222,22 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         >
                             <option value="">Select Country</option>
                             {countries.map((country) => (
-                                <option key={country.name} value={country.name}>
-                                    {country.name}
+                                <option key={country.countryName} value={country.countryName}>
+                                    {country.countryName}
                                 </option>
                             ))}
+
+
+                                {/* To fetch countryName and Country code in drop down  */}
+                            {/* {countries.map((country) => (
+                                <option
+                                    key={country.id}
+                                    value={country.countryName}
+                                >
+                                    {country.countryName} ({country.countryCode})
+                                </option>
+                            ))} */}
+
 
 
                         </select>
@@ -210,8 +252,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         <ViewSelect value={getLabelById(
                             countries,
                             visadObj.country2,
-                            "name",
-                            "name"
+                            "countryName",
+                            "countryName"
                         )} />
                     ) : (
                         <select
@@ -222,8 +264,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         >
                             <option value="">Select Country</option>
                             {countries.map((country) => (
-                                <option key={country.name} value={country.name}>
-                                    {country.name}
+                                <option key={country.countryName} value={country.countryName}>
+                                    {country.countryName}
                                 </option>
                             ))}
                         </select>
@@ -237,8 +279,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         <ViewSelect value={getLabelById(
                             countries,
                             visadObj.country3,
-                            "name",
-                            "name"
+                            "countryName",
+                            "countryName"
                         )} />
                     ) : (
                         <select
@@ -249,8 +291,8 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                         >
                             <option value="">Select Country</option>
                             {countries.map((country) => (
-                                <option key={country.name} value={country.name}>
-                                    {country.name}
+                                <option key={country.countryName} value={country.countryName}>
+                                    {country.countryName}
                                 </option>
                             ))}
                         </select>
@@ -370,18 +412,18 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                     <label className="label-style">Visa Type</label>
                     {isViewMode ? (
                         <ViewSelect value={getLabelById(
-                                visaType,
-                                visadObj.visaType,
-                                "id",
-                                "visaTypeName"
-                            )}/>
+                            visaType,
+                            visadObj.visaType,
+                            "id",
+                            "visaTypeName"
+                        )} />
                     ) : (
                         <select
                             className={`border-highlight`}
                             name="visaType"
                             value={visadObj.visaType}
                             // onChange={handleChange}
-                             onChange={(e) => {
+                            onChange={(e) => {
                                 const value = e.target.value === "" ? null : Number(e.target.value);
                                 setVisaLeadObj((prev) => ({
                                     ...prev,
@@ -395,7 +437,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                             <option value="Transit">Transit</option>
                             <option value="Dependent">Dependent</option>
                             <option value="Student">Student</option> */}
-                            {visaType.map((visaTypeList)=>(
+                            {visaType.map((visaTypeList) => (
                                 <option key={visaTypeList.id} value={visaTypeList.id}>
                                     {visaTypeList.visaTypeName}
                                 </option>
@@ -409,17 +451,17 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                     {isViewMode ? (
                         // <ViewSelect value={visadObj.noOfEntries || "-"} />
                         <ViewSelect value={getLabelById(
-                                noOfEntries,
-                                visadObj.noOfEntries,
-                                "id",
-                                "noOfEntriesName"
-                            )}/>
+                            noOfEntries,
+                            visadObj.noOfEntries,
+                            "id",
+                            "noOfEntriesName"
+                        )} />
                     ) : (
                         <select
                             className={`border-highlight`}
                             name="noOfEntries"
                             value={visadObj.noOfEntries}
-                           onChange={(e) => {
+                            onChange={(e) => {
                                 const value = e.target.value === "" ? null : Number(e.target.value);
                                 setVisaLeadObj((prev) => ({
                                     ...prev,
@@ -431,7 +473,7 @@ const LeadVisa = ({ visadObj, countries, setVisaLeadObj, histories, isUpdate, mo
                             {/* <option value="Single">Single</option>
                             <option value="Double">Double</option>
                             <option value="Multiple">Multiple</option> */}
-                            {noOfEntries.map((noOfEntriesList)=>(
+                            {noOfEntries.map((noOfEntriesList) => (
                                 <option key={noOfEntriesList.id} value={noOfEntriesList.id}>
                                     {noOfEntriesList.noOfEntriesName}
                                 </option>

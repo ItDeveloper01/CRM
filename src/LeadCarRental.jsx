@@ -20,11 +20,14 @@ import {
   ListItemText,
   OutlinedInput
 } from "@mui/material";
+import { data } from "react-router-dom";
+import { useGetSessionUser } from "./SessionContext";
 
 
 
-// const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate,readOnly }) => {
-const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate, mode }) => {
+//Commented on 24.10.2026  to remove cities 
+// const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isUpdate, mode }) => {
+    const LeadCarRental = ({  carLeaddObj, setCarLeadObj, histories, isUpdate, mode }) => {
     // const LeadCarRental = ({ cities = [], loading = false, formData = {}, handleChange }) => {  ........if loading is usedin cities
 
     // Memoize the histories array so reference doesn't change unnecessarily
@@ -33,7 +36,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const isCreateMode = mode === "create";
 
 
-
+    const { user: sessionUser } = useGetSessionUser();
     const memoHistories = useMemo(() => histories || [], [histories]);
     const memoIsUpdate = useMemo(() => isUpdate || false, [isUpdate]);
     const [errors, setErrors] = useState({});
@@ -49,6 +52,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const [dutyType, setDutyType] = useState([]);
     const [requirementType,setRequirementType] = useState([]);
     const selectedRequirementType = requirementType.find(rt => rt.id == carLeaddObj?.requirementType);
+    const [cities, setCities] = useState([]);
 
 
 
@@ -56,6 +60,7 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
     const getVehicleTypeListEndPoint = config.apiUrl + '/MasterData/GetVehicleModelList';
     const getDutyTypeListEndPoint = config.apiUrl + '/MasterData/GetDutyTypeList';
     const getRequirementTypeListEndPoint = config.apiUrl + '/MasterData/GetRequirementTypeList';
+    const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList'; 
 
 
 
@@ -166,6 +171,30 @@ const LeadCarRental = ({ cities = [], carLeaddObj, setCarLeadObj, histories, isU
         };
         fetchRequirementTypes();
     
+
+        const fetchCityList = async() => {
+            debugger;
+            try
+            {
+                var cityList = await axios.get(getCityListMasterEndPoint,{
+                    headers: {
+                        Authorization: `Bearer ${sessionUser.token}`,
+                    },
+                });
+                setCities(cityList.data || []);
+                console.log("car reantal City list:", cityList.data );
+            }
+            catch(error){
+
+                console.error("Error while fetching city list in lead car rental. ",error);
+                // showMessage({
+                //     type: MESSAGE_TYPES.ERROR,
+                //     message: "Error fetching City List data.",
+                // })
+            }
+            
+        }
+        fetchCityList();
 
     }, []);
 
