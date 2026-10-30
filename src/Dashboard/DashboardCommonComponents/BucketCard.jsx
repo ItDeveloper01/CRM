@@ -1068,7 +1068,8 @@ const BucketCard = ({
     onSaveNote,
     onSaveReschedule,
     onRescheduleSuccess,
-    onCancelInline
+    onCancelInline,
+    onLeadUpdateFromBucket   
 }) => {
     const meta = BUCKET_META[bucket];
 
@@ -1082,6 +1083,7 @@ const BucketCard = ({
     const { showMessage } =
         useMessageBox();
 
+    const openedRowRef = useRef(null);
     /* =========================================================
        SORT
     ========================================================= */
@@ -1142,6 +1144,7 @@ const BucketCard = ({
         });
     };
 
+    console.log("BucketCard prop:", typeof onLeadUpdateFromBucket);
     /* =========================================================
        SORT
     ========================================================= */
@@ -1844,6 +1847,8 @@ const BucketCard = ({
                 const leadId =
                     getLeadId(lead);
 
+                    openedRowRef.current = lead;
+                  
                 if (!leadId) {
                     console.error(
                         "Lead ID not found",
@@ -1852,24 +1857,21 @@ const BucketCard = ({
                     return;
                 }
 
-                const templead =
-                    await fetchLeadDetails(
+                const templead = await fetchLeadDetails(
                         lead
                     );
 
                 if (templead) {
-                    setSelectedLead(
-                        templead
-                    );
+                    
+                    setSelectedLead( templead);
 
-                    setModalMode(
-                        "edit"
-                    );
+                 
 
-                    setModalOpen(
-                        true
-                    );
+                     setModalMode(Number(templead.leadStatus) > 1 ? "view" : "edit");
+
+                    setModalOpen(true);
                 }
+
             } catch (error) {
                 console.error(
                     "Error opening lead:",
@@ -2849,11 +2851,20 @@ const BucketCard = ({
             <UpdateLeadsModal
                 parent="Lead Table for existing Phone no"
                 isOpen={modalOpen}
-                onClose={() =>
-                    setModalOpen(
-                        false
-                    )
-                }
+                 onSaveSuccess={ async (updatedLead)=>{
+
+               
+               
+                if (!updatedLead) return;
+                                        // const fresh = await fetchLeadDetails(selectedLead);
+                        // if (!fresh) return;
+
+                        onLeadUpdateFromBucket(updatedLead , openedRowRef.current);
+
+                 }}
+               onClose={async () => {
+                        setModalOpen(false);
+                    }}
                 lead={selectedLead}
                 mode={modalMode}
                 viewAllLeads={false}

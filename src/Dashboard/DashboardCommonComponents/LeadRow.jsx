@@ -1,295 +1,251 @@
-
 // LeadRow.jsx
 
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 import {
-    Phone,
-    Mail,
-    MessageSquarePlus,
-    CalendarClock,
-    Eye,
-    X
+  Phone,
+  Mail,
+  MessageSquarePlus,
+  CalendarClock,
+  Eye,
+  X,
 } from "lucide-react";
 
 const STATUS_STYLE = {
-    Confirmed: "bg-emerald-100 text-emerald-700",
-    Lost: "bg-red-100 text-red-700",
-    Open: "bg-amber-100 text-amber-700",
-    "Quote Sent": "bg-purple-100 text-purple-700",
-    "Follow-up": "bg-blue-100 text-blue-700",
-    "New Lead": "bg-slate-200 text-slate-700"
+  Confirmed: "bg-emerald-100 text-emerald-700",
+  Lost: "bg-red-100 text-red-700",
+  Open: "bg-amber-100 text-amber-700",
+  "Quote Sent": "bg-purple-100 text-purple-700",
+  "Follow-up": "bg-blue-100 text-blue-700",
+  "New Lead": "bg-slate-200 text-slate-700",
 };
 
 const formatDate = (value) => {
-    if (!value) return "-";
+  if (!value) return "-";
 
-    const date = new Date(value);
+  const date = new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
-        return "-";
-    }
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
 
-    return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const getLatestHistory = (lead) => {
-    const histories =
-        Array.isArray(lead?.Histories)
-            ? lead.Histories
-            : Array.isArray(lead?.histories)
-                ? lead.histories
-                : [];
+  const histories = Array.isArray(lead?.Histories)
+    ? lead.Histories
+    : Array.isArray(lead?.histories)
+      ? lead.histories
+      : [];
 
-    if (!histories.length) {
-        return null;
-    }
+  if (!histories.length) {
+    return null;
+  }
 
-    /* Backend is expected to return latest first. */
-    return histories[0];
+  /* Backend is expected to return latest first. */
+  return histories[0];
 };
 
 const LeadRow = ({
-    lead,
-    index,
+  lead,
+  index,
 
-    expanded,
-    isHoliday,
+  expanded,
+  isHoliday,
 
-    columnStyle,
+  columnStyle,
 
-    onCall,
-    onNote,
-    onReschedule,
-    onOpen,
+  onCall,
+  onNote,
+  onReschedule,
+  onOpen,
 
-    noteOpen,
-    rescheduleOpen,
+  noteOpen,
+  rescheduleOpen,
 
-    onSaveNote,
-    onSaveReschedule,
-    onCancelInline
+  onSaveNote,
+  onSaveReschedule,
+  onCancelInline,
 }) => {
-    const [noteText, setNoteText] = useState("");
-    const [showContact, setShowContact] = useState(false);
-    const [contactPos, setContactPos] = useState(null);
+  const [noteText, setNoteText] = useState("");
+  const [showContact, setShowContact] = useState(false);
+  const [contactPos, setContactPos] = useState(null);
 
-    const phoneBtnRef = useRef(null);
+  const phoneBtnRef = useRef(null);
 
-    const [newDate, setNewDate] = useState(
-        lead?.FollowUpDate ??
-        lead?.followUpDate ??
-        ""
-    );
+  const [newDate, setNewDate] = useState(
+    lead?.FollowUpDate ?? lead?.followUpDate ?? "",
+  );
 
-    /* =============================================================
+  /* =============================================================
        CUSTOMER NAME
     ============================================================= */
 
-    const customerName = [
-        lead?.title ?? lead?.Title,
-        lead?.fName ?? lead?.FName,
-        lead?.mName ?? lead?.MName,
-        lead?.lName ?? lead?.LName
-    ]
-        .filter(Boolean)
-        .join(" ")
-        .trim();
+  const customerName = [
+    lead?.title ?? lead?.Title,
+    lead?.fName ?? lead?.FName,
+    lead?.mName ?? lead?.MName,
+    lead?.lName ?? lead?.LName,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
 
-    /* =============================================================
+  /* =============================================================
        LATEST HISTORY / NOTES
     ============================================================= */
 
-    const latestHistory = getLatestHistory(lead);
+  const latestHistory = getLatestHistory(lead);
 
-    const notes =
-        latestHistory?.Notes ??
-        latestHistory?.notes ??
-        "-";
+  const notes = latestHistory?.Notes ?? latestHistory?.notes ?? "-";
 
-    /* =============================================================
+  /* =============================================================
        STATUS
     ============================================================= */
 
-    const status =
-        lead?.StatusDescription ??
-        lead?.statusDescription ??
-        "-";
+  const status = lead?.StatusDescription ?? lead?.statusDescription ?? "-";
 
-    /* =============================================================
+  /* =============================================================
        ASSIGNEE
     ============================================================= */
 
-    const assignee =
-        lead?.LeadAssignedToName ??
-        lead?.leadAssignedToName ??
-        lead?.LeadAssignedTo ??
-        lead?.leadAssignedTo ??
-        "-";
+  const assignee =
+    lead?.LeadAssignedToName ??
+    lead?.leadAssignedToName ??
+    lead?.LeadAssignedTo ??
+    lead?.leadAssignedTo ??
+    "-";
 
-    /* =============================================================
+  /* =============================================================
        CONTACT
     ============================================================= */
 
-    const mobile =
-        lead?.mobileNo ??
-        lead?.MobileNo ??
-        "-";
+  const mobile = lead?.mobileNo ?? lead?.MobileNo ?? "-";
 
-    const email =
-        lead?.emailId ??
-        lead?.EmailId ??
-        "-";
+  const email = lead?.emailId ?? lead?.EmailId ?? "-";
 
-    /* =============================================================
+  /* =============================================================
        DESTINATION
     ============================================================= */
 
-    const destination =
-        lead?.destination ??
-        lead?.Destination ??
-        "-";
+  const destination = lead?.destination ?? lead?.Destination ?? "-";
 
-    const holidayCategory =
-        lead?.category ??
-        lead?.Category ??
-        null;
+  const holidayCategory = lead?.category ?? lead?.Category ?? null;
 
-    const isHolidayLead =
-        isHoliday &&
-        holidayCategory;
+  const isHolidayLead = isHoliday && holidayCategory;
 
-    /* Preferred Destination */
+  /* Preferred Destination */
 
-    const preferredDestination =
-        holidayCategory?.requestedDestinations ??
-        holidayCategory?.RequestedDestinations ??
-        "-";
+  const preferredDestination =
+    holidayCategory?.requestedDestinations ??
+    holidayCategory?.RequestedDestinations ??
+    "-";
 
-    /* Preferred Travel Date */
+  /* Preferred Travel Date */
 
-    const preferredTravelDate =
-        holidayCategory?.preferredTravelDate ??
-        holidayCategory?.PreferredTravelDate ??
-        null;
+  const preferredTravelDate =
+    holidayCategory?.preferredTravelDate ??
+    holidayCategory?.PreferredTravelDate ??
+    null;
 
-    /* FIT / GIT */
+  /* FIT / GIT */
 
-    const leadType =
-        holidayCategory?.leadType ??
-        holidayCategory?.LeadType ??
-        "-";
+  const leadType =
+    holidayCategory?.leadType ?? holidayCategory?.LeadType ?? "-";
 
-    /* Domestic / International */
+  /* Domestic / International */
 
-    const tripType =
-        holidayCategory?.tripType ??
-        holidayCategory?.TripType ??
-        "-";
+  const tripType =
+    holidayCategory?.tripType ?? holidayCategory?.TripType ?? "-";
 
-    /* =============================================================
+  /* =============================================================
        DATES
     ============================================================= */
 
-    const followUpDate =
-        lead?.FollowUpDate ??
-        lead?.followUpDate;
+  const followUpDate = lead?.FollowUpDate ?? lead?.followUpDate;
 
-    const enquiryDate =
-        lead?.EnquiryDate ??
-        lead?.enquiryDate;
+  const enquiryDate = lead?.EnquiryDate ?? lead?.enquiryDate;
 
-    /* =============================================================
+  const isLeadOpen = status.toLowerCase() === "open";
+  /* =============================================================
        CONTACT TOOLTIP
     ============================================================= */
 
-    const openContactTooltip = () => {
-        if (phoneBtnRef.current) {
-            const rect =
-                phoneBtnRef.current.getBoundingClientRect();
+  const openContactTooltip = () => {
+    if (phoneBtnRef.current) {
+      const rect = phoneBtnRef.current.getBoundingClientRect();
 
-            const TOOLTIP_WIDTH = 256;
+      const TOOLTIP_WIDTH = 256;
 
-            setContactPos({
-                top: rect.bottom + 6,
-                left: Math.max(
-                    8,
-                    Math.min(
-                        rect.right - TOOLTIP_WIDTH,
-                        window.innerWidth -
-                        TOOLTIP_WIDTH -
-                        8
-                    )
-                )
-            });
-        }
+      setContactPos({
+        top: rect.bottom + 6,
+        left: Math.max(
+          8,
+          Math.min(
+            rect.right - TOOLTIP_WIDTH,
+            window.innerWidth - TOOLTIP_WIDTH - 8,
+          ),
+        ),
+      });
+    }
 
-        setShowContact(true);
-    };
+    setShowContact(true);
+  };
 
-    const closeContactTooltip = () => {
-        setShowContact(false);
-    };
+  const closeContactTooltip = () => {
+    setShowContact(false);
+  };
 
-    /* =============================================================
+  /* =============================================================
        RESCHEDULE DATE
     ============================================================= */
 
-    useEffect(() => {
-        if (rescheduleOpen) {
-            const existingDate =
-                lead?.FollowUpDate ??
-                lead?.followUpDate ??
-                "";
+  useEffect(() => {
+    if (rescheduleOpen) {
+      const existingDate = lead?.FollowUpDate ?? lead?.followUpDate ?? "";
 
-            setNewDate(
-                existingDate
-                    ? String(existingDate).split("T")[0]
-                    : ""
-            );
-        }
-    }, [rescheduleOpen, lead]);
+      setNewDate(existingDate ? String(existingDate).split("T")[0] : "");
+    }
+  }, [rescheduleOpen, lead]);
 
-    return (
-        <>
-            {/* =====================================================
+  return (
+    <>
+      {/* =====================================================
                 MAIN ROW
             ===================================================== */}
 
-            <div
-                className={`
+      <div
+        className={`
                     min-w-0
                     w-full
                     overflow-hidden
                     border-b
                     border-slate-100
-                    ${index % 2 === 0
-                        ? "bg-white"
-                        : "bg-slate-50"
-                    }
+                    ${index % 2 === 0 ? "bg-white" : "bg-slate-50"}
                     hover:bg-slate-100
                 `}
-            >
-                <div
-                    className="
+      >
+        <div
+          className="
                         grid
                         min-w-0
                         w-full
                         min-h-[42px]
                         items-center
                     "
-                    style={columnStyle}
-                >
-                    {/* ROW NUMBER */}
+          style={columnStyle}
+        >
+          {/* ROW NUMBER */}
 
-                    <div className="min-w-0 px-2">
-                        <span
-                            className="
+          <div className="min-w-0 px-2">
+            <span
+              className="
                                 block
                                 min-w-0
                                 break-words
@@ -299,43 +255,39 @@ const LeadRow = ({
                                 leading-4
                                 text-slate-800
                             "
-                        >
-                            {index + 1}.
-                        </span>
-                    </div>
+            >
+              {index + 1}.
+            </span>
+          </div>
 
-                    {/* LEAD ID */}
+          {/* LEAD ID */}
 
-                    <div className="flex min-w-0 items-center px-2">
-                        <span
-                            className="
+          <div className="flex min-w-0 items-center px-2">
+            <span
+              className="
                                 truncate
                                 text-xs
                                 text-slate-500
                             "
-                            title={String(
-                                lead?.categoryLeadId ??
-                                ""
-                            )}
-                        >
-                            {lead?.categoryLeadId ??
-                                "-"}
-                        </span>
-                    </div>
+              title={String(lead?.categoryLeadId ?? "")}
+            >
+              {lead?.categoryLeadId ?? "-"}
+            </span>
+          </div>
 
-                    {/* CUSTOMER + NOTES */}
+          {/* CUSTOMER + NOTES */}
 
-                    <div
-                        className="
+          <div
+            className="
                             min-w-0
                             overflow-hidden
                             px-2
                         "
-                    >
-                        {/* CUSTOMER NAME */}
+          >
+            {/* CUSTOMER NAME */}
 
-                        <span
-                            className="
+            <span
+              className="
                                 block
                                 min-w-0
                                 break-words
@@ -345,20 +297,16 @@ const LeadRow = ({
                                 text-slate-800
                                 line-clamp-2
                             "
-                            title={
-                                customerName ||
-                                "Unnamed Lead"
-                            }
-                        >
-                            {customerName ||
-                                "Unnamed Lead"}
-                        </span>
+              title={customerName || "Unnamed Lead"}
+            >
+              {customerName || "Unnamed Lead"}
+            </span>
 
-                        {/* NOTES */}
+            {/* NOTES */}
 
-                        {notes && (
-                            <span
-                                className="
+            {notes && (
+              <span
+                className="
                                     mt-0.5
                                     block
                                     min-w-0
@@ -368,72 +316,68 @@ const LeadRow = ({
                                     leading-4
                                     text-slate-500
                                 "
-                                title={notes}
-                            >
-                                {notes}
-                            </span>
-                        )}
-                    </div>
+                title={notes}
+              >
+                {notes}
+              </span>
+            )}
+          </div>
 
-                    {/* =================================================
+          {/* =================================================
                         COLLAPSED
                     ================================================= */}
 
-                    {!expanded && (
-                        <>
-                            {/* FOLLOW-UP */}
+          {!expanded && (
+            <>
+              {/* FOLLOW-UP */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         font-medium
                                         text-slate-600
                                     "
-                                >
-                                    {formatDate(
-                                        followUpDate
-                                    )}
-                                </span>
-                            </div>
+                >
+                  {formatDate(followUpDate)}
+                </span>
+              </div>
 
-                            {/* ENQUIRY */}
+              {/* ENQUIRY */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         text-slate-500
                                     "
-                                >
-                                    {formatDate(
-                                        enquiryDate
-                                    )}
-                                </span>
-                            </div>
-                        </>
-                    )}
+                >
+                  {formatDate(enquiryDate)}
+                </span>
+              </div>
+            </>
+          )}
 
-                    {/* =================================================
+          {/* =================================================
                         EXPANDED
                     ================================================= */}
 
-                    {expanded && (
-                        <>
-                            {/* =================================================
+          {expanded && (
+            <>
+              {/* =================================================
                                 HOLIDAY-SPECIFIC FIELDS
                             ================================================= */}
 
-                            {/* PREFERRED DESTINATION */}
+              {/* PREFERRED DESTINATION */}
 
-                            {isHoliday && (
-                                <div className="min-w-0 px-2">
-                                    <span
-                                        className="
+              {isHoliday && (
+                <div className="min-w-0 px-2">
+                  <span
+                    className="
                                             block
                                             whitespace-normal
                                             break-words
@@ -441,74 +385,68 @@ const LeadRow = ({
                                             leading-4
                                             text-slate-600
                                         "
-                                        title={
-                                            preferredDestination
-                                        }
-                                    >
-                                        {
-                                            preferredDestination
-                                        }
-                                    </span>
-                                </div>
-                            )}
+                    title={preferredDestination}
+                  >
+                    {preferredDestination}
+                  </span>
+                </div>
+              )}
 
-                            {/* TRAVEL DATE */}
+              {/* TRAVEL DATE */}
 
-                            {isHoliday && (
-                                <div className="min-w-0 px-2">
-                                    <span
-                                        className="
+              {isHoliday && (
+                <div className="min-w-0 px-2">
+                  <span
+                    className="
                                             block
                                             truncate
                                             text-[12px]
                                             text-slate-600
                                         "
-                                    >
-                                        {formatDate(
-                                            preferredTravelDate
-                                        )}
-                                    </span>
-                                </div>
-                            )}
+                  >
+                    {formatDate(preferredTravelDate)}
+                  </span>
+                </div>
+              )}
 
-                            {/* CATEGORY */}
+              {/* CATEGORY */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         text-slate-600
                                     "
-                                    title={
-                                        lead?.category?.categoryType ??
-                                        lead?.Category?.categoryType ??
-                                        "-"
-                                    }
-                                >
-                                    {lead?.category?.categoryType ??
-                                        lead?.Category?.categoryType ??
-                                        "-"}
-                                </span>
-                            </div>
+                  title={
+                    lead?.category?.categoryType ??
+                    lead?.Category?.categoryType ??
+                    "-"
+                  }
+                >
+                  {lead?.category?.categoryType ??
+                    lead?.Category?.categoryType ??
+                    "-"}
+                </span>
+              </div>
 
-                            {/* FIT / GIT + DOMESTIC / INTERNATIONAL */}
+              {/* FIT / GIT + DOMESTIC / INTERNATIONAL */}
 
-                            {isHoliday && (
-                                <div className="min-w-0 px-2">
-                                    <div
-                                        className="
+              {isHoliday && (
+                <div className="min-w-0 px-2">
+                  <div
+                    className="
                                             flex
                                             flex-col
                                             items-start
                                             gap-0.5
                                         "
-                                    >
-                                        {/* FIT / GIT */}
+                  >
+                    {/* FIT / GIT */}
 
-                                        <span
-                                            className="
+                    <span
+                      className="
                                                 inline-flex
                                                 rounded-full
                                                 bg-blue-50
@@ -518,14 +456,14 @@ const LeadRow = ({
                                                 font-semibold
                                                 text-blue-700
                                             "
-                                        >
-                                            {leadType}
-                                        </span>
+                    >
+                      {leadType}
+                    </span>
 
-                                        {/* DOMESTIC / INTERNATIONAL */}
+                    {/* DOMESTIC / INTERNATIONAL */}
 
-                                        <span
-                                            className={`
+                    <span
+                      className={`
                                                 inline-flex
                                                 rounded-full
                                                 px-2
@@ -533,117 +471,111 @@ const LeadRow = ({
                                                 text-[10px]
                                                 font-semibold
                                                 ${
-                                                    tripType ===
-                                                    "International"
-                                                        ? "bg-purple-50 text-purple-700"
-                                                        : tripType ===
-                                                            "Domestic"
-                                                            ? "bg-emerald-50 text-emerald-700"
-                                                            : "bg-slate-100 text-slate-600"
+                                                  tripType === "International"
+                                                    ? "bg-purple-50 text-purple-700"
+                                                    : tripType === "Domestic"
+                                                      ? "bg-emerald-50 text-emerald-700"
+                                                      : "bg-slate-100 text-slate-600"
                                                 }
                                             `}
-                                        >
-                                            {tripType}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
+                    >
+                      {tripType}
+                    </span>
+                  </div>
+                </div>
+              )}
 
-                            {/* FOLLOW-UP */}
+              {/* FOLLOW-UP */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         font-medium
                                         text-slate-600
                                     "
-                                >
-                                    {formatDate(
-                                        followUpDate
-                                    )}
-                                </span>
-                            </div>
+                >
+                  {formatDate(followUpDate)}
+                </span>
+              </div>
 
-                            {/* ENQUIRY */}
+              {/* ENQUIRY */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         text-slate-500
                                     "
-                                >
-                                    {formatDate(
-                                        enquiryDate
-                                    )}
-                                </span>
-                            </div>
+                >
+                  {formatDate(enquiryDate)}
+                </span>
+              </div>
 
-                            {/* ASSIGNEE */}
+              {/* ASSIGNEE */}
 
-                            <div className="min-w-0 px-2">
-                                <span
-                                    className="
+              <div className="min-w-0 px-2">
+                <span
+                  className="
                                         block
                                         truncate
                                         text-[12px]
                                         font-medium
                                         text-slate-600
                                     "
-                                    title={assignee}
-                                >
-                                    {assignee}
-                                </span>
-                            </div>
+                  title={assignee}
+                >
+                  {assignee}
+                </span>
+              </div>
 
-                            {/* CONTACT */}
+              {/* CONTACT */}
 
-                            <div className="min-w-0 px-2">
-                                <div
-                                    className="
+              <div className="min-w-0 px-2">
+                <div
+                  className="
                                         flex
                                         min-w-0
                                         flex-col
                                         leading-4
                                     "
-                                >
-                                    <span
-                                        className="
+                >
+                  <span
+                    className="
                                             block
                                             truncate
                                             text-[11px]
                                             text-slate-600
                                         "
-                                        title={mobile}
-                                    >
-                                        {mobile}
-                                    </span>
+                    title={mobile}
+                  >
+                    {mobile}
+                  </span>
 
-                                    <span
-                                        className="
+                  <span
+                    className="
                                             block
                                             truncate
                                             text-[11px]
                                             text-slate-500
                                         "
-                                        title={email}
-                                    >
-                                        {email}
-                                    </span>
-                                </div>
-                            </div>
+                    title={email}
+                  >
+                    {email}
+                  </span>
+                </div>
+              </div>
 
-                            {/* STATUS */}
+              {/* STATUS */}
 
-                            <div className="min-w-0 px-2">
-                                {status !== "-" ? (
-                                    <span
-                                        className={`
+              <div className="min-w-0 px-2">
+                {status !== "-" ? (
+                  <span
+                    className={`
                                             inline-flex
                                             max-w-full
                                             truncate
@@ -653,36 +585,34 @@ const LeadRow = ({
                                             text-[10px]
                                             font-semibold
                                             ${
-                                                STATUS_STYLE[
-                                                    status
-                                                ] ||
-                                                "bg-slate-100 text-slate-600"
+                                              STATUS_STYLE[status] ||
+                                              "bg-slate-100 text-slate-600"
                                             }
                                         `}
-                                        title={status}
-                                    >
-                                        {status}
-                                    </span>
-                                ) : (
-                                    <span
-                                        className="
+                    title={status}
+                  >
+                    {status}
+                  </span>
+                ) : (
+                  <span
+                    className="
                                             text-[11px]
                                             text-slate-400
                                         "
-                                    >
-                                        -
-                                    </span>
-                                )}
-                            </div>
-                        </>
-                    )}
+                  >
+                    -
+                  </span>
+                )}
+              </div>
+            </>
+          )}
 
-                    {/* =================================================
+          {/* =================================================
                         ACTIONS
                     ================================================= */}
 
-                    <div
-                        className="
+          <div
+            className="
                             flex
                             min-w-0
                             items-center
@@ -690,26 +620,20 @@ const LeadRow = ({
                             gap-0.5
                             px-1
                         "
-                    >
-                        {/* COLLAPSED ACTIONS */}
+          >
+            {/* COLLAPSED ACTIONS */}
 
-                        {!expanded && (
-                            <>
-                                {/* PHONE */}
+            {!expanded && (
+              <>
+                {/* PHONE */}
 
-                                <button
-                                    ref={phoneBtnRef}
-                                    type="button"
-                                    onMouseEnter={
-                                        openContactTooltip
-                                    }
-                                    onMouseLeave={
-                                        closeContactTooltip
-                                    }
-                                    onClick={() =>
-                                        onCall?.(lead)
-                                    }
-                                    className="
+                <button
+                  ref={phoneBtnRef}
+                  type="button"
+                  onMouseEnter={openContactTooltip}
+                  onMouseLeave={closeContactTooltip}
+                  onClick={() => onCall?.(lead)}
+                  className="
                                         flex
                                         h-7
                                         w-7
@@ -720,87 +644,83 @@ const LeadRow = ({
                                         transition
                                         hover:bg-emerald-50
                                     "
-                                    title="Call"
-                                >
-                                    <Phone
-                                        className="
+                  title="Call"
+                >
+                  <Phone
+                    className="
                                             h-3.5
                                             w-3.5
                                             text-emerald-600
                                         "
-                                    />
-                                </button>
+                  />
+                </button>
 
-                                {/* NOTE */}
+                {/* NOTE */}
 
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        onNote?.(lead)
-                                    }
-                                    className="
-                                        flex
-                                        h-7
-                                        w-7
-                                        flex-shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        transition
-                                        hover:bg-blue-50
-                                    "
-                                    title="Add note"
-                                >
-                                    <MessageSquarePlus
-                                        className="
+                <button
+                  type="button"
+                  disabled={!isLeadOpen}
+                  onClick={() => onNote?.(lead)}
+                  className={`
+                                flex h-7 w-7 flex-shrink-0
+                                items-center justify-center rounded-full
+                                transition
+                                ${
+                                isLeadOpen
+                                    ? "hover:bg-blue-50 cursor-pointer"
+                                    : "opacity-40 cursor-not-allowed"
+                                }
+                            `}
+                  title={
+                    isLeadOpen
+                      ? "Add note"
+                      : "Notes available only for open leads"
+                  }
+                >
+                  <MessageSquarePlus
+                    className="
                                             h-3.5
                                             w-3.5
                                             text-blue-600
                                         "
-                                    />
-                                </button>
+                  />
+                </button>
 
-                                {/* RESCHEDULE */}
+                {/* RESCHEDULE */}
 
-                                <button
-                                    type="button"
-                                    onClick={() =>
-                                        onReschedule?.(
-                                            lead
-                                        )
-                                    }
-                                    className="
-                                        flex
-                                        h-7
-                                        w-7
-                                        flex-shrink-0
-                                        items-center
-                                        justify-center
-                                        rounded-full
-                                        transition
-                                        hover:bg-purple-50
-                                    "
-                                    title="Reschedule"
-                                >
-                                    <CalendarClock
-                                        className="
+                <button
+                  type="button"
+                  disabled={!isLeadOpen}
+                  onClick={() => onReschedule?.(lead)}
+                                    className={`
+                            flex h-7 w-7 flex-shrink-0
+                            items-center justify-center rounded-full
+                            transition
+                            ${
+                                isLeadOpen
+                                    ? "hover:bg-purple-50 cursor-pointer"
+                                    : "opacity-40 cursor-not-allowed"
+                            }
+                        `}
+                        title={isLeadOpen ? "Reschedule" : "Rescheduling available only for open leads"}
+                                    >
+                  <CalendarClock
+                    className="
                                             h-3.5
                                             w-3.5
                                             text-purple-600
                                         "
-                                    />
-                                </button>
-                            </>
-                        )}
+                  />
+                </button>
+              </>
+            )}
 
-                        {/* VIEW — ALWAYS AVAILABLE */}
+            {/* VIEW — ALWAYS AVAILABLE */}
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                onOpen?.(lead)
-                            }
-                            className="
+            <button
+              type="button"
+              onClick={() => onOpen?.(lead)}
+              className="
                                 flex
                                 h-7
                                 w-7
@@ -811,44 +731,40 @@ const LeadRow = ({
                                 transition
                                 hover:bg-slate-100
                             "
-                            title="Open Lead"
-                        >
-                            <Eye
-                                className="
+              title="Open Lead"
+            >
+              <Eye
+                className="
                                     h-4
                                     w-4
                                     text-slate-600
                                 "
-                            />
-                        </button>
-                    </div>
-                </div>
+              />
+            </button>
+          </div>
+        </div>
 
-                {/* =====================================================
+        {/* =====================================================
                     INLINE NOTE
                 ===================================================== */}
 
-                {noteOpen && (
-                    <div
-                        className="
+        {noteOpen && (
+          <div
+            className="
                             border-t
                             border-blue-100
                             bg-blue-50
                             px-3
                             py-2
                         "
-                    >
-                        <div className="flex items-center gap-2">
-                            <input
-                                autoFocus
-                                value={noteText}
-                                onChange={(e) =>
-                                    setNoteText(
-                                        e.target.value
-                                    )
-                                }
-                                placeholder="Add note..."
-                                className="
+          >
+            <div className="flex items-center gap-2">
+              <input
+                autoFocus
+                value={noteText}
+                onChange={(e) => setNoteText(e.target.value)}
+                placeholder="Add note..."
+                className="
                                     min-w-0
                                     flex-1
                                     rounded
@@ -860,18 +776,15 @@ const LeadRow = ({
                                     text-xs
                                     focus:outline-none
                                 "
-                            />
+              />
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    onSaveNote?.(
-                                        lead,
-                                        noteText
-                                    );
-                                    setNoteText("");
-                                }}
-                                className="
+              <button
+                type="button"
+                onClick={() => {
+                  onSaveNote?.(lead, noteText);
+                  setNoteText("");
+                }}
+                className="
                                     rounded
                                     bg-blue-600
                                     px-3
@@ -880,68 +793,58 @@ const LeadRow = ({
                                     font-semibold
                                     text-white
                                 "
-                            >
-                                Save
-                            </button>
+              >
+                Save
+              </button>
 
-                            <button
-                                type="button"
-                                onClick={
-                                    onCancelInline
-                                }
-                                className="
+              <button
+                type="button"
+                onClick={onCancelInline}
+                className="
                                     rounded-full
                                     p-1
                                 "
-                            >
-                                <X
-                                    className="
+              >
+                <X
+                  className="
                                         h-4
                                         w-4
                                         text-slate-500
                                     "
-                                />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                />
+              </button>
+            </div>
+          </div>
+        )}
 
-                {/* =====================================================
+        {/* =====================================================
                     INLINE RESCHEDULE
                 ===================================================== */}
 
-                {rescheduleOpen && (
-                    <div
-                        className="
+        {rescheduleOpen && (
+          <div
+            className="
                             border-t
                             border-purple-100
                             bg-purple-50
                             px-3
                             py-2
                         "
-                    >
-                        <div
-                            className="
+          >
+            <div
+              className="
                                 flex
                                 items-center
                                 justify-end
                                 gap-2
                             "
-                        >
-                            <input
-                                type="date"
-                                value={newDate}
-                                min={
-                                    new Date()
-                                        .toISOString()
-                                        .split("T")[0]
-                                }
-                                onChange={(e) =>
-                                    setNewDate(
-                                        e.target.value
-                                    )
-                                }
-                                className="
+            >
+              <input
+                type="date"
+                value={newDate}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setNewDate(e.target.value)}
+                className="
                                     rounded
                                     border
                                     border-purple-200
@@ -950,18 +853,15 @@ const LeadRow = ({
                                     py-1.5
                                     text-xs
                                 "
-                            />
+              />
 
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    onSaveReschedule?.(
-                                        lead,
-                                        newDate
-                                    );
-                                    setNewDate("");
-                                }}
-                                className="
+              <button
+                type="button"
+                onClick={() => {
+                  onSaveReschedule?.(lead, newDate);
+                  setNewDate("");
+                }}
+                className="
                                     rounded
                                     bg-purple-600
                                     px-3
@@ -970,53 +870,47 @@ const LeadRow = ({
                                     font-semibold
                                     text-white
                                 "
-                            >
-                                Save
-                            </button>
+              >
+                Save
+              </button>
 
-                            <button
-                                type="button"
-                                onClick={
-                                    onCancelInline
-                                }
-                                className="
+              <button
+                type="button"
+                onClick={onCancelInline}
+                className="
                                     rounded-full
                                     p-1
                                 "
-                            >
-                                <X
-                                    className="
+              >
+                <X
+                  className="
                                         h-4
                                         w-4
                                         text-slate-500
                                     "
-                                />
-                            </button>
-                        </div>
-                    </div>
-                )}
+                />
+              </button>
             </div>
+          </div>
+        )}
+      </div>
 
-            {/* =====================================================
+      {/* =====================================================
                 CONTACT TOOLTIP
             ===================================================== */}
 
-            {showContact &&
-                contactPos &&
-                createPortal(
-                    <div
-                        onMouseEnter={
-                            openContactTooltip
-                        }
-                        onMouseLeave={
-                            closeContactTooltip
-                        }
-                        style={{
-                            position: "fixed",
-                            top: contactPos.top,
-                            left: contactPos.left
-                        }}
-                        className="
+      {showContact &&
+        contactPos &&
+        createPortal(
+          <div
+            onMouseEnter={openContactTooltip}
+            onMouseLeave={closeContactTooltip}
+            style={{
+              position: "fixed",
+              top: contactPos.top,
+              left: contactPos.left,
+            }}
+            className="
                             z-[9999]
                             w-64
                             rounded-lg
@@ -1026,9 +920,9 @@ const LeadRow = ({
                             p-3
                             shadow-xl
                         "
-                    >
-                        <div
-                            className="
+          >
+            <div
+              className="
                                 mb-2
                                 text-[10px]
                                 font-bold
@@ -1036,59 +930,57 @@ const LeadRow = ({
                                 tracking-wide
                                 text-slate-400
                             "
-                        >
-                            Contact Details
-                        </div>
+            >
+              Contact Details
+            </div>
 
-                        <div className="flex items-center gap-2">
-                            <Phone
-                                className="
+            <div className="flex items-center gap-2">
+              <Phone
+                className="
                                     h-3.5
                                     w-3.5
                                     flex-shrink-0
                                     text-emerald-600
                                 "
-                            />
+              />
 
-                            <span className="text-[12px] text-slate-700">
-                                {mobile}
-                            </span>
-                        </div>
+              <span className="text-[12px] text-slate-700">{mobile}</span>
+            </div>
 
-                        <div
-                            className="
+            <div
+              className="
                                 mt-2
                                 flex
                                 min-w-0
                                 items-center
                                 gap-2
                             "
-                        >
-                            <Mail
-                                className="
+            >
+              <Mail
+                className="
                                     h-3.5
                                     w-3.5
                                     flex-shrink-0
                                     text-blue-600
                                 "
-                            />
+              />
 
-                            <span
-                                className="
+              <span
+                className="
                                     min-w-0
                                     truncate
                                     text-[12px]
                                     text-slate-700
                                 "
-                            >
-                                {email}
-                            </span>
-                        </div>
-                    </div>,
-                    document.body
-                )}
-        </>
-    );
+              >
+                {email}
+              </span>
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
+  );
 };
 
 export default LeadRow;

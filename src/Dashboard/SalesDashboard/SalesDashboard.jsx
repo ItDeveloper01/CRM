@@ -260,11 +260,119 @@ const SalesDashboard = ({
         console.log("Call", lead);
 
     };
+// Returns "YYYY-MM-DD" in LOCAL time (avoids the UTC shift of new Date("2026-09-17"))
+// "YYYY-MM-DD" in LOCAL time (avoids the UTC shift of new Date("2026-09-17"))
+const toLocalYMD = (value) => {
+    if (!value) return "";
+    const text = String(value).trim();
 
+    const m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
 
+    const d = new Date(text);
+    if (Number.isNaN(d.getTime())) return "";
 
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${mm}-${dd}`;
+};
+
+const getBucketForDate = (followUpDate) => {
+    const target = toLocalYMD(followUpDate);
+    if (!target) return null;
+
+    const todayYMD = toLocalYMD(new Date());
+
+    if (target < todayYMD) return "overdue";
+    if (target === todayYMD) return "today";
+    return "upcoming";
+};
+
+const handleLeadUpdateFromBucket = (updatedLead, originalRow) => {
+    if (!originalRow || !updatedLead) return;
+
+    const getCustomerId = (r) => Number(r?.LeadID ?? r?.leadID);
+    const getCategory = (r) =>
+        String(r?.categoryName ?? r?.CategoryName ?? "").toUpperCase();
+    const getFollowUp = (r) =>
+        toLocalYMD(r?.followUpDate ?? r?.FollowUpDate);
+
+    // values of the clicked row BEFORE the edit
+    const oldCustomerId = getCustomerId(originalRow);
+    const oldCategory = getCategory(originalRow);
+    const oldFollowUp = getFollowUp(originalRow);
+
+    const status = updatedLead.leadStatus ?? updatedLead.LeadStatus;
+
+const statusDescription =
+    updatedLead.statusDescription ??
+    updatedLead.StatusDescription;
+
+    // the clicked row OR its twin in another bucket
+    const same = (item) => {
+        if (item === originalRow) return true;
+        if (getCustomerId(item) !== oldCustomerId) return false;
+        if (getCategory(item) !== oldCategory) return false;
+
+        const f = getFollowUp(item);
+        return !f || !oldFollowUp || f === oldFollowUp;
+    };
+
+    const sameLead = (item) =>
+    getCustomerId(item) === oldCustomerId &&
+    getCategory(item) === oldCategory;
+
+    setTimeline((current) => {
+        // the lead with its NEW values (keeps the row shape the table needs)
+        const merged = {
+            ...originalRow,
+            followUpDate: updatedLead.followUpDate,
+            FollowUpDate: updatedLead.followUpDate,
+            leadStatus: updatedLead.leadStatus,
+            statusDescription:
+                updatedLead.statusDescription ?? originalRow.statusDescription,
+            StatusDescription:
+                updatedLead.statusDescription ?? originalRow.StatusDescription
+        };
+
+        const next = {
+            // follow-up buckets: always remove the old row and its twin
+            overdue:  (current.overdue  || []).filter(l => !same(l)),
+            today:    (current.today    || []).filter(l => !same(l)),
+            upcoming: (current.upcoming || []).filter(l => !same(l)),
+
+            // created: NEVER removed, only updated in place
+            //created:  (current.created  || []).map(l => (same(l) ? merged : l))
+            created: (current.created || []).map(l =>
+    sameLead(l)
+        ? {
+            ...l,
+            ...updatedLead,
+            leadStatus: status,
+            LeadStatus: status,
+            statusDescription: statusDescription ?? l.statusDescription,
+            StatusDescription: statusDescription ?? l.StatusDescription,
+            history: updatedLead.history ?? l.history,
+History: updatedLead.History ?? l.History,
+        }
+        : l
+)
+        };
+
+        // status still Open -> back into the bucket for the NEW follow-up date
+        if (Number(updatedLead.leadStatus) <= 1) {
+            const target = getBucketForDate(updatedLead.followUpDate);
+            if (target) next[target].push(merged);
+        }
+
+        loadDashboardSummary(next);
+        return next;
+    });
+};
 
     const handleNote = (lead) => {
+
+      
 
         setActiveRescheduleId(null);
 
@@ -291,6 +399,8 @@ const SalesDashboard = ({
 
 
     const handleSaveNote = (lead, note) => {
+
+      
 
         console.log(
             "Save Note",
@@ -1702,6 +1812,10 @@ const SalesDashboard = ({
                                 );
 
                             }}
+
+                            onLeadUpdateFromBucket={
+                                handleLeadUpdateFromBucket
+                            }
 
                         />
 

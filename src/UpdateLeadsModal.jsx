@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import Leadgeneration from "./LeadsGeneration"; // your existing form component
 
-export default function UpdateLeadsModal({parent, isOpen, onClose, lead, mode ,viewAllLeads, isGenerateNewLeadAllowed}) {
+export default function UpdateLeadsModal({parent, isOpen, onClose, onSaveSuccess,  lead, mode ,viewAllLeads, isGenerateNewLeadAllowed}) {
  
   //alert(`Modal opened from: ${parent} \n viewAllLeads value is : ${viewAllLeads} \n isGenerateNewLeadAllowed value is : ${isGenerateNewLeadAllowed}`);
   useEffect(() => {
@@ -40,7 +40,7 @@ export default function UpdateLeadsModal({parent, isOpen, onClose, lead, mode ,v
         {/* Body (Lead Generation Form) */}
         {/* <div className="p-4 overflow-y-auto flex-1 max-h-[calc(90vh-60px)]"> */}
         <div className="flex-1 w-full h-full p-4 overflow-y-auto">
-          <Leadgeneration lead={lead}  onClose={onClose}  mode={mode} viewAllLeads={viewAllLeads} isGenerateNewLeadAllowed={isGenerateNewLeadAllowed} 
+          <Leadgeneration lead={lead}  onClose={onClose} onSaveSuccess={onSaveSuccess}  mode={mode} viewAllLeads={viewAllLeads} isGenerateNewLeadAllowed={isGenerateNewLeadAllowed} 
            fullWidth={true}
           />
         </div>
