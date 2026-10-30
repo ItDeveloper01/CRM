@@ -308,11 +308,10 @@ const toggleStyles = {
   toggle: (isActive) => `
         relative inline-flex items-center h-6 w-11 rounded-full cursor-pointer
         transition-all duration-300 flex-shrink-0 shadow-inner
-        ${
-          isActive
-            ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
-            : "bg-gradient-to-r from-slate-300 to-slate-400"
-        }
+        ${isActive
+      ? "bg-gradient-to-r from-emerald-400 to-emerald-500"
+      : "bg-gradient-to-r from-slate-300 to-slate-400"
+    }
     `,
 
   circle: (isActive) => `
@@ -593,7 +592,9 @@ const RichTextToolbar = ({ editorRef, disabled = false }) => {
         onClick={() => {
           if (editorRef.current) {
             editorRef.current.innerHTML = "";
+            // getPlainTextLength();
           }
+          
         }}
         title="Clear All Text"
         className="
@@ -694,8 +695,11 @@ const RichTextEditor = ({ value, onChange, disabled = false, onExpand }) => {
   // --------------------------------------------------------
 
   const getPlainTextLength = () => {
+    debugger;
     if (!editorRef.current) return 0;
-
+   
+console.log("Inner text :",editorRef.current.innerText);
+console.log("Text Content :",editorRef.current.textContent);
     return (editorRef.current.innerText || editorRef.current.textContent || "")
       .length;
   };
@@ -739,11 +743,10 @@ const RichTextEditor = ({ value, onChange, disabled = false, onExpand }) => {
 
                         [&_li]:ml-2
 
-                        ${
-                          disabled
-                            ? "bg-gray-100 cursor-not-allowed"
-                            : "bg-white"
-                        }
+                        ${disabled
+              ? "bg-gray-100 cursor-not-allowed"
+              : "bg-white"
+            }
                     `}
         />
 
@@ -879,7 +882,7 @@ const FullScreenNotesEditor = ({ value, onChange, onClose }) => {
     if (!editorRef.current) return 0;
 
     const text = editorRef.current.innerText || "";
-
+    console.log("Another: ",text);
     return text.replace(/\r/g, "").replace(/\n/g, "").length;
   };
 
@@ -1270,7 +1273,15 @@ const FullScreenNotesEditor = ({ value, onChange, onClose }) => {
             onClick={() => {
               if (editorRef.current) {
                 editorRef.current.innerHTML = "";
+                editorRef.current.innerText ="";
+
+      //           (editorRef.current.innerText || editorRef.current.textContent || "")
+      // .length;
+               
+
               }
+              console.log("In Clear Button:", getPlainTextLength());
+               getPlainTextLength();
             }}
             title="Clear Text"
             className="
@@ -1401,6 +1412,8 @@ export default function TravelPackage({
   cities = [],
   isViewMode = false,
   travelScope = "",
+  packageErrors = {},
+
 }) {
   const [isOpen, setIsOpen] = useState(true);
   const scopeLabel = travelScope ? ` (${travelScope})` : "";
@@ -1522,7 +1535,7 @@ export default function TravelPackage({
       pkg?.toDate ||
       pkg?.budget ||
       pkg?.tripDescription ||
-      pkg?.destinations ||
+      // pkg?.destinations ||
       pkg?.departureCity
     );
   };
@@ -1767,11 +1780,10 @@ export default function TravelPackage({
                                                 duration-200
                                                 whitespace-nowrap
 
-                                                ${
-                                                  isActive
-                                                    ? "bg-white border-gray-300 border-b-white text-blue-600 font-semibold shadow-sm"
-                                                    : "bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200 hover:text-gray-800"
-                                                }
+                                                ${isActive
+                        ? "bg-white border-gray-300 border-b-white text-blue-600 font-semibold shadow-sm"
+                        : "bg-gray-100 text-gray-600 border-transparent hover:bg-gray-200 hover:text-gray-800"
+                      }
                                             `}
                   >
                     {/* ACTIVE TOP BAR */}
@@ -1814,11 +1826,10 @@ export default function TravelPackage({
                                                         py-0.5
                                                         rounded-full
 
-                                                        ${
-                                                          isActive
-                                                            ? "bg-blue-100 text-blue-700"
-                                                            : "bg-gray-200 text-gray-600"
-                                                        }
+                                                        ${isActive
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-200 text-gray-600"
+                          }
                                                     `}
                       >
                         {pkg.duration}
@@ -1843,11 +1854,10 @@ export default function TravelPackage({
                                                             items-center
                                                             justify-center
 
-                                                            ${
-                                                              isActive
-                                                                ? "hover:bg-blue-100"
-                                                                : "hover:bg-red-100"
-                                                            }
+                                                            ${isActive
+                            ? "hover:bg-blue-100"
+                            : "hover:bg-red-100"
+                          }
                                                         `}
                       >
                         ✕
@@ -1945,6 +1955,11 @@ export default function TravelPackage({
                             }
                             className="border-highlight"
                           />
+                          {packageErrors[index]?.fromDate && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].fromDate}
+                            </p>
+                          )}
                         </div>
 
                         {/* TO */}
@@ -1969,6 +1984,11 @@ export default function TravelPackage({
                             }
                             className="border-highlight"
                           />
+                          {packageErrors[index]?.toDate && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].toDate}
+                            </p>
+                          )}
                         </div>
 
                         {/* DURATION */}
@@ -2067,13 +2087,18 @@ export default function TravelPackage({
                                                                 border-gray-300
                                                                 rounded
 
-                                                                ${
-                                                                  !pkg.isFlexibleDates
-                                                                    ? "bg-gray-100 cursor-not-allowed"
-                                                                    : "bg-white"
-                                                                }
+                                                                ${!pkg.isFlexibleDates
+                                  ? "bg-gray-100 cursor-not-allowed"
+                                  : "bg-white"
+                                }
                                                             `}
                             />
+
+                            {packageErrors[index]?.flexibleDays && (
+                              <p className="mt-1 text-xs text-red-500">
+                                {packageErrors[index].flexibleDays}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2169,6 +2194,11 @@ export default function TravelPackage({
                               </option>
                             ))}
                           </select>
+                          {packageErrors[index]?.budgetPreference && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].budgetPreference}
+                            </p>
+                          )}
                           {/* )} */}
                         </div>
 
@@ -2189,6 +2219,11 @@ export default function TravelPackage({
                             }
                             className="border-highlight"
                           />
+                          {packageErrors[index]?.tripDescription && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].tripDescription}
+                            </p>
+                          )}
                         </div>
 
                         {/* <div>
@@ -2255,6 +2290,11 @@ export default function TravelPackage({
                               </option>
                             ))}
                           </select>
+                          {packageErrors[index]?.hotelCategory && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].hotelCategory}
+                            </p>
+                          )}
                         </div>
 
                         {/* MEAL PLAN */}
@@ -2284,6 +2324,11 @@ export default function TravelPackage({
                               </option>
                             ))}
                           </select>
+                          {packageErrors[index]?.mealPlan && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].mealPlan}
+                            </p>
+                          )}
                         </div>
 
                         <div>
@@ -2313,6 +2358,11 @@ export default function TravelPackage({
                               </option>
                             ))}
                           </select>
+                          {packageErrors[index]?.vehicleType && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].vehicleType}
+                            </p>
+                          )}
                         </div>
 
                         {/* <div>
@@ -2352,6 +2402,11 @@ export default function TravelPackage({
                             className="border-highlight"
                             placeholder="Enter Arrival City"
                           />
+                          {packageErrors[index]?.arrivalCity && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].arrivalCity}
+                            </p>
+                          )}
                         </div>
 
                         <div>
@@ -2369,6 +2424,11 @@ export default function TravelPackage({
                             className="border-highlight"
                             placeholder="Enter Departure City"
                           />
+                          {packageErrors[index]?.departureCity && (
+                            <p className="mt-1 text-xs text-red-500">
+                              {packageErrors[index].departureCity}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -2444,6 +2504,11 @@ export default function TravelPackage({
                           }
                           onExpand={() => openNotesEditor(index)}
                         />
+                        {packageErrors[index]?.sketchItinerary && (
+                          <p className="mt-1 text-xs text-red-500">
+                            {packageErrors[index].sketchItinerary}
+                          </p>
+                        )}
                       </div>
 
                       <div className="mt-3">
@@ -2461,6 +2526,12 @@ export default function TravelPackage({
                           placeholder="Enter Trip Budget"
                           
                         />
+
+                        {packageErrors[index]?.tripBudget && (
+    <p className="mt-1 text-xs text-red-500">
+        {packageErrors[index].tripBudget}
+    </p>
+)}
                       </div>
                     </div>
                   );

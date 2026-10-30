@@ -44,6 +44,8 @@ import MasterSettings from './MasterSettingsBoard';
 import TravelAgencyItineraryManager from './Operations/Itinerary/ItineraryManager';
 import AnalyticsBoardWrapper from './MyTeamAnalyticsBoard/AnalyticsBoardWrapper';
 import NotificationConfiguration from './NotificationConfigurationsScreens/NotificationConfiguration';
+import AddressManager from './AddressManager';
+import PhoneBook from './PhoneBook';
 
 const BYPASS_CONTEXT_WRAPPER = true;
 
@@ -489,6 +491,14 @@ export default function App() {
                     element={<NotificationConfiguration />}
                   />
 
+                  {/* ==================================================
+                        Phone Book 
+                  ================================================= */}
+                  <Route
+                    path='/PhoneBook'
+                    // element={<AddressManager />}
+                     element={<PhoneBook />}
+                  />
 
 
                   {/* =========================================

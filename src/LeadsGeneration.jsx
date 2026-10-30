@@ -151,7 +151,7 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
   const getLeadStatusListMasterEndPoint = config.apiUrl + '/MasterData/GetLeadStatusList';
   const getCityListMasterEndPoint = config.apiUrl + '/MasterData/GetCityList';
   const getLeadCategoriesByUserId = config.apiUrl + '/TempLead/GetCategoriesUserwise';
-  const getCountryListMasterEndPoint = config.apiUrl + '/MasterData/GetCountryList';
+  // const getCountryListMasterEndPoint = config.apiUrl + '/MasterData/GetCountryList';
   const [reminderProcessed, setReminderProcessed] = useState(true);// to track if reminder data has been processed to avoid infinite loop when coming from reminder with duplicate mobile no.
   const holidayRef = useRef(null);
 
@@ -195,61 +195,62 @@ export default function LeadsGeneration({ lead, onClose, mode, viewAllLeads = fa
     //   })
     //   .catch((err) => console.error("Error fetching countries:", err));
 
-    fetchCountries();
-    fetchCityList();     // for City API
+    // fetchCountries();
+    // fetchCityList();     // for City API
 
   }, []);
 
-  const fetchCountries = async () => {
-  try {
-    debugger;
-    const response = await axios.get(
-      getCountryListMasterEndPoint
-    );
-    console.log("Fetch Country API endpoint:",getCountryListMasterEndPoint);
+  // const fetchCountries = async () => {
+  //   try {
+  //     debugger;
+  //     const response = await axios.get(
+  //       getCountryListMasterEndPoint
+  //     );
+  //     console.log("Fetch Country API endpoint:", getCountryListMasterEndPoint);
 
-      const formattedCountries = response.data
-        .filter(country => country.isActive)
-        .map(country => ({
-          id: country.id,
-          name: country.countryName
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+  //     const formattedCountries = response.data
+  //       .filter(country => country.isActive)
+  //       .map(country => ({
+  //         id: country.id,
+  //         name: country.countryName
+  //       }))
+  //       .sort((a, b) => a.name.localeCompare(b.name));
 
-      setCountries(formattedCountries);
+  //     setCountries(formattedCountries);
 
-      console.log("Countries:", formattedCountries);
+  //     console.log("Countries:", formattedCountries);
 
-    } catch (err) {
-      console.error("Error fetching countries:", err);
-    }
-  };
+  //   } catch (err) {
+  //     console.error("Error fetching countries:", err);
+  //   }
+  // };
 
+  //Commented on 26.10.2026
   // Fetch List of City from API(Self made)
-  const fetchCityList = async () => {
-    debugger;
-    const cityList = await axios.get(getCityListMasterEndPoint, {
-      headers: {
-        Authorization: `Bearer ${sessionUser.token}`,
-      },
-    })
-      .then((res) => {
-        console.log('Fetching City List in Lead Generate Page ...', res.data);
-        setCities(res.data || []);
-      }
-      ).catch((err) => {
-        debugger;
-        console.error("Failed to fetch City List :", err);
-        console.error("Failed ......... :", err.response.data);
+  // const fetchCityList = async () => {
+  //   debugger;
+  //   const cityList = await axios.get(getCityListMasterEndPoint, {
+  //     headers: {
+  //       Authorization: `Bearer ${sessionUser.token}`,
+  //     },
+  //   })
+  //     .then((res) => {
+  //       console.log('Fetching City List in Lead Generate Page ...', res.data);
+  //       setCities(res.data || []);
+  //     }
+  //     ).catch((err) => {
+  //       debugger;
+  //       console.error("Failed to fetch City List :", err);
+  //       console.error("Failed ......... :", err.response.data);
 
-      })
-      .finally(() => {
-        // Always executed, regardless of success or error)
-        console.log('City List Fetch function finished.')
-        // alert("City List Fetch function finished.");
-      })
+  //     })
+  //     .finally(() => {
+  //       // Always executed, regardless of success or error)
+  //       console.log('City List Fetch function finished.')
+  //       // alert("City List Fetch function finished.");
+  //     })
 
-  }
+  // }
 
 
   const cityAreas = {
@@ -1044,7 +1045,7 @@ useEffect(() => {
               console.log("Histories to pass to HistoryHover:", leadObj.histories),
               <LeadVisa
                 visadObj={visadObj}
-                countries={countries}
+                // countries={countries}
                 setVisaLeadObj={setVisaObj}
                 histories={leadObj.histories || []}
                 isUpdate={isUpdateMode} // fallback to empty array
@@ -1085,7 +1086,7 @@ useEffect(() => {
 
                 carLeaddObj={carLeaddObj}
                 setCarLeadObj={setCarLeadObj}
-                cities={cities}
+                // cities={cities}
                 handleChange={handleChange}
                 histories={leadObj.histories || []}
                 mode={mode}   // PASS MODE
@@ -1149,7 +1150,7 @@ useEffect(() => {
         setIsDashboardLoading(false);
         setShowPopup(true);
         isBasicFormValid = false;
-        
+
       }
 
       switch (selectedLeadName.toLowerCase()) {
@@ -1186,6 +1187,22 @@ useEffect(() => {
     setIsDashboardLoading(true);
      
     e.preventDefault();
+    const isFITDomesticQuoteRequired =
+    selectedLeadName === "Holiday" &&
+    holidayLeadObj?.leadType === "FIT" &&
+    holidayLeadObj?.tripType === "Domestic" &&
+    FIT_DOM_REQUEST_QUOTE_TO_OPERATION &&
+    requestQuoteForFIT;
+
+if (isFITDomesticQuoteRequired) {
+    const isPackageValid =
+        holidayRef.current?.validatePackagePreference();
+
+    if (!isPackageValid) {
+        setIsDashboardLoading(false);
+        return;
+    }
+}
 
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
