@@ -589,12 +589,23 @@ const RichTextToolbar = ({ editorRef, disabled = false }) => {
         type="button"
         disabled={disabled}
         onMouseDown={(e) => e.preventDefault()}
+        // onClick={() => {
+        //   if (editorRef.current) {
+        //     editorRef.current.innerHTML = "";
+        //     // getPlainTextLength();
+        //   }
+
+        // }}
         onClick={() => {
-          if (editorRef.current) {
-            editorRef.current.innerHTML = "";
-            // getPlainTextLength();
-          }
-          
+          if (!editorRef.current) return;
+
+          editorRef.current.innerHTML = "";
+
+          // Update React state with the cleared content.
+          // This keeps the editor and parent data synchronized.
+          const inputEvent = new Event("input", { bubbles: true });
+          editorRef.current.dispatchEvent(inputEvent);
+
         }}
         title="Clear All Text"
         className="
@@ -881,8 +892,8 @@ const FullScreenNotesEditor = ({ value, onChange, onClose }) => {
   const getPlainTextLength = () => {
     if (!editorRef.current) return 0;
 
-    const text = editorRef.current.innerText || "";
-    console.log("Another: ",text);
+    const text = editorRef.current.innerText || "";         //it return the text value 
+    console.log("Another: ", text);
     return text.replace(/\r/g, "").replace(/\n/g, "").length;
   };
 
@@ -1270,18 +1281,27 @@ const FullScreenNotesEditor = ({ value, onChange, onClose }) => {
           <button
             type="button"
             onMouseDown={(e) => e.preventDefault()}
+            //       onClick={() => {
+            //         if (editorRef.current) {
+            //           editorRef.current.innerHTML = "";         // return text value in the form of html  e.g.<b>Hello</b> World
+            //           editorRef.current.innerText ="";
+
+            // //           (editorRef.current.innerText || editorRef.current.textContent || "")
+            // // .length;
+
+
+            //         }
+            //         console.log("In Clear Button:", getPlainTextLength());
+            //          getPlainTextLength();
+            //       }}
             onClick={() => {
-              if (editorRef.current) {
-                editorRef.current.innerHTML = "";
-                editorRef.current.innerText ="";
+              if (!editorRef.current) return;
 
-      //           (editorRef.current.innerText || editorRef.current.textContent || "")
-      // .length;
-               
+              editorRef.current.innerHTML = "";
 
-              }
-              console.log("In Clear Button:", getPlainTextLength());
-               getPlainTextLength();
+              // Immediately update the parent package state.
+              onChange("");
+
             }}
             title="Clear Text"
             className="
@@ -1413,6 +1433,7 @@ export default function TravelPackage({
   isViewMode = false,
   travelScope = "",
   packageErrors = {},
+  onClearPackageError = () => { }
 
 }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -1580,6 +1601,9 @@ export default function TravelPackage({
       ...prev,
       packages: updated,
     }));
+    debugger;
+    // Clear error for the field that changed
+    onClearPackageError(index, field);
   };
 
   // ============================================================
@@ -1953,10 +1977,11 @@ export default function TravelPackage({
                             onChange={(e) =>
                               updatePackage(index, "fromDate", e.target.value)
                             }
-                            className="border-highlight"
+                            // className="border-highlight"    
+                             className={`border-highlight ${packageErrors[index]?.fromDate ? "border-red-500" : ""}`}
                           />
                           {packageErrors[index]?.fromDate && (
-                            <p className="mt-1 text-xs text-red-500">
+                            <p className="mt-1 text-xs text-red-500">                
                               {packageErrors[index].fromDate}
                             </p>
                           )}
@@ -1982,7 +2007,8 @@ export default function TravelPackage({
                             onChange={(e) =>
                               updatePackage(index, "toDate", e.target.value)
                             }
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.toDate ? "border-red-500" : ""}`}
                           />
                           {packageErrors[index]?.toDate && (
                             <p className="mt-1 text-xs text-red-500">
@@ -2185,7 +2211,8 @@ export default function TravelPackage({
 
                               updatePackage(index, "budgetPreference", value);
                             }}
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.budgetPreference ? "border-red-500" : ""}`}
                           >
                             <option value="">Select Budget Prefernce</option>
                             {budgetPreference.map((budgetPre) => (
@@ -2217,7 +2244,8 @@ export default function TravelPackage({
                                 e.target.value,
                               )
                             }
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.tripDescription ? "border-red-500" : ""}`}
                           />
                           {packageErrors[index]?.tripDescription && (
                             <p className="mt-1 text-xs text-red-500">
@@ -2281,7 +2309,8 @@ export default function TravelPackage({
                                 value,
                               );
                             }}
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.hotelCategory ? "border-red-500" : ""}`}
                           >
                             <option value=""> Select Hotel Type</option>
                             {hotelCategory.map((hotelCat) => (
@@ -2314,7 +2343,8 @@ export default function TravelPackage({
 
                               updatePackage(index, "mealPlan", value);
                             }}
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.mealPlan ? "border-red-500" : ""}`}
                           >
                             <option value="">Select Meal Plan</option>
 
@@ -2349,7 +2379,9 @@ export default function TravelPackage({
                                 value,
                               );
                             }}
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.vehicleType ? "border-red-500" : ""}`}
+                            
                           >
                             <option value="">Select Vehicle type</option>
                             {vehicleType.map((vehType) => (
@@ -2399,7 +2431,8 @@ export default function TravelPackage({
                                 e.target.value,
                               )
                             }
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.arrivalCity ? "border-red-500" : ""}`}
                             placeholder="Enter Arrival City"
                           />
                           {packageErrors[index]?.arrivalCity && (
@@ -2421,7 +2454,8 @@ export default function TravelPackage({
                                 e.target.value,
                               )
                             }
-                            className="border-highlight"
+                            // className="border-highlight"
+                            className={`border-highlight ${packageErrors[index]?.departureCity ? "border-red-500" : ""}`}
                             placeholder="Enter Departure City"
                           />
                           {packageErrors[index]?.departureCity && (
@@ -2522,16 +2556,17 @@ export default function TravelPackage({
                           onChange={(e) =>
                             updatePackage(index, "tripBudget", e.target.value)
                           }
-                          className="border-highlight bg-[#f5cb83] font-bold "
+                          // className="border-highlight bg-[#f5cb83] font-bold "
+                          className={`border-highlight bg-[#f5cb83] font-bold ${packageErrors[index]?.tripBudget ? "border-red-500" : ""}`}
                           placeholder="Enter Trip Budget"
-                          
+
                         />
 
                         {packageErrors[index]?.tripBudget && (
-    <p className="mt-1 text-xs text-red-500">
-        {packageErrors[index].tripBudget}
-    </p>
-)}
+                          <p className="mt-1 text-xs text-red-500">
+                            {packageErrors[index].tripBudget}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );

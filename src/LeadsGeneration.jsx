@@ -1188,21 +1188,22 @@ useEffect(() => {
      
     e.preventDefault();
     const isFITDomesticQuoteRequired =
-    selectedLeadName === "Holiday" &&
-    holidayLeadObj?.leadType === "FIT" &&
-    holidayLeadObj?.tripType === "Domestic" &&
-    FIT_DOM_REQUEST_QUOTE_TO_OPERATION &&
-    requestQuoteForFIT;
+      selectedLeadName === "Holiday" &&
+      holidayLeadObj?.leadType === "FIT" &&
+      holidayLeadObj?.tripType === "Domestic" &&
+      FIT_DOM_REQUEST_QUOTE_TO_OPERATION &&
+      requestQuoteForFIT;
 
-if (isFITDomesticQuoteRequired) {
-    const isPackageValid =
-        holidayRef.current?.validatePackagePreference();
+    // if (isFITDomesticQuoteRequired) {
+    //   const isPackageValid =
+    //     holidayRef.current?.validatePackagePreference();
 
-    if (!isPackageValid) {
-        setIsDashboardLoading(false);
-        return;
-    }
-}
+    //   if (!isPackageValid) {
+    //     setIsDashboardLoading(false);
+    //     setShowPopup(true); // Added: show warning message
+    //     return;
+    //   }
+    // }
 
     const fNameError = validateBeforeSubmit(leadObj.fName, "First Name");
     const lNameError = validateBeforeSubmit(leadObj.lName, "Last Name");
@@ -1223,7 +1224,30 @@ if (isFITDomesticQuoteRequired) {
     // if (returnDateError) errs.returnDate = returnDateError;
 
     // Validate the selected service form
-    if (!validateServiceForm(errs)) {
+    // if (!validateServiceForm(errs)) {
+    //   return;
+    // }
+
+
+    // 1. Validate existing Lead and Service fields
+    const isFormValid = validateServiceForm(errs);
+
+    // 2. Validate Package Preferences only for FIT Domestic + Request Quote
+    let isPackageValid = true;
+
+    if (isFITDomesticQuoteRequired) {
+      isPackageValid =
+        holidayRef.current?.validatePackagePreference() ?? false;
+    }
+
+    // 3. Stop submission if any validation fails
+    if (!isFormValid || !isPackageValid) {
+      setIsDashboardLoading(false);
+
+      if (!isPackageValid) {
+        setShowPopup(true);
+      }
+
       return;
     }
 

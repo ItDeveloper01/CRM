@@ -745,6 +745,28 @@ useEffect(() => {
         return Object.keys(packageErrors).length === 0;
     }
     }));
+
+    const clearPackageFieldError = (index, field) => {
+    setErrors(prev => {
+        const currentPackageErrors = {
+            ...(prev.packagePreferences || {})
+        };
+
+        if (!currentPackageErrors[index]) {
+            return prev;
+        }
+
+        currentPackageErrors[index] = {
+            ...currentPackageErrors[index],
+            [field]: ""
+        };
+
+        return {
+            ...prev,
+            packagePreferences: currentPackageErrors
+        };
+    });
+};
     return (
 
         <div className="space-y-3">
@@ -1456,6 +1478,7 @@ useEffect(() => {
                             }
 
                             packageErrors={errors.packagePreferences || {}}
+                            onClearPackageError={clearPackageFieldError}
                         />
 
                     )}
