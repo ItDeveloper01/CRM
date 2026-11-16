@@ -1,0 +1,237 @@
+/* Emergency contacts grid: compact, pastel-red section.
+   Append to your phonebook stylesheet (or import this file next to the component).
+   The country picker reuses your existing phonebook-country-* classes, so the
+   dropdown list (rendered in document.body) looks the same as in the phone grid. */
+
+      body { outline: 5px solid blue; }
+.phonebook-emergency-section {
+  margin-top: 10px;
+  padding: 8px 10px 8px;
+      background: #80808066;
+    border: 1px solid #1641b978;
+    border-left: 3px solid #001d6f;
+  border-radius: 6px;
+}
+
+.phonebook-emergency-title {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #040e68;
+}
+
+.phonebook-emergency-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.phonebook-emergency-header,
+.phonebook-emergency-row {
+  display: grid;
+  grid-template-columns: 150px 120px minmax(120px, 1.3fr) 130px minmax(100px, 1fr) 24px;
+  gap: 6px;
+  align-items: start;
+}
+
+.phonebook-emergency-header {
+  padding: 0 2px;
+  font-size: 11px;
+  color: #a85a5a;
+}
+
+/* compact controls */
+.phonebook-emergency-row input,
+.phonebook-emergency-row select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 13px;
+  background: #fff;
+  border: 1px solid #e3b4b4;
+  border-radius: 4px;
+}
+
+.phonebook-emergency-row input:focus,
+.phonebook-emergency-row select:focus {
+  outline: none;
+  border-color: #d46a6a;
+  box-shadow: 0 0 0 2px rgba(212, 106, 106, 0.2);
+}
+
+.phonebook-emergency-row [aria-invalid="true"],
+.phonebook-emergency-row .phonebook-input-invalid {
+  border-color: #c0392b;
+}
+
+.phonebook-emergency-row input:disabled,
+.phonebook-emergency-row select:disabled {
+  background: #f7e9e9;
+  color: #8a6a6a;
+}
+
+/* country code picker inside the emergency row */
+.phonebook-emergency-row .phonebook-country-cell {
+  min-width: 0;
+}
+
+.phonebook-emergency-row .phonebook-country-picker {
+  position: relative;
+}
+
+.phonebook-emergency-row .phonebook-contact-country-select {
+  padding-right: 20px; /* room for the clear button */
+}
+
+.phonebook-emergency-row .phonebook-country-clear {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  line-height: 14px;
+  font-size: 14px;
+  color: #a85a5a;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.phonebook-emergency-row .phonebook-country-clear:hover {
+  background: #f8d4d4;
+}
+
+.phonebook-emergency-row .phonebook-country-name {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  line-height: 12px;
+  color: #a85a5a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* delete */
+.phonebook-emergency-delete {
+  width: 24px;
+  height: 28px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 1;
+  color: #b25555;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.phonebook-emergency-delete:hover:not(:disabled) {
+  background: #f8d4d4;
+}
+
+/* errors and add link */
+.phonebook-emergency-row-error {
+  margin: 1px 0 0;
+  font-size: 11px;
+  line-height: 14px;
+  color: #b42318;
+}
+
+.phonebook-emergency-add {
+  margin-top: 6px;
+  padding: 2px 0;
+  font-size: 12px;
+  color: #b04444;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.phonebook-emergency-add:hover {
+  text-decoration: underline;
+}
+
+/* narrow screens: two lines per contact */
+@media (max-width: 720px) {
+  .phonebook-emergency-header {
+    display: none;
+  }
+
+  .phonebook-emergency-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .phonebook-emergency-row > :nth-child(1) { grid-area: 1 / 1; } /* country code */
+  .phonebook-emergency-row > :nth-child(2) { grid-area: 1 / 2; } /* phone */
+  .phonebook-emergency-row > :nth-child(6) { grid-area: 1 / 3; justify-self: end; } /* delete */
+  .phonebook-emergency-row > :nth-child(3) { grid-area: 2 / 1; } /* relative name */
+  .phonebook-emergency-row > :nth-child(4) { grid-area: 2 / 2; } /* relationship */
+  .phonebook-emergency-row > :nth-child(5) { grid-area: 2 / 3; } /* profession */
+}
+
+/* Pastel-red section for the phone and email table.
+   Needs the wrapper in JSX:  <div className="phonebook-contact-section"> <table className="phonebook-contact-grid"> ... */
+
+.phonebook-contact-section {
+  background: #fdeeee;
+  border: 1px solid #f4c7c7;
+  border-left: 3px solid #e88f8f;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+/* make the table and every cell see-through so the section color shows */
+.phonebook-contact-section table.phonebook-contact-grid,
+.phonebook-contact-section table.phonebook-contact-grid thead,
+.phonebook-contact-section table.phonebook-contact-grid tbody,
+.phonebook-contact-section table.phonebook-contact-grid tr,
+.phonebook-contact-section table.phonebook-contact-grid th,
+.phonebook-contact-section table.phonebook-contact-grid td {
+  background: transparent !important;
+  border-color: #f4c7c7;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid th,
+.phonebook-contact-section table.phonebook-contact-grid td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #f4c7c7;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid tbody tr:last-child th,
+.phonebook-contact-section table.phonebook-contact-grid tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid thead th {
+  background: #f9dcdc !important;
+  color: #9b3a3a;
+  font-weight: 600;
+  border-bottom: 1px solid #f0b8b8;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid tbody tr:hover th,
+.phonebook-contact-section table.phonebook-contact-grid tbody tr:hover td {
+  background: #fbe4e4 !important;
+}
+
+/* keep the inputs white and readable */
+.phonebook-contact-section table.phonebook-contact-grid input:not([type="checkbox"]) {
+  background: #fff;
+  border: 1px solid #e3b4b4;
+}
+
+.phonebook-contact-section table.phonebook-contact-grid input:focus {
+  outline: none;
+  border-color: #d46a6a;
+  box-shadow: 0 0 0 2px rgba(212, 106, 106, 0.2);
+}

@@ -1,0 +1,1246 @@
+.phonebook-revamp {
+  --phonebook-ink: #17324d;
+  --phonebook-muted: #748394;
+  --phonebook-border: #dfe6ec;
+  --phonebook-accent: #1d5b87;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+  padding: clamp(0.5rem, 1vw, 0.9rem);
+  color: #233649;
+  background: #f3f6f8;
+}
+
+.phonebook-revamp *,
+.phonebook-revamp *::before,
+.phonebook-revamp *::after {
+  box-sizing: border-box;
+}
+
+.phonebook-shell {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--phonebook-border);
+  border-radius: 18px;
+  box-shadow: 0 8px 26px rgb(23 50 77 / 6%);
+}
+
+.phonebook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.35rem;
+  border-bottom: 1px solid var(--phonebook-border);
+}
+
+.phonebook-heading,
+.phonebook-header-actions,
+.phonebook-profile-header,
+.phonebook-communication-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.phonebook-brand-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  color: #1e5b91;
+  font-weight: 700;
+  background: #e6f0fb;
+  border-radius: 12px;
+}
+
+.phonebook-heading h1,
+.phonebook-profile-identity h2 {
+  margin: 0;
+  color: var(--phonebook-ink);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.phonebook-heading p,
+.phonebook-profile-identity p {
+  margin: 0.15rem 0 0;
+  color: var(--phonebook-muted);
+  font-size: 0.82rem;
+}
+
+.phonebook-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.phonebook-button {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.phonebook-button-secondary {
+  color: #344a5f;
+  background: #fff;
+  border-color: #d7e0e7;
+}
+
+.phonebook-button-secondary:hover {
+  background: #f5f8fa;
+}
+
+.phonebook-button-primary {
+  color: #fff;
+  background: #2563EB;
+  border-color:#2563EB;
+}
+
+.phonebook-button-primary:hover {
+  background: #1a45a1;
+}
+
+.phonebook-button-danger {
+  color: #a63d46;
+  background: #fff;
+  border-color: #efd4d7;
+}
+
+.phonebook-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.phonebook-workspace {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: minmax(290px, 0.78fr) minmax(0, 1.45fr);
+}
+
+.phonebook-sidebar {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid var(--phonebook-border);
+}
+
+.phonebook-sidebar-tools {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border-bottom: 1px solid #e8edf1;
+}
+
+.phonebook-search {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.75rem;
+  color: #8090a0;
+  border: 1px solid #d5dee6;
+  border-radius: 10px;
+}
+
+.phonebook-search span {
+  font-size: 1.25rem;
+}
+
+.phonebook-search input,
+.phonebook-filter-select select,
+.phonebook-list-filters select {
+  width: 100%;
+  min-width: 0;
+  color: #415569;
+  font: inherit;
+  font-size: 0.82rem;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+
+.phonebook-search input::placeholder {
+  color: #8997a4;
+}
+
+.phonebook-quick-filters,
+.phonebook-list-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.phonebook-filter-chip,
+.phonebook-filter-select,
+.phonebook-list-filters label {
+  min-height: 1.9rem;
+  padding: 0.35rem 0.65rem;
+  color: #667787;
+  font: inherit;
+  font-size: 0.76rem;
+  background: #f7f9fa;
+  border: 1px solid transparent;
+  border-radius: 8px;
+}
+
+.phonebook-filter-chip {
+  cursor: pointer;
+}
+
+.phonebook-filter-chip:hover,
+.phonebook-filter-select:hover,
+.phonebook-list-filters label:hover {
+  border-color: #dce5ec;
+}
+
+.phonebook-filter-chip.is-active {
+  color: #1d5b87;
+  background: #e8f1fb;
+  border-color: #d5e5f6;
+}
+
+.phonebook-filter-select,
+.phonebook-list-filters label {
+  display: inline-flex;
+  max-width: 10rem;
+  align-items: center;
+}
+
+.phonebook-filter-select select,
+.phonebook-list-filters select {
+  cursor: pointer;
+}
+
+.phonebook-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 1rem;
+  color: #234e70;
+  font-size: 0.78rem;
+  background: #eef5fb;
+  border-bottom: 1px solid #dae8f3;
+}
+
+.phonebook-selection-bar button {
+  padding: 0;
+  color: #1d5b87;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.phonebook-selection-bar button:last-child {
+  margin-left: auto;
+}
+
+.phonebook-list-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.phonebook-contact-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.35rem 1rem;
+}
+
+.phonebook-alphabet {
+  display: flex;
+  flex: 0 0 2rem;
+  flex-direction: column;
+  gap: 0.08rem;
+  overflow-y: auto;
+  padding: 0.3rem 0.2rem;
+  border-left: 1px solid #e8edf1;
+}
+
+.phonebook-alphabet button {
+  min-height: 1.1rem;
+  padding: 0.05rem 0.1rem;
+  color: #647789;
+  font: inherit;
+  font-size: 0.65rem;
+  font-weight: 650;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.phonebook-alphabet button:hover,
+.phonebook-alphabet button.is-active {
+  color: #1d5b87;
+  background: #eaf2fb;
+}
+
+.phonebook-list-error,
+.phonebook-list-status {
+  padding: 0.65rem 1rem;
+  font-size: 0.78rem;
+}
+
+.phonebook-list-error {
+  color: #a63d46;
+  background: #fff4f4;
+  border-bottom: 1px solid #efd4d7;
+}
+
+.phonebook-list-status {
+  color: var(--phonebook-muted);
+}
+
+.phonebook-contact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border-bottom: 1px solid #e9edf0;
+}
+
+.phonebook-contact-row.is-selected {
+  background: #eaf2fb;
+  border-radius: 10px;
+  border-bottom-color: transparent;
+}
+
+.phonebook-row-checkbox {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  accent-color: #1d5b87;
+}
+
+.phonebook-contact-select {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: 2.8rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.15rem;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.phonebook-avatar,
+.phonebook-profile-avatar {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 auto;
+  place-items: center;
+  object-fit: cover;
+  color: #285d8a;
+  font-size: 0.9rem;
+  font-weight: 650;
+  background: #edf2f6;
+  border-radius: 50%;
+}
+
+.phonebook-avatar-initials.is-selected {
+  color: #1c5482;
+  background: #cfe2f8;
+}
+
+.phonebook-contact-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.phonebook-contact-copy strong,
+.phonebook-contact-copy > span,
+.phonebook-contact-meta > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phonebook-contact-copy strong {
+  color: #24394d;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.phonebook-contact-copy > span,
+.phonebook-contact-meta > span:last-child {
+  color: #7b8996;
+  font-size: 0.77rem;
+}
+
+.phonebook-contact-meta {
+  display: grid;
+  justify-items: end;
+  gap: 0.2rem;
+}
+
+.phonebook-category {
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+.phonebook-empty-state,
+.phonebook-profile-empty {
+  display: flex;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  color: var(--phonebook-muted);
+  text-align: center;
+  font-size: 0.84rem;
+}
+
+.phonebook-empty-state strong {
+  color: #34495c;
+}
+
+.phonebook-sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  color: #8593a0;
+  font-size: 0.75rem;
+  border-top: 1px solid #e8edf1;
+}
+
+.phonebook-sidebar-footer button {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.45rem;
+  color: #1d5b87;
+  font: inherit;
+  font-weight: 650;
+  background: #edf5fb;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.phonebook-sidebar-footer button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.phonebook-profile {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  padding: 1.2rem 1.35rem 1rem;
+}
+
+.phonebook-editor-form {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
+.phonebook-editor-form .phonebook-profile-content {
+  flex: 1;
+}
+
+.phonebook-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  color: #788896;
+  font-size: 0.75rem;
+  border-top: 1px solid #e6ebef;
+}
+
+.phonebook-editor-footer > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.phonebook-button.is-disabled,
+.phonebook-button:disabled {
+  color: #98a4af;
+  background: #f0f3f5;
+  border-color: #e2e7eb;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.phonebook-tab-fieldset {
+  width: 100%;
+}
+
+.phonebook-contact-grid-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8ed;
+  border-radius: 10px;
+}
+
+.phonebook-contact-grid {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.phonebook-contact-grid th,
+.phonebook-contact-grid td {
+  padding: 0.3rem;
+  border-bottom: 1px solid #e9edf0;
+}
+
+.phonebook-contact-grid thead th {
+  color: #637587;
+  font-size: 0.73rem;
+  font-weight: 650;
+  background: #f7f9fa;
+}
+
+.phonebook-contact-grid tbody th {
+  width: 6.5rem;
+  color: #344a5f;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.phonebook-contact-grid input {
+  min-width: 5rem;
+}
+
+.phonebook-contact-country-select {
+  width: 4.4rem;
+  min-width: 4.4rem !important;
+  flex: 0 0 4.4rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.3rem 0.35rem;
+  color: #1e293b;
+  font-size: 0.8rem;
+  outline: none;
+}
+
+.phonebook-contact-country-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgb(219 234 254);
+}
+
+.phonebook-input-invalid {
+  border-color: #ef4444 !important;
+}
+
+.phonebook-country-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.phonebook-country-picker {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.phonebook-country-name {
+  max-width: 7rem;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phonebook-country-options {
+  position: fixed;
+  z-index: 10000;
+  max-height: 15rem;
+  overflow-y: auto;
+  padding: 0.25rem;
+  border: 1px solid #cbd9e5;
+  border-radius: 0.55rem;
+  background: #fff;
+  box-shadow: 0 10px 24px rgb(23 50 77 / 18%);
+}
+
+.phonebook-country-options button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 0.35rem;
+  color: #344a5f;
+  font-size: 0.78rem;
+  text-align: left;
+  background: #fff;
+  cursor: pointer;
+}
+
+.phonebook-country-options button:hover,
+.phonebook-country-options button[aria-selected="true"] {
+  color: #1d5b87;
+  background: #eef5fb;
+}
+
+.phonebook-country-options button span:last-child {
+  flex: 0 0 auto;
+  color: #1d5b87;
+  font-weight: 650;
+}
+
+.phonebook-country-no-results {
+  display: block;
+  padding: 0.55rem;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.phonebook-phone-match-warning {
+  margin: 0.25rem 0 0;
+  padding-left: 1rem;
+  color: #b45309;
+  font-size: 0.7rem;
+}
+
+.phonebook-required-star {
+  color: #dc2626;
+}
+
+.phonebook-contact-grid .phonebook-contact-country-select {
+  min-width: 4.4rem !important;
+}
+
+.phonebook-country-clear {
+  display: grid;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  place-items: center;
+  padding: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+  line-height: 1;
+  background: #f1f5f9;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.phonebook-contact-inline-error,
+.phonebook-emergency-row-error {
+  display: block;
+  margin: 0.2rem 0 0;
+  color: #b4232d;
+  font-size: 0.68rem;
+  line-height: 1.25;
+}
+
+.phonebook-contact-inline-error {
+  flex-basis: 100%;
+}
+
+.phonebook-emergency-section {
+  margin-top: 0.9rem;
+}
+
+.phonebook-emergency-title {
+  margin: 0 0 0.4rem;
+  color: #344a5f;
+  font-size: 0.88rem;
+  font-weight: 650;
+}
+
+.phonebook-emergency-header,
+.phonebook-emergency-row {
+  display: grid;
+  grid-template-columns:
+    minmax(5rem, 0.75fr)
+    minmax(6.5rem, 1fr)
+    minmax(7rem, 1.2fr)
+    minmax(7rem, 1fr)
+    minmax(6rem, 0.9fr)
+    1.5rem;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.phonebook-emergency-header {
+  margin-bottom: 0.25rem;
+  color: #637587;
+  font-size: 0.68rem;
+  font-weight: 650;
+}
+
+.phonebook-emergency-row-wrap + .phonebook-emergency-row-wrap {
+  margin-top: 0.35rem;
+}
+
+.phonebook-emergency-row input,
+.phonebook-emergency-row select {
+  width: 100%;
+  min-width: 0;
+  height: 2rem;
+  padding: 0.25rem 0.4rem;
+  color: #344a5f;
+  font: inherit;
+  font-size: 0.74rem;
+  background: #fff;
+  border: 1px solid #dfe6ec;
+  border-radius: 5px;
+}
+
+.phonebook-emergency-row input[aria-invalid="true"],
+.phonebook-emergency-row select[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.phonebook-emergency-delete {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  padding: 0;
+  color: #a63d46;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.phonebook-emergency-delete:hover {
+  background: #fff1f2;
+}
+
+.phonebook-emergency-add {
+  margin-top: 0.45rem;
+  padding: 0;
+  color: #1d5b87;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.phonebook-contact-grid-checkbox {
+  width: 5.5rem;
+  text-align: center;
+}
+
+.phonebook-contact-grid-checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #2563EB;
+}
+
+.phonebook-tab-fieldset:disabled input,
+.phonebook-tab-fieldset:disabled select,
+.phonebook-tab-fieldset:disabled textarea {
+  color: #087ef5;
+  background: #f8fafb;
+  border-color: #e2e8ed;
+  cursor: default;
+}
+
+.phonebook-profile-header {
+  min-width: 0;
+}
+
+.phonebook-profile-avatar {
+  width: 3.6rem;
+  height: 3.6rem;
+  color: #1d5b87;
+  font-size: 1.05rem;
+  background: #d7e9fb;
+}
+
+.phonebook-profile-identity {
+  min-width: 0;
+  flex: 1;
+}
+
+.phonebook-profile-identity h2 {
+  overflow-wrap: anywhere;
+  font-size: 1.2rem;
+}
+
+.phonebook-profile-identity p {
+  overflow-wrap: anywhere;
+  font-size: 0.86rem;
+}
+
+.phonebook-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.phonebook-communication-actions {
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.phonebook-communication-actions .phonebook-button {
+  min-width: 5.3rem;
+}
+
+.phonebook-profile-tabs {
+  display: flex;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding-top: 0.25rem;
+  border-bottom: 1px solid #dfe6ec;
+  scrollbar-width: thin;
+}
+
+.phonebook-profile-tab {
+  flex: 0 0 auto;
+  padding: 0.55rem 0.75rem;
+  color: #2563EB;
+  font: inherit;
+  font-size: 0.84rem;
+  background: #f7f9fa;
+  border: 1px solid #e5ebf0;
+  border-bottom: 0;
+  border-radius: 9px 9px 0 0;
+  cursor: pointer;
+}
+
+.phonebook-profile-tab.is-active {
+  color: #2563EB;
+  font-weight: 650;
+  background: #eaf2fb;
+  border-color: #cedfed;
+}
+
+.phonebook-profile-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1rem 0.1rem;
+}
+
+.phonebook-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.phonebook-overview-card {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+  padding: 0.8rem 0.9rem;
+  background: #f8fafb;
+  border: 1px solid #eff2f4;
+  border-radius: 10px;
+}
+
+.phonebook-overview-card span,
+.phonebook-muted {
+  color: var(--phonebook-muted);
+  font-size: 0.82rem;
+}
+
+.phonebook-overview-card strong {
+  overflow-wrap: anywhere;
+  color: #2a3e50;
+  font-size: 0.9rem;
+}
+
+.phonebook-linked-enquiries,
+.phonebook-detail-list {
+  margin-top: 1.1rem;
+}
+
+.phonebook-linked-enquiries h3,
+.phonebook-detail-list h3 {
+  margin: 0 0 0.45rem;
+  padding-bottom: 0.55rem;
+  color: #2c4052;
+  font-size: 0.94rem;
+  border-bottom: 1px solid #e2e8ed;
+}
+
+.phonebook-enquiry-row,
+.phonebook-detail-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  color: #405366;
+  font-size: 0.84rem;
+  border-bottom: 1px solid #e8edf1;
+}
+
+.phonebook-enquiry-row span:last-child,
+.phonebook-detail-entry > span {
+  flex: 0 0 auto;
+  color: var(--phonebook-muted);
+}
+
+.phonebook-detail-entry {
+  flex-wrap: wrap;
+}
+
+.phonebook-detail-entry p,
+.phonebook-note-content {
+  width: 100%;
+  margin: 0.2rem 0 0;
+  color: #526476;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.phonebook-next-followup {
+  margin: 1rem 0 0;
+  color: #6a7886;
+  font-size: 0.82rem;
+}
+
+.phonebook-validation-summary {
+  padding: 0.75rem 1rem;
+  color: #852f37;
+  font-size: 0.84rem;
+  background: #fff3f3;
+  border: 1px solid #f1cfd1;
+  border-radius: 9px;
+}
+
+.phonebook-validation-summary ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.phonebook-personal-field-invalid {
+  border-color: #ef4444 !important;
+}
+
+.phonebook-personal-field-invalid:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgb(254 226 226) !important;
+}
+
+.phonebook-personal-field-error {
+  display: block;
+  margin-top: 0.25rem;
+  color: #b91c1c;
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+.phonebook-tab-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.phonebook-tab-fieldset:disabled {
+  opacity: 0.82;
+}
+
+.phonebook-revamp [aria-label="Contact sections"] button {
+  margin-right: 0.25rem;
+  color: #526779;
+  background: #f6f9fb;
+  border: 1px solid #e0e8ee;
+  border-radius: 9px 9px 0 0;
+}
+
+.phonebook-revamp [aria-label="Contact sections"] button[aria-selected="true"] {
+  color: #2563EB;
+  background: #e8f1fb;
+  border-color: #cddfed;
+}
+
+.phonebook-access-denied {
+  display: grid;
+  place-items: center;
+  color: #536779;
+  font-size: 0.95rem;
+}
+
+.phonebook-revamp button:focus-visible,
+.phonebook-revamp a:focus-visible,
+.phonebook-revamp input:focus-visible,
+.phonebook-revamp select:focus-visible,
+.phonebook-revamp textarea:focus-visible {
+  outline: 2px solid #6ba3ca;
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .phonebook-workspace {
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .phonebook-profile {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .phonebook-revamp {
+    padding: 0;
+  }
+
+  .phonebook-shell {
+    border: 0;
+    border-radius: 0;
+  }
+
+  .phonebook-header {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 0.85rem;
+  }
+
+  .phonebook-header-actions {
+    width: 100%;
+    gap: 0.35rem;
+    justify-content: flex-start;
+  }
+
+  .phonebook-header-actions .phonebook-button {
+    min-height: 2.15rem;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .phonebook-workspace {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+  }
+
+  .phonebook-sidebar {
+    flex: 0 0 auto;
+    min-height: 15rem;
+    max-height: 42vh;
+    border-right: 0;
+    border-bottom: 1px solid var(--phonebook-border);
+  }
+
+  .phonebook-sidebar-tools {
+    gap: 0.55rem;
+    padding: 0.7rem;
+  }
+
+  .phonebook-contact-list {
+    padding: 0.25rem 0.65rem;
+  }
+
+  .phonebook-contact-select {
+    grid-template-columns: 2.35rem minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    padding: 0.5rem 0.1rem;
+  }
+
+  .phonebook-avatar {
+    width: 2.3rem;
+    height: 2.3rem;
+  }
+
+  .phonebook-contact-copy strong {
+    font-size: 0.82rem;
+  }
+
+  .phonebook-contact-copy > span,
+  .phonebook-contact-meta > span:last-child {
+    font-size: 0.7rem;
+  }
+
+  .phonebook-profile {
+    min-height: 0;
+    padding: 0.9rem;
+  }
+
+  .phonebook-editor-form {
+    min-height: 22rem;
+  }
+
+  .phonebook-profile-header {
+    gap: 0.55rem;
+  }
+
+  .phonebook-profile-avatar {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+
+  .phonebook-profile-identity h2 {
+    font-size: 1rem;
+  }
+
+  .phonebook-profile-identity p {
+    font-size: 0.74rem;
+  }
+
+  .phonebook-profile-actions {
+    gap: 0.25rem;
+  }
+
+  .phonebook-profile-actions .phonebook-button {
+    min-height: 2rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.72rem;
+  }
+
+  .phonebook-communication-actions {
+    gap: 0.4rem;
+    margin: 0.75rem 0;
+  }
+
+  .phonebook-communication-actions .phonebook-button {
+    min-width: 0;
+    min-height: 2.1rem;
+    padding: 0.35rem 0.55rem;
+    font-size: 0.75rem;
+  }
+
+  .phonebook-profile-tab {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.76rem;
+  }
+
+  .phonebook-overview-grid {
+    gap: 0.5rem;
+  }
+
+  .phonebook-overview-card {
+    padding: 0.65rem;
+  }
+
+  .phonebook-emergency-header,
+  .phonebook-emergency-row {
+    grid-template-columns: 5.6rem minmax(0, 1fr) 1.5rem;
+    gap: 0.3rem;
+  }
+
+  .phonebook-emergency-header span:nth-child(1),
+  .phonebook-emergency-header span:nth-child(2) {
+    grid-row: 1;
+  }
+
+  .phonebook-emergency-header span:nth-child(3) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-header span:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-header span:nth-child(5) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-row-wrap {
+    position: relative;
+    padding-right: 1.8rem;
+  }
+
+  .phonebook-emergency-row {
+    grid-template-columns: 5.6rem minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .phonebook-emergency-row select:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .phonebook-emergency-row input:nth-child(2) {
+    grid-column: 2 / 4;
+    grid-row: 1;
+  }
+
+  .phonebook-emergency-row input:nth-child(3) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-row select:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-row input:nth-child(5) {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .phonebook-emergency-delete {
+    position: absolute;
+    top: 0.25rem;
+    right: 0;
+  }
+
+  .phonebook-emergency-row input,
+  .phonebook-emergency-row select {
+    height: 2rem;
+    font-size: 0.72rem;
+  }
+}
